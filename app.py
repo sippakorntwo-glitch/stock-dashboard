@@ -14,17 +14,30 @@ st.set_page_config(
     layout="wide"
 )
 
-# สั่งให้หน้าเว็บรีเฟรชตัวเองทุก 5 นาที (300,000 มิลลิวินาที) อัตโนมัติ
-st_autorefresh(interval=300 * 1000, key="auto_refresh_5min")
+# รีเฟรชหน้าเว็บอัตโนมัติทุก 5 นาที (300,000 ms)
+count = st_autorefresh(interval=300 * 1000, key="data_refresher_5min")
 
 CSV_FILE = "daily_watchlist.csv"
 
-# --- คำนวณเวลาที่อัปเดตล่าสุดของไฟล์ CSV (แปลงเป็นเวลาไทย UTC+7) ---
+# ตรวจสอบเวลาแก้ไขของไฟล์ CSV เพื่อนำมาเป็น Cache Key
+def get_file_mtime():
+    if os.path.exists(CSV_FILE):
+        return os.path.getmtime(CSV_FILE)
+    return 0
+
+# ใช้ cache โดยผูกกับ mtime ถ้าไฟล์ CSV เปลี่ยน Streamlit จะโหลดใหม่ทันที
+@st.cache_data(ttl=60)
+def load_data(file_mtime):
+    if not os.path.exists(CSV_FILE):
+        return pd.DataFrame()
+    return pd.read_csv(CSV_FILE)
+
+current_mtime = get_file_mtime()
 last_updated_str = "ไม่พบข้อมูลเวลา"
-if os.path.exists(CSV_FILE):
-    mtime = os.path.getmtime(CSV_FILE)
+
+if current_mtime > 0:
     tz_bkk = timezone(timedelta(hours=7))
-    updated_dt = datetime.fromtimestamp(mtime, tz=timezone.utc).astimezone(tz_bkk)
+    updated_dt = datetime.fromtimestamp(current_mtime, tz=timezone.utc).astimezone(tz_bkk)
     last_updated_str = updated_dt.strftime("%d/%m/%Y %H:%M:%S (เวลาไทย)")
 
 # --- Header & UI แสดงเวลาอัปเดตล่าสุด ---
@@ -32,21 +45,17 @@ header_col1, header_col2 = st.columns([3, 2])
 
 with header_col1:
     st.title("📈 In-House Trend Trading Terminal")
-    st.caption("ระบบมอนิเตอร์และวิเคราะห์หุ้น S&P 500, Nasdaq 100 และ US Dividend ETFs/REITs")
+    st.caption("ระบบมอนิเตอร์และวิเคราะห์หุ้นสหรัฐฯ (NASDAQ, NYSE, AMEX) ครอบคลุมทั้งตลาด")
 
 with header_col2:
     st.markdown("<div style='text-align: right; padding-top: 15px;'>", unsafe_allow_html=True)
-    st.info(f"🕒 **อัปเดตล่าสุดเมื่อ:** `{last_updated_str}`\n\n🔄 *รีเฟรชข้อมูลอัตโนมัติทุก 5 นาที*")
+    st.info(f"🕒 **อัปเดตล่าสุดเมื่อ:** `{last_updated_str}`\n\n🔄 *รีเฟรชข้อมูลอัตโนมัติทุก 5 นาที (รอบที่: {count})*")
     st.markdown("</div>", unsafe_allow_html=True)
 
-if not os.path.exists(CSV_FILE):
-    st.warning("⚠️ ยังไม่พบไฟล์ 'daily_watchlist.csv' กรุณารอการรันสคริปต์อัปเดต")
-    st.stop()
-
-df_all = pd.read_csv(CSV_FILE)
+df_all = load_data(current_mtime)
 
 if df_all.empty:
-    st.error("ไฟล์ daily_watchlist.csv ว่างเปล่า กรุณาสั่งรัน updater ใหม่อีกครั้ง")
+    st.warning("⚠️ ยังไม่พบไฟล์ 'daily_watchlist.csv' หรือข้อมูลว่างเปล่า กรุณารอการรันสคริปต์สแกน")
     st.stop()
 
 # --- แถบตัวกรอง ---
@@ -54,10 +63,8 @@ st.markdown("### 🎛️ Data Filters")
 col1, col2, col3 = st.columns([2, 2, 2])
 
 with col1:
-    asset_type_filter = st.selectbox(
-        "🏷️ ประเภทสินทรัพย์:",
-        ["ทั้งหมด (All Assets)", "หุ้นสามัญ (Common Stock)", "หุ้น/กองทุนปันผล (Dividend Asset)"]
-    )
+    asset_types = ["ทั้งหมด (All Assets)"] + sorted(list(df_all['Asset_Type'].dropna().unique()))
+    asset_type_filter = st.selectbox("🏷️ ประเภทสินทรัพย์:", asset_types)
 
 with col2:
     status_filter = st.radio(
@@ -71,10 +78,8 @@ with col3:
 
 df_filtered = df_all.copy()
 
-if asset_type_filter == "หุ้นสามัญ (Common Stock)":
-    df_filtered = df_filtered[df_filtered['Asset_Type'] == 'Common Stock']
-elif asset_type_filter == "หุ้น/กองทุนปันผล (Dividend Asset)":
-    df_filtered = df_filtered[df_filtered['Asset_Type'] == 'Dividend Asset']
+if asset_type_filter != "ทั้งหมด (All Assets)":
+    df_filtered = df_filtered[df_filtered['Asset_Type'] == asset_type_filter]
 
 if status_filter == "เฉพาะที่ผ่านเกณฑ์ (PASS Only)":
     df_filtered = df_filtered[df_filtered['Status'] == 'PASS']
@@ -88,7 +93,7 @@ st.divider()
 col_table, col_panel = st.columns([3, 1])
 
 with col_table:
-    st.subheader(f"📋 รายการสินทรัพย์ ({len(df_filtered)} ตัว)")
+    st.subheader(f"📋 รายการสินทรัพย์ ({len(df_filtered):,} ตัว)")
     
     if not df_filtered.empty:
         formatted_df = df_filtered.copy()
@@ -117,8 +122,8 @@ with col_table:
             }),
             column_config={
                 "Ticker": st.column_config.Column("Ticker", help="ชื่อย่อหลักทรัพย์"),
-                "Asset_Type": st.column_config.Column("Asset Type", help="Common Stock หรือ Dividend Asset"),
-                "Status": st.column_config.Column("Status", help="PASS คือผ่านเกณฑ์ครบทุกข้อ / FAIL คือไม่ผ่านเกณฑ์"),
+                "Asset_Type": st.column_config.Column("Asset Type", help="หมวดหมู่สินทรัพย์"),
+                "Status": st.column_config.Column("Status", help="PASS = ผ่านเกณฑ์แนวโน้ม / FAIL = ไม่ผ่านเกณฑ์"),
                 "Close": st.column_config.Column("Close ($)", help="ราคาปิดล่าสุด (USD)"),
                 "Return_Display": st.column_config.Column("Historical Return", help="ผลตอบแทนย้อนหลัง"),
                 "Div_Yield": st.column_config.Column("Div Yield (%)", help="อัตราปันผลตอบแทนต่อปี (TTM)"),
@@ -126,7 +131,7 @@ with col_table:
                 "Suggested_Stop": st.column_config.Column("Suggested Stop ($)", help="จุดตัดขาดทุนแนะนำ: Close - (2 x ATR 14)"),
             },
             use_container_width=True,
-            height=340,
+            height=360,
             hide_index=True
         )
     else:
