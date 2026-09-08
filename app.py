@@ -14,18 +14,18 @@ st.set_page_config(
     layout="wide"
 )
 
-# รีเฟรชหน้าเว็บอัตโนมัติทุก 5 นาที (300,000 ms)
+# 1. ปลุกหน้าจอให้รีเฟรชตัวเองทุกๆ 5 นาที (300,000 ms) อัตโนมัติ
 count = st_autorefresh(interval=300 * 1000, key="data_refresher_5min")
 
 CSV_FILE = "daily_watchlist.csv"
 
-# ตรวจสอบเวลาแก้ไขของไฟล์ CSV เพื่อนำมาเป็น Cache Key
+# 2. ฟังก์ชันตรวจสอบเวลาที่ไฟล์ถูกบันทึกล่าสุดบนเซิร์ฟเวอร์
 def get_file_mtime():
     if os.path.exists(CSV_FILE):
         return os.path.getmtime(CSV_FILE)
     return 0
 
-# ใช้ cache โดยผูกกับ mtime ถ้าไฟล์ CSV เปลี่ยน Streamlit จะโหลดใหม่ทันที
+# 3. โหลดข้อมูลใหม่ทันทีที่เวลา mtime ของไฟล์เปลี่ยน (ป้องกันการจำแคชเก่า)
 @st.cache_data(ttl=60)
 def load_data(file_mtime):
     if not os.path.exists(CSV_FILE):
