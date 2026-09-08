@@ -5,6 +5,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import yfinance as yf
 import os
+from datetime import datetime, timezone, timedelta
+from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(
     page_title="Personal Daily Trend Terminal",
@@ -12,19 +14,40 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📈 In-House Daily Trend Trading Terminal")
-st.caption("ระบบมอนิเตอร์และวิเคราะห์หุ้น S&P 500, Nasdaq 100 และ US Dividend ETFs/REITs")
+# สั่งให้หน้าเว็บรีเฟรชตัวเองทุก 5 นาที (300,000 มิลลิวินาที) อัตโนมัติ
+st_autorefresh(interval=300 * 1000, key="auto_refresh_5min")
 
 CSV_FILE = "daily_watchlist.csv"
 
+# --- คำนวณเวลาที่อัปเดตล่าสุดของไฟล์ CSV (แปลงเป็นเวลาไทย UTC+7) ---
+last_updated_str = "ไม่พบข้อมูลเวลา"
+if os.path.exists(CSV_FILE):
+    mtime = os.path.getmtime(CSV_FILE)
+    # แปลงเวลา mtime เป็น timezone ประเทศไทย
+    tz_bkk = timezone(timedelta(hours=7))
+    updated_dt = datetime.fromtimestamp(mtime, tz=timezone.utc).astimezone(tz_bkk)
+    last_updated_str = updated_dt.strftime("%d/%m/%Y %H:%M:%S (เวลาไทย)")
+
+# --- Header & UI แสดงเวลาอัปเดตล่าสุด ---
+header_col1, header_col2 = st.columns([3, 2])
+
+with header_col1:
+    st.title("📈 In-House Trend Trading Terminal")
+    st.caption("ระบบมอนิเตอร์และวิเคราะห์หุ้น S&P 500, Nasdaq 100 และ US Dividend ETFs/REITs")
+
+with header_col2:
+    st.markdown("<div style='text-align: right; padding-top: 15px;'>", unsafe_allow_html=True)
+    st.info(f"🕒 **อัปเดตล่าสุดเมื่อ:** `{last_updated_str}`\n\n🔄 *รีเฟรชข้อมูลอัตโนมัติทุก 5 นาที*")
+    st.markdown("</div>", unsafe_allow_html=True)
+
 if not os.path.exists(CSV_FILE):
-    st.warning("⚠️ ยังไม่พบไฟล์ 'daily_watchlist.csv' กรุณาสั่งรัน screener.py ใน Terminal ก่อน")
+    st.warning("⚠️ ยังไม่พบไฟล์ 'daily_watchlist.csv' กรุณารอการรันสคริปต์อัปเดต")
     st.stop()
 
 df_all = pd.read_csv(CSV_FILE)
 
 if df_all.empty:
-    st.error("ไฟล์ daily_watchlist.csv ว่างเปล่า กรุณาสั่งรัน screener.py ใหม่อีกครั้ง")
+    st.error("ไฟล์ daily_watchlist.csv ว่างเปล่า กรุณาสั่งรัน updater ใหม่อีกครั้ง")
     st.stop()
 
 # --- แถบตัวกรอง ---
@@ -95,11 +118,11 @@ with col_table:
             }),
             column_config={
                 "Ticker": st.column_config.Column("Ticker", help="ชื่อย่อหลักทรัพย์"),
-                "Asset_Type": st.column_config.Column("Asset Type", help="Common Stock (หุ้นสามัญ) หรือ Dividend Asset (กองทุนปันผล/REITs)"),
+                "Asset_Type": st.column_config.Column("Asset Type", help="Common Stock หรือ Dividend Asset"),
                 "Status": st.column_config.Column("Status", help="PASS คือผ่านเกณฑ์ครบทุกข้อ / FAIL คือไม่ผ่านเกณฑ์"),
                 "Close": st.column_config.Column("Close ($)", help="ราคาปิดล่าสุด (USD)"),
-                "Return_Display": st.column_config.Column("Historical Return", help="ผลตอบแทนย้อนหลัง: (3Y)=3ปี, (2Y)=2ปี, (1Y)=1ปี, (<1Y)=ตั้งแต่เข้าตลาด"),
-                "Div_Yield": st.column_config.Column("Div Yield (%)", help="อัตราปันผลตอบแทนต่อปี (TTM) 12 เดือนล่าสุด"),
+                "Return_Display": st.column_config.Column("Historical Return", help="ผลตอบแทนย้อนหลัง"),
+                "Div_Yield": st.column_config.Column("Div Yield (%)", help="อัตราปันผลตอบแทนต่อปี (TTM)"),
                 "Vol_Ratio": st.column_config.Column("Vol Ratio", help="Volume ล่าสุด ÷ ค่าเฉลี่ย 20 วัน"),
                 "Suggested_Stop": st.column_config.Column("Suggested Stop ($)", help="จุดตัดขาดทุนแนะนำ: Close - (2 x ATR 14)"),
             },
@@ -174,7 +197,7 @@ with st.spinner(f"กำลังโหลดข้อมูลกราฟ {sel
     fig.update_layout(height=550, xaxis_rangeslider_visible=False, margin=dict(l=20, r=20, t=30, b=20))
     st.plotly_chart(fig, use_container_width=True)
 
-# --- ตารางวิเคราะห์ทางเทคนิครายตัว (Deep-Dive Analysis Table) ---
+# --- ตารางวิเคราะห์ทางเทคนิครายตัว ---
 st.subheader(f"🔍 เจาะลึกผลวิเคราะห์เชิงเทคนิค: {selected_ticker}")
 
 curr_c = float(df_chart['Close'].iloc[-1])
@@ -245,7 +268,6 @@ def color_status(val):
         return 'color: #40c4ff; font-weight: bold;'
     return 'color: #ffab40;'
 
-# ตรวจสอบเมธอดสำหรับ Pandas 2.1+ (.map) และเวอร์ชันเดิม (.applymap)
 if hasattr(df_analysis.style, 'map'):
     styled_analysis = df_analysis.style.map(color_status, subset=['สถานะ'])
 else:
