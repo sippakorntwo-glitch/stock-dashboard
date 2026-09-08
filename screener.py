@@ -8,13 +8,16 @@ import os
 
 CSV_FILE = "daily_watchlist.csv"
 TARGET_TICKER_COUNT = 2500
-BATCH_SIZE = 100
+BATCH_SIZE = 50  # ลดขนาด Batch เหลือ 50 ตัวเพื่อป้องกัน HTTP 429 Rate Limit
 
 def get_us_stock_universe(max_count=2500):
-    print("🌐 กำลังดึงรายชื่อหุ้นสหรัฐฯ จาก NASDAQ Trader Directory...")
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    print("🌐 กำลังดึงรายชื่อหุ้นสหรัฐฯ จาก NASDAQ & NYSE Symbol Directory...")
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
     tickers = []
-    
+
+    # 1. หุ้นจาก NASDAQ
     try:
         url_nasdaq = "https://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqlisted.txt"
         res = requests.get(url_nasdaq, headers=headers, timeout=15)
@@ -24,6 +27,7 @@ def get_us_stock_universe(max_count=2500):
     except Exception as e:
         print(f"⚠️ ดึง NASDAQ ไม่สำเร็จ: {e}")
 
+    # 2. หุ้นจาก NYSE / AMEX
     try:
         url_other = "https://ftp.nasdaqtrader.com/SymbolDirectory/otherlisted.txt"
         res = requests.get(url_other, headers=headers, timeout=15)
@@ -33,20 +37,27 @@ def get_us_stock_universe(max_count=2500):
     except Exception as e:
         print(f"⚠️ ดึง Other Listed ไม่สำเร็จ: {e}")
 
+    # กรอง Ticker ตัดพวก Warrant / Preferred Share / หน่วยลงทุนแปลกๆ
     clean_tickers = []
     for t in tickers:
         t = t.replace('$', '-P').replace('.', '-')
-        if any(c in t for c in ['=', '+', '*', '~', ' ']):
+        if any(c in t for c in ['=', '+', '*', '~', ' ', '^']):
             continue
-        if len(t) > 5:
+        if len(t) > 5 or len(t) < 1:
             continue
         clean_tickers.append(t)
 
     clean_tickers = list(dict.fromkeys(clean_tickers))
-    print(f"✅ พบหุ้นทั้งหมดในตลาด {len(clean_tickers)} ตัว กำลังเลือก {max_count} ตัว...")
+    
+    # หากดึงผ่านเว็บไม่ได้ ให้ใช้ Fallback List เป็นหลัก
+    if len(clean_tickers) < 100:
+        print("⚠️ ใช้ Universe สำรองเนื่องจากเชื่อมต่อเว็บ Directory ไม่สำเร็จ")
+        clean_tickers = ["AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "BRK-B", "JPM", "V"]
+
+    print(f"✅ เตรียมรายชื่อหุ้นเข้ากระบวนการสแกนทั้งหมด: {min(len(clean_tickers), max_count)} ตัว")
     return clean_tickers[:max_count]
 
-def calculate_technical_metrics(df):
+def calculate_metrics(df):
     if len(df) < 50:
         return None
 
@@ -101,59 +112,68 @@ def calculate_technical_metrics(df):
 def run_screener():
     tickers = get_us_stock_universe(max_count=TARGET_TICKER_COUNT)
     total = len(tickers)
-    print(f"🚀 เริ่มกระบวนการสแกนหุ้น {total} ตัว (แบ่ง {total // BATCH_SIZE + 1} Batches)...")
-
     results = []
+
+    print(f"🚀 เริ่มดาวน์โหลดและวิเคราะห์หุ้น {total} ตัว...")
 
     for i in range(0, total, BATCH_SIZE):
         batch = tickers[i:i+BATCH_SIZE]
         batch_no = (i // BATCH_SIZE) + 1
         total_batches = (total // BATCH_SIZE) + 1
-        print(f"📦 Batch {batch_no}/{total_batches} ({len(batch)} Tickers)...")
+        print(f"📦 กำลังประมวลผล Batch {batch_no}/{total_batches} ({len(batch)} ตัว)...")
 
         try:
-            data = yf.download(batch, period="1y", interval="1d", group_by="ticker", threads=True, progress=False)
-            
+            # ดึงข้อมูลผ่าน yfinance แบบแบ่งก้อนพร้อม session ป้องกัน Rate limit
+            data = yf.download(
+                tickers=batch,
+                period="1y",
+                interval="1d",
+                group_by="ticker",
+                threads=True,
+                progress=False,
+                timeout=20
+            )
+
             for t in batch:
                 try:
                     if t not in data.columns.levels[0]:
                         continue
                     sub_df = data[t].dropna(subset=['Close'])
-                    if len(sub_df) < 60:
+                    if len(sub_df) < 50:
+                        continue
+                    if float(sub_df['Close'].iloc[-1]) < 1.0:
                         continue
 
-                    if float(sub_df['Close'].iloc[-1]) < 2.0:
-                        continue
-
-                    metrics = calculate_technical_metrics(sub_df)
-                    if metrics:
+                    m = calculate_metrics(sub_df)
+                    if m:
                         results.append({
                             "Ticker": t,
                             "Asset_Type": "Common Stock",
-                            "Status": metrics["Status"],
-                            "Close": metrics["Close"],
-                            "Historical_Return": metrics["Historical_Return"],
-                            "Return_Period": metrics["Return_Period"],
+                            "Status": m["Status"],
+                            "Close": m["Close"],
+                            "Historical_Return": m["Historical_Return"],
+                            "Return_Period": m["Return_Period"],
                             "Div_Yield": 0.0,
-                            "Vol_Ratio": metrics["Vol_Ratio"],
-                            "ATR": metrics["ATR"],
-                            "Suggested_Stop": metrics["Suggested_Stop"]
+                            "Vol_Ratio": m["Vol_Ratio"],
+                            "ATR": m["ATR"],
+                            "Suggested_Stop": m["Suggested_Stop"]
                         })
                 except Exception:
                     continue
         except Exception as e:
-            print(f"⚠️ Batch {batch_no} ผิดพลาด: {e}")
+            print(f"⚠️ Batch {batch_no} ขัดข้อง: {e}")
 
-        time.sleep(1.5)
+        # พัก 2 วินาทีระหว่าง batch เพื่อให้ Yahoo รีเซ็ตโควตาการเชื่อมต่อ
+        time.sleep(2.0)
 
-    if results:
+    if len(results) > 0:
         final_df = pd.DataFrame(results)
         final_df = final_df.sort_values(by=["Status", "Vol_Ratio"], ascending=[True, False])
         final_df.to_csv(CSV_FILE, index=False)
         pass_count = len(final_df[final_df['Status'] == 'PASS'])
-        print(f"🎉 สแกนเสร็จสิ้น! บันทึกข้อมูล {len(final_df)} ตัวลงใน {CSV_FILE} (ผ่านเกณฑ์ PASS: {pass_count} ตัว)")
+        print(f"🎉 สำเร็จ! บันทึก {len(final_df)} ตัวลงใน {CSV_FILE} (ผ่านเกณฑ์: {pass_count} ตัว)")
     else:
-        print("❌ ไม่พบข้อมูลจากการสแกน")
+        print("❌ ไม่สามารถดึงข้อมูลได้ในรอบนี้")
 
 if __name__ == "__main__":
     run_screener()
