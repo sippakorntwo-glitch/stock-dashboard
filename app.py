@@ -23,7 +23,6 @@ CSV_FILE = "daily_watchlist.csv"
 last_updated_str = "ไม่พบข้อมูลเวลา"
 if os.path.exists(CSV_FILE):
     mtime = os.path.getmtime(CSV_FILE)
-    # แปลงเวลา mtime เป็น timezone ประเทศไทย
     tz_bkk = timezone(timedelta(hours=7))
     updated_dt = datetime.fromtimestamp(mtime, tz=timezone.utc).astimezone(tz_bkk)
     last_updated_str = updated_dt.strftime("%d/%m/%Y %H:%M:%S (เวลาไทย)")
@@ -197,63 +196,149 @@ with st.spinner(f"กำลังโหลดข้อมูลกราฟ {sel
     fig.update_layout(height=550, xaxis_rangeslider_visible=False, margin=dict(l=20, r=20, t=30, b=20))
     st.plotly_chart(fig, use_container_width=True)
 
-# --- ตารางวิเคราะห์ทางเทคนิครายตัว ---
-st.subheader(f"🔍 เจาะลึกผลวิเคราะห์เชิงเทคนิค: {selected_ticker}")
+# --- ตารางวิเคราะห์ทางเทคนิครายตัว (Dynamic Insight Engine: Price + % Added) ---
+st.subheader(f"🔍 เจาะลึกผลวิเคราะห์เชิงเทคนิคและ Actionable Insights: {selected_ticker}")
 
 curr_c = float(df_chart['Close'].iloc[-1])
+curr_o = float(df_chart['Open'].iloc[-1])
 curr_e20 = float(df_chart['EMA20'].iloc[-1])
 curr_e50 = float(df_chart['EMA50'].iloc[-1])
 curr_s200 = float(df_chart['SMA200'].iloc[-1]) if pd.notnull(df_chart['SMA200'].iloc[-1]) else None
 
+# คำนวณส่วนต่างทั้งรูปจำนวนเงิน ($) และเปอร์เซ็นต์ (%)
+diff_e20_dollar = round(curr_c - curr_e20, 2)
+diff_e20_pct = round(((curr_c - curr_e20) / curr_e20) * 100, 2)
+
+diff_e20_e50_dollar = round(curr_e20 - curr_e50, 2)
+diff_e20_e50_pct = round(((curr_e20 - curr_e50) / curr_e50) * 100, 2)
+
+diff_s200_dollar = round(curr_c - curr_s200, 2) if curr_s200 else None
+diff_s200_pct = round(((curr_c - curr_s200) / curr_s200) * 100, 2) if curr_s200 else None
+
+# ความชันและค่าเปลี่ยนของ SMA200 ในรอบ 20 วัน
 s200_slope = None
+s200_diff_dollar = 0.0
+s200_diff_pct = 0.0
 if curr_s200 is not None and len(df_chart) >= 20 and pd.notnull(df_chart['SMA200'].iloc[-20]):
-    s200_slope = curr_s200 > float(df_chart['SMA200'].iloc[-20])
+    old_s200 = float(df_chart['SMA200'].iloc[-20])
+    s200_diff_dollar = round(curr_s200 - old_s200, 2)
+    s200_diff_pct = round(((curr_s200 - old_s200) / old_s200) * 100, 2)
+    s200_slope = curr_s200 > old_s200
+
+vol_ratio = float(target_info['Vol_Ratio'])
+vol_diff_pct = round((vol_ratio - 1.0) * 100, 1)
 
 stop_val = target_info.get('Suggested_Stop')
-risk_pct = round(((curr_c - float(stop_val)) / curr_c) * 100, 2) if pd.notnull(stop_val) else None
+stop_dollar_diff = round(curr_c - float(stop_val), 2) if pd.notnull(stop_val) else None
+risk_pct = round((stop_dollar_diff / curr_c) * 100, 2) if stop_dollar_diff is not None else None
+
+# --- กลไกวิเคราะห์ Insights รายข้อ (พร้อมดึงราคาและ % มาอธิบาย) ---
+# ข้อ 1
+if curr_c > curr_e20:
+    c1_status = "✅ ผ่าน"
+    if diff_e20_pct > 6.0:
+        c1_desc = f"ราคาวิ่งฉีกเหนือแนวรับ EMA20 สูงถึง {diff_e20_dollar:+.2f}$ ({diff_e20_pct:+.2f}%) เริ่มเข้าโซน Overextended ระยะสั้น เสี่ยงโดนแรงขายทำกำไร รอจังหวะย่อตัวใกล้แนวรับปลอดภัยกว่า"
+    else:
+        c1_desc = f"ราคายืนเหนือ EMA20 ที่ระยะ {diff_e20_dollar:+.2f}$ ({diff_e20_pct:+.2f}%) เป็นระยะแกว่งตัวที่ดี โมเมนตัมฝั่งซื้อยังคุมเทรนด์และยังไม่หลุดแนวย่อแรก"
+else:
+    c1_status = "❌ ไม่ผ่าน"
+    c1_desc = f"ราคาหลุดต่ำกว่า EMA20 อยู่ที่ {diff_e20_dollar:+.2f}$ ({diff_e20_pct:+.2f}%) เสียโมเมนตัมขาขึ้นระยะสั้น แนวโน้มกำลังพักฐานหรือลงไปทดสอบแนวรับลึก"
+
+# ข้อ 2
+if curr_e20 > curr_e50:
+    c2_status = "✅ ผ่าน"
+    c2_desc = f"โครงสร้าง Trend Expansion เส้นสั้นแยกห่างเส้นกลาง {diff_e20_e50_dollar:+.2f}$ ({diff_e20_e50_pct:+.2f}%) สะท้อนแรงส่งรอบ 1-2 เดือนยังเสถียร ไม่พบสัญญาณชะลอตัวของเงินทุนรอบกลาง"
+else:
+    c2_status = "❌ ไม่ผ่าน"
+    c2_desc = f"EMA20 อยู่ใต้ EMA50 {diff_e20_e50_dollar:+.2f}$ ({diff_e20_e50_pct:+.2f}%) สภาวะแนวโน้มระยะกลางอยู่ในช่วงปรับฐานหรือเป็นเทรนด์ขาลง ไม่ใช่จังหวะ Buy & Hold"
+
+# ข้อ 3
+if curr_s200 and curr_e50 > curr_s200:
+    c3_status = "✅ ผ่าน"
+    c3_desc = f"ยืนยันสภาวะ Bull Market Stage 2 ราคาปัจจุบันยืนเหนือฐานทุนสถาบัน 200 วันถึง {diff_s200_dollar:+.2f}$ ({diff_s200_pct:+.2f}%) ภาพใหญ่เป็นขาขึ้นแข็งแกร่ง"
+elif curr_s200:
+    c3_status = "❌ ไม่ผ่าน"
+    c3_desc = f"ราคาหรือ EMA50 ต่ำกว่า SMA200 อยู่ {diff_s200_dollar:+.2f}$ ({diff_s200_pct:+.2f}%) ภาพใหญ่ยังติดอยู่ใน Bear Market การขึ้นมีโอกาสเป็นเพียง Technical Rebound"
+else:
+    c3_status = "⚠️ ข้อมูลไม่พอ"
+    c3_desc = "หุ้นเพิ่งเข้าตลาดไม่ถึง 200 วันทำการ ข้อมูลไม่เพียงพอสำหรับการวิเคราะห์รอบมหภาค"
+
+# ข้อ 4
+if s200_slope:
+    c4_status = "✅ ผ่าน"
+    c4_desc = f"เส้นฐานเฉลี่ยสถาบันยกตัวขึ้น {s200_diff_dollar:+.2f}$ ({s200_diff_pct:+.2f}%) ในรอบเดือน ยืนยันว่ามีเงินทุนสะสมระยะยาว (Net Accumulation) ชัดเจน"
+elif s200_slope is False:
+    c4_status = "❌ ไม่ผ่าน"
+    c4_desc = f"SMA200 ชี้ลง/ทรงตัว ({s200_diff_dollar:+.2f}$ หรือ {s200_diff_pct:+.2f}%) ต้นทุนเฉลี่ยของตลาดยังไหลลง โอกาสเกิด False Breakout ด้านบนมีสูง"
+else:
+    c4_status = "⚠️ ข้อมูลไม่พอ"
+    c4_desc = "ไม่มีข้อมูลประวัติศาสตร์ระยะยาว 200 วัน"
+
+# ข้อ 5
+is_bullish_candle = curr_c >= curr_o
+if vol_ratio >= 1.05:
+    c5_status = "✅ ผ่าน"
+    if is_bullish_candle:
+        c5_desc = f"Institutional Buying: วอลุ่มหนาแน่นกว่าค่าเฉลี่ย +{vol_diff_pct}% พร้อมแท่งเทียนปิดบวก สะท้อนการเข้าซื้อสะสมของเม็ดเงินใหญ่ (Smart Money)"
+    else:
+        c5_desc = f"Volume Spike on Pullback: วอลุ่มเข้ามากกว่าปกติ +{vol_diff_pct}% แต่แท่งเทียนปิดลบ มีแรงขายทำกำไรกดดัน ต้องจับตาแนวรับถัดไปอย่างใกล้ชิด"
+else:
+    c5_status = "❌ ไม่ผ่าน"
+    c5_desc = f"วอลุ่มต่ำกว่าเกณฑ์ ({vol_ratio:.2f}x) การเคลื่อนไหวของราคาขาดแรงหนุนจากสถาบัน มักมีความเปราะบางและแกว่งตัวไซด์เวย์"
+
+# ข้อ 6
+if risk_pct:
+    if risk_pct <= 5.0:
+        c6_desc = f"กรอบความเสี่ยงแคบมากเพียง -${stop_dollar_diff:.2f} (-{risk_pct:.2f}%) เหมาะกับการวาง Position Sizing เต็มขนาดความเสี่ยง และให้ Risk/Reward ที่คุ้มค่าสูง"
+    elif risk_pct <= 8.0:
+        c6_desc = f"ความเสี่ยงระดับปกติของ Swing Trading อยู่ที่ -${stop_dollar_diff:.2f} (-{risk_pct:.2f}%) มีพื้นที่ปลอดภัยจากความผันผวนของราคา (2x ATR)"
+    else:
+        c6_desc = f"กรอบความเสี่ยงค่อนข้างกว้าง -${stop_dollar_diff:.2f} (-{risk_pct:.2f}%) ความผันผวนสูง ควรแบ่งไม้เข้าหรือลดขนาด Position Size (Half Position)"
+else:
+    c6_desc = "ไม่มีข้อมูลคำนวณ Stop Loss"
 
 analysis_items = [
     {
         "หมวดหมู่การวิเคราะห์": "1. แนวโน้มระยะสั้น (Short-term)",
         "ตัวชี้วัด / เงื่อนไข": "ราคาปิด ยืนเหนือ EMA 20",
-        "ค่าปัจจุบัน": f"Close: ${curr_c:.2f} | EMA20: ${curr_e20:.2f}",
-        "สถานะ": "✅ ผ่าน" if curr_c > curr_e20 else "❌ ไม่ผ่าน",
-        "คำอธิบาย / นัยสำคัญ": "สะท้อนแรงส่งของราคาในรอบ 1 เดือน หากยืนได้แสดงว่าโมเมนตัมฝั่งซื้อยังคุมอยู่"
+        "ค่าปัจจุบัน": f"Close: ${curr_c:.2f} | EMA20: ${curr_e20:.2f} ({diff_e20_dollar:+.2f}$ / {diff_e20_pct:+.2f}%)",
+        "สถานะ": c1_status,
+        "คำอธิบาย / นัยสำคัญ": c1_desc
     },
     {
         "หมวดหมู่การวิเคราะห์": "2. แนวโน้มระยะกลาง (Mid-term)",
         "ตัวชี้วัด / เงื่อนไข": "EMA 20 อยู่เหนือ EMA 50",
-        "ค่าปัจจุบัน": f"EMA20: ${curr_e20:.2f} | EMA50: ${curr_e50:.2f}",
-        "สถานะ": "✅ ผ่าน" if curr_e20 > curr_e50 else "❌ ไม่ผ่าน",
-        "คำอธิบาย / นัยสำคัญ": "รอบการแกว่งตัว 1-2 เดือนเป็นขาขึ้น ต้นทุนผู้เล่นระยะสั้นสูงกว่าระยะกลาง"
+        "ค่าปัจจุบัน": f"EMA20: ${curr_e20:.2f} | EMA50: ${curr_e50:.2f} ({diff_e20_e50_dollar:+.2f}$ / {diff_e20_e50_pct:+.2f}%)",
+        "สถานะ": c2_status,
+        "คำอธิบาย / นัยสำคัญ": c2_desc
     },
     {
         "หมวดหมู่การวิเคราะห์": "3. แนวโน้มระยะยาว (Long-term)",
         "ตัวชี้วัด / เงื่อนไข": "EMA 50 ยืนเหนือ SMA 200",
-        "ค่าปัจจุบัน": f"EMA50: ${curr_e50:.2f} | SMA200: " + (f"${curr_s200:.2f}" if curr_s200 else "N/A"),
-        "สถานะ": ("✅ ผ่าน" if (curr_s200 and curr_e50 > curr_s200) else ("❌ ไม่ผ่าน" if curr_s200 else "⚠️ ข้อมูลไม่พอ")),
-        "คำอธิบาย / นัยสำคัญ": "Golden Cross ภาพใหญ่ ยืนยันวัฏจักร Bull Market ระยะยาว"
+        "ค่าปัจจุบัน": f"EMA50: ${curr_e50:.2f} | SMA200: " + (f"${curr_s200:.2f} ({diff_s200_dollar:+.2f}$ / {diff_s200_pct:+.2f}%)" if curr_s200 else "N/A"),
+        "สถานะ": c3_status,
+        "คำอธิบาย / นัยสำคัญ": c3_desc
     },
     {
         "หมวดหมู่การวิเคราะห์": "4. ทิศทางเส้นฐานใหญ่ (Trend Slope)",
         "ตัวชี้วัด / เงื่อนไข": "SMA 200 ชันขึ้นเทียบกับ 20 วันก่อน",
-        "ค่าปัจจุบัน": "SMA200 มีความชันขึ้น" if s200_slope else ("SMA200 ชี้ลง/ไซด์เวย์" if s200_slope is False else "N/A"),
-        "สถานะ": ("✅ ผ่าน" if s200_slope else ("❌ ไม่ผ่าน" if s200_slope is False else "⚠️ ข้อมูลไม่พอ")),
-        "คำอธิบาย / นัยสำคัญ": "ป้องกันการติดกับดัก False Breakout ในช่วงที่ภาพรวมตลาดยังเป็นขาลง"
+        "ค่าปัจจุบัน": f"SMA200 Slope: {s200_diff_dollar:+.2f}$ ({s200_diff_pct:+.2f}%)",
+        "สถานะ": c4_status,
+        "คำอธิบาย / นัยสำคัญ": c4_desc
     },
     {
         "หมวดหมู่การวิเคราะห์": "5. แรงผลักดันวอลุ่ม (Volume Spike)",
         "ตัวชี้วัด / เงื่อนไข": "Volume วันล่าสุด > เฉลี่ย 20 วัน (เกิน 5%)",
-        "ค่าปัจจุบัน": f"Volume Ratio: {target_info['Vol_Ratio']:.2f}x",
-        "สถานะ": "✅ ผ่าน" if target_info['Vol_Ratio'] >= 1.05 else "❌ ไม่ผ่าน",
-        "คำอธิบาย / นัยสำคัญ": "ยืนยันการมีส่วนร่วมของสถาบันหรือผู้เล่นใหญ่ ไม่ใช่การเคลื่อนไหวแบบไร้วอลุ่ม"
+        "ค่าปัจจุบัน": f"Volume Ratio: {target_info['Vol_Ratio']:.2f}x ({vol_diff_pct:+.1f}%)",
+        "สถานะ": c5_status,
+        "คำอธิบาย / นัยสำคัญ": c5_desc
     },
     {
         "หมวดหมู่การวิเคราะห์": "6. การบริหารความเสี่ยง (Risk / Stop Loss)",
         "ตัวชี้วัด / เงื่อนไข": "จุดตัดขาดทุนแนะนำ (Trailing 2x ATR)",
-        "ค่าปัจจุบัน": (f"${stop_val:.2f} (ความเสี่ยง -{risk_pct:.2f}%)" if stop_val else "N/A"),
+        "ค่าปัจจุบัน": (f"${stop_val:.2f} (ห่าง -${stop_dollar_diff:.2f} / -{risk_pct:.2f}%)" if stop_val else "N/A"),
         "สถานะ": "🛡️ แนะนำระดับ Stop",
-        "คำอธิบาย / นัยสำคัญ": "ระยะความปลอดภัยจากความผันผวน หากหลุดระดับนี้ควรลดสถานะหรือยอม Stop Loss"
+        "คำอธิบาย / นัยสำคัญ": c6_desc
     }
 ]
 
