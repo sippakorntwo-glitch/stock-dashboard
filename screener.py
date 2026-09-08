@@ -8,39 +8,31 @@ import os
 
 CSV_FILE = "daily_watchlist.csv"
 TARGET_TICKER_COUNT = 2500
-BATCH_SIZE = 100  # แบ่งรอบละ 100 ตัวเพื่อป้องกัน Yahoo Finance Rate Limit
+BATCH_SIZE = 100
 
 def get_us_stock_universe(max_count=2500):
-    """ดึงรายชื่อหุ้นสหรัฐฯ ทั้งหมดจาก NASDAQ Trader Directory กรองเฉพาะหุ้นสามัญและ ETF"""
     print("🌐 กำลังดึงรายชื่อหุ้นสหรัฐฯ จาก NASDAQ Trader Directory...")
     headers = {'User-Agent': 'Mozilla/5.0'}
-    
     tickers = []
     
-    # 1. หุ้นจาก NASDAQ
     try:
         url_nasdaq = "https://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqlisted.txt"
         res = requests.get(url_nasdaq, headers=headers, timeout=15)
         df_nasdaq = pd.read_csv(io.StringIO(res.text), sep="|")
-        # กรอง Test issue และแถวสรุปท้ายไฟล์
         df_nasdaq = df_nasdaq[(df_nasdaq['Test Issue'] == 'N') & (df_nasdaq['Symbol'].notnull())]
-        nasdaq_symbols = df_nasdaq['Symbol'].astype(str).str.strip().tolist()
-        tickers.extend(nasdaq_symbols)
+        tickers.extend(df_nasdaq['Symbol'].astype(str).str.strip().tolist())
     except Exception as e:
         print(f"⚠️ ดึง NASDAQ ไม่สำเร็จ: {e}")
 
-    # 2. หุ้นจาก NYSE / AMEX (otherlisted)
     try:
         url_other = "https://ftp.nasdaqtrader.com/SymbolDirectory/otherlisted.txt"
         res = requests.get(url_other, headers=headers, timeout=15)
         df_other = pd.read_csv(io.StringIO(res.text), sep="|")
         df_other = df_other[(df_other['Test Issue'] == 'N') & (df_other['ACT Symbol'].notnull())]
-        other_symbols = df_other['ACT Symbol'].astype(str).str.strip().tolist()
-        tickers.extend(other_symbols)
+        tickers.extend(df_other['ACT Symbol'].astype(str).str.strip().tolist())
     except Exception as e:
         print(f"⚠️ ดึง Other Listed ไม่สำเร็จ: {e}")
 
-    # ทำความสะอาด Ticker (ตัด Warrant, Right, หุ้นมีเครื่องหมายพิเศษ)
     clean_tickers = []
     for t in tickers:
         t = t.replace('$', '-P').replace('.', '-')
@@ -51,11 +43,10 @@ def get_us_stock_universe(max_count=2500):
         clean_tickers.append(t)
 
     clean_tickers = list(dict.fromkeys(clean_tickers))
-    print(f"✅ พบหุ้นทั้งหมดในตลาด {len(clean_tickers)} ตัว กำลังตัดเลือก {max_count} ตัวแรก...")
+    print(f"✅ พบหุ้นทั้งหมดในตลาด {len(clean_tickers)} ตัว กำลังเลือก {max_count} ตัว...")
     return clean_tickers[:max_count]
 
 def calculate_technical_metrics(df):
-    """คำนวณ Indicator ทางเทคนิค: EMA20, EMA50, SMA200, Volume Ratio, ATR14"""
     if len(df) < 50:
         return None
 
@@ -68,13 +59,11 @@ def calculate_technical_metrics(df):
     ema50 = close.ewm(span=50, adjust=False).mean()
     sma200 = close.rolling(window=200).mean() if len(close) >= 200 else None
 
-    # Vol Ratio (Volume วันล่าสุด เทียบกับเฉลี่ย 20 วัน)
     vol_20ma = volume.rolling(window=20).mean()
     latest_vol = float(volume.iloc[-1])
     avg_vol = float(vol_20ma.iloc[-1]) if pd.notnull(vol_20ma.iloc[-1]) and vol_20ma.iloc[-1] > 0 else latest_vol
     vol_ratio = round(latest_vol / avg_vol, 2)
 
-    # ATR 14
     tr1 = high - low
     tr2 = (high - close.shift(1)).abs()
     tr3 = (low - close.shift(1)).abs()
@@ -87,7 +76,6 @@ def calculate_technical_metrics(df):
     latest_e50 = float(ema50.iloc[-1])
     latest_s200 = float(sma200.iloc[-1]) if sma200 is not None and pd.notnull(sma200.iloc[-1]) else None
 
-    # เงื่อนไข PASS
     cond_short = latest_close > latest_e20
     cond_mid = latest_e20 > latest_e50
     cond_long = (latest_s200 is not None) and (latest_e50 > latest_s200)
@@ -96,7 +84,6 @@ def calculate_technical_metrics(df):
     status = "PASS" if (cond_short and cond_mid and cond_long and cond_vol) else "FAIL"
     suggested_stop = round(latest_close - (2 * latest_atr), 2)
 
-    # คำนวณผลตอบแทน 1 ปี
     return_1y = None
     if len(close) >= 250:
         return_1y = round(((latest_close - float(close.iloc[-250])) / float(close.iloc[-250])) * 100, 2)
@@ -135,7 +122,6 @@ def run_screener():
                     if len(sub_df) < 60:
                         continue
 
-                    # กรองหุ้น Penny stock ราคาต่ำกว่า 2 ดอลลาร์ หรือวอลุ่มแห้งทิ้ง
                     if float(sub_df['Close'].iloc[-1]) < 2.0:
                         continue
 
@@ -158,12 +144,10 @@ def run_screener():
         except Exception as e:
             print(f"⚠️ Batch {batch_no} ผิดพลาด: {e}")
 
-        # หน่วงเวลา 1.5 วินาทีต่อรอบ ป้องกัน Yahoo Finance บล็อก IP
         time.sleep(1.5)
 
     if results:
         final_df = pd.DataFrame(results)
-        # จัดเรียง: เอาตัวที่สถานะ PASS ขึ้นก่อน และเรียงตาม Vol Ratio
         final_df = final_df.sort_values(by=["Status", "Vol_Ratio"], ascending=[True, False])
         final_df.to_csv(CSV_FILE, index=False)
         pass_count = len(final_df[final_df['Status'] == 'PASS'])
