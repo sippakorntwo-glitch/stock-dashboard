@@ -2,11 +2,11 @@ Ticker,Asset_Type,Status,Close,Historical_Return,Return_Period,Div_Yield,Vol_Rat
 BNC,Common Stock,FAIL,5.25,-69.06,1Y,0.0,18.48,0.4,4.45
 BJDX,Common Stock,FAIL,1.03,-82.24,1Y,0.0,14.82,0.09,0.85
 ARCIU,Common Stock,FAIL,10.39,,1Y,0.0,14.04,0.03,10.33
+CYCN,Common Stock,FAIL,3.36,-79.68,1Y,0.0,13.42,5.12,-6.88
 FVAV,Common Stock,FAIL,10.2,,1Y,0.0,11.58,0.03,10.14
 CUPR,Common Stock,FAIL,3.12,-75.93,1Y,0.0,11.28,0.23,2.66
 BRKHU,Common Stock,FAIL,10.09,,1Y,0.0,10.3,0.08,9.93
 BWIV,Common Stock,FAIL,9.95,,1Y,0.0,9.94,0.03,9.89
-CYCN,Common Stock,FAIL,3.36,,1Y,0.0,9.16,0.38,2.6
 BNR,Common Stock,FAIL,10.71,20.74,1Y,0.0,8.16,1.12,8.47
 BMR,Common Stock,FAIL,1.3,-54.7,1Y,0.0,8.05,0.08,1.14
 CTNT,Common Stock,FAIL,1.25,-99.64,1Y,0.0,7.76,0.07,1.11
@@ -1709,6 +1709,7 @@ BAER,Common Stock,FAIL,1.1,-42.41,1Y,0.0,0.45,0.06,0.98
 BH,Common Stock,FAIL,358.58,17.04,1Y,0.0,0.45,15.95,326.68
 CATO,Common Stock,FAIL,2.54,-44.05,1Y,0.0,0.45,0.17,2.2
 EZRA,Common Stock,FAIL,2.71,-91.05,1Y,0.0,0.45,0.27,2.17
+ACH,Common Stock,FAIL,1.1,-79.93,1Y,0.0,0.44,0.1,0.9
 ADSE,Common Stock,FAIL,11.59,20.73,1Y,0.0,0.44,0.45,10.69
 AFB,Common Stock,FAIL,10.56,4.01,1Y,0.0,0.44,0.07,10.42
 AIRI,Common Stock,FAIL,2.57,-20.19,1Y,0.0,0.44,0.12,2.33
