@@ -1,177 +1,175 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+import time
 import requests
+import io
+import os
 
-def get_sp500_tickers():
-    """ดึงรายชื่อ S&P 500 จาก DataHub"""
-    try:
-        url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
-        df = pd.read_csv(url)
-        return df['Symbol'].str.replace('.', '-', regex=False).dropna().tolist()
-    except Exception:
-        return []
+CSV_FILE = "daily_watchlist.csv"
+TARGET_TICKER_COUNT = 2500
+BATCH_SIZE = 100  # แบ่งรอบละ 100 ตัวเพื่อป้องกัน Yahoo Finance Rate Limit
 
-def get_nasdaq100_tickers():
-    """ดึงรายชื่อ Nasdaq 100 จาก GitHub Repo"""
-    try:
-        url = "https://raw.githubusercontent.com/fja05680/sp500/master/nasdaq100.csv"
-        df = pd.read_csv(url)
-        col = 'Symbol' if 'Symbol' in df.columns else 'Ticker'
-        return df[col].str.replace('.', '-', regex=False).dropna().tolist()
-    except Exception:
-        return []
-
-def get_dividend_assets():
-    """รายชื่อ Dividend ETFs, Covered Call ETFs และ REITs"""
-    return [
-        # Dividend & Covered Call ETFs
-        "SCHD", "VYM", "VIG", "DGRO", "HDV", "SPYD", "NOBL", "COWZ", "SDY", "DVY",
-        "PEY", "FDVV", "FDL", "DHS", "RDIV", "DON", "DES", "DLN", "DGRW", "DGRS",
-        "JEPI", "JEPQ", "DIVO", "IDVO", "GPIX", "GPIQ", "QYLD", "XYLD", "RYLD", "SPYI",
-        "QQQI", "IWMI", "SVOL", "FEPI", "AIPI", "BALI", "ISPY", "QDTE", "XDTE", "RDTE",
-        "VNQ", "SCHH", "XLRE", "IYR", "VNQI", "MORT", "REM", "KBWY", "RIET", "PSR",
-        # Equity REITs & mREITs
-        "O", "NNN", "WPC", "VICI", "GLPI", "ADC", "EPRT", "SRC", "KIM", "REG",
-        "FRT", "PLD", "STAG", "EGP", "FR", "TRNO", "AMT", "CCI", "SBAC", "EQIX",
-        "DLR", "IRM", "WELL", "VTR", "OHI", "HR", "NHI", "DOC", "LTC", "AVB",
-        "EQR", "MAA", "UDR", "CPT", "INVH", "AMH", "ESS", "PSA", "EXR", "CUBE",
-        "BXP", "ARE", "SLG", "VNO", "LAMR", "OUT", "WY", "HST", "RHP", "SHO",
-        "AGNC", "NLY", "BXMT", "STWD", "ABR", "RITM", "TWO", "ARI", "DX", "CIM"
-    ]
-
-def get_accurate_dividend_yield(ticker_obj, current_price):
-    """คำนวณ % Dividend Yield ย้อนหลัง 12 เดือน (TTM) จากยอดเงินปันผลจริง"""
-    try:
-        if current_price <= 0:
-            return 0.0
-        div_history = ticker_obj.dividends
-        if div_history is not None and not div_history.empty:
-            one_year_ago = pd.Timestamp.now(tz=div_history.index.tz) - pd.Timedelta(days=365)
-            recent_divs = div_history[div_history.index >= one_year_ago]
-            if not recent_divs.empty:
-                calc_yield = (recent_divs.sum() / current_price) * 100
-                return round(float(calc_yield), 2)
-
-        info = ticker_obj.info
-        raw_yield = info.get('dividendYield') or info.get('trailingAnnualDividendYield') or 0.0
-        if 0 < raw_yield <= 1.0:
-            raw_yield = raw_yield * 100
-        return round(float(raw_yield), 2)
-    except Exception:
-        return 0.0
-
-def fetch_and_scan(common_tickers, div_tickers):
-    results = []
-    ticker_dict = {}
-    for t in common_tickers:
-        ticker_dict[t] = "Common Stock"
-    for t in div_tickers:
-        ticker_dict[t] = "Dividend Asset"
-        
-    all_tickers = list(ticker_dict.keys())
-    total = len(all_tickers)
+def get_us_stock_universe(max_count=2500):
+    """ดึงรายชื่อหุ้นสหรัฐฯ ทั้งหมดจาก NASDAQ Trader Directory กรองเฉพาะหุ้นสามัญและ ETF"""
+    print("🌐 กำลังดึงรายชื่อหุ้นสหรัฐฯ จาก NASDAQ Trader Directory...")
+    headers = {'User-Agent': 'Mozilla/5.0'}
     
-    print(f"\n⚡ กำลังดาวน์โหลดข้อมูลราคาย้อนหลัง ({total} รายการ)...")
-    data = yf.download(all_tickers, period="3y", interval="1d", group_by="ticker", threads=True, progress=True)
+    tickers = []
+    
+    # 1. หุ้นจาก NASDAQ
+    try:
+        url_nasdaq = "https://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqlisted.txt"
+        res = requests.get(url_nasdaq, headers=headers, timeout=15)
+        df_nasdaq = pd.read_csv(io.StringIO(res.text), sep="|")
+        # กรอง Test issue และแถวสรุปท้ายไฟล์
+        df_nasdaq = df_nasdaq[(df_nasdaq['Test Issue'] == 'N') & (df_nasdaq['Symbol'].notnull())]
+        nasdaq_symbols = df_nasdaq['Symbol'].astype(str).str.strip().tolist()
+        tickers.extend(nasdaq_symbols)
+    except Exception as e:
+        print(f"⚠️ ดึง NASDAQ ไม่สำเร็จ: {e}")
 
-    print("\n🔍 กำลังประมวลผล Indicators และข้อมูลเงินปันผล...")
+    # 2. หุ้นจาก NYSE / AMEX (otherlisted)
+    try:
+        url_other = "https://ftp.nasdaqtrader.com/SymbolDirectory/otherlisted.txt"
+        res = requests.get(url_other, headers=headers, timeout=15)
+        df_other = pd.read_csv(io.StringIO(res.text), sep="|")
+        df_other = df_other[(df_other['Test Issue'] == 'N') & (df_other['ACT Symbol'].notnull())]
+        other_symbols = df_other['ACT Symbol'].astype(str).str.strip().tolist()
+        tickers.extend(other_symbols)
+    except Exception as e:
+        print(f"⚠️ ดึง Other Listed ไม่สำเร็จ: {e}")
 
-    for ticker in all_tickers:
-        try:
-            asset_type = ticker_dict[ticker]
-            if ticker not in data.columns.levels[0]:
-                continue
-            df = data[ticker].dropna(subset=['Close', 'Volume'])
-
-            if len(df) < 50:
-                continue
-
-            close = df['Close']
-            volume = df['Volume']
-            high = df['High']
-            low = df['Low']
-
-            # Technical Indicators
-            df['EMA20'] = close.ewm(span=20, adjust=False).mean()
-            df['EMA50'] = close.ewm(span=50, adjust=False).mean()
-            df['SMA200'] = close.rolling(window=200).mean() if len(df) >= 200 else pd.Series(np.nan, index=df.index)
-            df['VOL_SMA20'] = volume.rolling(window=20).mean()
-
-            prev_close = close.shift(1)
-            tr = pd.concat([high - low, (high - prev_close).abs(), (low - prev_close).abs()], axis=1).max(axis=1)
-            df['ATR'] = tr.rolling(window=14).mean()
-
-            curr = df.iloc[-1]
-            prev_20 = df.iloc[-20] if len(df) >= 20 else df.iloc[0]
-
-            # ตรรกะ Multi-Period Return (3Y -> 2Y -> 1Y -> <1Y)
-            n_bars = len(df)
-            if n_bars >= 740:
-                lookback = 756 if n_bars >= 756 else n_bars - 1
-                period_remark = "3Y"
-            elif n_bars >= 490:
-                lookback = 504 if n_bars >= 504 else n_bars - 1
-                period_remark = "2Y"
-            elif n_bars >= 240:
-                lookback = 252 if n_bars >= 252 else n_bars - 1
-                period_remark = "1Y"
-            else:
-                lookback = n_bars - 1
-                period_remark = "<1Y"
-
-            past_price = close.iloc[-lookback - 1]
-            pct_return = round(float(((curr['Close'] - past_price) / past_price) * 100), 2)
-
-            # Trend Check
-            if len(df) >= 200 and pd.notnull(curr['SMA200']) and pd.notnull(prev_20['SMA200']):
-                trend_align = curr['Close'] > curr['EMA20'] > curr['EMA50'] > curr['SMA200']
-                sma200_up = curr['SMA200'] > prev_20['SMA200']
-                vol_expansion = curr['Volume'] > (curr['VOL_SMA20'] * 1.05) if curr['VOL_SMA20'] > 0 else False
-                is_passed = trend_align and sma200_up and vol_expansion
-                sma200_val = round(float(curr['SMA200']), 2)
-            else:
-                is_passed = False
-                sma200_val = None
-
-            stop_loss = curr['Close'] - (2 * curr['ATR']) if pd.notnull(curr['ATR']) else None
-            vol_ratio = curr['Volume'] / curr['VOL_SMA20'] if (pd.notnull(curr['VOL_SMA20']) and curr['VOL_SMA20'] > 0) else 0
-
-            # Dividend Yield
-            div_yield = 0.0
-            if asset_type == "Dividend Asset":
-                t_obj = yf.Ticker(ticker)
-                div_yield = get_accurate_dividend_yield(t_obj, curr['Close'])
-
-            results.append({
-                "Ticker": str(ticker),
-                "Asset_Type": str(asset_type),
-                "Status": "PASS" if is_passed else "FAIL",
-                "Close": round(float(curr['Close']), 2),
-                "Historical_Return": pct_return,
-                "Return_Period": str(period_remark),
-                "Div_Yield": round(float(div_yield), 2) if asset_type == "Dividend Asset" else None,
-                "EMA20": round(float(curr['EMA20']), 2) if pd.notnull(curr['EMA20']) else None,
-                "SMA200": sma200_val,
-                "Vol_Ratio": round(float(vol_ratio), 2),
-                "ATR": round(float(curr['ATR']), 2) if pd.notnull(curr['ATR']) else None,
-                "Suggested_Stop": round(float(stop_loss), 2) if stop_loss is not None else None
-            })
-        except Exception:
+    # ทำความสะอาด Ticker (ตัด Warrant, Right, หุ้นมีเครื่องหมายพิเศษ)
+    clean_tickers = []
+    for t in tickers:
+        t = t.replace('$', '-P').replace('.', '-')
+        if any(c in t for c in ['=', '+', '*', '~', ' ']):
             continue
+        if len(t) > 5:
+            continue
+        clean_tickers.append(t)
 
-    return pd.DataFrame(results)
+    clean_tickers = list(dict.fromkeys(clean_tickers))
+    print(f"✅ พบหุ้นทั้งหมดในตลาด {len(clean_tickers)} ตัว กำลังตัดเลือก {max_count} ตัวแรก...")
+    return clean_tickers[:max_count]
+
+def calculate_technical_metrics(df):
+    """คำนวณ Indicator ทางเทคนิค: EMA20, EMA50, SMA200, Volume Ratio, ATR14"""
+    if len(df) < 50:
+        return None
+
+    close = df['Close']
+    volume = df['Volume']
+    high = df['High']
+    low = df['Low']
+
+    ema20 = close.ewm(span=20, adjust=False).mean()
+    ema50 = close.ewm(span=50, adjust=False).mean()
+    sma200 = close.rolling(window=200).mean() if len(close) >= 200 else None
+
+    # Vol Ratio (Volume วันล่าสุด เทียบกับเฉลี่ย 20 วัน)
+    vol_20ma = volume.rolling(window=20).mean()
+    latest_vol = float(volume.iloc[-1])
+    avg_vol = float(vol_20ma.iloc[-1]) if pd.notnull(vol_20ma.iloc[-1]) and vol_20ma.iloc[-1] > 0 else latest_vol
+    vol_ratio = round(latest_vol / avg_vol, 2)
+
+    # ATR 14
+    tr1 = high - low
+    tr2 = (high - close.shift(1)).abs()
+    tr3 = (low - close.shift(1)).abs()
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    atr14 = tr.rolling(window=14).mean()
+    latest_atr = round(float(atr14.iloc[-1]), 2) if pd.notnull(atr14.iloc[-1]) else 1.0
+
+    latest_close = round(float(close.iloc[-1]), 2)
+    latest_e20 = float(ema20.iloc[-1])
+    latest_e50 = float(ema50.iloc[-1])
+    latest_s200 = float(sma200.iloc[-1]) if sma200 is not None and pd.notnull(sma200.iloc[-1]) else None
+
+    # เงื่อนไข PASS
+    cond_short = latest_close > latest_e20
+    cond_mid = latest_e20 > latest_e50
+    cond_long = (latest_s200 is not None) and (latest_e50 > latest_s200)
+    cond_vol = vol_ratio >= 1.05
+
+    status = "PASS" if (cond_short and cond_mid and cond_long and cond_vol) else "FAIL"
+    suggested_stop = round(latest_close - (2 * latest_atr), 2)
+
+    # คำนวณผลตอบแทน 1 ปี
+    return_1y = None
+    if len(close) >= 250:
+        return_1y = round(((latest_close - float(close.iloc[-250])) / float(close.iloc[-250])) * 100, 2)
+
+    return {
+        "Close": latest_close,
+        "Status": status,
+        "Vol_Ratio": vol_ratio,
+        "ATR": latest_atr,
+        "Suggested_Stop": suggested_stop,
+        "Historical_Return": return_1y,
+        "Return_Period": "1Y"
+    }
+
+def run_screener():
+    tickers = get_us_stock_universe(max_count=TARGET_TICKER_COUNT)
+    total = len(tickers)
+    print(f"🚀 เริ่มกระบวนการสแกนหุ้น {total} ตัว (แบ่ง {total // BATCH_SIZE + 1} Batches)...")
+
+    results = []
+
+    for i in range(0, total, BATCH_SIZE):
+        batch = tickers[i:i+BATCH_SIZE]
+        batch_no = (i // BATCH_SIZE) + 1
+        total_batches = (total // BATCH_SIZE) + 1
+        print(f"📦 Batch {batch_no}/{total_batches} ({len(batch)} Tickers)...")
+
+        try:
+            data = yf.download(batch, period="1y", interval="1d", group_by="ticker", threads=True, progress=False)
+            
+            for t in batch:
+                try:
+                    if t not in data.columns.levels[0]:
+                        continue
+                    sub_df = data[t].dropna(subset=['Close'])
+                    if len(sub_df) < 60:
+                        continue
+
+                    # กรองหุ้น Penny stock ราคาต่ำกว่า 2 ดอลลาร์ หรือวอลุ่มแห้งทิ้ง
+                    if float(sub_df['Close'].iloc[-1]) < 2.0:
+                        continue
+
+                    metrics = calculate_technical_metrics(sub_df)
+                    if metrics:
+                        results.append({
+                            "Ticker": t,
+                            "Asset_Type": "Common Stock",
+                            "Status": metrics["Status"],
+                            "Close": metrics["Close"],
+                            "Historical_Return": metrics["Historical_Return"],
+                            "Return_Period": metrics["Return_Period"],
+                            "Div_Yield": 0.0,
+                            "Vol_Ratio": metrics["Vol_Ratio"],
+                            "ATR": metrics["ATR"],
+                            "Suggested_Stop": metrics["Suggested_Stop"]
+                        })
+                except Exception:
+                    continue
+        except Exception as e:
+            print(f"⚠️ Batch {batch_no} ผิดพลาด: {e}")
+
+        # หน่วงเวลา 1.5 วินาทีต่อรอบ ป้องกัน Yahoo Finance บล็อก IP
+        time.sleep(1.5)
+
+    if results:
+        final_df = pd.DataFrame(results)
+        # จัดเรียง: เอาตัวที่สถานะ PASS ขึ้นก่อน และเรียงตาม Vol Ratio
+        final_df = final_df.sort_values(by=["Status", "Vol_Ratio"], ascending=[True, False])
+        final_df.to_csv(CSV_FILE, index=False)
+        pass_count = len(final_df[final_df['Status'] == 'PASS'])
+        print(f"🎉 สแกนเสร็จสิ้น! บันทึกข้อมูล {len(final_df)} ตัวลงใน {CSV_FILE} (ผ่านเกณฑ์ PASS: {pass_count} ตัว)")
+    else:
+        print("❌ ไม่พบข้อมูลจากการสแกน")
 
 if __name__ == "__main__":
-    sp500 = get_sp500_tickers()
-    nasdaq100 = get_nasdaq100_tickers()
-    div_assets = get_dividend_assets()
-
-    common_stocks = list(set(sp500 + nasdaq100) - set(div_assets))
-
-    print(f"📊 สรุป Universe: Common Stocks {len(common_stocks)} ตัว | Dividend Assets {len(div_assets)} ตัว")
-    df_results = fetch_and_scan(common_stocks, div_assets)
-    df_results = df_results.sort_values(by=["Status", "Vol_Ratio"], ascending=[True, False])
-
-    df_results.to_csv("daily_watchlist.csv", index=False)
-    print(f"\n💾 บันทึกข้อมูล {len(df_results)} รายการลง 'daily_watchlist.csv' เรียบร้อยแล้ว")
+    run_screener()
