@@ -8,36 +8,36 @@ import os
 
 CSV_FILE = "daily_watchlist.csv"
 TARGET_TICKER_COUNT = 2500
-BATCH_SIZE = 50  # ลดขนาด Batch เหลือ 50 ตัวเพื่อป้องกัน HTTP 429 Rate Limit
+BATCH_SIZE = 100
 
 def get_us_stock_universe(max_count=2500):
-    print("🌐 กำลังดึงรายชื่อหุ้นสหรัฐฯ จาก NASDAQ & NYSE Symbol Directory...")
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
+    print("🌐 กำลังดึงรายชื่อหุ้นสหรัฐฯ จากแหล่งข้อมูลหลัก...")
     tickers = []
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
 
-    # 1. หุ้นจาก NASDAQ
+    # 1. ดึงรายชื่อหุ้นตลาดสหรัฐฯ ครบวงจรจาก GitHub Financial Datasets (เสถียร ไม่บล็อก)
     try:
-        url_nasdaq = "https://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqlisted.txt"
-        res = requests.get(url_nasdaq, headers=headers, timeout=15)
-        df_nasdaq = pd.read_csv(io.StringIO(res.text), sep="|")
-        df_nasdaq = df_nasdaq[(df_nasdaq['Test Issue'] == 'N') & (df_nasdaq['Symbol'].notnull())]
-        tickers.extend(df_nasdaq['Symbol'].astype(str).str.strip().tolist())
+        url = "https://raw.githubusercontent.com/rreichel3/US-Stock-Symbols/main/all/all_tickers.txt"
+        res = requests.get(url, headers=headers, timeout=15)
+        if res.status_code == 200:
+            lines = res.text.splitlines()
+            tickers.extend([line.strip().upper() for line in lines if line.strip()])
+            print(f"✅ ดึงรายชื่อสำเร็จ: {len(tickers)} ตัว")
     except Exception as e:
-        print(f"⚠️ ดึง NASDAQ ไม่สำเร็จ: {e}")
+        print(f"⚠️ ดึงจากแหล่งหลักไม่สำเร็จ: {e}")
 
-    # 2. หุ้นจาก NYSE / AMEX
-    try:
-        url_other = "https://ftp.nasdaqtrader.com/SymbolDirectory/otherlisted.txt"
-        res = requests.get(url_other, headers=headers, timeout=15)
-        df_other = pd.read_csv(io.StringIO(res.text), sep="|")
-        df_other = df_other[(df_other['Test Issue'] == 'N') & (df_other['ACT Symbol'].notnull())]
-        tickers.extend(df_other['ACT Symbol'].astype(str).str.strip().tolist())
-    except Exception as e:
-        print(f"⚠️ ดึง Other Listed ไม่สำเร็จ: {e}")
+    # 2. แหล่งสำรองกรณีแรกไม่ผ่าน (S&P 500 + NASDAQ 100 + Russell 1000)
+    if len(tickers) < 500:
+        try:
+            url_sp500 = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
+            df_sp = pd.read_csv(url_sp500)
+            tickers.extend(df_sp['Symbol'].dropna().tolist())
+        except Exception:
+            pass
 
-    # กรอง Ticker ตัดพวก Warrant / Preferred Share / หน่วยลงทุนแปลกๆ
+    # คลีนข้อมูล Ticker ให้สะอาด
     clean_tickers = []
     for t in tickers:
         t = t.replace('$', '-P').replace('.', '-')
@@ -48,13 +48,7 @@ def get_us_stock_universe(max_count=2500):
         clean_tickers.append(t)
 
     clean_tickers = list(dict.fromkeys(clean_tickers))
-    
-    # หากดึงผ่านเว็บไม่ได้ ให้ใช้ Fallback List เป็นหลัก
-    if len(clean_tickers) < 100:
-        print("⚠️ ใช้ Universe สำรองเนื่องจากเชื่อมต่อเว็บ Directory ไม่สำเร็จ")
-        clean_tickers = ["AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "BRK-B", "JPM", "V"]
-
-    print(f"✅ เตรียมรายชื่อหุ้นเข้ากระบวนการสแกนทั้งหมด: {min(len(clean_tickers), max_count)} ตัว")
+    print(f"📊 จัดเตรียมรายชื่อหุ้นสำหรับสแกนทั้งสิ้น: {min(len(clean_tickers), max_count)} ตัว")
     return clean_tickers[:max_count]
 
 def calculate_metrics(df):
@@ -123,7 +117,6 @@ def run_screener():
         print(f"📦 กำลังประมวลผล Batch {batch_no}/{total_batches} ({len(batch)} ตัว)...")
 
         try:
-            # ดึงข้อมูลผ่าน yfinance แบบแบ่งก้อนพร้อม session ป้องกัน Rate limit
             data = yf.download(
                 tickers=batch,
                 period="1y",
@@ -131,7 +124,7 @@ def run_screener():
                 group_by="ticker",
                 threads=True,
                 progress=False,
-                timeout=20
+                timeout=30
             )
 
             for t in batch:
@@ -163,8 +156,7 @@ def run_screener():
         except Exception as e:
             print(f"⚠️ Batch {batch_no} ขัดข้อง: {e}")
 
-        # พัก 2 วินาทีระหว่าง batch เพื่อให้ Yahoo รีเซ็ตโควตาการเชื่อมต่อ
-        time.sleep(2.0)
+        time.sleep(1.5)
 
     if len(results) > 0:
         final_df = pd.DataFrame(results)
@@ -173,7 +165,7 @@ def run_screener():
         pass_count = len(final_df[final_df['Status'] == 'PASS'])
         print(f"🎉 สำเร็จ! บันทึก {len(final_df)} ตัวลงใน {CSV_FILE} (ผ่านเกณฑ์: {pass_count} ตัว)")
     else:
-        print("❌ ไม่สามารถดึงข้อมูลได้ในรอบนี้")
+        print("❌ ไม่สามารถดึงข้อมูลได้")
 
 if __name__ == "__main__":
     run_screener()
