@@ -9,7 +9,7 @@ import os
 CSV_FILE = "daily_watchlist.csv"
 TARGET_STOCKS = 3700  
 TARGET_ETFS = 800     
-BATCH_SIZE = 80       # ขนาด Batch สำหรับหลบการตรวจจับของ Yahoo
+BATCH_SIZE = 80       
 
 def get_categorized_universe():
     print("🌐 กำลังดึงฐานข้อมูลและแยกประเภท (Stock / ETF) จาก NASDAQ & NYSE...")
@@ -49,7 +49,6 @@ def get_categorized_universe():
             continue
         clean_dict[t] = atype
 
-    # บังคับใส่รายการโปรด
     clean_dict["KSLV"] = "ETF"
     clean_dict["SPY"] = "ETF"
     clean_dict["QQQ"] = "ETF"
@@ -58,7 +57,6 @@ def get_categorized_universe():
     return clean_dict
 
 def calculate_metrics(df):
-    # ยอมรับหุ้นที่เพิ่งเข้าตลาดได้ 30 วันขึ้นไป
     if len(df) < 30:
         return None
 
@@ -69,8 +67,6 @@ def calculate_metrics(df):
 
     latest_close = round(float(close.iloc[-1]), 2)
     
-    # 🌟 ปลดล็อกข้อจำกัดด้านราคา: ไม่สนใจว่าราคาขั้นต่ำเท่าไหร่ (ลบ if latest_close < ... ทิ้งไปแล้ว)
-
     ema20 = close.ewm(span=20, adjust=False).mean()
     ema50 = close.ewm(span=50, adjust=False).mean()
     sma200 = close.rolling(window=200).mean() if len(close) >= 200 else None
@@ -79,7 +75,6 @@ def calculate_metrics(df):
     latest_vol = float(volume.iloc[-1])
     avg_vol = float(vol_20ma.iloc[-1]) if pd.notnull(vol_20ma.iloc[-1]) and vol_20ma.iloc[-1] > 0 else latest_vol
     
-    # 🌟 เงื่อนไขใหม่: ยอมรับเฉพาะสินทรัพย์ที่มี Volume เฉลี่ย 2,500 หุ้น/วัน ขึ้นไป
     if avg_vol < 2500:
         return None
 
@@ -108,6 +103,24 @@ def calculate_metrics(df):
     if len(close) >= 250:
         return_1y = round(((latest_close - float(close.iloc[-250])) / float(close.iloc[-250])) * 100, 2)
 
+    # 🌟 เพิ่มคำนวณ RSI 14
+    delta = close.diff()
+    gain = (delta.where(delta > 0, 0)).fillna(0)
+    loss = (-delta.where(delta < 0, 0)).fillna(0)
+    avg_gain = gain.ewm(com=13, adjust=False).mean()
+    avg_loss = loss.ewm(com=13, adjust=False).mean()
+    rs = avg_gain / avg_loss
+    rsi_14 = 100 - (100 / (1 + rs))
+    latest_rsi = round(float(rsi_14.iloc[-1]), 2)
+
+    # 🌟 เพิ่มคำนวณ MACD
+    ema12 = close.ewm(span=12, adjust=False).mean()
+    ema26 = close.ewm(span=26, adjust=False).mean()
+    macd = ema12 - ema26
+    signal = macd.ewm(span=9, adjust=False).mean()
+    latest_macd = round(float(macd.iloc[-1]), 2)
+    latest_signal = round(float(signal.iloc[-1]), 2)
+
     return {
         "Close": latest_close,
         "Status": status,
@@ -116,7 +129,10 @@ def calculate_metrics(df):
         "Suggested_Stop": suggested_stop,
         "Historical_Return": return_1y,
         "Return_Period": "1Y",
-        "Avg_Volume": avg_vol
+        "Avg_Volume": avg_vol,
+        "RSI_14": latest_rsi,
+        "MACD": latest_macd,
+        "MACD_Signal": latest_signal
     }
 
 def run_screener():
@@ -155,14 +171,16 @@ def run_screener():
                             "Vol_Ratio": m["Vol_Ratio"],
                             "ATR": m["ATR"],
                             "Suggested_Stop": m["Suggested_Stop"],
-                            "Avg_Volume": m["Avg_Volume"]
+                            "Avg_Volume": m["Avg_Volume"],
+                            "RSI_14": m["RSI_14"],
+                            "MACD": m["MACD"],
+                            "MACD_Signal": m["MACD_Signal"]
                         })
                 except Exception:
                     continue
         except Exception as e:
             print(f"⚠️ Batch {batch_no} ขัดข้อง: {e}")
 
-        # พัก 2.5 วินาที เพื่อป้องกัน Yahoo บล็อก
         time.sleep(2.5)
 
     if len(results) > 0:
@@ -171,7 +189,6 @@ def run_screener():
         df_stocks = df_all[df_all['Asset_Type'] == 'Common Stock']
         df_etfs = df_all[df_all['Asset_Type'] == 'ETF']
 
-        # เรียงลำดับจากวอลุ่มสูงไปต่ำ และตัดให้พอดีกับโควตา
         df_stocks = df_stocks.sort_values(by="Avg_Volume", ascending=False).head(TARGET_STOCKS)
         df_etfs = df_etfs.sort_values(by="Avg_Volume", ascending=False).head(TARGET_ETFS)
 
