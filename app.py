@@ -114,26 +114,23 @@ with col_table:
         show_cols = ['Ticker', 'Asset_Type', 'Status', 'Close', 'Return_Display', 'Vol_Ratio', 'RSI_14']
         render_cols = [c for c in show_cols if c in formatted_df.columns]
 
-        # สร้าง Styler เบื้องต้น
         styled_df = formatted_df[render_cols].style.format({
             "Close": "${:.2f}",
             "Vol_Ratio": "{:.2f}x",
             "RSI_14": "{:.2f}"
         })
 
-        # 🌟 แก้ไข Error Applymap/Map (ดักจับเวอร์ชัน Pandas)
         if 'RSI_14' in render_cols:
             def rsi_color(val):
                 if pd.notnull(val) and val > 70: return 'color: #ef5350'
                 elif pd.notnull(val) and val < 30: return 'color: #26a69a'
                 return ''
-                
             if hasattr(styled_df, "map"):
                 styled_df = styled_df.map(rsi_color, subset=['RSI_14'])
             else:
                 styled_df = styled_df.applymap(rsi_color, subset=['RSI_14'])
 
-        st.dataframe(styled_df, use_container_width=True, height=450, hide_index=True)
+        st.dataframe(styled_df, use_container_width=True, height=650, hide_index=True)
     else:
         st.warning("ไม่พบสินทรัพย์ที่ตรงกับเงื่อนไขการกรองของคุณ ปรับช่วงราคาหรือ RSI ให้กว้างขึ้นครับ")
 
@@ -169,6 +166,31 @@ with col_panel:
         m_col4.metric("Dividend Yield", div_pct)
 
         st.divider()
+        
+        # 🌟 ฟีเจอร์ที่เพิ่มกลับมา: ตารางวิเคราะห์ทางเทคนิค (Text Analysis)
+        st.markdown("#### 📝 ตารางวิเคราะห์เชิงเทคนิค (Text Analysis)")
+        
+        macd_val = target_info.get('MACD', 0)
+        sig_val = target_info.get('MACD_Signal', 0)
+        macd_stat = "🟢 Bullish (แรงซื้อชนะ)" if macd_val > sig_val else "🔴 Bearish (แรงขายกดดัน)"
+        
+        rsi_v = target_info.get('RSI_14', 50)
+        rsi_stat = "🔴 Overbought (ซื้อมากไป เสี่ยงย่อ)" if rsi_v > 70 else ("🟢 Oversold (ขายมากไป น่าสะสม)" if rsi_v < 30 else "⚪ Neutral (ทรงตัว)")
+        
+        vol_v = target_info.get('Vol_Ratio', 0)
+        vol_stat = "🟢 มีวอลุ่มเข้าหนาแน่น" if vol_v >= 1.05 else "⚪ วอลุ่มเทรดปกติ"
+        
+        st.markdown(f"""
+        | อินดิเคเตอร์ | ค่าล่าสุด | ประเมินแนวโน้ม |
+        | :--- | :--- | :--- |
+        | **Trend (EMA)** | {target_info['Status']} | {'🟢 เป็นขาขึ้นชัดเจน (PASS)' if target_info['Status'] == 'PASS' else '🔴 ยังเป็นขาลง/พักตัว (FAIL)'} |
+        | **MACD** | {macd_val} | {macd_stat} |
+        | **RSI (14)** | {rsi_v} | {rsi_stat} |
+        | **Volume Ratio** | {vol_v}x | {vol_stat} |
+        """)
+
+        st.divider()
+
         st.markdown("#### 💰 ระบบคำนวณหน้าตัก (Position Sizer)")
         port_size = st.number_input("ขนาดพอร์ตลงทุนรวม (USD):", value=10000, step=1000)
         risk_pct = st.slider("ความเสี่ยงต่อไม้ (% ของพอร์ต):", 0.5, 5.0, 1.0, 0.5)
