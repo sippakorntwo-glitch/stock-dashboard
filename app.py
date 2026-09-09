@@ -58,7 +58,6 @@ with col2:
 with col3:
     search_query = st.text_input("🔍 ค้นหา Ticker (พิมพ์ชื่อหุ้น):", "").strip().upper()
 
-# 🌟 ฟีเจอร์ใหม่: แถบตัวกรองขั้นสูง (Advanced Filters)
 with st.expander("🛠️ ตัวกรองขั้นสูง (Advanced Custom Filters) - คลิกเพื่อเปิด/ปิด", expanded=False):
     adv_c1, adv_c2, adv_c3 = st.columns(3)
     
@@ -66,7 +65,6 @@ with st.expander("🛠️ ตัวกรองขั้นสูง (Advanced C
         st.markdown("**1. ช่วงราคา (Price Range)**")
         min_price = st.number_input("ราคาขั้นต่ำ ($)", min_value=0.0, value=0.0, step=1.0)
         max_price = st.number_input("ราคาสูงสุด ($)", min_value=0.1, value=5000.0, step=1.0)
-        # ตัวอย่าง: ถ้าอยากได้หุ้นต่ำกว่า $1 ให้ปรับราคาสูงสุดเป็น 1.0
 
     with adv_c2:
         st.markdown("**2. โมเมนตัม (RSI 14)**")
@@ -75,12 +73,9 @@ with st.expander("🛠️ ตัวกรองขั้นสูง (Advanced C
     with adv_c3:
         st.markdown("**3. ผลตอบแทนย้อนหลัง 1 ปี (1Y Return %)**")
         min_return = st.number_input("ผลตอบแทนขั้นต่ำ (%)", value=-100.0, step=10.0)
-        # ตัวอย่าง: ถ้าอยากได้หุ้นที่โตเกิน 100% จากปีที่แล้ว ให้พิมพ์ 100 ในช่องนี้
 
-# นำเงื่อนไขทั้งหมดมากรองข้อมูลใน DataFrame
 df_filtered = df_all.copy()
 
-# 1. กรองประเภทและสถานะ
 if asset_type_filter != "ทั้งหมด (All Assets)": 
     df_filtered = df_filtered[df_filtered['Asset_Type'] == asset_type_filter]
 if status_filter == "เฉพาะที่ผ่านเกณฑ์ (PASS Only)": 
@@ -88,7 +83,6 @@ if status_filter == "เฉพาะที่ผ่านเกณฑ์ (PASS O
 if search_query: 
     df_filtered = df_filtered[df_filtered['Ticker'].astype(str).str.contains(search_query, na=False)]
 
-# 2. กรองจากตัวกรองขั้นสูง
 df_filtered = df_filtered[(df_filtered['Close'] >= min_price) & (df_filtered['Close'] <= max_price)]
 
 if 'RSI_14' in df_filtered.columns:
@@ -120,14 +114,26 @@ with col_table:
         show_cols = ['Ticker', 'Asset_Type', 'Status', 'Close', 'Return_Display', 'Vol_Ratio', 'RSI_14']
         render_cols = [c for c in show_cols if c in formatted_df.columns]
 
-        st.dataframe(
-            formatted_df[render_cols].style.format({
-                "Close": "${:.2f}",
-                "Vol_Ratio": "{:.2f}x",
-                "RSI_14": "{:.2f}"
-            }).applymap(lambda v: 'color: #ef5350' if pd.notnull(v) and v > 70 else ('color: #26a69a' if pd.notnull(v) and v < 30 else ''), subset=['RSI_14'] if 'RSI_14' in render_cols else []),
-            use_container_width=True, height=450, hide_index=True
-        )
+        # สร้าง Styler เบื้องต้น
+        styled_df = formatted_df[render_cols].style.format({
+            "Close": "${:.2f}",
+            "Vol_Ratio": "{:.2f}x",
+            "RSI_14": "{:.2f}"
+        })
+
+        # 🌟 แก้ไข Error Applymap/Map (ดักจับเวอร์ชัน Pandas)
+        if 'RSI_14' in render_cols:
+            def rsi_color(val):
+                if pd.notnull(val) and val > 70: return 'color: #ef5350'
+                elif pd.notnull(val) and val < 30: return 'color: #26a69a'
+                return ''
+                
+            if hasattr(styled_df, "map"):
+                styled_df = styled_df.map(rsi_color, subset=['RSI_14'])
+            else:
+                styled_df = styled_df.applymap(rsi_color, subset=['RSI_14'])
+
+        st.dataframe(styled_df, use_container_width=True, height=450, hide_index=True)
     else:
         st.warning("ไม่พบสินทรัพย์ที่ตรงกับเงื่อนไขการกรองของคุณ ปรับช่วงราคาหรือ RSI ให้กว้างขึ้นครับ")
 
@@ -160,7 +166,7 @@ with col_panel:
         
         m_col3, m_col4 = st.columns(2)
         m_col3.metric("Forward P/E", f"{round(fwd_pe,2)}x" if isinstance(fwd_pe, (int, float)) else "N/A")
-        m_col4.metric("Dividend Yield", div_pct) # 🌟 แสดงปันผลเมื่อคลิกดูหุ้น
+        m_col4.metric("Dividend Yield", div_pct)
 
         st.divider()
         st.markdown("#### 💰 ระบบคำนวณหน้าตัก (Position Sizer)")
