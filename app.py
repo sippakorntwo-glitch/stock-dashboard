@@ -235,16 +235,14 @@ with col_panel:
 st.divider()
 
 # ==========================================
-# 📈 โซนกราฟ (แก้ปัญหาการ Auto-Scale และตัดข้อมูลตาม Timeframe)
+# 📈 โซนกราฟ (แก้ปัญหาสเกลแกน Y บีบอัด ให้ซูมชัดเจน)
 # ==========================================
 tab1, tab2, tab3 = st.tabs(["📊 Advanced Technical Chart", "🥊 Relative Strength (vs SPY)", "⚔️ Stock Comparison"])
 
 with tab1:
-    # 🌟 เอาปุ่ม Timeframe กลับมาไว้ด้านนอก เพื่อให้ระบบคำนวณและตัด Data ได้ถูกต้อง
     chart_period = st.radio("⏳ เลือกระดับการซูม (Timeframe):", ["1 เดือน", "3 เดือน", "6 เดือน", "1 ปี", "2 ปี", "3 ปี"], index=1, horizontal=True)
     
     with st.spinner(f"กำลังวาดกราฟ {selected_ticker}..."):
-        # โหลด 3 ปีมาคำนวณอินดิเคเตอร์ก่อน เพื่อความแม่นยำ
         df_full = yf.download(selected_ticker, period="3y", interval="1d", progress=False)
         if isinstance(df_full.columns, pd.MultiIndex): df_full.columns = df_full.columns.get_level_values(0)
 
@@ -264,22 +262,26 @@ with tab1:
         rs = avg_gain / avg_loss
         df_full['RSI'] = 100 - (100 / (1 + rs))
 
-        # 🌟 ตัด Data ตามที่ผู้ใช้เลือก เพื่อให้กราฟซูมและปรับสเกล Y อัตโนมัติ
         days_map = {"1 เดือน": 21, "3 เดือน": 63, "6 เดือน": 126, "1 ปี": 252, "2 ปี": 504, "3 ปี": len(df_full)}
         lookback = days_map[chart_period]
         
-        # ตัดข้อมูลเฉพาะช่วงเวลาที่เลือก
         df_chart = df_full.iloc[-lookback:]
 
+        # 🌟 คำนวณสเกลแกน Y เฉพาะช่วงราคาที่แสดงผล (ตัดเส้นไกลๆ ออกไม่ให้บดบัง)
         recent_low = df_chart['Low'].min()
         recent_high = df_chart['High'].max()
+        price_buffer = (recent_high - recent_low) * 0.15 if recent_high != recent_low else 0.1
+        y_min = max(0, recent_low - price_buffer)
+        y_max = recent_high + price_buffer
 
         fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.5, 0.15, 0.2, 0.15])
         
         fig.add_trace(go.Candlestick(x=df_chart.index, open=df_chart['Open'], high=df_chart['High'], low=df_chart['Low'], close=df_chart['Close'], name="Price"), row=1, col=1)
         fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['EMA20'], line=dict(color='orange', width=1), name="EMA 20"), row=1, col=1)
         fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['EMA50'], line=dict(color='blue', width=1), name="EMA 50"), row=1, col=1)
-        if pd.notnull(df_chart['SMA200']).any(): fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['SMA200'], line=dict(color='pink', width=2), name="SMA 200"), row=1, col=1)
+        
+        # ปิดการแสดง SMA 200 ชั่วคราวหากมันอยู่ไกลเกินไป เพื่อป้องกันกราฟแบน
+        # if pd.notnull(df_chart['SMA200']).any(): fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['SMA200'], line=dict(color='pink', width=2), name="SMA 200"), row=1, col=1)
         
         fig.add_hline(y=recent_high, line_dash="dot", line_color="green", annotation_text=f"High ({chart_period})", row=1, col=1)
         fig.add_hline(y=recent_low, line_dash="dot", line_color="red", annotation_text=f"Low ({chart_period})", row=1, col=1)
@@ -296,8 +298,10 @@ with tab1:
         fig.add_hline(y=70, line_dash="dash", line_color="red", row=4, col=1)
         fig.add_hline(y=30, line_dash="dash", line_color="green", row=4, col=1)
 
-        # เอาระบบปุ่มเจ้าปัญหาออก เปิดให้กราฟ Auto-scale สวยๆ ตามปกติ
-        fig.update_layout(height=800, xaxis_rangeslider_visible=False, margin=dict(l=20, r=20, t=30, b=20), showlegend=False)
+        # 🌟 ล็อกสเกลแกน Y ของกราฟราคาให้พอดีเป๊ะกับแท่งเทียน
+        fig.update_yaxes(range=[y_min, y_max], row=1, col=1)
+
+        fig.update_layout(height=850, xaxis_rangeslider_visible=False, margin=dict(l=20, r=20, t=30, b=20), showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
