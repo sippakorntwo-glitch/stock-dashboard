@@ -102,23 +102,21 @@ st.divider()
 # ==========================================
 # 📊 โซนแสดงผลและกราฟ (UI หลัก)
 # ==========================================
-col_table, col_panel = st.columns([2.5, 1.5])
+col_table, col_panel = st.columns([2.5, 2.0]) # ปรับขนาดคอลัมน์ให้แผงขวาใหญ่ขึ้น
 
 with col_table:
     st.subheader(f"📋 รายการสินทรัพย์ที่ผ่านเงื่อนไข ({len(df_filtered):,} ตัว)")
-    st.caption("💡 ทิปส์: นำเมาส์ไปชี้ที่ 'หัวคอลัมน์' เพื่อดูคำอธิบายของแต่ละข้อมูล (Tooltip)")
     
     if not df_filtered.empty:
         formatted_df = df_filtered.copy()
         if 'Historical_Return' in formatted_df.columns:
             formatted_df['Return_Display'] = formatted_df.apply(lambda r: f"{r['Historical_Return']:+.2f}%" if pd.notnull(r['Historical_Return']) else "-", axis=1)
         
-        # 🌟 เพิ่ม MACD เข้ามาโชว์ในตารางหลัก เพื่อให้เห็นมิติข้อมูลมากขึ้น
         show_cols = ['Ticker', 'Asset_Type', 'Status', 'Close', 'Return_Display', 'Vol_Ratio', 'RSI_14', 'MACD']
         render_cols = [c for c in show_cols if c in formatted_df.columns]
 
         styled_df = formatted_df[render_cols].style.format({
-            "Close": "{:.2f}", # ลบ $ ออกเพื่อให้เรียงลำดับตัวเลขได้ถูกต้อง
+            "Close": "{:.2f}", 
             "Vol_Ratio": "{:.2f}",
             "RSI_14": "{:.2f}",
             "MACD": "{:.2f}"
@@ -134,86 +132,143 @@ with col_table:
             else:
                 styled_df = styled_df.applymap(rsi_color, subset=['RSI_14'])
 
-        # 🌟 ฝัง Tooltips ลงในหัวตาราง
         st.dataframe(
             styled_df, 
             use_container_width=True, 
-            height=650, 
+            height=750, 
             hide_index=True,
             column_config={
-                "Ticker": st.column_config.TextColumn("Ticker", help="สัญลักษณ์ของหุ้นหรือกองทุน"),
-                "Asset_Type": st.column_config.TextColumn("Type", help="ประเภทสินทรัพย์: Common Stock (หุ้นสามัญ) หรือ ETF (กองทุน)"),
-                "Status": st.column_config.TextColumn("Status", help="สถานะเทรนด์: PASS (ขาขึ้น แข็งแกร่ง) / FAIL (ขาลง หรือ พักตัว)"),
-                "Close": st.column_config.NumberColumn("Close ($)", help="ราคาปิดล่าสุด (ดอลลาร์สหรัฐ)"),
-                "Return_Display": st.column_config.TextColumn("1Y Return", help="ผลตอบแทนย้อนหลัง 1 ปี (เทียบราคาปัจจุบันกับราคาเมื่อปีที่แล้ว)"),
-                "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio (x)", help="สัดส่วนวอลุ่มล่าสุด เทียบกับค่าเฉลี่ย 20 วัน (ถ้า > 1 แปลว่ามีเงินไหลเข้าผิดปกติ)"),
-                "RSI_14": st.column_config.NumberColumn("RSI (14)", help="ความแกว่งตัว: ต่ำกว่า 30 = Oversold (ถูกขายมากไป น่าสะสม), สูงกว่า 70 = Overbought (โดนซื้อมากไป เสี่ยงย่อตัว)"),
-                "MACD": st.column_config.NumberColumn("MACD", help="ทิศทางแนวโน้ม: ค่าเป็นบวก(+) = กำลังอยู่ในรอบขาขึ้น, ค่าเป็นลบ(-) = กำลังอยู่ในรอบขาลง")
+                "Ticker": st.column_config.TextColumn("Ticker"),
+                "Asset_Type": st.column_config.TextColumn("Type"),
+                "Status": st.column_config.TextColumn("Status"),
+                "Close": st.column_config.NumberColumn("Close ($)"),
+                "Return_Display": st.column_config.TextColumn("1Y Return"),
+                "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio (x)"),
+                "RSI_14": st.column_config.NumberColumn("RSI (14)"),
+                "MACD": st.column_config.NumberColumn("MACD")
             }
         )
     else:
         st.warning("ไม่พบสินทรัพย์ที่ตรงกับเงื่อนไขการกรองของคุณ ปรับช่วงราคาหรือ RSI ให้กว้างขึ้นครับ")
 
 with col_panel:
-    st.subheader("⚡ Quick Viewer & Risk Manager")
+    st.subheader("⚡ 360° Comprehensive Analysis")
     if not df_filtered.empty:
-        selected_ticker = st.selectbox("เลือก Ticker เพื่อเจาะลึก:", df_filtered['Ticker'], help="พิมพ์ชื่อหุ้นที่ต้องการดูข้อมูลเชิงลึกและการวิเคราะห์")
+        selected_ticker = st.selectbox("เลือก Ticker เพื่อเจาะลึกข้อมูลทุกมิติ:", df_filtered['Ticker'])
         target_info = df_filtered[df_filtered['Ticker'] == selected_ticker].iloc[0]
         
-        with st.spinner("กำลังดึงข้อมูลพื้นฐาน (Fundamentals)..."):
+        with st.spinner("กำลังดึงข้อมูล 360 องศา (Fundamentals & Technicals)..."):
             try:
                 tkr = yf.Ticker(selected_ticker)
                 info = tkr.info
                 sector = info.get('sector', 'ETF / Not Available')
-                fwd_pe = info.get('forwardPE', 'N/A')
+                industry = info.get('industry', '-')
+                fwd_pe = info.get('forwardPE', info.get('trailingPE', None))
                 target_price = info.get('targetMeanPrice', None)
                 div_yield = info.get('dividendYield', None)
+                beta = info.get('beta', None)
+                mkt_cap = info.get('marketCap', None)
             except:
-                sector, fwd_pe, target_price, div_yield = "N/A", "N/A", None, None
+                sector, industry, fwd_pe, target_price, div_yield, beta, mkt_cap = "N/A", "-", None, None, None, None, None
             
             curr_c = target_info['Close']
-            upside = f"{round(((target_price - curr_c)/curr_c)*100, 2)}%" if target_price else "N/A"
+            
+            # ---------------------------------------------------------
+            # 🧠 Logic ประมวลผลแปลภาษาและวิเคราะห์เชิงลึก
+            # ---------------------------------------------------------
+            # 1. PE & Valuation
+            pe_text = "⚪ ไม่มีข้อมูล P/E"
+            if isinstance(fwd_pe, (int, float)):
+                if fwd_pe < 15: pe_text = "🟢 ถูกกว่าค่าเฉลี่ยตลาด (Undervalued)"
+                elif fwd_pe <= 30: pe_text = "⚪ ราคาสมเหตุสมผล/เติบโต (Fair)"
+                else: pe_text = "🔴 ค่อนข้างแพง (Premium Valuation)"
+
+            # 2. Upside
+            upside_val = 0
+            upside_text = "⚪ ไม่มีเป้าหมายราคา"
+            if target_price and curr_c:
+                upside_val = ((target_price - curr_c) / curr_c) * 100
+                if upside_val > 15: upside_text = f"🟢 เป้าหมายไกล มี Upside +{upside_val:.2f}%"
+                elif upside_val > 0: upside_text = f"⚪ มีพื้นที่ให้ขึ้นอีก +{upside_val:.2f}%"
+                else: upside_text = f"🔴 ราคาเกินพื้นฐานไปแล้ว ({upside_val:.2f}%)"
+            
+            # 3. Dividend
             div_pct = f"{round(div_yield * 100, 2)}%" if div_yield else "N/A"
+            div_text = "⚪ ไม่จ่ายเงินปันผล"
+            if div_yield:
+                if div_yield > 0.04: div_text = f"🟢 ปันผลสูงมาก สาย VI ชอบ"
+                elif div_yield > 0.015: div_text = f"⚪ ปันผลระดับปานกลาง"
+                else: div_text = f"🔴 ปันผลน้อย เน้นส่วนต่างราคา"
 
-        st.markdown(f"**Sector:** `{sector}` | **Type:** `{target_info['Asset_Type']}`")
-        
-        # 🌟 ใส่ Tooltips (help) ให้ข้อมูลตัวเลข
-        m_col1, m_col2 = st.columns(2)
-        m_col1.metric("ราคาปัจจุบัน", f"${curr_c}", help="ราคาอัปเดตล่าสุดของหุ้นตัวนี้")
-        m_col2.metric("Target Price (Wall St.)", f"${target_price}" if target_price else "N/A", delta=upside if upside != "N/A" else None, help="ราคาเป้าหมายใน 1 ปีข้างหน้า ประเมินโดยนักวิเคราะห์ Wall Street (ตัวเลขสีเขียวคือ Upside ที่เหลือให้เติบโต)")
-        
-        m_col3, m_col4 = st.columns(2)
-        m_col3.metric("Forward P/E", f"{round(fwd_pe,2)}x" if isinstance(fwd_pe, (int, float)) else "N/A", help="ความถูก/แพง: ยิ่งค่าน้อย ยิ่งถือว่าราคาถูกเมื่อเทียบกับกำไรที่คาดว่าจะทำได้ในปีหน้า (ปกติไม่ควรเกิน 25-30x)")
-        m_col4.metric("Dividend Yield", div_pct, help="ผลตอบแทนจากเงินปันผลรายปี (ต่อหุ้น) ยิ่งสูงยิ่งดีสำหรับสายรับปันผล")
+            # 4. Beta & Volatility
+            beta_text = "⚪ ผันผวนตามตลาดรวม"
+            if beta:
+                if beta > 1.2: beta_text = f"🔴 ซิ่งจัด แกว่งแรงกว่าตลาด (Beta {beta:.2f})"
+                elif beta < 0.8: beta_text = f"🟢 ปลอดภัย แกว่งน้อยกว่าตลาด (Beta {beta:.2f})"
 
-        st.divider()
+            # 5. MACD & RSI (จาก CSV)
+            macd_val = target_info.get('MACD', 0)
+            sig_val = target_info.get('MACD_Signal', 0)
+            macd_stat = "🟢 แรงซื้อชนะ (Bullish Crossover)" if macd_val > sig_val else "🔴 แรงขายกดดัน (Bearish)"
+            
+            rsi_v = target_info.get('RSI_14', 50)
+            rsi_stat = "🔴 Overbought (ซื้อมากไป ระวังย่อ)" if rsi_v > 70 else ("🟢 Oversold (ขายมากไป น่าสะสม)" if rsi_v < 30 else "⚪ Neutral (ราคาทรงตัว)")
+            
+            vol_v = target_info.get('Vol_Ratio', 0)
+            vol_stat = "🟢 เงินไหลเข้า (Vol กระชาก)" if vol_v >= 1.2 else "⚪ วอลุ่มเทรดปกติ (แห้ง)"
+
+            # Formatting Market Cap
+            cap_str = "N/A"
+            if mkt_cap:
+                if mkt_cap >= 1e12: cap_str = f"${mkt_cap/1e12:.2f} Trillion"
+                elif mkt_cap >= 1e9: cap_str = f"${mkt_cap/1e9:.2f} Billion"
+                else: cap_str = f"${mkt_cap/1e6:.2f} Million"
+
+        st.markdown(f"**อุตสาหกรรม (Industry):** `{sector}` ➔ `{industry}` | **Market Cap:** `{cap_str}`")
         
-        st.markdown("#### 📝 ตารางวิเคราะห์เชิงเทคนิค (Text Analysis)")
-        
-        macd_val = target_info.get('MACD', 0)
-        sig_val = target_info.get('MACD_Signal', 0)
-        macd_stat = "🟢 Bullish (แรงซื้อชนะ)" if macd_val > sig_val else "🔴 Bearish (แรงขายกดดัน)"
-        
-        rsi_v = target_info.get('RSI_14', 50)
-        rsi_stat = "🔴 Overbought (ซื้อมากไป เสี่ยงย่อ)" if rsi_v > 70 else ("🟢 Oversold (ขายมากไป น่าสะสม)" if rsi_v < 30 else "⚪ Neutral (ทรงตัว)")
-        
-        vol_v = target_info.get('Vol_Ratio', 0)
-        vol_stat = "🟢 มีวอลุ่มเข้าหนาแน่น" if vol_v >= 1.05 else "⚪ วอลุ่มเทรดปกติ"
-        
+        # ==========================================
+        # 📝 ตาราง 360-Degree Matrix
+        # ==========================================
+        st.markdown("#### 🔍 ตารางเจาะลึก 3 มิติการลงทุน (Multi-Dimensional Matrix)")
         st.markdown(f"""
-        | อินดิเคเตอร์ | ค่าล่าสุด | ประเมินแนวโน้ม |
-        | :--- | :--- | :--- |
-        | **Trend (EMA)** | {target_info['Status']} | {'🟢 เป็นขาขึ้นชัดเจน (PASS)' if target_info['Status'] == 'PASS' else '🔴 ยังเป็นขาลง/พักตัว (FAIL)'} |
-        | **MACD** | {macd_val} | {macd_stat} |
-        | **RSI (14)** | {rsi_v} | {rsi_stat} |
-        | **Volume Ratio** | {vol_v}x | {vol_stat} |
+        | หมวดหมู่ (Category) | ปัจจัยชี้วัด (Metrics) | ค่าล่าสุด (Value) | การแปลผล (Analysis) |
+        | :--- | :--- | :--- | :--- |
+        | **🏢 1. พื้นฐาน & มูลค่า** | **Forward P/E** | {round(fwd_pe,2) if isinstance(fwd_pe, (int, float)) else 'N/A'}x | {pe_text} |
+        | *(Fundamental)* | **Target Price** | ${target_price if target_price else 'N/A'} | {upside_text} |
+        | | **Dividend Yield** | {div_pct} | {div_text} |
+        | **📈 2. เทรนด์ & โมเมนตัม** | **Trend (EMA)** | {target_info['Status']} | {'🟢 ขาขึ้นเต็มตัว (PASS)' if target_info['Status'] == 'PASS' else '🔴 ยังเป็นขาลง/พักตัว (FAIL)'} |
+        | *(Technical)* | **MACD** | {macd_val} | {macd_stat} |
+        | | **RSI (14)** | {rsi_v} | {rsi_stat} |
+        | **🛡️ 3. สภาพคล่อง & ความเสี่ยง**| **Volume Flow** | {vol_v}x | {vol_stat} |
+        | *(Risk & Liquidity)* | **Volatility (Beta)** | {round(beta,2) if beta else 'N/A'} | {beta_text} |
+        | | **ATR (ความแกว่ง)** | ${target_info.get('ATR', 0)} | ⚠️ ปกติหุ้นตัวนี้แกว่งตัวเฉลี่ย ${target_info.get('ATR', 0)} / วัน |
         """)
 
+        # ==========================================
+        # 🤖 AI Trading Verdict (ระบบให้คะแนน)
+        # ==========================================
+        score = 0
+        if target_info['Status'] == 'PASS': score += 2
+        if isinstance(fwd_pe, (int, float)) and fwd_pe < 25: score += 1
+        if upside_val > 5: score += 1
+        if macd_val > sig_val: score += 1
+        if 30 <= rsi_v <= 65: score += 1 # Not overbought
+        if vol_v > 1.1: score += 1
+
+        if score >= 5: verdict = "🌟 **STRONG BUY (น่าลงทุนมาก):** หุ้นตัวนี้สอบผ่านทั้งพื้นฐานราคาถูก มี Upside และกราฟกำลังเป็นขาขึ้นพร้อมวอลุ่ม เป็นหน้าเทรดที่ได้เปรียบสูง"
+        elif score >= 3: verdict = "⚖️ **HOLD / WATCHLIST (เฝ้าจับตา):** มีสัญญาณดีบางส่วน แต่ยังมีบางมิติที่ขัดแย้งกัน (เช่น กราฟสวยแต่พื้นฐานแพง หรือ พื้นฐานดีแต่กราฟพัง) แนะนำให้รอดูความชัดเจน"
+        else: verdict = "🚫 **AVOID (หลีกเลี่ยง):** ข้อมูลไม่สนับสนุนการเข้าซื้อในขณะนี้ กราฟยังเป็นขาลง หรือราคาวิ่งเกินพื้นฐานไปไกลแล้ว เสี่ยงดอยสูง"
+        
+        st.info(f"**🤖 บทสรุปจากระบบ (Trading Verdict):**\n\n{verdict}")
+
         st.divider()
 
-        st.markdown("#### 💰 ระบบคำนวณหน้าตัก (Position Sizer)")
-        port_size = st.number_input("ขนาดพอร์ตลงทุนรวม (USD):", value=10000, step=1000, help="ใส่เงินทุนทั้งหมดที่คุณมี เพื่อให้ระบบคำนวณสัดส่วนการซื้อที่ปลอดภัยให้")
-        risk_pct = st.slider("ความเสี่ยงต่อไม้ (% ของพอร์ต):", 0.5, 5.0, 1.0, 0.5, help="ยอมขาดทุนได้กี่ % ของพอร์ต หากหุ้นลงมาชนจุด Stop Loss (มืออาชีพแนะนำที่ 1-2%)")
+        # ==========================================
+        # 💰 Position Sizer
+        # ==========================================
+        st.markdown("#### 💰 วางแผนเข้าซื้อ (Position Sizer)")
+        port_size = st.number_input("ขนาดพอร์ตลงทุนรวม (USD):", value=10000, step=1000, help="เงินทุนทั้งหมดเพื่อให้ระบบคำนวณสัดส่วน")
+        risk_pct = st.slider("ความเสี่ยงต่อไม้ (% ของพอร์ต):", 0.5, 5.0, 1.0, 0.5, help="ยอมขาดทุนได้กี่ % ของพอร์ต หากโดน Stop Loss (แนะนำ 1%)")
         
         stop_val = target_info.get('Suggested_Stop')
         if pd.notnull(stop_val) and curr_c > stop_val:
@@ -222,13 +277,13 @@ with col_panel:
             shares_to_buy = int(risk_amt // risk_per_share)
             capital_required = shares_to_buy * curr_c
             
-            st.success(f"**คำแนะนำการเข้าซื้อ (เพื่อความปลอดภัยสูงสุด):**")
-            st.write(f"• จุดตัดขาดทุน (Stop Loss): **${stop_val}** *(ตัดทิ้งเมื่อราคาหลุดแนวรับนี้)*")
-            st.write(f"• ซื้อได้สูงสุด: **{shares_to_buy} หุ้น**")
-            st.write(f"• ต้องใช้เงินลงทุน: **${capital_required:,.2f}**")
-            st.write(f"• ขาดทุนสูงสุดหากโดน Stop: **-${risk_amt:,.2f}**")
+            st.success(f"**สรุปแผนการเทรด (Trading Plan):**")
+            st.write(f"• จุดตัดขาดทุน (Stop Loss): **${stop_val}** *(ตัดทิ้งเมื่อหลุดแนวนี้)*")
+            st.write(f"• ปริมาณที่ควรซื้อ: **{shares_to_buy} หุ้น**")
+            st.write(f"• จำนวนเงินที่ใช้: **${capital_required:,.2f}**")
+            st.write(f"• ขาดทุนสูงสุดหากผิดทาง: **-${risk_amt:,.2f}**")
         else:
-            st.warning("ไม่มีข้อมูล Stop Loss หรือราคาปัจจุบันอยู่ต่ำกว่าจุดตัดขาดทุน (ไม่แนะนำให้เข้าซื้อ)")
+            st.error("⚠️ ไม่สามารถคำนวณจุดเข้าซื้อได้ (ราคาปัจจุบันอยู่ต่ำกว่าจุดตัดขาดทุน)")
     else:
         st.stop()
 
