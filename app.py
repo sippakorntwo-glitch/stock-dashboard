@@ -52,7 +52,7 @@ st.markdown("### 🎛️ Data Filters (ระบบคัดกรองข้�
 col1, col2, col3 = st.columns([2, 2, 2])
 with col1:
     asset_types = ["ทั้งหมด (All Assets)"] + sorted(list(df_all['Asset_Type'].dropna().unique()))
-    asset_type_filter = st.selectbox("🏷️ ประเภทสินทรัพย์:", asset_types, help="แยกดูเฉพาะหุ้นสามัญ (Common Stock) หรือ กองทุน (ETF)")
+    asset_type_filter = st.selectbox("🏷️ ประเภทสินทรัพย์:", asset_types)
 with col2:
     status_filter = st.radio("⚡ สถานะแนวโน้ม:", ["ทั้งหมด", "เฉพาะที่ผ่านเกณฑ์ (PASS Only)"], horizontal=True)
 with col3:
@@ -235,20 +235,19 @@ with col_panel:
 st.divider()
 
 # ==========================================
-# 📈 โซนกราฟ (แก้ปัญหาการบีบอัดและเพิ่มเปรียบเทียบหุ้น)
+# 📈 โซนกราฟ (อัปเกรดระบบ Timeframe Button ฝังในกราฟ)
 # ==========================================
 tab1, tab2, tab3 = st.tabs(["📊 Advanced Technical Chart", "🥊 Relative Strength (vs SPY)", "⚔️ Stock Comparison"])
 
 with tab1:
-    # เพิ่มตัวเลือก Timeframe ให้กราฟไม่บีบตัว
-    chart_period = st.radio("⏳ เลือกกรอบเวลา (Timeframe):", ["3mo", "6mo", "1y"], index=1, horizontal=True)
-    
-    with st.spinner(f"กำลังวาดกราฟ {selected_ticker} ({chart_period})..."):
-        df_chart = yf.download(selected_ticker, period=chart_period, interval="1d", progress=False)
+    with st.spinner(f"กำลังวาดกราฟและคำนวณข้อมูล 3 ปีย้อนหลัง..."):
+        # ดึงข้อมูล 3 ปี เพื่อให้เส้น 200 วันสมบูรณ์ที่สุด
+        df_chart = yf.download(selected_ticker, period="3y", interval="1d", progress=False)
         if isinstance(df_chart.columns, pd.MultiIndex): df_chart.columns = df_chart.columns.get_level_values(0)
 
         df_chart['EMA20'] = df_chart['Close'].ewm(span=20, adjust=False).mean()
         df_chart['EMA50'] = df_chart['Close'].ewm(span=50, adjust=False).mean()
+        df_chart['SMA200'] = df_chart['Close'].rolling(window=200).mean() if len(df_chart) >= 200 else np.nan
         
         df_chart['MACD'] = df_chart['Close'].ewm(span=12).mean() - df_chart['Close'].ewm(span=26).mean()
         df_chart['Signal'] = df_chart['MACD'].ewm(span=9).mean()
@@ -262,55 +261,108 @@ with tab1:
         rs = avg_gain / avg_loss
         df_chart['RSI'] = 100 - (100 / (1 + rs))
 
-        recent_low = df_chart['Low'].min()
-        recent_high = df_chart['High'].max()
+        recent_low = df_chart['Low'].iloc[-90:].min()
+        recent_high = df_chart['High'].iloc[-90:].max()
 
-        # สร้างกราฟย่อย (ขยายพื้นที่ให้ดูกว้างขึ้น)
-        fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.05, row_heights=[0.6, 0.2, 0.2])
+        fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.5, 0.15, 0.2, 0.15])
         
-        # กราฟแท่งเทียน
+        # Row 1: ราคาและเส้นค่าเฉลี่ย
         fig.add_trace(go.Candlestick(x=df_chart.index, open=df_chart['Open'], high=df_chart['High'], low=df_chart['Low'], close=df_chart['Close'], name="Price"), row=1, col=1)
         fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['EMA20'], line=dict(color='orange', width=1), name="EMA 20"), row=1, col=1)
         fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['EMA50'], line=dict(color='blue', width=1), name="EMA 50"), row=1, col=1)
+        if pd.notnull(df_chart['SMA200']).any(): fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['SMA200'], line=dict(color='pink', width=2), name="SMA 200"), row=1, col=1)
         
-        fig.add_hline(y=recent_high, line_dash="dot", line_color="green", annotation_text="High", row=1, col=1)
-        fig.add_hline(y=recent_low, line_dash="dot", line_color="red", annotation_text="Low", row=1, col=1)
+        fig.add_hline(y=recent_high, line_dash="dot", line_color="green", annotation_text="90d High", row=1, col=1)
+        fig.add_hline(y=recent_low, line_dash="dot", line_color="red", annotation_text="90d Low", row=1, col=1)
 
-        # กราฟ MACD
-        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['MACD'], line=dict(color='blue', width=1.5), name="MACD"), row=2, col=1)
-        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['Signal'], line=dict(color='orange', width=1.5), name="Signal"), row=2, col=1)
+        # Row 2: Volume
+        vol_colors = ['#26a69a' if c >= o else '#ef5350' for c, o in zip(df_chart['Close'], df_chart['Open'])]
+        fig.add_trace(go.Bar(x=df_chart.index, y=df_chart['Volume'], marker_color=vol_colors, name="Volume"), row=2, col=1)
+
+        # Row 3: MACD
+        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['MACD'], line=dict(color='blue', width=1.5), name="MACD"), row=3, col=1)
+        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['Signal'], line=dict(color='orange', width=1.5), name="Signal"), row=3, col=1)
         hist_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in df_chart['Hist']]
-        fig.add_trace(go.Bar(x=df_chart.index, y=df_chart['Hist'], marker_color=hist_colors, name="Histogram"), row=2, col=1)
+        fig.add_trace(go.Bar(x=df_chart.index, y=df_chart['Hist'], marker_color=hist_colors, name="Histogram"), row=3, col=1)
 
-        # กราฟ RSI
-        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['RSI'], line=dict(color='purple', width=1.5), name="RSI"), row=3, col=1)
-        fig.add_hline(y=70, line_dash="dash", line_color="red", row=3, col=1)
-        fig.add_hline(y=30, line_dash="dash", line_color="green", row=3, col=1)
+        # Row 4: RSI
+        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['RSI'], line=dict(color='purple', width=1.5), name="RSI"), row=4, col=1)
+        fig.add_hline(y=70, line_dash="dash", line_color="red", row=4, col=1)
+        fig.add_hline(y=30, line_dash="dash", line_color="green", row=4, col=1)
 
-        # เปิดใช้งาน Rangeslider (ให้ลากซูมได้อิสระ)
-        fig.update_layout(height=700, xaxis_rangeslider_visible=True, margin=dict(l=20, r=20, t=30, b=20), showlegend=False)
+        # 🌟 หัวใจสำคัญ: ฝังปุ่มเลือก Timeframe เข้าไปในตัวกราฟ
+        fig.update_layout(
+            height=850,
+            margin=dict(l=20, r=20, t=50, b=20),
+            showlegend=False,
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1, label="1D", step="day", stepmode="backward"),
+                        dict(count=5, label="5D", step="day", stepmode="backward"),
+                        dict(count=7, label="7D", step="day", stepmode="backward"),
+                        dict(count=1, label="1M", step="month", stepmode="backward"),
+                        dict(count=3, label="3M", step="month", stepmode="backward"),
+                        dict(count=6, label="6M", step="month", stepmode="backward"),
+                        dict(count=1, label="1Y", step="year", stepmode="backward"),
+                        dict(count=2, label="2Y", step="year", stepmode="backward"),
+                        dict(count=3, label="3Y", step="year", stepmode="backward"),
+                        dict(step="all", label="All")
+                    ]),
+                    bgcolor="#262730", # สีพื้นหลังปุ่มให้กลืนกับ Dark mode
+                    activecolor="#3b82f6",
+                    font=dict(color="white")
+                ),
+                type="date",
+                range=[df_chart.index[-90], df_chart.index[-1]] # ตั้งค่าเริ่มต้นให้เปิดมาเจอระยะ 3 เดือน (ไม่บีบตัว)
+            )
+        )
+        
+        # ปิดแถบเลื่อนด้านล่างเพราะมีปุ่ม Timeframe แล้ว จะได้ไม่รก
+        fig.update_xaxes(rangeslider_visible=False)
         st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
     st.subheader(f"🥊 ความแข็งแกร่งเทียบกับตลาดรวม ({selected_ticker} vs SPY)")
     with st.spinner("กำลังดึงข้อมูล S&P 500..."):
-        spy_df = yf.download("SPY", period="1y", interval="1d", progress=False)
+        spy_df = yf.download("SPY", period="3y", interval="1d", progress=False)
         if isinstance(spy_df.columns, pd.MultiIndex): spy_df.columns = spy_df.columns.get_level_values(0)
         
-        df_1y = yf.download(selected_ticker, period="1y", interval="1d", progress=False)
-        if isinstance(df_1y.columns, pd.MultiIndex): df_1y.columns = df_1y.columns.get_level_values(0)
+        df_3y = yf.download(selected_ticker, period="3y", interval="1d", progress=False)
+        if isinstance(df_3y.columns, pd.MultiIndex): df_3y.columns = df_3y.columns.get_level_values(0)
 
-        stock_pct = (df_1y['Close'] / df_1y['Close'].iloc[0] - 1) * 100
-        spy_pct = (spy_df['Close'] / spy_df['Close'].iloc[0] - 1) * 100
+        # หาวันที่เริ่มข้อมูลร่วมกัน
+        start_date = max(df_3y.index[0], spy_df.index[0])
+        df_align = df_3y[df_3y.index >= start_date]
+        spy_align = spy_df[spy_df.index >= start_date]
+
+        stock_pct = (df_align['Close'] / df_align['Close'].iloc[0] - 1) * 100
+        spy_pct = (spy_align['Close'] / spy_align['Close'].iloc[0] - 1) * 100
         
         fig_rs = go.Figure()
-        fig_rs.add_trace(go.Scatter(x=df_1y.index, y=stock_pct, mode='lines', name=selected_ticker, line=dict(color='#2196F3', width=2.5)))
-        fig_rs.add_trace(go.Scatter(x=spy_df.index, y=spy_pct, mode='lines', name="SPY (Market)", line=dict(color='#FFA500', width=2, dash='dash')))
+        fig_rs.add_trace(go.Scatter(x=df_align.index, y=stock_pct, mode='lines', name=selected_ticker, line=dict(color='#2196F3', width=2.5)))
+        fig_rs.add_trace(go.Scatter(x=spy_align.index, y=spy_pct, mode='lines', name="SPY (Market)", line=dict(color='#FFA500', width=2, dash='dash')))
         
-        fig_rs.update_layout(height=400, yaxis_title="Performance (%)", hovermode="x unified")
+        fig_rs.update_layout(
+            height=450, 
+            yaxis_title="Performance (%)", 
+            hovermode="x unified",
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1, label="1M", step="month", stepmode="backward"),
+                        dict(count=3, label="3M", step="month", stepmode="backward"),
+                        dict(count=6, label="6M", step="month", stepmode="backward"),
+                        dict(count=1, label="1Y", step="year", stepmode="backward"),
+                        dict(count=3, label="3Y", step="year", stepmode="backward")
+                    ])
+                ),
+                type="date",
+                range=[df_align.index[-365], df_align.index[-1]] # ค่าเริ่มต้น 1 ปี
+            )
+        )
         st.plotly_chart(fig_rs, use_container_width=True)
 
-# 🌟 ฟีเจอร์ใหม่: ระบบเปรียบเทียบหุ้น 2 ตัว (Stock Comparison)
 with tab3:
     st.subheader("⚔️ เปรียบเทียบผลตอบแทนหุ้น 2 ตัว (Stock Comparison)")
     
@@ -320,15 +372,12 @@ with tab3:
     with comp_c2:
         ticker2 = st.text_input("หุ้นตัวที่ 2 (คู่แข่ง):", value="AAPL", key="t2").strip().upper()
         
-    comp_period = st.radio("กรอบเวลาเปรียบเทียบ:", ["3mo", "6mo", "1y", "2y"], index=2, horizontal=True)
-    
     if ticker1 and ticker2:
         with st.spinner(f"กำลังประมวลผลเปรียบเทียบ {ticker1} vs {ticker2}..."):
             try:
-                data = yf.download([ticker1, ticker2], period=comp_period, interval="1d", progress=False)
-                close_data = data['Close']
+                data = yf.download([ticker1, ticker2], period="3y", interval="1d", progress=False)
+                close_data = data['Close'].dropna()
                 
-                # Normalize (ตั้งจุดเริ่มต้นให้เท่ากันที่ 0%)
                 norm_t1 = (close_data[ticker1] / close_data[ticker1].iloc[0] - 1) * 100
                 norm_t2 = (close_data[ticker2] / close_data[ticker2].iloc[0] - 1) * 100
                 
@@ -337,11 +386,25 @@ with tab3:
                 fig_comp.add_trace(go.Scatter(x=close_data.index, y=norm_t2, mode='lines', name=ticker2, line=dict(color='#FF5252', width=2.5)))
                 
                 fig_comp.update_layout(
-                    title=f"การแข่งขันผลตอบแทน: {ticker1} vs {ticker2} ({comp_period})",
+                    title=f"การแข่งขันผลตอบแทน: {ticker1} vs {ticker2}",
                     yaxis_title="Growth (%)",
                     hovermode="x unified",
-                    height=500
+                    height=500,
+                    xaxis=dict(
+                        rangeselector=dict(
+                            buttons=list([
+                                dict(count=1, label="1M", step="month", stepmode="backward"),
+                                dict(count=3, label="3M", step="month", stepmode="backward"),
+                                dict(count=6, label="6M", step="month", stepmode="backward"),
+                                dict(count=1, label="1Y", step="year", stepmode="backward"),
+                                dict(count=2, label="2Y", step="year", stepmode="backward"),
+                                dict(count=3, label="3Y", step="year", stepmode="backward"),
+                            ])
+                        ),
+                        type="date",
+                        range=[close_data.index[-365], close_data.index[-1]] # ค่าเริ่มต้น 1 ปี
+                    )
                 )
                 st.plotly_chart(fig_comp, use_container_width=True)
             except Exception as e:
-                st.error("เกิดข้อผิดพลาดในการดึงข้อมูลเปรียบเทียบ โปรดตรวจสอบชื่อหุ้นอีกครั้ง")
+                st.error("เกิดข้อผิดพลาดในการดึงข้อมูล โปรดตรวจสอบชื่อหุ้นอีกครั้ง")
