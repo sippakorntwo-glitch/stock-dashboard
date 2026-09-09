@@ -52,9 +52,9 @@ st.markdown("### 🎛️ Data Filters (ระบบคัดกรองข้�
 col1, col2, col3 = st.columns([2, 2, 2])
 with col1:
     asset_types = ["ทั้งหมด (All Assets)"] + sorted(list(df_all['Asset_Type'].dropna().unique()))
-    asset_type_filter = st.selectbox("🏷️ ประเภทสินทรัพย์:", asset_types)
+    asset_type_filter = st.selectbox("🏷️ ประเภทสินทรัพย์:", asset_types, help="แยกดูเฉพาะหุ้นสามัญ (Common Stock) หรือ กองทุน (ETF)")
 with col2:
-    status_filter = st.radio("⚡ สถานะแนวโน้ม:", ["ทั้งหมด", "เฉพาะที่ผ่านเกณฑ์ (PASS Only)"], horizontal=True)
+    status_filter = st.radio("⚡ สถานะแนวโน้ม:", ["ทั้งหมด", "เฉพาะที่ผ่านเกณฑ์ (PASS Only)"], horizontal=True, help="PASS = หุ้นที่ยืนเหนือเส้น EMA 20, 50 และ 200 (เป็นขาขึ้นชัดเจน)")
 with col3:
     search_query = st.text_input("🔍 ค้นหา Ticker (พิมพ์ชื่อหุ้น):", "").strip().upper()
 
@@ -63,16 +63,16 @@ with st.expander("🛠️ ตัวกรองขั้นสูง (Advanced C
     
     with adv_c1:
         st.markdown("**1. ช่วงราคา (Price Range)**")
-        min_price = st.number_input("ราคาขั้นต่ำ ($)", min_value=0.0, value=0.0, step=1.0)
-        max_price = st.number_input("ราคาสูงสุด ($)", min_value=0.1, value=5000.0, step=1.0)
+        min_price = st.number_input("ราคาขั้นต่ำ ($)", min_value=0.0, value=0.0, step=1.0, help="กรองหุ้นที่ราคาแพงกว่าที่กำหนด")
+        max_price = st.number_input("ราคาสูงสุด ($)", min_value=0.1, value=5000.0, step=1.0, help="กรองหุ้นที่ราคาถูกกว่าที่กำหนด (เช่น ใส่ 1.0 เพื่อหา Penny Stock)")
 
     with adv_c2:
         st.markdown("**2. โมเมนตัม (RSI 14)**")
-        rsi_range = st.slider("เลือกช่วง RSI (ต่ำกว่า 30 = Oversold)", 0, 100, (0, 100))
+        rsi_range = st.slider("เลือกช่วง RSI (ต่ำกว่า 30 = Oversold)", 0, 100, (0, 100), help="ใช้หาหุ้นที่ตกหนักเกินไป (<30) หรือ หุ้นที่กำลังพุ่งแรง (>70)")
 
     with adv_c3:
         st.markdown("**3. ผลตอบแทนย้อนหลัง 1 ปี (1Y Return %)**")
-        min_return = st.number_input("ผลตอบแทนขั้นต่ำ (%)", value=-100.0, step=10.0)
+        min_return = st.number_input("ผลตอบแทนขั้นต่ำ (%)", value=-100.0, step=10.0, help="ใส่ค่าบวก (เช่น 50) เพื่อหาหุ้นที่โตกว่า 50% จากปีที่แล้ว")
 
 df_filtered = df_all.copy()
 
@@ -106,18 +106,22 @@ col_table, col_panel = st.columns([2.5, 1.5])
 
 with col_table:
     st.subheader(f"📋 รายการสินทรัพย์ที่ผ่านเงื่อนไข ({len(df_filtered):,} ตัว)")
+    st.caption("💡 ทิปส์: นำเมาส์ไปชี้ที่ 'หัวคอลัมน์' เพื่อดูคำอธิบายของแต่ละข้อมูล (Tooltip)")
+    
     if not df_filtered.empty:
         formatted_df = df_filtered.copy()
         if 'Historical_Return' in formatted_df.columns:
             formatted_df['Return_Display'] = formatted_df.apply(lambda r: f"{r['Historical_Return']:+.2f}%" if pd.notnull(r['Historical_Return']) else "-", axis=1)
         
-        show_cols = ['Ticker', 'Asset_Type', 'Status', 'Close', 'Return_Display', 'Vol_Ratio', 'RSI_14']
+        # 🌟 เพิ่ม MACD เข้ามาโชว์ในตารางหลัก เพื่อให้เห็นมิติข้อมูลมากขึ้น
+        show_cols = ['Ticker', 'Asset_Type', 'Status', 'Close', 'Return_Display', 'Vol_Ratio', 'RSI_14', 'MACD']
         render_cols = [c for c in show_cols if c in formatted_df.columns]
 
         styled_df = formatted_df[render_cols].style.format({
-            "Close": "${:.2f}",
-            "Vol_Ratio": "{:.2f}x",
-            "RSI_14": "{:.2f}"
+            "Close": "{:.2f}", # ลบ $ ออกเพื่อให้เรียงลำดับตัวเลขได้ถูกต้อง
+            "Vol_Ratio": "{:.2f}",
+            "RSI_14": "{:.2f}",
+            "MACD": "{:.2f}"
         })
 
         if 'RSI_14' in render_cols:
@@ -130,14 +134,30 @@ with col_table:
             else:
                 styled_df = styled_df.applymap(rsi_color, subset=['RSI_14'])
 
-        st.dataframe(styled_df, use_container_width=True, height=650, hide_index=True)
+        # 🌟 ฝัง Tooltips ลงในหัวตาราง
+        st.dataframe(
+            styled_df, 
+            use_container_width=True, 
+            height=650, 
+            hide_index=True,
+            column_config={
+                "Ticker": st.column_config.TextColumn("Ticker", help="สัญลักษณ์ของหุ้นหรือกองทุน"),
+                "Asset_Type": st.column_config.TextColumn("Type", help="ประเภทสินทรัพย์: Common Stock (หุ้นสามัญ) หรือ ETF (กองทุน)"),
+                "Status": st.column_config.TextColumn("Status", help="สถานะเทรนด์: PASS (ขาขึ้น แข็งแกร่ง) / FAIL (ขาลง หรือ พักตัว)"),
+                "Close": st.column_config.NumberColumn("Close ($)", help="ราคาปิดล่าสุด (ดอลลาร์สหรัฐ)"),
+                "Return_Display": st.column_config.TextColumn("1Y Return", help="ผลตอบแทนย้อนหลัง 1 ปี (เทียบราคาปัจจุบันกับราคาเมื่อปีที่แล้ว)"),
+                "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio (x)", help="สัดส่วนวอลุ่มล่าสุด เทียบกับค่าเฉลี่ย 20 วัน (ถ้า > 1 แปลว่ามีเงินไหลเข้าผิดปกติ)"),
+                "RSI_14": st.column_config.NumberColumn("RSI (14)", help="ความแกว่งตัว: ต่ำกว่า 30 = Oversold (ถูกขายมากไป น่าสะสม), สูงกว่า 70 = Overbought (โดนซื้อมากไป เสี่ยงย่อตัว)"),
+                "MACD": st.column_config.NumberColumn("MACD", help="ทิศทางแนวโน้ม: ค่าเป็นบวก(+) = กำลังอยู่ในรอบขาขึ้น, ค่าเป็นลบ(-) = กำลังอยู่ในรอบขาลง")
+            }
+        )
     else:
         st.warning("ไม่พบสินทรัพย์ที่ตรงกับเงื่อนไขการกรองของคุณ ปรับช่วงราคาหรือ RSI ให้กว้างขึ้นครับ")
 
 with col_panel:
     st.subheader("⚡ Quick Viewer & Risk Manager")
     if not df_filtered.empty:
-        selected_ticker = st.selectbox("เลือก Ticker เพื่อเจาะลึก:", df_filtered['Ticker'])
+        selected_ticker = st.selectbox("เลือก Ticker เพื่อเจาะลึก:", df_filtered['Ticker'], help="พิมพ์ชื่อหุ้นที่ต้องการดูข้อมูลเชิงลึกและการวิเคราะห์")
         target_info = df_filtered[df_filtered['Ticker'] == selected_ticker].iloc[0]
         
         with st.spinner("กำลังดึงข้อมูลพื้นฐาน (Fundamentals)..."):
@@ -157,17 +177,17 @@ with col_panel:
 
         st.markdown(f"**Sector:** `{sector}` | **Type:** `{target_info['Asset_Type']}`")
         
+        # 🌟 ใส่ Tooltips (help) ให้ข้อมูลตัวเลข
         m_col1, m_col2 = st.columns(2)
-        m_col1.metric("ราคาปัจจุบัน", f"${curr_c}")
-        m_col2.metric("Target Price (Wall St.)", f"${target_price}" if target_price else "N/A", delta=upside if upside != "N/A" else None)
+        m_col1.metric("ราคาปัจจุบัน", f"${curr_c}", help="ราคาอัปเดตล่าสุดของหุ้นตัวนี้")
+        m_col2.metric("Target Price (Wall St.)", f"${target_price}" if target_price else "N/A", delta=upside if upside != "N/A" else None, help="ราคาเป้าหมายใน 1 ปีข้างหน้า ประเมินโดยนักวิเคราะห์ Wall Street (ตัวเลขสีเขียวคือ Upside ที่เหลือให้เติบโต)")
         
         m_col3, m_col4 = st.columns(2)
-        m_col3.metric("Forward P/E", f"{round(fwd_pe,2)}x" if isinstance(fwd_pe, (int, float)) else "N/A")
-        m_col4.metric("Dividend Yield", div_pct)
+        m_col3.metric("Forward P/E", f"{round(fwd_pe,2)}x" if isinstance(fwd_pe, (int, float)) else "N/A", help="ความถูก/แพง: ยิ่งค่าน้อย ยิ่งถือว่าราคาถูกเมื่อเทียบกับกำไรที่คาดว่าจะทำได้ในปีหน้า (ปกติไม่ควรเกิน 25-30x)")
+        m_col4.metric("Dividend Yield", div_pct, help="ผลตอบแทนจากเงินปันผลรายปี (ต่อหุ้น) ยิ่งสูงยิ่งดีสำหรับสายรับปันผล")
 
         st.divider()
         
-        # 🌟 ฟีเจอร์ที่เพิ่มกลับมา: ตารางวิเคราะห์ทางเทคนิค (Text Analysis)
         st.markdown("#### 📝 ตารางวิเคราะห์เชิงเทคนิค (Text Analysis)")
         
         macd_val = target_info.get('MACD', 0)
@@ -192,8 +212,8 @@ with col_panel:
         st.divider()
 
         st.markdown("#### 💰 ระบบคำนวณหน้าตัก (Position Sizer)")
-        port_size = st.number_input("ขนาดพอร์ตลงทุนรวม (USD):", value=10000, step=1000)
-        risk_pct = st.slider("ความเสี่ยงต่อไม้ (% ของพอร์ต):", 0.5, 5.0, 1.0, 0.5)
+        port_size = st.number_input("ขนาดพอร์ตลงทุนรวม (USD):", value=10000, step=1000, help="ใส่เงินทุนทั้งหมดที่คุณมี เพื่อให้ระบบคำนวณสัดส่วนการซื้อที่ปลอดภัยให้")
+        risk_pct = st.slider("ความเสี่ยงต่อไม้ (% ของพอร์ต):", 0.5, 5.0, 1.0, 0.5, help="ยอมขาดทุนได้กี่ % ของพอร์ต หากหุ้นลงมาชนจุด Stop Loss (มืออาชีพแนะนำที่ 1-2%)")
         
         stop_val = target_info.get('Suggested_Stop')
         if pd.notnull(stop_val) and curr_c > stop_val:
@@ -202,13 +222,13 @@ with col_panel:
             shares_to_buy = int(risk_amt // risk_per_share)
             capital_required = shares_to_buy * curr_c
             
-            st.success(f"**คำแนะนำการเข้าซื้อ:**")
-            st.write(f"• จุดตัดขาดทุน (Stop Loss): **${stop_val}**")
+            st.success(f"**คำแนะนำการเข้าซื้อ (เพื่อความปลอดภัยสูงสุด):**")
+            st.write(f"• จุดตัดขาดทุน (Stop Loss): **${stop_val}** *(ตัดทิ้งเมื่อราคาหลุดแนวรับนี้)*")
             st.write(f"• ซื้อได้สูงสุด: **{shares_to_buy} หุ้น**")
-            st.write(f"• ใช้เงินลงทุน: **${capital_required:,.2f}**")
+            st.write(f"• ต้องใช้เงินลงทุน: **${capital_required:,.2f}**")
             st.write(f"• ขาดทุนสูงสุดหากโดน Stop: **-${risk_amt:,.2f}**")
         else:
-            st.warning("ไม่มีข้อมูล Stop Loss หรือราคาต่ำกว่าจุด Stop")
+            st.warning("ไม่มีข้อมูล Stop Loss หรือราคาปัจจุบันอยู่ต่ำกว่าจุดตัดขาดทุน (ไม่แนะนำให้เข้าซื้อ)")
     else:
         st.stop()
 
