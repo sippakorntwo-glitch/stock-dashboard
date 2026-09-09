@@ -292,11 +292,13 @@ from zoneinfo import ZoneInfo
 import plotly.graph_objects as go
 
 WATCHLIST_FILE = Path(__file__).resolve().parent / "daily_watchlist.csv"
-NUMERIC_COLUMNS = ["Close", "Historical_Return", "Vol_Ratio", "RSI_14", "MACD",
+NUMERIC_COLUMNS = ["Close", "Historical_Return", "Return_2Y", "Return_3Y", "Vol_Ratio", "RSI_14", "MACD",
                    "MACD_Signal", "ATR", "Suggested_Stop", "EMA20", "EMA50", "SMA200"]
 # === UNIVERSE SETTINGS — จำนวนรายชื่อและขนาดการโหลด ===
 COMMON_STOCK_LIMIT = 4200
 ETF_LIMIT = 700
+HISTORY_YEARS = 5  # Three full calendar years plus warm-up / non-trading dates.
+RETURN_CALC_VERSION = 2
 SCAN_BATCH_SIZE = 25
 SCAN_INTERVAL_SECONDS = 1
 SCAN_COOLDOWN_SECONDS = 300
@@ -6909,10 +6911,17 @@ def normalize_symbol(ticker):
     return dashed if dashed in STOCK_NAMES else value
 
 
+def clean_industry(value):
+    if value is None or pd.isna(value):
+        return None
+    text = str(value).strip()
+    return None if text.casefold() in ("", "nan", "none", "null", "n/a", "—", "ไม่ระบุ") else text
+
+
 def asset_directory_rows(tickers):
-    columns=["Ticker","Asset_Type","Security_Name","Status","Data_Source","Data_Time","Price_AsOf","Data_Status"]
+    columns=["Ticker","Asset_Type","Security_Name","Industry","Industry_Source","Industry_Time","Status","Data_Source","Data_Time","Price_AsOf","Data_Status"]
     return pd.DataFrame([{"Ticker":t,"Asset_Type":"ETF" if t in ETF_NAMES else "Common Stock" if t in STOCK_NAMES else "ไม่ระบุ",
-                          "Security_Name":STOCK_NAMES.get(t,ETF_NAMES.get(t,t)),"Status":"ไม่มีข้อมูล",
+                          "Security_Name":STOCK_NAMES.get(t,ETF_NAMES.get(t,t)),"Industry":None,"Industry_Source":"","Industry_Time":"","Status":"ไม่มีข้อมูล",
                           "Data_Source":"ทะเบียนรายชื่อ","Data_Time":"","Price_AsOf":"","Data_Status":"ยังไม่โหลดราคา"}
                          for t in dict.fromkeys(tickers)],columns=columns)
 
@@ -6942,7 +6951,7 @@ def remember_quotes(existing, incoming):
     return result
 
 
-def build_universe_frame(csv_frame, saved=None):
+def build_universe_frame(csv_frame, saved=None, classifications=None):
     """Fixed counts; preserve CSV observations and keep excluded rows separately."""
     original=csv_frame.copy()
     original["Ticker"]=original.Ticker.map(normalize_symbol)
@@ -6981,7 +6990,23 @@ def build_universe_frame(csv_frame, saved=None):
                     frame[col]=np.nan if col in NUMERIC_COLUMNS else ""
                 if not values.empty:
                     frame.loc[values.index,col]=values
+            # A successfully recalculated missing return must not masquerade as
+            # an older CSV return under the new price timestamp.
+            version = pd.to_numeric(fresh.get("Return_Calc_Version", pd.Series(index=fresh.index, dtype=float)), errors="coerce")
+            calculated = allowed & version.eq(RETURN_CALC_VERSION)
+            for col in ("Historical_Return", "Return_2Y", "Return_3Y"):
+                if col in fresh:
+                    frame.loc[fresh.index[calculated], col] = pd.to_numeric(fresh.loc[calculated, col], errors="coerce")
     frame[["Asset_Type","Security_Name"]]=canonical
+    for ticker, metadata in (classifications or {}).items():
+        if ticker not in frame.index or not metadata.get("Industry"):
+            continue
+        old_time = pd.to_datetime(frame.at[ticker, "Industry_Time"], utc=True, errors="coerce")
+        new_time = pd.to_datetime(metadata.get("Industry_Time"), utc=True, errors="coerce")
+        if pd.notna(old_time) and (pd.isna(new_time) or old_time > new_time):
+            continue
+        for col in ("Industry", "Industry_Source", "Industry_Time"):
+            frame.at[ticker, col] = metadata.get(col, "")
     for col in NUMERIC_COLUMNS:
         frame[col]=pd.to_numeric(frame[col],errors="coerce")
     outside=original.loc[~original.Ticker.isin(tickers)].copy()
@@ -6999,12 +7024,14 @@ def scan_snapshot_row(ticker, history, stamp):
     row.update(snapshot)
     complete=all(snapshot.get(k) is not None for k in ("Close","EMA20","EMA50"))
     row.update({"Status":("PASS" if snapshot["Close"]>snapshot["EMA20"]>snapshot["EMA50"] else "FAIL") if complete else "ไม่มีข้อมูล",
-                "Historical_Return":snapshot_return(f,12),"Data_Time":stamp,"Price_AsOf":snapshot.get("Bar_Date",""),
+                "Historical_Return":snapshot_return(f,12),"Return_2Y":snapshot_return(f,24),"Return_3Y":snapshot_return(f,36),
+                "Return_Calc_Version":RETURN_CALC_VERSION,"History_Years_Loaded":0,
+                "Data_Time":stamp,"Price_AsOf":snapshot.get("Bar_Date",""),
                 "Data_Status":"โหลดสำเร็จ","Data_Source":"Yahoo Finance / สแกนรายวัน"})
     return row
 
 
-# === PERSISTENT DATA / BACKGROUND UPDATES — รุ่น 2026-09-09.4 ===
+# === PERSISTENT DATA / BACKGROUND UPDATES ===
 import os
 import sqlite3
 import threading
@@ -7013,7 +7040,7 @@ import zlib
 from collections import deque
 from io import StringIO
 
-APP_VERSION = "2026-09-09.4"
+APP_VERSION = "2026-09-09.5"
 CACHE_FILE = Path(os.environ.get("DASHBOARD_CACHE_FILE", str(Path(__file__).resolve().parent / "dashboard_cache.sqlite3")))
 SCAN_TIME_BUDGET_SECONDS = 600
 _PROVIDER_LOCK = threading.RLock()
@@ -7026,6 +7053,7 @@ class DashboardCache:
         self.error = ""
         self._fallback = {}
         self._fallback_quotes = {}
+        self._fallback_classifications = {}
         self._lock = threading.RLock()
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -7033,11 +7061,44 @@ class DashboardCache:
                 db.execute("PRAGMA journal_mode=WAL")
                 db.execute("CREATE TABLE IF NOT EXISTS objects (key TEXT PRIMARY KEY, body BLOB NOT NULL, metadata TEXT NOT NULL)")
                 db.execute("CREATE TABLE IF NOT EXISTS quotes (ticker TEXT PRIMARY KEY, body TEXT NOT NULL)")
+                db.execute("CREATE TABLE IF NOT EXISTS classifications (ticker TEXT PRIMARY KEY, body TEXT NOT NULL)")
+                existing_info = db.execute("SELECT key, body FROM objects WHERE key LIKE 'info:%' AND substr(key,6) NOT IN (SELECT ticker FROM classifications)").fetchall()
+            for key, compressed in existing_info:
+                try:
+                    self.save_classification(key[5:], json.loads(zlib.decompress(compressed)))
+                except (ValueError, TypeError, zlib.error):
+                    pass
         except (OSError, sqlite3.Error) as exc:
             self.error = str(exc)
 
     def connect(self):
         return sqlite3.connect(str(self.path), timeout=5)
+
+    def save_classification(self, ticker, info):
+        is_etf = ticker in ETF_NAMES or info.get("quoteType") == "ETF"
+        value = clean_industry(info.get("category") if is_etf else info.get("industry"))
+        metadata = {"Industry": value, "Industry_Source": "Yahoo Finance / หมวด ETF" if is_etf else "Yahoo Finance / Industry",
+                    "Industry_Time": info.get("_Fetched_At_UTC", "")}
+        with self._lock:
+            try:
+                if not self.error:
+                    with self.connect() as db:
+                        db.execute("INSERT INTO classifications VALUES (?,?) ON CONFLICT(ticker) DO UPDATE SET body=excluded.body",
+                                   (ticker, json.dumps(metadata, ensure_ascii=False)))
+                    return
+            except (OSError, sqlite3.Error) as exc:
+                self.error = str(exc)
+            self._fallback_classifications[ticker] = metadata
+
+    def classifications(self):
+        with self._lock:
+            if not self.error:
+                try:
+                    with self.connect() as db:
+                        return {ticker: json.loads(body) for ticker, body in db.execute("SELECT ticker, body FROM classifications")}
+                except (OSError, sqlite3.Error, ValueError) as exc:
+                    self.error = str(exc)
+            return self._fallback_classifications.copy()
 
     def get(self, key):
         with self._lock:
@@ -7082,7 +7143,7 @@ class DashboardCache:
         except (ValueError, KeyError, TypeError):
             return None, {}
 
-    def save_history(self, ticker, frame, stamp, interval="1d", years=2, full_refreshed_at=None):
+    def save_history(self, ticker, frame, stamp, interval="1d", years=HISTORY_YEARS, full_refreshed_at=None):
         f = normalize_history(frame)[["Open", "High", "Low", "Close", "Volume"]].copy()
         market_tz = str(f.index.tz or "America/New_York")
         if interval == "1d":
@@ -7092,7 +7153,9 @@ class DashboardCache:
                 "last_bar": str(f.index[-1]), "version": 1}
         self.put(f"history:{interval}:{ticker}", f.to_json(orient="split", date_format="iso", double_precision=15), meta)
         if interval == "1d":
-            self.save_quotes(pd.DataFrame([scan_snapshot_row(ticker, f, stamp)]))
+            row = scan_snapshot_row(ticker, f, stamp)
+            row["History_Years_Loaded"] = years
+            self.save_quotes(pd.DataFrame([row]))
         return f
 
     def quotes(self):
@@ -7135,7 +7198,7 @@ class DashboardCache:
 
 
 @st.cache_resource
-def get_data_cache():
+def get_data_cache(_version=APP_VERSION):
     return DashboardCache(CACHE_FILE)
 
 
@@ -7153,7 +7216,15 @@ def checked_today(meta, now=None):
         return False
 
 
-def history_request(old, meta, years=2):
+def summary_is_current(row, now=None):
+    # A new column must trigger backfill even when an old 2-year scan ran today.
+    return (row.get("Data_Status") == "โหลดสำเร็จ"
+            and number(row.get("Return_Calc_Version")) == RETURN_CALC_VERSION
+            and (number(row.get("History_Years_Loaded")) or 0) >= HISTORY_YEARS
+            and checked_today({"fetched_at": row.get("Data_Time")}, now))
+
+
+def history_request(old, meta, years=HISTORY_YEARS):
     try:
         refreshed = pd.Timestamp(meta.get("full_refreshed_at", meta.get("fetched_at")))
         if refreshed.tzinfo is None:
@@ -7194,7 +7265,7 @@ def _extract_batch(batch, ticker, count):
     raise ValueError("ไม่พบคอลัมน์ของหุ้น")
 
 
-def fetch_daily_batch(tickers, cache, *, force=False, years=2):
+def fetch_daily_batch(tickers, cache, *, force=False, years=HISTORY_YEARS):
     if len(tickers) > SCAN_BATCH_SIZE:
         raise ValueError(f"โหลดได้ไม่เกิน {SCAN_BATCH_SIZE} ตัวต่อชุด")
     rows = {r["Ticker"]: r for r in asset_directory_rows(tickers).to_dict("records")}
@@ -7206,6 +7277,7 @@ def fetch_daily_batch(tickers, cache, *, force=False, years=2):
         if not force and old is not None and checked_today(meta) and meta.get("years", 0) >= years:
             try:
                 rows[ticker] = scan_snapshot_row(ticker, old, meta["fetched_at"])
+                rows[ticker]["History_Years_Loaded"] = meta.get("years", 0)
                 stats["reused"] += 1
                 continue
             except (ValueError, KeyError):
@@ -7234,6 +7306,7 @@ def fetch_daily_batch(tickers, cache, *, force=False, years=2):
                         merged = normalize_history(fresh)
                     stamp = datetime.now(timezone.utc).isoformat()
                     row = scan_snapshot_row(ticker, merged, stamp)
+                    row["History_Years_Loaded"] = max(years, int(meta.get("years", years)))
                     full_stamp = stamp if "period" in kwargs or adjusted else meta.get("full_refreshed_at", meta.get("fetched_at", stamp))
                     cache.save_history(ticker, merged, stamp, years=max(years, int(meta.get("years", years))), full_refreshed_at=full_stamp)
                     rows[ticker] = row
@@ -7259,6 +7332,7 @@ class BackgroundUpdates:
         self.lock = threading.RLock()
         self.thread = None
         self.priority = deque()
+        self.metadata_queue = deque()
         self.pending = set()
         self.queue = deque()
         self.scan_running = False
@@ -7273,7 +7347,7 @@ class BackgroundUpdates:
     def state(self):
         with self.lock:
             return {k: getattr(self, k) for k in ("scan_running", "cooldown_until", "current", "total", "done", "success", "failed", "reused", "incremental", "initial", "started", "message", "revision")} | {
-                "remaining": len(self.queue), "busy": bool(self.current or self.priority or self.scan_running), "errors": self.errors[-12:]}
+                "remaining": len(self.queue), "busy": bool(self.current or self.priority or self.metadata_queue or self.scan_running), "errors": self.errors[-12:]}
 
     def _ensure_thread(self):
         if self.thread is None or not self.thread.is_alive():
@@ -7286,7 +7360,7 @@ class BackgroundUpdates:
             if time.time() < self.cooldown_until:
                 return False
             if job not in self.pending:
-                self.priority.append(job)
+                (self.metadata_queue if kind == "industry" else self.priority).append(job)
                 self.pending.add(job)
             self._ensure_thread()
             return True
@@ -7319,7 +7393,16 @@ class BackgroundUpdates:
                 f = yf.Ticker(ticker).history(period="1mo", interval=interval, auto_adjust=True,
                                               actions=False, prepost=False, timeout=DOWNLOAD_TIMEOUT_SECONDS)
             self.cache.save_history(ticker, f, datetime.now(timezone.utc).isoformat(), interval=interval)
-        elif kind == "info":
+        elif kind in ("info", "industry"):
+            if kind == "industry":
+                cached, meta = self.cache.get(f"info:{ticker}")
+                try:
+                    recent = (pd.Timestamp.now(tz="UTC") - pd.Timestamp(meta["fetched_at"])).total_seconds() < 30 * 86400
+                except (KeyError, ValueError, TypeError):
+                    recent = False
+                if cached and recent:
+                    self.cache.save_classification(ticker, cached)
+                    return
             with _PROVIDER_LOCK:
                 info = yf.Ticker(ticker).get_info()
             if not isinstance(info, dict) or not info:
@@ -7327,6 +7410,7 @@ class BackgroundUpdates:
             stamp = datetime.now(timezone.utc).isoformat()
             info = json.loads(pd.Series(info).to_json(double_precision=15))
             self.cache.put(f"info:{ticker}", {**info, "_Fetched_At_UTC": stamp}, {"fetched_at": stamp})
+            self.cache.save_classification(ticker, {**info, "_Fetched_At_UTC": stamp})
         elif kind == "dividends":
             with _PROVIDER_LOCK:
                 result = _fetch_dividends(ticker)
@@ -7342,6 +7426,7 @@ class BackgroundUpdates:
                 if time.time() < self.cooldown_until:
                     self.scan_running = False
                     self.priority.clear()
+                    self.metadata_queue.clear()
                     self.pending.clear()
                     self.thread = None
                     return
@@ -7349,6 +7434,10 @@ class BackgroundUpdates:
                     job = self.priority.popleft()
                     group = None
                     self.current = f"{job[1]} — {job[0]}"
+                elif self.metadata_queue:
+                    job = self.metadata_queue.popleft()
+                    group = None
+                    self.current = f"{job[1]} — อุตสาหกรรม"
                 elif self.scan_running and self.queue:
                     if time.monotonic() - self.started >= SCAN_TIME_BUDGET_SECONDS:
                         self.scan_running = False
@@ -7400,12 +7489,12 @@ class BackgroundUpdates:
                     self.current = ""
                     self.revision += 1
             # Only a short pause between actual network batches; never blocks the UI.
-            if group and stats.get("initial", 0) + stats.get("incremental", 0):
+            if (group and stats.get("initial", 0) + stats.get("incremental", 0)) or (job and job[0] == "industry"):
                 time.sleep(SCAN_INTERVAL_SECONDS)
 
 
 @st.cache_resource
-def get_updater():
+def get_updater(_version=APP_VERSION):
     return BackgroundUpdates(get_data_cache())
 
 
@@ -7452,7 +7541,7 @@ def render_scan_controls(csv_frame):
         if start or small:
             # Skip successful histories checked this market day; failed refreshes remain retryable.
             saved = cache.quotes()
-            pending = [t for t in scoped if not (saved.get(t, {}).get("Data_Status") == "โหลดสำเร็จ" and checked_today({"fetched_at": saved[t].get("Data_Time")}))]
+            pending = [t for t in scoped if not summary_is_current(saved.get(t, {}))]
             if not pending:
                 st.success("ไม่มีรายการค้างในชุดนี้ ข้อมูลรายวันตรวจแล้ววันนี้ — อัปเดตราคาระหว่างวันผ่านหุ้นที่เลือก")
             elif not worker.start_scan(pending if start else pending[:SCAN_BATCH_SIZE]):
@@ -7467,7 +7556,7 @@ def render_scan_controls(csv_frame):
         if state["errors"]:
             with st.expander("รายการที่ยังโหลดไม่ได้"):
                 st.text("\n".join(state["errors"]))
-        st.caption("โหลดครั้งแรกย้อนหลัง 2 ปี รอบต่อไปดึงตั้งแต่ช่วงวันที่ขาดพร้อมทับซ้อน 7 วันแล้วรวมกับประวัติเดิม; ตรวจการเปลี่ยนราคาปรับแล้วก่อนรวมข้อมูล")
+        st.caption("เพื่อคำนวณผลตอบแทน 1 / 2 / 3 ปี ระบบขอประวัติย้อนหลัง 5 ปีครั้งแรก หรือเมื่อประวัติเดิมมีเพียง 2 ปี จากนั้นโหลดเฉพาะช่วงที่เพิ่มมาและตรวจราคาปรับแล้วก่อนรวมข้อมูล")
         st.caption("งบ 10 นาทีเป็นเวลาต่อรอบและจะจบคำขอที่กำลังทำก่อนหยุด ไม่ใช่การรับประกันว่าราคาครบ 4,900 ตัวภายใน 10 นาที งานทำต่อได้ขณะปิดแท็บหากเซิร์ฟเวอร์ยังทำงาน")
         st.caption("บันทึกอัตโนมัติใน dashboard_cache.sqlite3 ข้าง app.py บนเครื่องที่รันแอป; หากใช้โฮสต์ที่ล้างดิสก์เมื่อรีสตาร์ท ประวัตินี้อาจหาย เก็บ CSV เดิมไว้เสมอ")
     return universe
@@ -7757,6 +7846,18 @@ def compact_number(value):
 def parse_watchlist(data: bytes) -> pd.DataFrame:
     frame = pd.read_csv(BytesIO(data), encoding="utf-8-sig")
     frame.columns = frame.columns.astype(str).str.strip()
+    aliases = {
+        "Industry": ["industry", "อุตสาหกรรม"],
+        "Fund_Category": ["category", "fund_category", "หมวด ETF"],
+        "Historical_Return": ["1y return (%)", "1y return%", "return_1y", "1y_return"],
+        "Return_2Y": ["2y return (%)", "2y return%", "return_2y", "2y_return"],
+        "Return_3Y": ["3y return (%)", "3y return%", "return_3y", "3y_return"],
+    }
+    for canonical, alternatives in aliases.items():
+        if canonical not in frame:
+            candidate = next((c for c in frame if c.casefold() in alternatives), None)
+            if candidate is not None:
+                frame = frame.rename(columns={candidate: canonical})
     if "Ticker" not in frame and "Symbol" in frame:
         frame = frame.rename(columns={"Symbol": "Ticker"})
     if "Ticker" not in frame:
@@ -7767,6 +7868,16 @@ def parse_watchlist(data: bytes) -> pd.DataFrame:
     if "Asset_Type" not in frame:
         frame["Asset_Type"] = "ไม่ระบุ"
     frame["Asset_Type"] = frame.Asset_Type.fillna("ไม่ระบุ").astype(str)
+    if "Industry" not in frame:
+        frame["Industry"] = None
+    frame["Industry"] = frame.Industry.map(clean_industry)
+    if "Fund_Category" in frame:
+        etfs = frame.Asset_Type.str.upper().str.contains("ETF", regex=False) | frame.Ticker.isin(ETF_NAMES)
+        frame.loc[etfs, "Industry"] = frame.loc[etfs, "Industry"].combine_first(frame.loc[etfs, "Fund_Category"].map(clean_industry))
+    if "Industry_Source" not in frame:
+        frame["Industry_Source"] = np.where(frame.Industry.notna(), "CSV", "")
+    if "Industry_Time" not in frame:
+        frame["Industry_Time"] = ""
     if "Status" not in frame:
         frame["Status"] = "ไม่มีข้อมูล"
     frame["Status"] = frame.Status.fillna("ไม่มีข้อมูล").astype(str).str.strip().str.upper()
@@ -7799,6 +7910,8 @@ def filter_watchlist(frame, asset_type, pass_only, query, low, high, rsi_range,
         found=result.Ticker.str.contains(term,regex=False,na=False)
         if "Security_Name" in result:
             found=found | result.Security_Name.str.upper().str.contains(term,regex=False,na=False)
+        if "Industry" in result:
+            found=found | result.Industry.fillna("").str.upper().str.contains(term,regex=False,na=False)
         result = result.loc[found]
     for col, mask in [("Close", result.Close.between(low, high)),
                       ("RSI_14", result.RSI_14.between(*rsi_range)),
@@ -8022,7 +8135,7 @@ def render_filters(frame):
     a,b,c = st.columns([1,1,1.4])
     asset = a.selectbox("ประเภทสินทรัพย์", ["ทั้งหมด"]+sorted(frame.Asset_Type.unique().tolist()), key="asset_filter")
     status = b.radio("สถานะจาก Screener", ["ทั้งหมด", "PASS เท่านั้น"], horizontal=True, key="status_filter")
-    query = c.text_input("ค้นหา Ticker / ชื่อบริษัทหรือ ETF", key="search_ticker", help="เช่น SCHD, Vanguard, Treasury หรือ Dividend")
+    query = c.text_input("ค้นหา Ticker / บริษัท / อุตสาหกรรม", key="search_ticker", help="เช่น SCHD, Vanguard, Semiconductors หรือ Software ค้นจากข้อมูลที่บันทึกไว้")
     with st.expander("ตัวกรองขั้นสูง", expanded=False):
         a,b,c = st.columns(3)
         low = a.number_input("ราคาต่ำสุด", min_value=0.0, value=0.0, step=1.0, key="min_price")
@@ -8039,35 +8152,82 @@ def render_filters(frame):
     return filter_watchlist(frame, asset, status == "PASS เท่านั้น", query, low, high, rsi, ret, keep)
 
 
+RETURN_COLUMNS = ["Historical_Return", "Return_2Y", "Return_3Y"]
+WATCHLIST_COLUMNS = ["Ticker", "Security_Name", "Industry", "Asset_Type", "Status", "Close", *RETURN_COLUMNS,
+                     "Vol_Ratio", "RSI_14", "MACD", "Data_Source", "Data_Status", "Price_AsOf", "Data_Time"]
+
+
+def return_cell_style(value):
+    n = number(value)
+    if n is None or n == 0:
+        return ""
+    return ("background-color: #143d2b; color: #7ee2a8; font-weight: 600" if n > 0 else
+            "background-color: #4a2028; color: #ff9b9b; font-weight: 600")
+
+
+def watchlist_column_config():
+    config = {
+        "Ticker": st.column_config.TextColumn("Ticker", help="สัญลักษณ์ซื้อขายของหุ้นหรือ ETF เช่น AAPL หรือ SPY"),
+        "Security_Name": st.column_config.TextColumn("ชื่อบริษัท / ETF", help="ชื่อหลักทรัพย์จากทะเบียน Nasdaq ณ วันที่ระบุด้านบน", width="large"),
+        "Industry": st.column_config.TextColumn("อุตสาหกรรม / หมวด ETF", help="หุ้น: อุตสาหกรรม (Industry) จาก CSV หรือ Yahoo Finance; ETF: หมวดกองทุน (Category) ซึ่งอาจลงทุนหลายอุตสาหกรรม เครื่องหมาย — คือยังไม่มีข้อมูล กดเติมอุตสาหกรรมหน้านี้เพื่อโหลด ข้อมูลนี้อัปเดตแยกจากเวลาราคา", width="medium"),
+        "Asset_Type": st.column_config.TextColumn("ประเภท", help="Common Stock คือหุ้นสามัญ; ETF คือกองทุนที่ซื้อขายในตลาดหลักทรัพย์"),
+        "Status": st.column_config.TextColumn("Status", help="สแกนใหม่: PASS เมื่อราคาปิด > EMA20 > EMA50; FAIL เมื่อไม่ครบเงื่อนไข; ถ้าข้อมูลไม่พอจะแจ้งไม่มีข้อมูล แถว CSV อาจใช้เกณฑ์เดิม สถานะนี้ไม่ใช่คำแนะนำซื้อหรือคะแนน 100 จุด"),
+        "Close": st.column_config.NumberColumn("ราคา Watchlist", help="ราคาจาก CSV หรือราคาปิดรายวันปรับแล้วในสกุลของสินทรัพย์นั้น ดูวันที่ราคาและแหล่งข้อมูลประกอบ ไม่ใช่ราคาเรียลไทม์", format="%.2f"),
+        "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio", help="ปริมาณซื้อขายของแท่งรายวันล่าสุด ÷ ค่าเฉลี่ย 20 แท่งก่อนหน้า เช่น 1.50x หมายถึงมากกว่าค่าเฉลี่ย 50% ใช้แท่งก่อนวันปัจจุบันตามตลาด; CSV อาจใช้สูตรเดิม", format="%.2fx"),
+        "RSI_14": st.column_config.NumberColumn("RSI (14)", help="Relative Strength Index แบบ Wilder ระยะ 14 แท่ง ช่วง 0–100 มากกว่า 70 คือเขตซื้อมาก ต่ำกว่า 30 คือเขตขายมาก ไม่ใช่สัญญาณซื้อขายโดยลำพัง", format="%.2f"),
+        "MACD": st.column_config.NumberColumn("MACD", help="EMA12 − EMA26 ของราคาปิด หน่วยเดียวกับราคา ค่าบวกหมายถึงค่าเฉลี่ยระยะสั้นสูงกว่าระยะยาว การเทียบกับเส้น Signal ใช้ EMA9 ของ MACD", format="%.4f"),
+        "Data_Source": st.column_config.TextColumn("แหล่งข้อมูล", help="ที่มาของราคาและตัวชี้วัดในแถว เช่น CSV หรือการสแกนรายวันจาก Yahoo Finance อุตสาหกรรมมีแหล่งข้อมูลแยกในไฟล์ดาวน์โหลด"),
+        "Data_Status": st.column_config.TextColumn("สถานะข้อมูล", help="บอกว่าโหลดสำเร็จ ยังไม่โหลด หรือโหลดใหม่ไม่สำเร็จ หากโหลดใหม่ล้มเหลวจะคงราคาและเวลาที่เคยสำเร็จไว้"),
+        "Price_AsOf": st.column_config.TextColumn("วันที่ราคา", help="วันที่แท่งราคาที่ใช้คำนวณ ตามปฏิทินตลาด ไม่ใช่วันที่เปิดหน้าเว็บ ใช้แท่งก่อนวันปัจจุบันตามตลาดเพื่อหลีกเลี่ยงปริมาณซื้อขายที่ยังไม่จบวัน"),
+        "Data_Time": st.column_config.TextColumn("ดึงข้อมูลสำเร็จ (ไทย)", help="วันและเวลาที่ดึงราคาชุดนี้สำเร็จ แปลงเป็นเวลาไทย UTC+7 การเปิดหน้าใหม่ไม่เปลี่ยนเวลานี้ และไม่ใช่เวลาที่ราคาซื้อขายเกิดขึ้น"),
+    }
+    for years, col in zip((1, 2, 3), RETURN_COLUMNS):
+        config[col] = st.column_config.NumberColumn(f"{years}Y Return (%)", format="%+.2f%%",
+            help=f"ผลตอบแทนสะสม {years} ปี ไม่ใช่ผลตอบแทนเฉลี่ยต่อปี (CAGR): (ราคาปรับแล้วล่าสุด ÷ ราคาปรับแล้วของวันซื้อขายแรกตั้งแต่วันที่ย้อนหลัง {years} ปี − 1) × 100 ใช้แท่งรายวันก่อนวันนี้ตามตลาด สีเขียวคือบวก สีแดงคือลบ และ — คือประวัติไม่ครบช่วง ค่าจาก CSV อาจใช้วิธีคำนวณเดิม")
+    return config
+
+
 def render_watchlist_table(frame):
-    columns = ["Ticker", "Security_Name", "Asset_Type", "Status", "Close", "Historical_Return", "Vol_Ratio", "RSI_14", "MACD", "Data_Source", "Data_Status", "Price_AsOf", "Data_Time"]
+    columns = WATCHLIST_COLUMNS
     pages=max(1,math.ceil(len(frame)/100))
     if "watchlist_page" in st.session_state and st.session_state.watchlist_page>pages:
         st.session_state.watchlist_page=1
     page=st.number_input("หน้าตาราง (หน้าละ 100 ตัว)",min_value=1,max_value=pages,step=1,key="watchlist_page")
     start=(page-1)*100
     st.caption(f"แสดง {start+1 if len(frame) else 0:,}–{min(start+100,len(frame)):,} จาก {len(frame):,} ตัว · ดาวน์โหลดได้ครบทุกแถวที่ผ่านตัวกรอง")
-    table = frame.iloc[start:start+100][columns].copy()
+    table = frame.iloc[start:start+100].reindex(columns=columns).copy()
+    a, b = st.columns(2)
+    fill_industry = a.button("เติมอุตสาหกรรมหน้านี้", key="fill_industry_page", disabled=table.empty,
+                            help="ดึงเฉพาะรายการที่ยังไม่มีอุตสาหกรรมในหน้าปัจจุบัน สูงสุด 100 ตัว ทำเบื้องหลังและบันทึกใช้ซ้ำ")
+    fill_returns = b.button("เติมผลตอบแทน 1 / 2 / 3 ปี หน้านี้", key="fill_returns_page", disabled=table.empty,
+                           help="โหลดประวัติให้หุ้นในหน้านี้เบื้องหลัง ครั้งแรกต้องเติมประวัติให้ครอบคลุม 3 ปี การโหลดครั้งต่อไปใช้ข้อมูลที่เก็บไว้")
+    if fill_industry:
+        missing = table.loc[table.Industry.map(clean_industry).isna(), "Ticker"]
+        queued = sum(get_updater().request(t, "industry") for t in missing)
+        if queued:
+            st.info(f"เข้าคิวเติมอุตสาหกรรม {queued} ตัวในหน้านี้ ข้อมูลจะขึ้นเองเมื่อสำเร็จ")
+        elif len(missing):
+            st.warning("แหล่งข้อมูลกำลังพัก ลองใหม่หลังเวลาพักที่แสดงด้านบน")
+        else:
+            st.info("หน้านี้มีข้อมูลอุตสาหกรรมหรือหมวด ETF ครบแล้ว")
+    if fill_returns:
+        indexed = frame.set_index("Ticker")
+        pending = [t for t in table.Ticker if not summary_is_current(indexed.loc[t].to_dict())]
+        if not pending:
+            st.info("ประวัติหน้านี้ตรวจแล้ววันนี้ ช่อง — ที่เหลืออาจเป็นหุ้นหรือ ETF ที่มีประวัติไม่ถึงช่วงนั้น")
+        elif get_updater().start_scan(pending):
+            st.info(f"กำลังเติมประวัติและผลตอบแทน {len(pending)} ตัวในหน้านี้เบื้องหลัง")
+        else:
+            st.warning("มีงานสแกนอยู่ หรือแหล่งข้อมูลกำลังพัก ดูสถานะในส่วนอัปเดตทั้งชุด")
     table["Data_Time"] = table.Data_Time.map(lambda value: thai_time(value) if pd.notna(value) and value else "ไม่ระบุ")
     def rsi_style(value):
         n = number(value)
         return "" if n is None else "color: #ef5350" if n > 70 else "color: #26a69a" if n < 30 else ""
-    styled = table.style.format({"Close":"{:,.2f}", "Historical_Return":"{:+.2f}%", "Vol_Ratio":"{:.2f}x", "RSI_14":"{:.2f}", "MACD":"{:.4f}"}, na_rep="—")
+    styled = table.style.format({"Close":"{:,.2f}", **{c:"{:+.2f}%" for c in RETURN_COLUMNS}, "Vol_Ratio":"{:.2f}x", "RSI_14":"{:.2f}", "MACD":"{:.4f}"}, na_rep="—")
     styled = styled.map(rsi_style, subset=["RSI_14"]) if hasattr(styled,"map") else styled.applymap(rsi_style, subset=["RSI_14"])
-    st.dataframe(styled, height=500, **width_options(st.dataframe), hide_index=True, column_config={
-        "Ticker":st.column_config.TextColumn("Ticker",help="สัญลักษณ์หุ้นหรือกองทุน"),
-        "Security_Name":st.column_config.TextColumn("ชื่อบริษัท / ETF",help="ชื่อจากทะเบียน ณ วันที่ระบุด้านบน"),
-        "Asset_Type":st.column_config.TextColumn("ประเภท"),
-        "Status":st.column_config.TextColumn("Status",help="สแกนใหม่ใช้ Close > EMA20 > EMA50; แถว CSV ที่ยังไม่สแกนใช้ค่าเดิม ไม่ใช่คะแนนซื้อ 100 จุด"),
-        "Close":st.column_config.NumberColumn("ราคา Watchlist",help="ใช้ราคาบันทึกใน CSV หรือแท่งรายวันปรับแล้วตามเวลาแต่ละแถว ไม่ใช่ราคา streaming"),
-        "Historical_Return":st.column_config.NumberColumn("1Y Return (%)",help="CSV ใช้ค่าเดิม; สแกนใหม่คำนวณราคาปรับแล้วช่วง 12 เดือน"),
-        "Vol_Ratio":st.column_config.NumberColumn("Vol Ratio",help="สแกนใหม่: วอลุ่มรายวัน / ค่าเฉลี่ย 20 แท่งก่อนหน้า; CSV ใช้ค่าเดิม"),
-        "RSI_14":st.column_config.NumberColumn("RSI (14)"),
-        "MACD":st.column_config.NumberColumn("MACD"),
-        "Data_Source":st.column_config.TextColumn("แหล่งข้อมูล"),
-        "Data_Status":st.column_config.TextColumn("สถานะข้อมูล"),
-        "Price_AsOf":st.column_config.TextColumn("วันที่ราคา"),
-        "Data_Time":st.column_config.TextColumn("ดึงข้อมูลสำเร็จ (ไทย)")})
+    styled = styled.map(return_cell_style, subset=RETURN_COLUMNS) if hasattr(styled,"map") else styled.applymap(return_cell_style, subset=RETURN_COLUMNS)
+    st.dataframe(styled, height=500, **width_options(st.dataframe), hide_index=True, column_config=watchlist_column_config())
+    st.caption("ชี้เมาส์ที่หัวคอลัมน์เพื่อดูคำอธิบาย · ผลตอบแทนสะสม: เขียว = บวก / แดง = ลบ / — = ข้อมูลไม่พอ · เลื่อนตารางแนวนอนหรือขยายเต็มจอเพื่อดูทุกคอลัมน์")
     st.download_button("ดาวน์โหลดรายการที่กรองแล้ว", frame.to_csv(index=False).encode("utf-8-sig"),
                        file_name="filtered_watchlist.csv", mime="text/csv", key="download_watchlist")
 
@@ -8107,7 +8267,7 @@ def main():
         st.error(f"อ่าน CSV ไม่สำเร็จ: {exc} — ยังแสดงชุดรายชื่อ 4,900 ตัวได้")
     st.caption(source_label+" · เวลาแก้ไขไฟล์ไม่ใช่เวลาราคา")
     universe=render_scan_controls(original)
-    frame,outside=build_universe_frame(original,st.session_state.quote_records)
+    frame,outside=build_universe_frame(original,st.session_state.quote_records,get_data_cache().classifications())
     c1,c2,c3,c4=st.columns(4)
     c1.metric("สินทรัพย์ทั้งหมด",f"{len(frame):,}")
     c2.metric("Common Stock",f"{int(frame.Asset_Type.eq('Common Stock').sum()):,}")
@@ -8180,6 +8340,7 @@ def main():
         if ticker in set(universe) and snapshot and history_stamp:
             try:
                 known=scan_snapshot_row(ticker,history,history_stamp)
+                known["History_Years_Loaded"] = get_data_cache().history(ticker)[1].get("years", 0)
                 st.session_state.quote_records=remember_quotes(st.session_state.quote_records,pd.DataFrame([known]))
                 st.session_state.scan_attempted=sorted(set(st.session_state.scan_attempted) | {ticker})
             except (ValueError,KeyError):
