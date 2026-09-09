@@ -15,29 +15,15 @@ PERIODS = ["1 วัน", "5 วัน", "7 วัน", "1 เดือน", "3 
 CDN = "https://unpkg.com/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"
 
 
-@st.cache_data(ttl=300, max_entries=64, show_spinner=False)
-def _cached_chart_history(ticker: str, interval: str = "1d"):
-    # Cache failures too: a provider outage must not trigger the same request
-    # independently in every tab. The refresh buttons explicitly clear this.
-    try:
-        period = "5y" if interval == "1d" else "1mo"
-        frame = yf.Ticker(ticker).history(period=period, interval=interval, auto_adjust=True,
-                                         actions=False, prepost=False, timeout=20)
-        if frame is None or frame.empty:
-            raise ValueError("แหล่งข้อมูลไม่ส่งราคากลับมา ลองตรวจชื่อหุ้นหรือกดโหลดใหม่ภายหลัง")
-        return normalize_history(frame), datetime.now(timezone.utc).isoformat(), None
-    except Exception as exc:
-        return None, "", str(exc)
-
-
 def load_chart_history(ticker: str, interval: str = "1d") -> tuple[pd.DataFrame, str]:
-    frame, fetched_at, error = _cached_chart_history(ticker, interval)
-    if error is not None:
-        raise ValueError(error)
-    return frame, fetched_at
+    """Read immediately. Network updates are explicit background jobs."""
+    frame, meta = get_data_cache().history(ticker, interval)
+    if frame is None:
+        raise ValueError("ยังไม่มีประวัติที่บันทึกไว้ กดโหลด/อัปเดตหุ้นที่เลือก หรือโหลดข้อมูลกราฟ")
+    return frame, meta.get("fetched_at", "")
 
 
-load_chart_history.clear = _cached_chart_history.clear
+load_chart_history.clear = lambda *args: None
 
 
 def normalize_history(frame: pd.DataFrame) -> pd.DataFrame:
@@ -146,10 +132,13 @@ def render_trading_chart(ticker: str, *, key: str = "trading_chart") -> None:
     with left:
         period = st.radio("ช่วงเวลาที่แสดง", PERIODS, index=3, horizontal=True, key=f"{key}_period")
     with right:
-        refresh = st.button("โหลดข้อมูลใหม่", key=f"{key}_refresh")
+        refresh = st.button("โหลดข้อมูลกราฟ", key=f"{key}_refresh")
     interval = "5m" if period == "1 วัน" else "15m" if period in ["5 วัน", "7 วัน"] else "1d"
     if refresh:
-        load_chart_history.clear(ticker, interval)
+        if get_updater().request(ticker, "history", interval):
+            st.info("ส่งคำขอโหลดกราฟแล้ว แสดงข้อมูลที่มีระหว่างรอ")
+        else:
+            st.warning("แหล่งข้อมูลกำลังพัก ลองใหม่ตามเวลาพักที่แสดงด้านบน")
     try:
         with st.spinner(f"กำลังโหลดกราฟ {ticker}…"):
             history, fetched_at = load_chart_history(ticker, interval)
@@ -309,7 +298,7 @@ NUMERIC_COLUMNS = ["Close", "Historical_Return", "Vol_Ratio", "RSI_14", "MACD",
 COMMON_STOCK_LIMIT = 4200
 ETF_LIMIT = 700
 SCAN_BATCH_SIZE = 25
-SCAN_INTERVAL_SECONDS = 30
+SCAN_INTERVAL_SECONDS = 1
 SCAN_COOLDOWN_SECONDS = 300
 DOWNLOAD_THREADS = 4
 DOWNLOAD_TIMEOUT_SECONDS = 10
@@ -7015,134 +7004,472 @@ def scan_snapshot_row(ticker, history, stamp):
     return row
 
 
-@st.cache_data(ttl=900, max_entries=256, show_spinner=False)
-def load_watchlist_batch(tickers):
-    """Only derived rows are cached. Raw OHLC for the entire universe is not retained."""
-    if len(tickers)>SCAN_BATCH_SIZE:
-        raise ValueError(f"โหลดได้ไม่เกิน {SCAN_BATCH_SIZE} ตัวต่อชุด")
-    rows={r["Ticker"]:r for r in asset_directory_rows(tickers).to_dict("records")}
-    errors=[]
-    if not tickers:
-        return asset_directory_rows(()),"",errors
-    try:
-        batch=yf.download(list(tickers),period="2y",interval="1d",group_by="ticker",auto_adjust=True,
-                          threads=DOWNLOAD_THREADS,progress=False,timeout=DOWNLOAD_TIMEOUT_SECONDS)
-        if batch is None or batch.empty:
-            raise ValueError("แหล่งราคาไม่ส่งข้อมูลกลับมา หรือจำกัดคำขอ")
-        stamp=datetime.now(timezone.utc).isoformat()
-        for ticker in tickers:
+# === PERSISTENT DATA / BACKGROUND UPDATES — รุ่น 2026-09-09.4 ===
+import os
+import sqlite3
+import threading
+import time
+import zlib
+from collections import deque
+from io import StringIO
+
+APP_VERSION = "2026-09-09.4"
+CACHE_FILE = Path(os.environ.get("DASHBOARD_CACHE_FILE", str(Path(__file__).resolve().parent / "dashboard_cache.sqlite3")))
+SCAN_TIME_BUDGET_SECONDS = 600
+_PROVIDER_LOCK = threading.RLock()
+
+
+class DashboardCache:
+    """SQLite holds successful history and summaries; failures never replace prices."""
+    def __init__(self, path):
+        self.path = Path(path)
+        self.error = ""
+        self._fallback = {}
+        self._fallback_quotes = {}
+        self._lock = threading.RLock()
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            with self.connect() as db:
+                db.execute("PRAGMA journal_mode=WAL")
+                db.execute("CREATE TABLE IF NOT EXISTS objects (key TEXT PRIMARY KEY, body BLOB NOT NULL, metadata TEXT NOT NULL)")
+                db.execute("CREATE TABLE IF NOT EXISTS quotes (ticker TEXT PRIMARY KEY, body TEXT NOT NULL)")
+        except (OSError, sqlite3.Error) as exc:
+            self.error = str(exc)
+
+    def connect(self):
+        return sqlite3.connect(str(self.path), timeout=5)
+
+    def get(self, key):
+        with self._lock:
             try:
-                if isinstance(batch.columns,pd.MultiIndex):
-                    f=batch[ticker] if ticker in batch.columns.get_level_values(0) else batch.xs(ticker,axis=1,level=1)
-                elif len(tickers)==1:
-                    f=batch
+                if not self.error:
+                    with self.connect() as db:
+                        row = db.execute("SELECT body, metadata FROM objects WHERE key=?", (key,)).fetchone()
+                    if row:
+                        return json.loads(zlib.decompress(row[0])), json.loads(row[1])
+            except (OSError, sqlite3.Error, ValueError, zlib.error) as exc:
+                self.error = str(exc)
+            return self._fallback.get(key, (None, {}))
+
+    def put(self, key, value, meta):
+        encoded = json.dumps(value, ensure_ascii=False, default=str, allow_nan=False)
+        metadata = json.dumps(meta, ensure_ascii=False, default=str, allow_nan=False)
+        with self._lock:
+            try:
+                if not self.error:
+                    with self.connect() as db:
+                        db.execute("INSERT INTO objects VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET body=excluded.body, metadata=excluded.metadata",
+                                   (key, zlib.compress(encoded.encode()), metadata))
+                    return
+            except (OSError, sqlite3.Error) as exc:
+                self.error = str(exc)
+            # Keep only a small number of full histories if the disk is unavailable.
+            self._fallback[key] = (value, meta)
+            while len(self._fallback) > 64:
+                self._fallback.pop(next(iter(self._fallback)))
+
+    def history(self, ticker, interval="1d"):
+        body, meta = self.get(f"history:{interval}:{ticker}")
+        if body is None:
+            return None, {}
+        try:
+            frame = pd.read_json(StringIO(body), orient="split")
+            if interval == "1d":
+                frame.index = pd.DatetimeIndex(pd.to_datetime(frame.index)).tz_localize(None)
+            else:
+                frame.index = pd.to_datetime(frame.index, utc=True).tz_convert(meta.get("timezone", "America/New_York"))
+            return normalize_history(frame), meta
+        except (ValueError, KeyError, TypeError):
+            return None, {}
+
+    def save_history(self, ticker, frame, stamp, interval="1d", years=2, full_refreshed_at=None):
+        f = normalize_history(frame)[["Open", "High", "Low", "Close", "Volume"]].copy()
+        market_tz = str(f.index.tz or "America/New_York")
+        if interval == "1d":
+            f.index = f.index.tz_localize(None).normalize()
+        meta = {"fetched_at": stamp, "full_refreshed_at": full_refreshed_at or stamp,
+                "years": years, "timezone": market_tz, "adjusted": True,
+                "last_bar": str(f.index[-1]), "version": 1}
+        self.put(f"history:{interval}:{ticker}", f.to_json(orient="split", date_format="iso", double_precision=15), meta)
+        if interval == "1d":
+            self.save_quotes(pd.DataFrame([scan_snapshot_row(ticker, f, stamp)]))
+        return f
+
+    def quotes(self):
+        with self._lock:
+            if not self.error:
+                try:
+                    with self.connect() as db:
+                        return {t: json.loads(body) for t, body in db.execute("SELECT ticker, body FROM quotes")}
+                except (OSError, sqlite3.Error, ValueError) as exc:
+                    self.error = str(exc)
+            return {t: r.copy() for t, r in self._fallback_quotes.items()}
+
+    def save_quotes(self, rows):
+        if rows is None or rows.empty:
+            return
+        # A transaction prevents older concurrent responses from replacing newer rows.
+        with self._lock:
+            tickers = list(dict.fromkeys(rows.Ticker))
+            old = {}
+            if not self.error:
+                try:
+                    with self.connect() as db:
+                        placeholders = ",".join("?" for _ in tickers)
+                        old = {t: json.loads(body) for t, body in db.execute(f"SELECT ticker, body FROM quotes WHERE ticker IN ({placeholders})", tickers)}
+                except (OSError, sqlite3.Error, ValueError) as exc:
+                    self.error = str(exc)
+            if self.error:
+                old = {t: self._fallback_quotes[t] for t in tickers if t in self._fallback_quotes}
+            merged = remember_quotes(old, rows)
+            clean = json.loads(pd.DataFrame([merged[t] for t in tickers]).to_json(orient="records", double_precision=15))
+            try:
+                if not self.error:
+                    with self.connect() as db:
+                        db.executemany("INSERT INTO quotes VALUES (?,?) ON CONFLICT(ticker) DO UPDATE SET body=excluded.body",
+                                       [(r["Ticker"], json.dumps(r, ensure_ascii=False, allow_nan=False)) for r in clean])
+                    return
+            except (OSError, sqlite3.Error) as exc:
+                self.error = str(exc)
+            self._fallback_quotes.update({r["Ticker"]: r for r in clean})
+
+
+@st.cache_resource
+def get_data_cache():
+    return DashboardCache(CACHE_FILE)
+
+
+def market_date(now=None):
+    stamp = pd.Timestamp(now if now is not None else datetime.now(timezone.utc))
+    if stamp.tzinfo is None:
+        stamp = stamp.tz_localize("UTC")
+    return stamp.tz_convert("America/New_York").date()
+
+
+def checked_today(meta, now=None):
+    try:
+        return market_date(meta["fetched_at"]) == market_date(now)
+    except (KeyError, ValueError, TypeError):
+        return False
+
+
+def history_request(old, meta, years=2):
+    try:
+        refreshed = pd.Timestamp(meta.get("full_refreshed_at", meta.get("fetched_at")))
+        if refreshed.tzinfo is None:
+            refreshed = refreshed.tz_localize("UTC")
+        reconcile = (pd.Timestamp.now(tz="UTC") - refreshed).total_seconds() > 30 * 86400
+    except (ValueError, TypeError, AttributeError):
+        reconcile = True
+    if old is None or old.empty or int(meta.get("years", 0)) < years or reconcile:
+        return {"period": f"{max(years, int(meta.get('years', 0)))}y"}
+    # Include overlap for corrected bars; the full stored series remains in use.
+    return {"start": (old.index[-1] - pd.Timedelta(days=7)).strftime("%Y-%m-%d")}
+
+
+def merge_daily_history(old, new, now=None):
+    fresh = normalize_history(new)[["Open", "High", "Low", "Close", "Volume"]].copy()
+    fresh.index = fresh.index.tz_localize(None).normalize()
+    if old is None or old.empty:
+        return fresh, False
+    saved = normalize_history(old).copy()
+    saved.index = saved.index.tz_localize(None).normalize()
+    common = saved.index.intersection(fresh.index)
+    completed = common[common.date < market_date(now)]
+    # Splits, dividends or historical corrections can change adjusted prices.
+    # Re-fetch the complete window rather than mixing different adjustment bases.
+    cols = ["Open", "High", "Low", "Close"]
+    changed = bool(len(completed) and not np.allclose(saved.loc[completed, cols], fresh.loc[completed, cols], rtol=1e-6, atol=1e-8))
+    combined = pd.concat([saved, fresh]).sort_index()
+    return combined.loc[~combined.index.duplicated(keep="last")], changed
+
+
+def _extract_batch(batch, ticker, count):
+    if batch is None or batch.empty:
+        raise ValueError("Yahoo ไม่ส่งราคา — อาจจำกัดคำขอหรือไม่มีข้อมูล")
+    if isinstance(batch.columns, pd.MultiIndex):
+        return batch[ticker] if ticker in batch.columns.get_level_values(0) else batch.xs(ticker, axis=1, level=1)
+    if count == 1:
+        return batch
+    raise ValueError("ไม่พบคอลัมน์ของหุ้น")
+
+
+def fetch_daily_batch(tickers, cache, *, force=False, years=2):
+    if len(tickers) > SCAN_BATCH_SIZE:
+        raise ValueError(f"โหลดได้ไม่เกิน {SCAN_BATCH_SIZE} ตัวต่อชุด")
+    rows = {r["Ticker"]: r for r in asset_directory_rows(tickers).to_dict("records")}
+    groups, stored, errors = {}, {}, []
+    stats = {"reused": 0, "incremental": 0, "initial": 0, "failed": 0}
+    for ticker in tickers:
+        old, meta = cache.history(ticker)
+        stored[ticker] = (old, meta)
+        if not force and old is not None and checked_today(meta) and meta.get("years", 0) >= years:
+            try:
+                rows[ticker] = scan_snapshot_row(ticker, old, meta["fetched_at"])
+                stats["reused"] += 1
+                continue
+            except (ValueError, KeyError):
+                pass
+        request = history_request(old, meta, years)
+        groups.setdefault(tuple(request.items()), []).append(ticker)
+    for key, symbols in groups.items():
+        kwargs = dict(key)
+        try:
+            with _PROVIDER_LOCK:
+                batch = yf.download(symbols, interval="1d", group_by="ticker", auto_adjust=True,
+                                    threads=DOWNLOAD_THREADS, progress=False, timeout=DOWNLOAD_TIMEOUT_SECONDS, **kwargs)
+            for ticker in symbols:
+                try:
+                    old, meta = stored[ticker]
+                    fresh = _extract_batch(batch, ticker, len(symbols))
+                    merged, adjusted = merge_daily_history(old, fresh)
+                    if adjusted and "start" in kwargs:
+                        with _PROVIDER_LOCK:
+                            full = yf.download([ticker], period=f"{max(years, int(meta.get('years', 2)))}y", interval="1d",
+                                               auto_adjust=True, group_by="ticker", threads=False, progress=False,
+                                               timeout=DOWNLOAD_TIMEOUT_SECONDS)
+                        merged = normalize_history(_extract_batch(full, ticker, 1))
+                    elif "period" in kwargs:
+                        # A full response is authoritative; do not retain old adjusted rows.
+                        merged = normalize_history(fresh)
+                    stamp = datetime.now(timezone.utc).isoformat()
+                    row = scan_snapshot_row(ticker, merged, stamp)
+                    full_stamp = stamp if "period" in kwargs or adjusted else meta.get("full_refreshed_at", meta.get("fetched_at", stamp))
+                    cache.save_history(ticker, merged, stamp, years=max(years, int(meta.get("years", years))), full_refreshed_at=full_stamp)
+                    rows[ticker] = row
+                    stats["incremental" if "start" in kwargs and not adjusted else "initial"] += 1
+                except Exception as exc:
+                    rows[ticker]["Data_Status"] = "โหลดไม่สำเร็จ"
+                    errors.append(f"{ticker}: {str(exc)[:240]}")
+                    stats["failed"] += 1
+        except Exception as exc:
+            for ticker in symbols:
+                rows[ticker]["Data_Status"] = "โหลดไม่สำเร็จ"
+                stats["failed"] += 1
+            errors.append(str(exc)[:400])
+    result = pd.DataFrame(rows.values()) if rows else asset_directory_rows(())
+    cache.save_quotes(result)
+    return result, errors, stats
+
+
+class BackgroundUpdates:
+    """One provider queue per server; Streamlit only reads saved results."""
+    def __init__(self, cache):
+        self.cache = cache
+        self.lock = threading.RLock()
+        self.thread = None
+        self.priority = deque()
+        self.pending = set()
+        self.queue = deque()
+        self.scan_running = False
+        self.cooldown_until = 0.0
+        self.current = ""
+        self.total = self.done = self.success = self.failed = self.reused = self.incremental = self.initial = 0
+        self.started = 0.0
+        self.message = "พร้อมใช้ข้อมูลที่มี — ยังไม่เริ่มโหลดทั้งชุด"
+        self.errors = []
+        self.revision = 0
+
+    def state(self):
+        with self.lock:
+            return {k: getattr(self, k) for k in ("scan_running", "cooldown_until", "current", "total", "done", "success", "failed", "reused", "incremental", "initial", "started", "message", "revision")} | {
+                "remaining": len(self.queue), "busy": bool(self.current or self.priority or self.scan_running), "errors": self.errors[-12:]}
+
+    def _ensure_thread(self):
+        if self.thread is None or not self.thread.is_alive():
+            self.thread = threading.Thread(target=self._run, name="dashboard-data-updates", daemon=True)
+            self.thread.start()
+
+    def request(self, ticker, kind="history", interval="1d"):
+        job = (kind, ticker, interval)
+        with self.lock:
+            if time.time() < self.cooldown_until:
+                return False
+            if job not in self.pending:
+                self.priority.append(job)
+                self.pending.add(job)
+            self._ensure_thread()
+            return True
+
+    def start_scan(self, tickers):
+        with self.lock:
+            if time.time() < self.cooldown_until or self.scan_running or self.current.startswith("สแกน "):
+                return False
+            self.queue = deque(dict.fromkeys(tickers))
+            self.total = len(self.queue)
+            self.done = self.success = self.failed = self.reused = self.incremental = self.initial = 0
+            self.started = time.monotonic()
+            self.scan_running = bool(self.queue)
+            self.message = "กำลังโหลดเบื้องหลัง ใช้หน้า dashboard ต่อได้"
+            self._ensure_thread()
+            return True
+
+    def stop(self):
+        with self.lock:
+            self.scan_running = False
+            self.message = "หยุดหลังชุดที่กำลังโหลด ข้อมูลที่สำเร็จบันทึกแล้ว"
+
+    def _job(self, kind, ticker, interval):
+        if kind == "history" and interval == "1d":
+            rows, errors, stats = fetch_daily_batch((ticker,), self.cache, force=True, years=5)
+            if errors:
+                raise ValueError("; ".join(errors))
+        elif kind == "history":
+            with _PROVIDER_LOCK:
+                f = yf.Ticker(ticker).history(period="1mo", interval=interval, auto_adjust=True,
+                                              actions=False, prepost=False, timeout=DOWNLOAD_TIMEOUT_SECONDS)
+            self.cache.save_history(ticker, f, datetime.now(timezone.utc).isoformat(), interval=interval)
+        elif kind == "info":
+            with _PROVIDER_LOCK:
+                info = yf.Ticker(ticker).get_info()
+            if not isinstance(info, dict) or not info:
+                raise ValueError("ไม่มีข้อมูลพื้นฐานตอบกลับ")
+            stamp = datetime.now(timezone.utc).isoformat()
+            info = json.loads(pd.Series(info).to_json(double_precision=15))
+            self.cache.put(f"info:{ticker}", {**info, "_Fetched_At_UTC": stamp}, {"fetched_at": stamp})
+        elif kind == "dividends":
+            with _PROVIDER_LOCK:
+                result = _fetch_dividends(ticker)
+            if result["error"]:
+                raise ValueError(result["error"])
+            data = result.pop("data").copy()
+            data["Ex_Date"] = data.Ex_Date.dt.strftime("%Y-%m-%d")
+            self.cache.put(f"dividends:{ticker}", {**result, "records": data.to_dict("records")}, {"fetched_at": result["fetched_at"]})
+
+    def _run(self):
+        while True:
+            with self.lock:
+                if time.time() < self.cooldown_until:
+                    self.scan_running = False
+                    self.priority.clear()
+                    self.pending.clear()
+                    self.thread = None
+                    return
+                if self.priority:
+                    job = self.priority.popleft()
+                    group = None
+                    self.current = f"{job[1]} — {job[0]}"
+                elif self.scan_running and self.queue:
+                    if time.monotonic() - self.started >= SCAN_TIME_BUDGET_SECONDS:
+                        self.scan_running = False
+                        self.message = "ครบงบเวลาประมาณ 10 นาที — ยังไม่ครบทุกตัว กดเริ่มต่อเพื่อโหลดส่วนที่เหลือ"
+                        self.thread = None
+                        return
+                    group = tuple(self.queue.popleft() for _ in range(min(SCAN_BATCH_SIZE, len(self.queue))))
+                    job = None
+                    self.current = f"สแกน {len(group)} ตัว: {group[0]} – {group[-1]}"
                 else:
-                    raise ValueError("ไม่พบคอลัมน์ของ Ticker")
-                rows[ticker]=scan_snapshot_row(ticker,f,stamp)
+                    self.scan_running = False
+                    self.current = ""
+                    self.thread = None
+                    return
+            stats = {}
+            try:
+                if job:
+                    self._job(*job)
+                else:
+                    rows, errors, stats = fetch_daily_batch(group, self.cache)
+                    ok = int(rows.Data_Status.eq("โหลดสำเร็จ").sum())
+                    with self.lock:
+                        self.done += len(group)
+                        self.success += ok
+                        self.failed += stats["failed"]
+                        self.reused += stats["reused"]
+                        self.incremental += stats["incremental"]
+                        self.initial += stats["initial"]
+                        self.errors.extend(errors)
+                        if ok * 2 < len(group):
+                            self.cooldown_until = time.time() + SCAN_COOLDOWN_SECONDS
+                            self.scan_running = False
+                            self.message = "Yahoo ตอบกลับไม่ครบครึ่งชุด พัก 5 นาทีและใช้ข้อมูลเดิมต่อ"
+                        elif not self.queue:
+                            self.scan_running = False
+                            self.message = f"จบรอบ: สำเร็จ {self.success:,} / {self.total:,} ตัว · ไม่สำเร็จ {self.failed:,} ตัว"
             except Exception as exc:
-                rows[ticker]["Data_Status"]="โหลดไม่สำเร็จ"
-                errors.append(f"{ticker}: {str(exc)[:240]}")
-    except Exception as exc:
-        for row in rows.values():
-            row["Data_Status"]="โหลดไม่สำเร็จ"
-        errors.append(str(exc)[:500])
-    frame=pd.DataFrame(rows.values())
-    successful=frame.loc[frame.Data_Status.eq("โหลดสำเร็จ"),"Data_Time"]
-    return frame,max(successful) if not successful.empty else "",errors
+                with self.lock:
+                    message = str(exc)[:400]
+                    self.errors.append(f"{self.current}: {message}")
+                    self.message = "โหลดใหม่ไม่สำเร็จ ข้อมูลเดิมและเวลาเดิมยังอยู่"
+                    if any(s in message.lower() for s in ("429", "too many", "rate limit", "จำกัดคำขอ")):
+                        self.cooldown_until = time.time() + SCAN_COOLDOWN_SECONDS
+                        self.scan_running = False
+            finally:
+                with self.lock:
+                    if job:
+                        self.pending.discard(job)
+                    self.current = ""
+                    self.revision += 1
+            # Only a short pause between actual network batches; never blocks the UI.
+            if group and stats.get("initial", 0) + stats.get("incremental", 0):
+                time.sleep(SCAN_INTERVAL_SECONDS)
 
 
-def next_scan_chunk(queue, now_epoch, next_due, cooldown_until, size=SCAN_BATCH_SIZE):
-    if now_epoch<next_due or now_epoch<cooldown_until:
-        return ()
-    return tuple(queue[:size])
+@st.cache_resource
+def get_updater():
+    return BackgroundUpdates(get_data_cache())
+
+
+def load_watchlist_batch(tickers):
+    rows, errors, _ = fetch_daily_batch(tickers, get_data_cache())
+    stamps = rows.loc[rows.Data_Status.eq("โหลดสำเร็จ"), "Data_Time"]
+    return rows, max(stamps) if not stamps.empty else "", errors
+
+
+load_watchlist_batch.clear = lambda *args: None  # The persistent history must survive refresh.
 
 
 def render_scan_controls(csv_frame):
-    defaults={"quote_records":{},"scan_attempted":[],"scan_queue":[],"scan_running":False,
-              "scan_next_due":0.,"scan_cooldown_until":0.,"scan_total":0,"scan_done":0,"scan_errors":[]}
-    for key,value in defaults.items():
-        if key not in st.session_state:
-            st.session_state[key]=value
-    universe=select_universe(csv_frame)
-    universe_set=set(universe)
-    # A changed CSV can change membership while retaining fixed counts.
-    st.session_state.scan_queue=[t for t in st.session_state.scan_queue if t in universe_set]
-    if st.session_state.scan_running and not st.session_state.scan_queue:
-        st.session_state.scan_running=False
-    st.session_state.quote_records={t:r for t,r in st.session_state.quote_records.items() if t in universe_set}
-    with st.expander(f"ชุดสินทรัพย์ — Common Stock {COMMON_STOCK_LIMIT:,} + ETF {ETF_LIMIT:,}",expanded=True):
-        st.caption(f"ทะเบียน ณ {CATALOG_AS_OF} · ให้รายชื่อที่มีใน CSV และอยู่ในทะเบียนมาก่อน แล้วเติมจนได้จำนวนที่กำหนด · หุ้นรวม common/ordinary/capital shares และแยก ADR, preferred, warrants, units ออก · รายชื่อไม่ใช่การจัดอันดับความน่าซื้อ")
-        st.markdown(f"[แหล่งรายชื่อ — Nasdaq]({CATALOG_SOURCE})")
-        a,b=st.columns(2)
-        scope=a.selectbox("ชุดที่จะสแกน",["ทั้งหมด","Common Stock","ETF"],key="scan_scope",disabled=st.session_state.scan_running)
-        mode=b.selectbox("รูปแบบการสแกน",["ต่อจากที่ยังไม่เคยลอง","รีเฟรชทั้งชุดที่เลือก"],key="scan_mode",disabled=st.session_state.scan_running)
-        scoped=[t for t in universe if scope=="ทั้งหมด" or (scope=="ETF")== (t in ETF_NAMES)]
-        a,b,c,d=st.columns(4)
-        single=a.button(f"โหลดชุดถัดไป {SCAN_BATCH_SIZE} ตัว",key="scan_next",disabled=st.session_state.scan_running)
-        start=b.button("เริ่มสแกนต่อเนื่อง",key="scan_start",disabled=st.session_state.scan_running)
-        stop=c.button("หยุดสแกน",key="scan_stop",disabled=not st.session_state.scan_running)
-        retry=d.button("ลองใหม่ตัวที่โหลดไม่ได้",key="scan_retry",disabled=st.session_state.scan_running)
-        now=datetime.now(timezone.utc).timestamp()
+    cache, worker = get_data_cache(), get_updater()
+    state = worker.state()
+    universe = select_universe(csv_frame)
+    # Migrate the previous session's successful summaries without inventing history.
+    if "quote_records" in st.session_state and not st.session_state.get("instant_migrated"):
+        previous = st.session_state.quote_records
+        if previous:
+            cache.save_quotes(pd.DataFrame(previous.values()))
+        st.session_state.instant_migrated = True
+    st.session_state.quote_records = cache.quotes()
+    st.session_state.scan_attempted = list(st.session_state.quote_records)
+    st.session_state.scan_running = state["scan_running"]
+    st.info("ใช้ข้อมูลจาก CSV และข้อมูลที่บันทึกไว้ได้ทันที เลือกหุ้นแล้วกด ‘โหลด/อัปเดตหุ้นที่เลือก’ เพื่อดึงข้อมูลใหม่เฉพาะตัว โดยไม่ต้องรอครบ 4,900 ตัว")
+    if cache.error:
+        st.warning("บันทึกประวัติลงดิสก์ไม่ได้ — ใช้หน่วยความจำชั่วคราวและ CSV ต่อได้: " + cache.error)
+    with st.expander(f"อัปเดตทั้งชุดเบื้องหลัง — Common Stock {COMMON_STOCK_LIMIT:,} + ETF {ETF_LIMIT:,}", expanded=state["scan_running"]):
+        st.caption(f"รายชื่อ ณ {CATALOG_AS_OF} · [Nasdaq]({CATALOG_SOURCE}) · ไม่ใช่อันดับความน่าซื้อ")
+        a, b = st.columns(2)
+        scope = a.selectbox("ชุดที่จะสแกน", ["ทั้งหมด", "Common Stock", "ETF"], key="scan_scope", disabled=state["scan_running"])
+        mode = b.selectbox("รูปแบบการสแกน", ["อัปเดตส่วนที่ขาด / เริ่มต่อ", "ลองใหม่ตัวที่โหลดไม่ได้"], key="incremental_scan_mode", disabled=state["scan_running"])
+        scoped = [t for t in universe if scope == "ทั้งหมด" or (scope == "ETF") == (t in ETF_NAMES)]
+        if mode == "ลองใหม่ตัวที่โหลดไม่ได้":
+            scoped = [t for t in scoped if "ไม่สำเร็จ" in str(st.session_state.quote_records.get(t, {}).get("Data_Status", ""))]
+        a, b, c = st.columns(3)
+        scan_busy = state["scan_running"] or state["current"].startswith("สแกน ")
+        start = a.button("เริ่ม / ทำต่อ สูงสุดประมาณ 10 นาที", key="scan_start", disabled=scan_busy)
+        small = b.button(f"โหลดชุดถัดไป {SCAN_BATCH_SIZE} ตัว", key="scan_next", disabled=scan_busy)
+        stop = c.button("หยุดสแกน", key="scan_stop", disabled=not state["scan_running"])
         if stop:
-            st.session_state.scan_running=False
-        if start or single or retry:
-            if now<st.session_state.scan_cooldown_until:
-                st.warning(f"พักการสแกนถึง {thai_time(st.session_state.scan_cooldown_until)} หลังแหล่งข้อมูลล้มเหลวหลายตัว")
-            else:
-                if retry:
-                    load_watchlist_batch.clear()
-                    queue=[t for t in scoped if t in st.session_state.quote_records and st.session_state.quote_records[t].get("Data_Status")!="โหลดสำเร็จ"]
-                elif mode=="รีเฟรชทั้งชุดที่เลือก":
-                    queue=scoped
-                    load_watchlist_batch.clear()
-                else:
-                    attempted=set(st.session_state.scan_attempted)
-                    queue=[t for t in scoped if t not in attempted]
-                st.session_state.scan_queue=queue if start else queue[:SCAN_BATCH_SIZE]
-                st.session_state.scan_running=bool(start and queue)
-                st.session_state.scan_total=len(st.session_state.scan_queue)
-                st.session_state.scan_done=0
-                if not queue:
-                    st.info("ไม่มีรายการตามโหมดนี้ ใช้โหมดรีเฟรชทั้งชุด หรือปุ่มลองใหม่ตัวที่โหลดไม่ได้")
-        can_run=st.session_state.scan_running or single or retry
-        group=next_scan_chunk(st.session_state.scan_queue,now,st.session_state.scan_next_due,st.session_state.scan_cooldown_until) if can_run and not stop else ()
-        if (single or retry) and not group and st.session_state.scan_queue and now<st.session_state.scan_next_due and now>=st.session_state.scan_cooldown_until:
-            st.info(f"เว้นระยะระหว่างชุด กดโหลดได้อีกครั้งหลัง {thai_time(st.session_state.scan_next_due)}")
-        if group:
-            with st.spinner(f"กำลังโหลด {len(group)} ตัว: {group[0]} – {group[-1]}"):
-                incoming,_,errors=load_watchlist_batch(group)
-            st.session_state.quote_records=remember_quotes(st.session_state.quote_records,incoming)
-            st.session_state.scan_attempted=sorted(set(st.session_state.scan_attempted) | set(group))
-            st.session_state.scan_queue=st.session_state.scan_queue[len(group):]
-            st.session_state.scan_done+=len(group)
-            finished=datetime.now(timezone.utc).timestamp()
-            st.session_state.scan_next_due=finished+SCAN_INTERVAL_SECONDS
-            st.session_state.scan_errors=errors
-            successes=int(incoming.Data_Status.eq("โหลดสำเร็จ").sum()) if not incoming.empty else 0
-            if successes*2<len(group):
-                st.session_state.scan_running=False
-                st.session_state.scan_cooldown_until=finished+SCAN_COOLDOWN_SECONDS
-                st.warning("โหลดสำเร็จน้อยกว่าครึ่งชุด จึงหยุดสแกนและพัก 5 นาที ข้อมูลที่สำเร็จแล้วและเวลาเดิมยังอยู่")
-            elif not st.session_state.scan_queue:
-                st.session_state.scan_running=False
-                st.success("จบการลองโหลดในรอบนี้ ตรวจจำนวนสำเร็จและรายการที่โหลดไม่ได้ด้านล่าง")
-        if st.session_state.scan_total:
-            st.progress(min(1,st.session_state.scan_done/st.session_state.scan_total),text=f"รอบนี้ลองโหลดแล้ว {st.session_state.scan_done:,}/{st.session_state.scan_total:,} ตัว · เหลือ {len(st.session_state.scan_queue):,} ตัว")
-        if st.session_state.scan_running:
-            st.info(f"กำลังสแกนต่อเนื่อง ทีละไม่เกิน {SCAN_BATCH_SIZE} ตัว เว้นอย่างน้อย {SCAN_INTERVAL_SECONDS} วินาทีระหว่างชุด; เปิดแท็บนี้ไว้ กดหยุดได้เมื่อชุดปัจจุบันจบ")
-            try:
-                from streamlit_autorefresh import st_autorefresh
-                st_autorefresh(interval=SCAN_INTERVAL_SECONDS*1000,key="bulk_scan_timer")
-            except ImportError:
-                st.session_state.scan_running=False
-                st.warning("ยังไม่มี streamlit-autorefresh ใช้ปุ่มโหลดชุดถัดไปได้ หรือติดตั้งแพ็กเกจนี้เพื่อสแกนต่อเนื่อง")
-        if st.session_state.scan_errors:
-            with st.expander("ข้อผิดพลาดชุดล่าสุด"):
-                st.text("\n".join(st.session_state.scan_errors))
-        st.caption("เปิดหน้าแล้วจะไม่ส่งคำขอราคา 4,900 ตัว การสแกนเก็บผลสรุปต่อหุ้นและตรวจแหล่งราคาทีละชุด; ราคาใน Watchlist ใช้แท่งรายวัน ส่วนหน้าวิเคราะห์ดึงเฉพาะหุ้นที่เลือกและหุ้นเปรียบเทียบเป็นรอบ ๆ ไม่ใช่สตรีม real-time")
-        batches=math.ceil(len(scoped)/SCAN_BATCH_SIZE)
-        st.caption(f"ชุดที่เลือกมี {len(scoped):,} ตัว / {batches} ชุด หากโหลดใหม่ครบทั้งหมด เวลาระหว่างชุดรวมอย่างน้อยประมาณ {max(0,batches-1)*SCAN_INTERVAL_SECONDS/60:,.0f} นาที ยังไม่รวมเวลาดึงข้อมูลและการพักเมื่อโหลดล้มเหลว")
-        st.caption("ผลสแกนอยู่ในรอบใช้งานนี้ ดาวน์โหลด Watchlist เพื่อเก็บผลก่อนปิดแท็บหรือรีสตาร์ทเซิร์ฟเวอร์")
+            worker.stop()
+        if start or small:
+            # Skip successful histories checked this market day; failed refreshes remain retryable.
+            saved = cache.quotes()
+            pending = [t for t in scoped if not (saved.get(t, {}).get("Data_Status") == "โหลดสำเร็จ" and checked_today({"fetched_at": saved[t].get("Data_Time")}))]
+            if not pending:
+                st.success("ไม่มีรายการค้างในชุดนี้ ข้อมูลรายวันตรวจแล้ววันนี้ — อัปเดตราคาระหว่างวันผ่านหุ้นที่เลือก")
+            elif not worker.start_scan(pending if start else pending[:SCAN_BATCH_SIZE]):
+                st.warning("ยังเริ่มไม่ได้: มีงานสแกนอยู่ หรือแหล่งข้อมูลกำลังพักถึง " + thai_time(worker.state()["cooldown_until"]))
+        state = worker.state()
+        if state["total"]:
+            st.progress(min(1.0, state["done"] / state["total"]), text=f"ตรวจแล้ว {state['done']:,}/{state['total']:,} · สำเร็จ {state['success']:,} · ไม่สำเร็จ {state['failed']:,} · ค้าง {state['remaining']:,}")
+            st.caption(f"ใช้ประวัติเดิม {state['reused']:,} · โหลดช่วงใหม่ {state['incremental']:,} · โหลดประวัติเต็ม {state['initial']:,}")
+        st.caption(state["message"])
+        if state["cooldown_until"] > time.time():
+            st.warning("พักการเรียก Yahoo ถึง " + thai_time(state["cooldown_until"]) + " — ตารางเดิมยังใช้งานได้")
+        if state["errors"]:
+            with st.expander("รายการที่ยังโหลดไม่ได้"):
+                st.text("\n".join(state["errors"]))
+        st.caption("โหลดครั้งแรกย้อนหลัง 2 ปี รอบต่อไปดึงตั้งแต่ช่วงวันที่ขาดพร้อมทับซ้อน 7 วันแล้วรวมกับประวัติเดิม; ตรวจการเปลี่ยนราคาปรับแล้วก่อนรวมข้อมูล")
+        st.caption("งบ 10 นาทีเป็นเวลาต่อรอบและจะจบคำขอที่กำลังทำก่อนหยุด ไม่ใช่การรับประกันว่าราคาครบ 4,900 ตัวภายใน 10 นาที งานทำต่อได้ขณะปิดแท็บหากเซิร์ฟเวอร์ยังทำงาน")
+        st.caption("บันทึกอัตโนมัติใน dashboard_cache.sqlite3 ข้าง app.py บนเครื่องที่รันแอป; หากใช้โฮสต์ที่ล้างดิสก์เมื่อรีสตาร์ท ประวัตินี้อาจหาย เก็บ CSV เดิมไว้เสมอ")
     return universe
 
 
@@ -7150,8 +7477,7 @@ def asset_is_etf(ticker, row, info):
     return info.get("quoteType")=="ETF" or ticker in ETF_NAMES or "ETF" in str(row.get("Asset_Type","")).upper()
 
 
-@st.cache_data(ttl=3600, max_entries=128, show_spinner=False)
-def load_dividend_history(ticker):
+def _fetch_dividends(ticker):
     try:
         # An explicit history request distinguishes missing data from zero dividends.
         f=yf.Ticker(ticker).history(period="max",interval="1d",actions=True,auto_adjust=False,timeout=20)
@@ -7170,6 +7496,18 @@ def load_dividend_history(ticker):
                 "coverage_start":str(f.index[0].date()),"coverage_end":str(f.index[-1].date())}
     except Exception as exc:
         return {"data":None,"fetched_at":"","error":str(exc),"coverage_start":"","coverage_end":""}
+
+
+def load_dividend_history(ticker):
+    stored, _ = get_data_cache().get(f"dividends:{ticker}")
+    if not stored:
+        return {"data": None, "fetched_at": "", "error": "ยังไม่มีประวัติปันผล กดโหลด/อัปเดตหุ้นที่เลือก", "coverage_start": "", "coverage_end": ""}
+    data = pd.DataFrame(stored.get("records", []), columns=["Ex_Date", "Dividend_Per_Share"])
+    data["Ex_Date"] = pd.to_datetime(data.Ex_Date)
+    return {**stored, "data": data}
+
+
+load_dividend_history.clear = lambda *args: None
 
 
 def dividend_summary(result, price=None, now=None):
@@ -7471,33 +7809,27 @@ def filter_watchlist(frame, asset_type, pass_only, query, low, high, rsi_range,
     return result
 
 
-@st.cache_data(ttl=300, max_entries=128, show_spinner=False)
-def _cached_fundamentals(ticker):
-    try:
-        result=yf.Ticker(ticker).get_info()
-        if not isinstance(result,dict) or not result:
-            raise ValueError("แหล่งข้อมูลไม่ได้ส่งข้อมูลพื้นฐานกลับมา")
-        return {**result,"_Fetched_At_UTC":datetime.now(timezone.utc).isoformat()},None
-    except Exception as exc:
-        return {},str(exc)
-
-
 def load_fundamentals(ticker):
-    result,error=_cached_fundamentals(ticker)
-    if error:
-        raise ValueError(error)
+    result, _ = get_data_cache().get(f"info:{ticker}")
+    if not result:
+        raise ValueError("ยังไม่มีข้อมูลพื้นฐานที่บันทึกไว้ กดโหลด/อัปเดตหุ้นที่เลือก")
     return result
 
 
-load_fundamentals.clear = _cached_fundamentals.clear
+load_fundamentals.clear = lambda *args: None
 
 
 def daily_snapshot(history):
     if history is None or history.empty:
         return {}
-    payload = build_payload(history, "", "1 เดือน", "1d")
-    row = payload["records"][-1]
     f = normalize_history(history)
+    close = f.Close
+    ema20 = close.ewm(span=20, adjust=False, min_periods=20).mean()
+    ema50 = close.ewm(span=50, adjust=False, min_periods=50).mean()
+    sma200 = close.rolling(200, min_periods=200).mean()
+    macd = close.ewm(span=12, adjust=False, min_periods=12).mean() - close.ewm(span=26, adjust=False, min_periods=26).mean()
+    signal = macd.ewm(span=9, adjust=False, min_periods=9).mean()
+    rsi = wilder_rsi(close)
     previous = f.Close.shift(1)
     true_range = pd.concat([f.High-f.Low, (f.High-previous).abs(), (f.Low-previous).abs()], axis=1).max(axis=1)
     atr = None
@@ -7508,9 +7840,9 @@ def daily_snapshot(history):
     average_vol = number(f.Volume.iloc[-21:-1].mean()) if len(f) >= 21 else None
     volume = number(f.Volume.iloc[-1])
     ratio = volume / average_vol if average_vol and volume is not None else None
-    return {"Close": row["close"], "EMA20": row["ema20"], "EMA50": row["ema50"],
-            "SMA200": row["sma200"], "RSI_14": row["rsi"], "MACD": row["macd"],
-            "MACD_Signal": row["signal"], "ATR": atr, "Vol_Ratio": ratio,
+    return {"Close": number(close.iloc[-1]), "EMA20": number(ema20.iloc[-1]), "EMA50": number(ema50.iloc[-1]),
+            "SMA200": number(sma200.iloc[-1]), "RSI_14": number(rsi.iloc[-1]), "MACD": number(macd.iloc[-1]),
+            "MACD_Signal": number(signal.iloc[-1]), "ATR": atr, "Vol_Ratio": ratio,
             "Bar_Date": f.index[-1].strftime("%Y-%m-%d")}
 
 
@@ -7655,6 +7987,12 @@ def render_comparison(first, second, period, key):
     if first == second:
         st.info("เลือกหุ้นคนละตัวเพื่อเปรียบเทียบ")
         return
+    if st.button("โหลด / อัปเดตข้อมูลคู่เปรียบเทียบ", key=f"{key}_load"):
+        accepted = [get_updater().request(t, "history", "1d") for t in (first, second)]
+        if all(accepted):
+            st.info("กำลังโหลดคู่เปรียบเทียบเบื้องหลัง")
+        else:
+            st.warning("แหล่งข้อมูลกำลังพัก ลองใหม่หลังเวลาที่แสดงด้านบน")
     try:
         histories = {t: load_chart_history(t, "1d")[0] for t in (first, second)}
         performance = align_comparison(histories, period)
@@ -7736,6 +8074,7 @@ def render_watchlist_table(frame):
 
 def main():
     st.set_page_config(page_title="Ultimate Trend Trading Terminal", page_icon="📈", layout="wide")
+    render_revision = get_updater().state()["revision"]
     st.markdown("""<style>
     .block-container {padding-top:2rem;padding-bottom:3rem;max-width:1800px}
     [data-testid="stMetricValue"]{font-size:1.65rem}
@@ -7743,15 +8082,11 @@ def main():
     </style>""", unsafe_allow_html=True)
     head,settings=st.columns([4,1])
     head.title("Ultimate Trend Trading Terminal")
-    head.caption("Common Stock 4,200 · ETF 700 · กราฟ ปันผล เกณฑ์ 100 คะแนน และแผนราคาเข้า")
+    head.caption(f"รุ่น {APP_VERSION} · เปิดข้อมูลที่มีทันที · Common Stock 4,200 · ETF 700")
     if "auto_refresh" not in st.session_state:
-        st.session_state.auto_refresh=True
-    auto=settings.checkbox("อัปเดตหน้าวิเคราะห์ทุก 5 นาที",key="auto_refresh")
-    if settings.button("รีเฟรชข้อมูลหน้าวิเคราะห์",key="refresh_all"):
-        load_chart_history.clear()
-        load_fundamentals.clear()
-        read_watchlist.clear()
-        load_dividend_history.clear()
+        st.session_state.auto_refresh=False
+    auto=settings.checkbox("อัปเดตหุ้นที่เลือกทุก 5 นาที",key="auto_refresh")
+    refresh_selected = settings.button("อัปเดตหุ้นที่เลือก", key="refresh_all")
     st.caption(f"หน้าอัปเดตล่าสุด: {thai_time(datetime.now(timezone.utc))} · ราคาเป็นการดึงตามรอบและอาจล่าช้า ดูเวลาของราคาแยกด้านล่าง")
     original=pd.DataFrame(columns=["Ticker","Asset_Type","Status"]+NUMERIC_COLUMNS)
     source_label="ไม่ได้ใช้ CSV — ใช้รายชื่อที่ฝังอยู่ในแอป"
@@ -7772,12 +8107,6 @@ def main():
         st.error(f"อ่าน CSV ไม่สำเร็จ: {exc} — ยังแสดงชุดรายชื่อ 4,900 ตัวได้")
     st.caption(source_label+" · เวลาแก้ไขไฟล์ไม่ใช่เวลาราคา")
     universe=render_scan_controls(original)
-    if auto and not st.session_state.scan_running:
-        try:
-            from streamlit_autorefresh import st_autorefresh
-            st_autorefresh(interval=300_000,key="dashboard_refresh_5m")
-        except ImportError:
-            settings.caption("ใช้ปุ่มรีเฟรชข้อมูลหน้าวิเคราะห์")
     frame,outside=build_universe_frame(original,st.session_state.quote_records)
     c1,c2,c3,c4=st.columns(4)
     c1.metric("สินทรัพย์ทั้งหมด",f"{len(frame):,}")
@@ -7819,6 +8148,20 @@ def main():
         info, history, snapshot, history_stamp = {}, None, {}, ""
         div_result={"data":None,"fetched_at":"","error":"ยังไม่มี Ticker ที่ถูกต้อง","coverage_start":"","coverage_end":""}
         if valid_ticker:
+            requested = st.button("โหลด/อัปเดตหุ้นที่เลือก", key="load_selected", type="primary")
+            last_request = st.session_state.get(f"requested_at_{ticker}", 0.0)
+            if requested or refresh_selected or (auto and time.time() - last_request >= 300):
+                worker = get_updater()
+                accepted = worker.request(ticker, "history", "1d")
+                if accepted:
+                    worker.request(ticker, "info")
+                    worker.request(ticker, "dividends")
+                    if ticker in ETF_NAMES and ticker != "SPY":
+                        worker.request("SPY", "history", "1d")
+                    st.session_state[f"requested_at_{ticker}"] = time.time()
+                    st.info(f"กำลังโหลด {ticker} เบื้องหลัง ข้อมูลใหม่จะขึ้นเองเมื่อสำเร็จ ใช้หน้าเว็บต่อได้")
+                else:
+                    st.warning("Yahoo กำลังพักถึง " + thai_time(worker.state()["cooldown_until"]) + " — แสดงข้อมูลเดิมต่อ")
             try:
                 info = load_fundamentals(ticker)
             except Exception as exc:
@@ -7872,7 +8215,7 @@ def main():
             {"ข้อมูล":"ประวัติปันผล","ดึงสำเร็จล่าสุด (ไทย)":thai_time(div_result.get("fetched_at")),"เวลาที่ข้อมูลอ้างถึง":str(div_result.get("coverage_start") or "—")+" ถึง "+str(div_result.get("coverage_end") or "—")},
             {"ข้อมูล":"สแกน Watchlist 4,900 ตัว","ดึงสำเร็จล่าสุด (ไทย)":thai_time(scan_stamp),"เวลาที่ข้อมูลอ้างถึง":"ดูวันที่ราคาแต่ละตัวใน Watchlist"},
             {"ข้อมูล":"CSV เดิม","ดึงสำเร็จล่าสุด (ไทย)":"ไม่ทราบเวลาสแกนจากไฟล์","เวลาที่ข้อมูลอ้างถึง":"เวลาแก้ไขไฟล์: "+csv_time}]),hide_index=True,**width_options(st.dataframe))
-        st.caption("หน้าวิเคราะห์ดึงราคา/ข้อมูลพื้นฐานเป็นรอบ แคช 5 นาที; ปันผล 1 ชั่วโมง; ผลสแกนชุดละ 25 ตัวแคช 15 นาทีและเก็บเวลาของแต่ละแถว ใช้โหมดรีเฟรชทั้งชุดเพื่อสแกนใหม่ การรีเฟรชหน้าไม่รัน screener.py และไม่ใช่บริการ real-time ที่รับประกันความหน่วง")
+        st.caption("หน้านี้อ่านข้อมูลที่บันทึกไว้ทันที ปุ่มอัปเดตจะโหลดเฉพาะหุ้นที่เลือกเบื้องหลัง เวลาเปิดหน้าไม่ใช่เวลาราคา และข้อมูลจาก Yahoo อาจล่าช้า")
     st.divider()
     st.subheader("ตารางวิเคราะห์ 360° — พื้นฐาน เทคนิค และความเสี่ยง")
     st.dataframe(analysis, **width_options(st.dataframe), hide_index=True, height=500,
@@ -7912,6 +8255,21 @@ def main():
         comp_period = st.radio("ช่วงเวลาเปรียบเทียบ",["1 เดือน","3 เดือน","6 เดือน","1 ปี","2 ปี","3 ปี"],index=3,horizontal=True,key="comp_period")
         if valid_ticker:
             render_comparison(ticker,second,comp_period,"comparison_chart")
+
+    update_state = get_updater().state()
+    if not update_state["busy"] and update_state["revision"] != render_revision:
+        # A job may finish after its data section was drawn; show that final result.
+        st.rerun()
+    if update_state["busy"]:
+        st.caption("กำลังอัปเดตเบื้องหลัง: " + (update_state["current"] or "รอคิว") + " · ข้อมูลจะขึ้นเองเมื่อโหลดสำเร็จ")
+    if update_state["busy"] or auto:
+        try:
+            from streamlit_autorefresh import st_autorefresh
+            st_autorefresh(interval=2000 if update_state["busy"] else 300_000, key="background_data_poll")
+        except ImportError:
+            st.info("งานยังโหลดเบื้องหลังได้ กดแสดงผลล่าสุดเพื่อดูข้อมูล หรือเพิ่ม streamlit-autorefresh ใน requirements.txt")
+    st.button("แสดงผลล่าสุดที่โหลดเสร็จ", key="show_saved_results")
+
 
 
 if __name__ == "__main__":
