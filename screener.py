@@ -7,49 +7,58 @@ import io
 import os
 
 CSV_FILE = "daily_watchlist.csv"
-TARGET_TICKER_COUNT = 2500
-BATCH_SIZE = 100
+TARGET_STOCKS = 3700  # จำนวนโควตาหุ้นสามัญ
+TARGET_ETFS = 800     # จำนวนโควตากองทุน ETF
+BATCH_SIZE = 200      # แบ่งโหลดเพื่อกันโดนบล็อก
 
-def get_us_stock_universe(max_count=2500):
-    print("🌐 กำลังดึงรายชื่อหุ้นสหรัฐฯ จากแหล่งข้อมูลหลัก...")
-    tickers = []
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    }
+def get_categorized_universe():
+    print("🌐 กำลังดึงฐานข้อมูลและแยกประเภท (Stock / ETF) จาก NASDAQ & NYSE...")
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    asset_dict = {}
 
-    # 1. ดึงรายชื่อหุ้นตลาดสหรัฐฯ ครบวงจรจาก GitHub Financial Datasets (เสถียร ไม่บล็อก)
+    # 1. ดึงข้อมูลกระดาน NASDAQ
     try:
-        url = "https://raw.githubusercontent.com/rreichel3/US-Stock-Symbols/main/all/all_tickers.txt"
-        res = requests.get(url, headers=headers, timeout=15)
-        if res.status_code == 200:
-            lines = res.text.splitlines()
-            tickers.extend([line.strip().upper() for line in lines if line.strip()])
-            print(f"✅ ดึงรายชื่อสำเร็จ: {len(tickers)} ตัว")
+        url_nasdaq = "https://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqlisted.txt"
+        res = requests.get(url_nasdaq, headers=headers, timeout=15)
+        df_nasdaq = pd.read_csv(io.StringIO(res.text), sep="|")
+        df_nasdaq = df_nasdaq[df_nasdaq['Test Issue'] == 'N']
+        for _, row in df_nasdaq.iterrows():
+            t = str(row['Symbol']).strip()
+            is_etf = str(row.get('ETF', 'N')).strip().upper() == 'Y'
+            asset_dict[t] = "ETF" if is_etf else "Common Stock"
     except Exception as e:
-        print(f"⚠️ ดึงจากแหล่งหลักไม่สำเร็จ: {e}")
+        print(f"⚠️ ดึง NASDAQ ไม่สำเร็จ: {e}")
 
-    # 2. แหล่งสำรองกรณีแรกไม่ผ่าน (S&P 500 + NASDAQ 100 + Russell 1000)
-    if len(tickers) < 500:
-        try:
-            url_sp500 = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
-            df_sp = pd.read_csv(url_sp500)
-            tickers.extend(df_sp['Symbol'].dropna().tolist())
-        except Exception:
-            pass
+    # 2. ดึงข้อมูลกระดาน NYSE, AMEX, BATS (otherlisted)
+    try:
+        url_other = "https://ftp.nasdaqtrader.com/SymbolDirectory/otherlisted.txt"
+        res = requests.get(url_other, headers=headers, timeout=15)
+        df_other = pd.read_csv(io.StringIO(res.text), sep="|")
+        df_other = df_other[df_other['Test Issue'] == 'N']
+        for _, row in df_other.iterrows():
+            t = str(row['ACT Symbol']).strip()
+            is_etf = str(row.get('ETF', 'N')).strip().upper() == 'Y'
+            asset_dict[t] = "ETF" if is_etf else "Common Stock"
+    except Exception as e:
+        print(f"⚠️ ดึง Other Listed ไม่สำเร็จ: {e}")
 
-    # คลีนข้อมูล Ticker ให้สะอาด
-    clean_tickers = []
-    for t in tickers:
+    # ทำความสะอาด Ticker และตัดหุ้นบุริมสิทธิ/Warrant ทิ้ง
+    clean_dict = {}
+    for t, atype in asset_dict.items():
         t = t.replace('$', '-P').replace('.', '-')
         if any(c in t for c in ['=', '+', '*', '~', ' ', '^']):
             continue
         if len(t) > 5 or len(t) < 1:
             continue
-        clean_tickers.append(t)
+        clean_dict[t] = atype
 
-    clean_tickers = list(dict.fromkeys(clean_tickers))
-    print(f"📊 จัดเตรียมรายชื่อหุ้นสำหรับสแกนทั้งสิ้น: {min(len(clean_tickers), max_count)} ตัว")
-    return clean_tickers[:max_count]
+    # 🌟 บังคับใส่รายการโปรด เพื่อกันตกหล่น
+    clean_dict["KSLV"] = "ETF"
+    clean_dict["SPY"] = "ETF"
+    clean_dict["QQQ"] = "ETF"
+
+    print(f"📊 พบสินทรัพย์ในตลาดทั้งหมด {len(clean_dict)} ตัว")
+    return clean_dict
 
 def calculate_metrics(df):
     if len(df) < 50:
@@ -60,6 +69,11 @@ def calculate_metrics(df):
     high = df['High']
     low = df['Low']
 
+    latest_close = round(float(close.iloc[-1]), 2)
+    # กรองสินทรัพย์ราคาต่ำกว่า 2 ดอลลาร์ทิ้ง
+    if latest_close < 2.0:
+        return None
+
     ema20 = close.ewm(span=20, adjust=False).mean()
     ema50 = close.ewm(span=50, adjust=False).mean()
     sma200 = close.rolling(window=200).mean() if len(close) >= 200 else None
@@ -67,6 +81,11 @@ def calculate_metrics(df):
     vol_20ma = volume.rolling(window=20).mean()
     latest_vol = float(volume.iloc[-1])
     avg_vol = float(vol_20ma.iloc[-1]) if pd.notnull(vol_20ma.iloc[-1]) and vol_20ma.iloc[-1] > 0 else latest_vol
+    
+    # กรองสินทรัพย์ที่ไม่มีสภาพคล่องทิ้ง (เทรดเฉลี่ยน้อยกว่า 5,000 หุ้น/วัน)
+    if avg_vol < 5000:
+        return None
+
     vol_ratio = round(latest_vol / avg_vol, 2)
 
     tr1 = high - low
@@ -76,7 +95,6 @@ def calculate_metrics(df):
     atr14 = tr.rolling(window=14).mean()
     latest_atr = round(float(atr14.iloc[-1]), 2) if pd.notnull(atr14.iloc[-1]) else 1.0
 
-    latest_close = round(float(close.iloc[-1]), 2)
     latest_e20 = float(ema20.iloc[-1])
     latest_e50 = float(ema50.iloc[-1])
     latest_s200 = float(sma200.iloc[-1]) if sma200 is not None and pd.notnull(sma200.iloc[-1]) else None
@@ -100,48 +118,38 @@ def calculate_metrics(df):
         "ATR": latest_atr,
         "Suggested_Stop": suggested_stop,
         "Historical_Return": return_1y,
-        "Return_Period": "1Y"
+        "Return_Period": "1Y",
+        "Avg_Volume": avg_vol
     }
 
 def run_screener():
-    tickers = get_us_stock_universe(max_count=TARGET_TICKER_COUNT)
+    asset_dict = get_categorized_universe()
+    tickers = list(asset_dict.keys())
     total = len(tickers)
     results = []
 
-    print(f"🚀 เริ่มดาวน์โหลดและวิเคราะห์หุ้น {total} ตัว...")
+    print(f"🚀 เริ่มดาวน์โหลดและวิเคราะห์ข้อมูลทั้งหมด {total} ตัว...")
 
     for i in range(0, total, BATCH_SIZE):
         batch = tickers[i:i+BATCH_SIZE]
         batch_no = (i // BATCH_SIZE) + 1
         total_batches = (total // BATCH_SIZE) + 1
-        print(f"📦 กำลังประมวลผล Batch {batch_no}/{total_batches} ({len(batch)} ตัว)...")
+        print(f"📦 Batch {batch_no}/{total_batches} ({len(batch)} Tickers)...")
 
         try:
-            data = yf.download(
-                tickers=batch,
-                period="1y",
-                interval="1d",
-                group_by="ticker",
-                threads=True,
-                progress=False,
-                timeout=30
-            )
+            data = yf.download(batch, period="1y", interval="1d", group_by="ticker", threads=True, progress=False, timeout=30)
 
             for t in batch:
                 try:
                     if t not in data.columns.levels[0]:
                         continue
-                    sub_df = data[t].dropna(subset=['Close'])
-                    if len(sub_df) < 50:
-                        continue
-                    if float(sub_df['Close'].iloc[-1]) < 1.0:
-                        continue
-
+                    sub_df = data[t].dropna(subset=['Close', 'Volume'])
+                    
                     m = calculate_metrics(sub_df)
                     if m:
                         results.append({
                             "Ticker": t,
-                            "Asset_Type": "Common Stock",
+                            "Asset_Type": asset_dict[t],
                             "Status": m["Status"],
                             "Close": m["Close"],
                             "Historical_Return": m["Historical_Return"],
@@ -149,23 +157,40 @@ def run_screener():
                             "Div_Yield": 0.0,
                             "Vol_Ratio": m["Vol_Ratio"],
                             "ATR": m["ATR"],
-                            "Suggested_Stop": m["Suggested_Stop"]
+                            "Suggested_Stop": m["Suggested_Stop"],
+                            "Avg_Volume": m["Avg_Volume"]
                         })
                 except Exception:
                     continue
         except Exception as e:
             print(f"⚠️ Batch {batch_no} ขัดข้อง: {e}")
 
-        time.sleep(1.5)
+        # พัก 2 วินาทีระหว่างก้อน เพื่อป้องกันโดนแบน IP
+        time.sleep(2.0)
 
     if len(results) > 0:
-        final_df = pd.DataFrame(results)
+        df_all = pd.DataFrame(results)
+        
+        # 🌟 แยก Dataframe เพื่อคัดโควตา (Stock 3,700 / ETF 800)
+        df_stocks = df_all[df_all['Asset_Type'] == 'Common Stock']
+        df_etfs = df_all[df_all['Asset_Type'] == 'ETF']
+
+        # เรียงตามสภาพคล่องสูงสุด แล้วตัดให้พอดีกับโควตา
+        df_stocks = df_stocks.sort_values(by="Avg_Volume", ascending=False).head(TARGET_STOCKS)
+        df_etfs = df_etfs.sort_values(by="Avg_Volume", ascending=False).head(TARGET_ETFS)
+
+        # นำกลับมารวมกันเป็น 4,500 ตัว
+        final_df = pd.concat([df_stocks, df_etfs])
+        
         final_df = final_df.sort_values(by=["Status", "Vol_Ratio"], ascending=[True, False])
+        final_df = final_df.drop(columns=["Avg_Volume"])
         final_df.to_csv(CSV_FILE, index=False)
+
         pass_count = len(final_df[final_df['Status'] == 'PASS'])
-        print(f"🎉 สำเร็จ! บันทึก {len(final_df)} ตัวลงใน {CSV_FILE} (ผ่านเกณฑ์: {pass_count} ตัว)")
+        print(f"🎉 สำเร็จ! บันทึกผล Stock: {len(df_stocks)} ตัว | ETF: {len(df_etfs)} ตัว ลงใน {CSV_FILE}")
+        print(f"✅ ผ่านเกณฑ์ PASS ทั้งสิ้น: {pass_count} ตัว")
     else:
-        print("❌ ไม่สามารถดึงข้อมูลได้")
+        print("❌ ไม่สามารถดึงข้อมูลได้เลย")
 
 if __name__ == "__main__":
     run_screener()
