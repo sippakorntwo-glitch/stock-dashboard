@@ -8,28 +8,18 @@ import os
 from datetime import datetime, timezone, timedelta
 from streamlit_autorefresh import st_autorefresh
 
-st.set_page_config(
-    page_title="Personal Daily Trend Terminal",
-    page_icon="📈",
-    layout="wide"
-)
-
-# 1. ปลุกหน้าจอให้รีเฟรชตัวเองทุกๆ 5 นาที (300,000 ms) อัตโนมัติ
+st.set_page_config(page_title="Ultimate Trend Terminal", page_icon="📈", layout="wide")
 count = st_autorefresh(interval=300 * 1000, key="data_refresher_5min")
 
 CSV_FILE = "daily_watchlist.csv"
 
-# 2. ฟังก์ชันตรวจสอบเวลาที่ไฟล์ถูกบันทึกล่าสุดบนเซิร์ฟเวอร์
 def get_file_mtime():
-    if os.path.exists(CSV_FILE):
-        return os.path.getmtime(CSV_FILE)
+    if os.path.exists(CSV_FILE): return os.path.getmtime(CSV_FILE)
     return 0
 
-# 3. โหลดข้อมูลใหม่ทันทีที่เวลา mtime ของไฟล์เปลี่ยน (ป้องกันการจำแคชเก่า)
 @st.cache_data(ttl=60)
 def load_data(file_mtime):
-    if not os.path.exists(CSV_FILE):
-        return pd.DataFrame()
+    if not os.path.exists(CSV_FILE): return pd.DataFrame()
     return pd.read_csv(CSV_FILE)
 
 current_mtime = get_file_mtime()
@@ -40,331 +30,229 @@ if current_mtime > 0:
     updated_dt = datetime.fromtimestamp(current_mtime, tz=timezone.utc).astimezone(tz_bkk)
     last_updated_str = updated_dt.strftime("%d/%m/%Y %H:%M:%S (เวลาไทย)")
 
-# --- Header & UI แสดงเวลาอัปเดตล่าสุด ---
 header_col1, header_col2 = st.columns([3, 2])
-
 with header_col1:
-    st.title("📈 In-House Trend Trading Terminal")
-    st.caption("ระบบมอนิเตอร์และวิเคราะห์หุ้นสหรัฐฯ (NASDAQ, NYSE, AMEX) ครอบคลุมทั้งตลาด")
+    st.title("📈 Ultimate Trend Trading Terminal")
+    st.caption("ระบบวิเคราะห์หุ้นสหรัฐฯ 4,500 ตัว พร้อม Fundamental, Risk Management และ Custom Filters")
 
 with header_col2:
     st.markdown("<div style='text-align: right; padding-top: 15px;'>", unsafe_allow_html=True)
-    st.info(f"🕒 **อัปเดตล่าสุดเมื่อ:** `{last_updated_str}`\n\n🔄 *รีเฟรชข้อมูลอัตโนมัติทุก 5 นาที (รอบที่: {count})*")
+    st.info(f"🕒 **อัปเดตล่าสุดเมื่อ:** `{last_updated_str}`\n\n🔄 *รีเฟรชทุก 5 นาที (รอบ: {count})*")
     st.markdown("</div>", unsafe_allow_html=True)
 
 df_all = load_data(current_mtime)
-
 if df_all.empty:
-    st.warning("⚠️ ยังไม่พบไฟล์ 'daily_watchlist.csv' หรือข้อมูลว่างเปล่า กรุณารอการรันสคริปต์สแกน")
+    st.warning("⚠️ ยังไม่พบข้อมูล กรุณารอการรันสคริปต์สแกน")
     st.stop()
 
-# --- แถบตัวกรอง ---
-st.markdown("### 🎛️ Data Filters")
+# ==========================================
+# 🎛️ โซนตัวกรองข้อมูล (Filters)
+# ==========================================
+st.markdown("### 🎛️ Data Filters (ระบบคัดกรองข้อมูล)")
 col1, col2, col3 = st.columns([2, 2, 2])
-
 with col1:
     asset_types = ["ทั้งหมด (All Assets)"] + sorted(list(df_all['Asset_Type'].dropna().unique()))
     asset_type_filter = st.selectbox("🏷️ ประเภทสินทรัพย์:", asset_types)
-
 with col2:
-    status_filter = st.radio(
-        "⚡ สถานะแนวโน้ม:",
-        ["ทั้งหมด", "เฉพาะที่ผ่านเกณฑ์ (PASS Only)"],
-        horizontal=True
-    )
-
+    status_filter = st.radio("⚡ สถานะแนวโน้ม:", ["ทั้งหมด", "เฉพาะที่ผ่านเกณฑ์ (PASS Only)"], horizontal=True)
 with col3:
-    search_query = st.text_input("🔍 ค้นหา Ticker:", "").strip().upper()
+    search_query = st.text_input("🔍 ค้นหา Ticker (พิมพ์ชื่อหุ้น):", "").strip().upper()
 
+# 🌟 ฟีเจอร์ใหม่: แถบตัวกรองขั้นสูง (Advanced Filters)
+with st.expander("🛠️ ตัวกรองขั้นสูง (Advanced Custom Filters) - คลิกเพื่อเปิด/ปิด", expanded=False):
+    adv_c1, adv_c2, adv_c3 = st.columns(3)
+    
+    with adv_c1:
+        st.markdown("**1. ช่วงราคา (Price Range)**")
+        min_price = st.number_input("ราคาขั้นต่ำ ($)", min_value=0.0, value=0.0, step=1.0)
+        max_price = st.number_input("ราคาสูงสุด ($)", min_value=0.1, value=5000.0, step=1.0)
+        # ตัวอย่าง: ถ้าอยากได้หุ้นต่ำกว่า $1 ให้ปรับราคาสูงสุดเป็น 1.0
+
+    with adv_c2:
+        st.markdown("**2. โมเมนตัม (RSI 14)**")
+        rsi_range = st.slider("เลือกช่วง RSI (ต่ำกว่า 30 = Oversold)", 0, 100, (0, 100))
+
+    with adv_c3:
+        st.markdown("**3. ผลตอบแทนย้อนหลัง 1 ปี (1Y Return %)**")
+        min_return = st.number_input("ผลตอบแทนขั้นต่ำ (%)", value=-100.0, step=10.0)
+        # ตัวอย่าง: ถ้าอยากได้หุ้นที่โตเกิน 100% จากปีที่แล้ว ให้พิมพ์ 100 ในช่องนี้
+
+# นำเงื่อนไขทั้งหมดมากรองข้อมูลใน DataFrame
 df_filtered = df_all.copy()
 
-if asset_type_filter != "ทั้งหมด (All Assets)":
+# 1. กรองประเภทและสถานะ
+if asset_type_filter != "ทั้งหมด (All Assets)": 
     df_filtered = df_filtered[df_filtered['Asset_Type'] == asset_type_filter]
-
-if status_filter == "เฉพาะที่ผ่านเกณฑ์ (PASS Only)":
+if status_filter == "เฉพาะที่ผ่านเกณฑ์ (PASS Only)": 
     df_filtered = df_filtered[df_filtered['Status'] == 'PASS']
-
-if search_query:
+if search_query: 
     df_filtered = df_filtered[df_filtered['Ticker'].astype(str).str.contains(search_query, na=False)]
+
+# 2. กรองจากตัวกรองขั้นสูง
+df_filtered = df_filtered[(df_filtered['Close'] >= min_price) & (df_filtered['Close'] <= max_price)]
+
+if 'RSI_14' in df_filtered.columns:
+    df_filtered = df_filtered[
+        (df_filtered['RSI_14'].isna()) | 
+        ((df_filtered['RSI_14'] >= rsi_range[0]) & (df_filtered['RSI_14'] <= rsi_range[1]))
+    ]
+
+if 'Historical_Return' in df_filtered.columns:
+    df_filtered = df_filtered[
+        (df_filtered['Historical_Return'].isna()) | 
+        (df_filtered['Historical_Return'] >= min_return)
+    ]
 
 st.divider()
 
-# --- ตารางแสดงผลหลัก ---
-col_table, col_panel = st.columns([3, 1])
+# ==========================================
+# 📊 โซนแสดงผลและกราฟ (UI หลัก)
+# ==========================================
+col_table, col_panel = st.columns([2.5, 1.5])
 
 with col_table:
-    st.subheader(f"📋 รายการสินทรัพย์ ({len(df_filtered):,} ตัว)")
-    
+    st.subheader(f"📋 รายการสินทรัพย์ที่ผ่านเงื่อนไข ({len(df_filtered):,} ตัว)")
     if not df_filtered.empty:
         formatted_df = df_filtered.copy()
-
-        if 'Historical_Return' in formatted_df.columns and 'Return_Period' in formatted_df.columns:
-            formatted_df['Return_Display'] = formatted_df.apply(
-                lambda r: f"{r['Historical_Return']:+.2f}% ({r['Return_Period']})" if pd.notnull(r['Historical_Return']) else "-",
-                axis=1
-            )
-        elif 'Return_3Y' in formatted_df.columns:
-            formatted_df['Return_Display'] = formatted_df['Return_3Y'].apply(
-                lambda x: f"{x:+.2f}% (3Y)" if pd.notnull(x) else "-"
-            )
-        else:
-            formatted_df['Return_Display'] = "-"
-
-        available_cols = ['Ticker', 'Asset_Type', 'Status', 'Close', 'Return_Display', 'Div_Yield', 'Vol_Ratio', 'Suggested_Stop']
-        render_cols = [c for c in available_cols if c in formatted_df.columns]
+        if 'Historical_Return' in formatted_df.columns:
+            formatted_df['Return_Display'] = formatted_df.apply(lambda r: f"{r['Historical_Return']:+.2f}%" if pd.notnull(r['Historical_Return']) else "-", axis=1)
+        
+        show_cols = ['Ticker', 'Asset_Type', 'Status', 'Close', 'Return_Display', 'Vol_Ratio', 'RSI_14']
+        render_cols = [c for c in show_cols if c in formatted_df.columns]
 
         st.dataframe(
             formatted_df[render_cols].style.format({
                 "Close": "${:.2f}",
-                "Div_Yield": lambda x: f"{x:.2f}%" if pd.notnull(x) and x > 0 else "-",
                 "Vol_Ratio": "{:.2f}x",
-                "Suggested_Stop": lambda x: f"${x:.2f}" if pd.notnull(x) else "-"
-            }),
-            column_config={
-                "Ticker": st.column_config.Column("Ticker", help="ชื่อย่อหลักทรัพย์"),
-                "Asset_Type": st.column_config.Column("Asset Type", help="หมวดหมู่สินทรัพย์"),
-                "Status": st.column_config.Column("Status", help="PASS = ผ่านเกณฑ์แนวโน้ม / FAIL = ไม่ผ่านเกณฑ์"),
-                "Close": st.column_config.Column("Close ($)", help="ราคาปิดล่าสุด (USD)"),
-                "Return_Display": st.column_config.Column("Historical Return", help="ผลตอบแทนย้อนหลัง"),
-                "Div_Yield": st.column_config.Column("Div Yield (%)", help="อัตราปันผลตอบแทนต่อปี (TTM)"),
-                "Vol_Ratio": st.column_config.Column("Vol Ratio", help="Volume ล่าสุด ÷ ค่าเฉลี่ย 20 วัน"),
-                "Suggested_Stop": st.column_config.Column("Suggested Stop ($)", help="จุดตัดขาดทุนแนะนำ: Close - (2 x ATR 14)"),
-            },
-            use_container_width=True,
-            height=360,
-            hide_index=True
+                "RSI_14": "{:.2f}"
+            }).applymap(lambda v: 'color: #ef5350' if pd.notnull(v) and v > 70 else ('color: #26a69a' if pd.notnull(v) and v < 30 else ''), subset=['RSI_14'] if 'RSI_14' in render_cols else []),
+            use_container_width=True, height=450, hide_index=True
         )
     else:
-        st.warning("ไม่พบสินทรัพย์ที่ตรงกับเงื่อนไขตัวกรอง")
+        st.warning("ไม่พบสินทรัพย์ที่ตรงกับเงื่อนไขการกรองของคุณ ปรับช่วงราคาหรือ RSI ให้กว้างขึ้นครับ")
 
 with col_panel:
-    st.subheader("⚡ Quick Viewer")
+    st.subheader("⚡ Quick Viewer & Risk Manager")
     if not df_filtered.empty:
-        selected_ticker = st.selectbox("เลือก Ticker ดูกราฟและวิเคราะห์:", df_filtered['Ticker'])
+        selected_ticker = st.selectbox("เลือก Ticker เพื่อเจาะลึก:", df_filtered['Ticker'])
         target_info = df_filtered[df_filtered['Ticker'] == selected_ticker].iloc[0]
         
-        status_badge = "🟢 PASS" if target_info['Status'] == 'PASS' else "🔴 FAIL"
-        st.markdown(f"**สถานะ:** `{status_badge}` | `{target_info['Asset_Type']}`")
-        st.metric("ราคาปิดล่าสุด", f"${target_info['Close']}")
+        with st.spinner("กำลังดึงข้อมูลพื้นฐาน (Fundamentals)..."):
+            try:
+                tkr = yf.Ticker(selected_ticker)
+                info = tkr.info
+                sector = info.get('sector', 'ETF / Not Available')
+                fwd_pe = info.get('forwardPE', 'N/A')
+                target_price = info.get('targetMeanPrice', None)
+                div_yield = info.get('dividendYield', None)
+            except:
+                sector, fwd_pe, target_price, div_yield = "N/A", "N/A", None, None
+            
+            curr_c = target_info['Close']
+            upside = f"{round(((target_price - curr_c)/curr_c)*100, 2)}%" if target_price else "N/A"
+            div_pct = f"{round(div_yield * 100, 2)}%" if div_yield else "N/A"
+
+        st.markdown(f"**Sector:** `{sector}` | **Type:** `{target_info['Asset_Type']}`")
         
-        if 'Return_Period' in target_info and pd.notnull(target_info.get('Historical_Return')):
-            st.metric(f"ผลตอบแทน ({target_info['Return_Period']})", f"{target_info['Historical_Return']:+.2f}%")
+        m_col1, m_col2 = st.columns(2)
+        m_col1.metric("ราคาปัจจุบัน", f"${curr_c}")
+        m_col2.metric("Target Price (Wall St.)", f"${target_price}" if target_price else "N/A", delta=upside if upside != "N/A" else None)
+        
+        m_col3, m_col4 = st.columns(2)
+        m_col3.metric("Forward P/E", f"{round(fwd_pe,2)}x" if isinstance(fwd_pe, (int, float)) else "N/A")
+        m_col4.metric("Dividend Yield", div_pct) # 🌟 แสดงปันผลเมื่อคลิกดูหุ้น
+
+        st.divider()
+        st.markdown("#### 💰 ระบบคำนวณหน้าตัก (Position Sizer)")
+        port_size = st.number_input("ขนาดพอร์ตลงทุนรวม (USD):", value=10000, step=1000)
+        risk_pct = st.slider("ความเสี่ยงต่อไม้ (% ของพอร์ต):", 0.5, 5.0, 1.0, 0.5)
+        
+        stop_val = target_info.get('Suggested_Stop')
+        if pd.notnull(stop_val) and curr_c > stop_val:
+            risk_amt = port_size * (risk_pct / 100)
+            risk_per_share = curr_c - stop_val
+            shares_to_buy = int(risk_amt // risk_per_share)
+            capital_required = shares_to_buy * curr_c
             
-        if pd.notnull(target_info.get('Div_Yield')) and target_info['Div_Yield'] > 0:
-            st.metric("Dividend Yield (TTM)", f"{target_info['Div_Yield']:.2f}%")
-            
-        if pd.notnull(target_info.get('Suggested_Stop')):
-            st.metric(
-                "Suggested Stop (2x ATR)",
-                f"${target_info['Suggested_Stop']}",
-                delta=f"-${round(target_info['Close'] - target_info['Suggested_Stop'], 2)}",
-                delta_color="inverse"
-            )
+            st.success(f"**คำแนะนำการเข้าซื้อ:**")
+            st.write(f"• จุดตัดขาดทุน (Stop Loss): **${stop_val}**")
+            st.write(f"• ซื้อได้สูงสุด: **{shares_to_buy} หุ้น**")
+            st.write(f"• ใช้เงินลงทุน: **${capital_required:,.2f}**")
+            st.write(f"• ขาดทุนสูงสุดหากโดน Stop: **-${risk_amt:,.2f}**")
+        else:
+            st.warning("ไม่มีข้อมูล Stop Loss หรือราคาต่ำกว่าจุด Stop")
     else:
         st.stop()
 
 st.divider()
 
-# --- กราฟ Candlestick ---
-st.subheader(f"📊 กราฟแท่งเทียน: {selected_ticker} (Daily)")
+tab1, tab2 = st.tabs(["📊 Advanced Technical Chart", "🥊 Relative Strength (vs SPY)"])
 
-with st.spinner(f"กำลังโหลดข้อมูลกราฟ {selected_ticker}..."):
-    df_chart = yf.download(selected_ticker, period="1y", interval="1d", progress=False)
-    if isinstance(df_chart.columns, pd.MultiIndex):
-        df_chart.columns = df_chart.columns.get_level_values(0)
+with tab1:
+    with st.spinner(f"กำลังวาดกราฟ {selected_ticker}..."):
+        df_chart = yf.download(selected_ticker, period="1y", interval="1d", progress=False)
+        if isinstance(df_chart.columns, pd.MultiIndex): df_chart.columns = df_chart.columns.get_level_values(0)
 
-    df_chart['EMA20'] = df_chart['Close'].ewm(span=20, adjust=False).mean()
-    df_chart['EMA50'] = df_chart['Close'].ewm(span=50, adjust=False).mean()
-    df_chart['SMA200'] = df_chart['Close'].rolling(window=200).mean() if len(df_chart) >= 200 else np.nan
+        df_chart['EMA20'] = df_chart['Close'].ewm(span=20, adjust=False).mean()
+        df_chart['EMA50'] = df_chart['Close'].ewm(span=50, adjust=False).mean()
+        df_chart['SMA200'] = df_chart['Close'].rolling(window=200).mean() if len(df_chart) >= 200 else np.nan
+        
+        df_chart['MACD'] = df_chart['Close'].ewm(span=12).mean() - df_chart['Close'].ewm(span=26).mean()
+        df_chart['Signal'] = df_chart['MACD'].ewm(span=9).mean()
+        df_chart['Hist'] = df_chart['MACD'] - df_chart['Signal']
 
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.75, 0.25])
-    fig.add_trace(go.Candlestick(x=df_chart.index, open=df_chart['Open'], high=df_chart['High'], low=df_chart['Low'], close=df_chart['Close'], name="OHLC"), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['EMA20'], line=dict(color='#FFA500', width=1.5), name="EMA 20"), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['EMA50'], line=dict(color='#2196F3', width=1.5), name="EMA 50"), row=1, col=1)
-    
-    if pd.notnull(df_chart['SMA200']).any():
-        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['SMA200'], line=dict(color='#E91E63', width=2), name="SMA 200"), row=1, col=1)
+        delta = df_chart['Close'].diff()
+        gain = (delta.where(delta > 0, 0)).fillna(0)
+        loss = (-delta.where(delta < 0, 0)).fillna(0)
+        avg_gain = gain.ewm(com=13, adjust=False).mean()
+        avg_loss = loss.ewm(com=13, adjust=False).mean()
+        rs = avg_gain / avg_loss
+        df_chart['RSI'] = 100 - (100 / (1 + rs))
 
-    if pd.notnull(target_info.get('Suggested_Stop')):
-        fig.add_hline(
-            y=target_info['Suggested_Stop'],
-            line_dash="dash",
-            line_color="red",
-            annotation_text=f"Stop: ${target_info['Suggested_Stop']}",
-            annotation_position="bottom right",
-            row=1, col=1
-        )
+        recent_90d = df_chart.iloc[-60:]
+        res_level = recent_90d['High'].max()
+        sup_level = recent_90d['Low'].min()
 
-    vol_colors = ['#26a69a' if c >= o else '#ef5350' for c, o in zip(df_chart['Close'], df_chart['Open'])]
-    fig.add_trace(go.Bar(x=df_chart.index, y=df_chart['Volume'], marker_color=vol_colors, name="Volume"), row=2, col=1)
+        fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.5, 0.15, 0.2, 0.15])
+        
+        fig.add_trace(go.Candlestick(x=df_chart.index, open=df_chart['Open'], high=df_chart['High'], low=df_chart['Low'], close=df_chart['Close'], name="Price"), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['EMA20'], line=dict(color='orange', width=1), name="EMA 20"), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['EMA50'], line=dict(color='blue', width=1), name="EMA 50"), row=1, col=1)
+        if pd.notnull(df_chart['SMA200']).any(): fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['SMA200'], line=dict(color='pink', width=2), name="SMA 200"), row=1, col=1)
+        
+        fig.add_hline(y=res_level, line_dash="dot", line_color="green", annotation_text="Auto Resistance", row=1, col=1)
+        fig.add_hline(y=sup_level, line_dash="dot", line_color="red", annotation_text="Auto Support", row=1, col=1)
+        
+        if pd.notnull(stop_val):
+            fig.add_hline(y=stop_val, line_dash="dash", line_color="red", annotation_text="Trailing Stop", row=1, col=1)
 
-    fig.update_layout(height=550, xaxis_rangeslider_visible=False, margin=dict(l=20, r=20, t=30, b=20))
-    st.plotly_chart(fig, use_container_width=True)
+        vol_colors = ['#26a69a' if c >= o else '#ef5350' for c, o in zip(df_chart['Close'], df_chart['Open'])]
+        fig.add_trace(go.Bar(x=df_chart.index, y=df_chart['Volume'], marker_color=vol_colors, name="Volume"), row=2, col=1)
 
-# --- ตารางวิเคราะห์ทางเทคนิครายตัว (Dynamic Insight Engine: Price + % Added) ---
-st.subheader(f"🔍 เจาะลึกผลวิเคราะห์เชิงเทคนิคและ Actionable Insights: {selected_ticker}")
+        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['MACD'], line=dict(color='blue', width=1.5), name="MACD"), row=3, col=1)
+        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['Signal'], line=dict(color='orange', width=1.5), name="Signal"), row=3, col=1)
+        hist_colors = ['#26a69a' if val >= 0 else '#ef5350' for val in df_chart['Hist']]
+        fig.add_trace(go.Bar(x=df_chart.index, y=df_chart['Hist'], marker_color=hist_colors, name="Histogram"), row=3, col=1)
 
-curr_c = float(df_chart['Close'].iloc[-1])
-curr_o = float(df_chart['Open'].iloc[-1])
-curr_e20 = float(df_chart['EMA20'].iloc[-1])
-curr_e50 = float(df_chart['EMA50'].iloc[-1])
-curr_s200 = float(df_chart['SMA200'].iloc[-1]) if pd.notnull(df_chart['SMA200'].iloc[-1]) else None
+        fig.add_trace(go.Scatter(x=df_chart.index, y=df_chart['RSI'], line=dict(color='purple', width=1.5), name="RSI"), row=4, col=1)
+        fig.add_hline(y=70, line_dash="dash", line_color="red", row=4, col=1)
+        fig.add_hline(y=30, line_dash="dash", line_color="green", row=4, col=1)
 
-# คำนวณส่วนต่างทั้งรูปจำนวนเงิน ($) และเปอร์เซ็นต์ (%)
-diff_e20_dollar = round(curr_c - curr_e20, 2)
-diff_e20_pct = round(((curr_c - curr_e20) / curr_e20) * 100, 2)
+        fig.update_layout(height=800, xaxis_rangeslider_visible=False, margin=dict(l=20, r=20, t=30, b=20), showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
 
-diff_e20_e50_dollar = round(curr_e20 - curr_e50, 2)
-diff_e20_e50_pct = round(((curr_e20 - curr_e50) / curr_e50) * 100, 2)
-
-diff_s200_dollar = round(curr_c - curr_s200, 2) if curr_s200 else None
-diff_s200_pct = round(((curr_c - curr_s200) / curr_s200) * 100, 2) if curr_s200 else None
-
-# ความชันและค่าเปลี่ยนของ SMA200 ในรอบ 20 วัน
-s200_slope = None
-s200_diff_dollar = 0.0
-s200_diff_pct = 0.0
-if curr_s200 is not None and len(df_chart) >= 20 and pd.notnull(df_chart['SMA200'].iloc[-20]):
-    old_s200 = float(df_chart['SMA200'].iloc[-20])
-    s200_diff_dollar = round(curr_s200 - old_s200, 2)
-    s200_diff_pct = round(((curr_s200 - old_s200) / old_s200) * 100, 2)
-    s200_slope = curr_s200 > old_s200
-
-vol_ratio = float(target_info['Vol_Ratio'])
-vol_diff_pct = round((vol_ratio - 1.0) * 100, 1)
-
-stop_val = target_info.get('Suggested_Stop')
-stop_dollar_diff = round(curr_c - float(stop_val), 2) if pd.notnull(stop_val) else None
-risk_pct = round((stop_dollar_diff / curr_c) * 100, 2) if stop_dollar_diff is not None else None
-
-# --- กลไกวิเคราะห์ Insights รายข้อ (พร้อมดึงราคาและ % มาอธิบาย) ---
-# ข้อ 1
-if curr_c > curr_e20:
-    c1_status = "✅ ผ่าน"
-    if diff_e20_pct > 6.0:
-        c1_desc = f"ราคาวิ่งฉีกเหนือแนวรับ EMA20 สูงถึง {diff_e20_dollar:+.2f}$ ({diff_e20_pct:+.2f}%) เริ่มเข้าโซน Overextended ระยะสั้น เสี่ยงโดนแรงขายทำกำไร รอจังหวะย่อตัวใกล้แนวรับปลอดภัยกว่า"
-    else:
-        c1_desc = f"ราคายืนเหนือ EMA20 ที่ระยะ {diff_e20_dollar:+.2f}$ ({diff_e20_pct:+.2f}%) เป็นระยะแกว่งตัวที่ดี โมเมนตัมฝั่งซื้อยังคุมเทรนด์และยังไม่หลุดแนวย่อแรก"
-else:
-    c1_status = "❌ ไม่ผ่าน"
-    c1_desc = f"ราคาหลุดต่ำกว่า EMA20 อยู่ที่ {diff_e20_dollar:+.2f}$ ({diff_e20_pct:+.2f}%) เสียโมเมนตัมขาขึ้นระยะสั้น แนวโน้มกำลังพักฐานหรือลงไปทดสอบแนวรับลึก"
-
-# ข้อ 2
-if curr_e20 > curr_e50:
-    c2_status = "✅ ผ่าน"
-    c2_desc = f"โครงสร้าง Trend Expansion เส้นสั้นแยกห่างเส้นกลาง {diff_e20_e50_dollar:+.2f}$ ({diff_e20_e50_pct:+.2f}%) สะท้อนแรงส่งรอบ 1-2 เดือนยังเสถียร ไม่พบสัญญาณชะลอตัวของเงินทุนรอบกลาง"
-else:
-    c2_status = "❌ ไม่ผ่าน"
-    c2_desc = f"EMA20 อยู่ใต้ EMA50 {diff_e20_e50_dollar:+.2f}$ ({diff_e20_e50_pct:+.2f}%) สภาวะแนวโน้มระยะกลางอยู่ในช่วงปรับฐานหรือเป็นเทรนด์ขาลง ไม่ใช่จังหวะ Buy & Hold"
-
-# ข้อ 3
-if curr_s200 and curr_e50 > curr_s200:
-    c3_status = "✅ ผ่าน"
-    c3_desc = f"ยืนยันสภาวะ Bull Market Stage 2 ราคาปัจจุบันยืนเหนือฐานทุนสถาบัน 200 วันถึง {diff_s200_dollar:+.2f}$ ({diff_s200_pct:+.2f}%) ภาพใหญ่เป็นขาขึ้นแข็งแกร่ง"
-elif curr_s200:
-    c3_status = "❌ ไม่ผ่าน"
-    c3_desc = f"ราคาหรือ EMA50 ต่ำกว่า SMA200 อยู่ {diff_s200_dollar:+.2f}$ ({diff_s200_pct:+.2f}%) ภาพใหญ่ยังติดอยู่ใน Bear Market การขึ้นมีโอกาสเป็นเพียง Technical Rebound"
-else:
-    c3_status = "⚠️ ข้อมูลไม่พอ"
-    c3_desc = "หุ้นเพิ่งเข้าตลาดไม่ถึง 200 วันทำการ ข้อมูลไม่เพียงพอสำหรับการวิเคราะห์รอบมหภาค"
-
-# ข้อ 4
-if s200_slope:
-    c4_status = "✅ ผ่าน"
-    c4_desc = f"เส้นฐานเฉลี่ยสถาบันยกตัวขึ้น {s200_diff_dollar:+.2f}$ ({s200_diff_pct:+.2f}%) ในรอบเดือน ยืนยันว่ามีเงินทุนสะสมระยะยาว (Net Accumulation) ชัดเจน"
-elif s200_slope is False:
-    c4_status = "❌ ไม่ผ่าน"
-    c4_desc = f"SMA200 ชี้ลง/ทรงตัว ({s200_diff_dollar:+.2f}$ หรือ {s200_diff_pct:+.2f}%) ต้นทุนเฉลี่ยของตลาดยังไหลลง โอกาสเกิด False Breakout ด้านบนมีสูง"
-else:
-    c4_status = "⚠️ ข้อมูลไม่พอ"
-    c4_desc = "ไม่มีข้อมูลประวัติศาสตร์ระยะยาว 200 วัน"
-
-# ข้อ 5
-is_bullish_candle = curr_c >= curr_o
-if vol_ratio >= 1.05:
-    c5_status = "✅ ผ่าน"
-    if is_bullish_candle:
-        c5_desc = f"Institutional Buying: วอลุ่มหนาแน่นกว่าค่าเฉลี่ย +{vol_diff_pct}% พร้อมแท่งเทียนปิดบวก สะท้อนการเข้าซื้อสะสมของเม็ดเงินใหญ่ (Smart Money)"
-    else:
-        c5_desc = f"Volume Spike on Pullback: วอลุ่มเข้ามากกว่าปกติ +{vol_diff_pct}% แต่แท่งเทียนปิดลบ มีแรงขายทำกำไรกดดัน ต้องจับตาแนวรับถัดไปอย่างใกล้ชิด"
-else:
-    c5_status = "❌ ไม่ผ่าน"
-    c5_desc = f"วอลุ่มต่ำกว่าเกณฑ์ ({vol_ratio:.2f}x) การเคลื่อนไหวของราคาขาดแรงหนุนจากสถาบัน มักมีความเปราะบางและแกว่งตัวไซด์เวย์"
-
-# ข้อ 6
-if risk_pct:
-    if risk_pct <= 5.0:
-        c6_desc = f"กรอบความเสี่ยงแคบมากเพียง -${stop_dollar_diff:.2f} (-{risk_pct:.2f}%) เหมาะกับการวาง Position Sizing เต็มขนาดความเสี่ยง และให้ Risk/Reward ที่คุ้มค่าสูง"
-    elif risk_pct <= 8.0:
-        c6_desc = f"ความเสี่ยงระดับปกติของ Swing Trading อยู่ที่ -${stop_dollar_diff:.2f} (-{risk_pct:.2f}%) มีพื้นที่ปลอดภัยจากความผันผวนของราคา (2x ATR)"
-    else:
-        c6_desc = f"กรอบความเสี่ยงค่อนข้างกว้าง -${stop_dollar_diff:.2f} (-{risk_pct:.2f}%) ความผันผวนสูง ควรแบ่งไม้เข้าหรือลดขนาด Position Size (Half Position)"
-else:
-    c6_desc = "ไม่มีข้อมูลคำนวณ Stop Loss"
-
-analysis_items = [
-    {
-        "หมวดหมู่การวิเคราะห์": "1. แนวโน้มระยะสั้น (Short-term)",
-        "ตัวชี้วัด / เงื่อนไข": "ราคาปิด ยืนเหนือ EMA 20",
-        "ค่าปัจจุบัน": f"Close: ${curr_c:.2f} | EMA20: ${curr_e20:.2f} ({diff_e20_dollar:+.2f}$ / {diff_e20_pct:+.2f}%)",
-        "สถานะ": c1_status,
-        "คำอธิบาย / นัยสำคัญ": c1_desc
-    },
-    {
-        "หมวดหมู่การวิเคราะห์": "2. แนวโน้มระยะกลาง (Mid-term)",
-        "ตัวชี้วัด / เงื่อนไข": "EMA 20 อยู่เหนือ EMA 50",
-        "ค่าปัจจุบัน": f"EMA20: ${curr_e20:.2f} | EMA50: ${curr_e50:.2f} ({diff_e20_e50_dollar:+.2f}$ / {diff_e20_e50_pct:+.2f}%)",
-        "สถานะ": c2_status,
-        "คำอธิบาย / นัยสำคัญ": c2_desc
-    },
-    {
-        "หมวดหมู่การวิเคราะห์": "3. แนวโน้มระยะยาว (Long-term)",
-        "ตัวชี้วัด / เงื่อนไข": "EMA 50 ยืนเหนือ SMA 200",
-        "ค่าปัจจุบัน": f"EMA50: ${curr_e50:.2f} | SMA200: " + (f"${curr_s200:.2f} ({diff_s200_dollar:+.2f}$ / {diff_s200_pct:+.2f}%)" if curr_s200 else "N/A"),
-        "สถานะ": c3_status,
-        "คำอธิบาย / นัยสำคัญ": c3_desc
-    },
-    {
-        "หมวดหมู่การวิเคราะห์": "4. ทิศทางเส้นฐานใหญ่ (Trend Slope)",
-        "ตัวชี้วัด / เงื่อนไข": "SMA 200 ชันขึ้นเทียบกับ 20 วันก่อน",
-        "ค่าปัจจุบัน": f"SMA200 Slope: {s200_diff_dollar:+.2f}$ ({s200_diff_pct:+.2f}%)",
-        "สถานะ": c4_status,
-        "คำอธิบาย / นัยสำคัญ": c4_desc
-    },
-    {
-        "หมวดหมู่การวิเคราะห์": "5. แรงผลักดันวอลุ่ม (Volume Spike)",
-        "ตัวชี้วัด / เงื่อนไข": "Volume วันล่าสุด > เฉลี่ย 20 วัน (เกิน 5%)",
-        "ค่าปัจจุบัน": f"Volume Ratio: {target_info['Vol_Ratio']:.2f}x ({vol_diff_pct:+.1f}%)",
-        "สถานะ": c5_status,
-        "คำอธิบาย / นัยสำคัญ": c5_desc
-    },
-    {
-        "หมวดหมู่การวิเคราะห์": "6. การบริหารความเสี่ยง (Risk / Stop Loss)",
-        "ตัวชี้วัด / เงื่อนไข": "จุดตัดขาดทุนแนะนำ (Trailing 2x ATR)",
-        "ค่าปัจจุบัน": (f"${stop_val:.2f} (ห่าง -${stop_dollar_diff:.2f} / -{risk_pct:.2f}%)" if stop_val else "N/A"),
-        "สถานะ": "🛡️ แนะนำระดับ Stop",
-        "คำอธิบาย / นัยสำคัญ": c6_desc
-    }
-]
-
-df_analysis = pd.DataFrame(analysis_items)
-
-def color_status(val):
-    if "✅ ผ่าน" in str(val):
-        return 'color: #00e676; font-weight: bold;'
-    elif "❌ ไม่ผ่าน" in str(val):
-        return 'color: #ff5252; font-weight: bold;'
-    elif "🛡️" in str(val):
-        return 'color: #40c4ff; font-weight: bold;'
-    return 'color: #ffab40;'
-
-if hasattr(df_analysis.style, 'map'):
-    styled_analysis = df_analysis.style.map(color_status, subset=['สถานะ'])
-else:
-    styled_analysis = df_analysis.style.applymap(color_status, subset=['สถานะ'])
-
-st.dataframe(
-    styled_analysis,
-    use_container_width=True,
-    hide_index=True
-)
+with tab2:
+    st.subheader(f"🥊 ความแข็งแกร่งเทียบกับตลาดรวม ({selected_ticker} vs SPY)")
+    with st.spinner("กำลังดึงข้อมูล S&P 500 (SPY)..."):
+        spy_df = yf.download("SPY", period="1y", interval="1d", progress=False)
+        if isinstance(spy_df.columns, pd.MultiIndex): spy_df.columns = spy_df.columns.get_level_values(0)
+        
+        stock_pct = (df_chart['Close'] / df_chart['Close'].iloc[0] - 1) * 100
+        spy_pct = (spy_df['Close'] / spy_df['Close'].iloc[0] - 1) * 100
+        
+        fig_rs = go.Figure()
+        fig_rs.add_trace(go.Scatter(x=df_chart.index, y=stock_pct, mode='lines', name=selected_ticker, line=dict(color='#2196F3', width=2.5)))
+        fig_rs.add_trace(go.Scatter(x=spy_df.index, y=spy_pct, mode='lines', name="SPY (Market)", line=dict(color='#FFA500', width=2, dash='dash')))
+        
+        fig_rs.update_layout(height=400, yaxis_title="Performance (%)", hovermode="x unified")
+        st.plotly_chart(fig_rs, use_container_width=True)
