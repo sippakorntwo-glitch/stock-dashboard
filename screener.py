@@ -7,16 +7,15 @@ import io
 import os
 
 CSV_FILE = "daily_watchlist.csv"
-TARGET_STOCKS = 3700  # จำนวนโควตาหุ้นสามัญ
-TARGET_ETFS = 800     # จำนวนโควตากองทุน ETF
-BATCH_SIZE = 200      # แบ่งโหลดเพื่อกันโดนบล็อก
+TARGET_STOCKS = 3700  
+TARGET_ETFS = 800     
+BATCH_SIZE = 80       # ขนาด Batch สำหรับหลบการตรวจจับของ Yahoo
 
 def get_categorized_universe():
     print("🌐 กำลังดึงฐานข้อมูลและแยกประเภท (Stock / ETF) จาก NASDAQ & NYSE...")
     headers = {'User-Agent': 'Mozilla/5.0'}
     asset_dict = {}
 
-    # 1. ดึงข้อมูลกระดาน NASDAQ
     try:
         url_nasdaq = "https://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqlisted.txt"
         res = requests.get(url_nasdaq, headers=headers, timeout=15)
@@ -29,7 +28,6 @@ def get_categorized_universe():
     except Exception as e:
         print(f"⚠️ ดึง NASDAQ ไม่สำเร็จ: {e}")
 
-    # 2. ดึงข้อมูลกระดาน NYSE, AMEX, BATS (otherlisted)
     try:
         url_other = "https://ftp.nasdaqtrader.com/SymbolDirectory/otherlisted.txt"
         res = requests.get(url_other, headers=headers, timeout=15)
@@ -42,7 +40,6 @@ def get_categorized_universe():
     except Exception as e:
         print(f"⚠️ ดึง Other Listed ไม่สำเร็จ: {e}")
 
-    # ทำความสะอาด Ticker และตัดหุ้นบุริมสิทธิ/Warrant ทิ้ง
     clean_dict = {}
     for t, atype in asset_dict.items():
         t = t.replace('$', '-P').replace('.', '-')
@@ -52,7 +49,7 @@ def get_categorized_universe():
             continue
         clean_dict[t] = atype
 
-    # 🌟 บังคับใส่รายการโปรด เพื่อกันตกหล่น
+    # บังคับใส่รายการโปรด
     clean_dict["KSLV"] = "ETF"
     clean_dict["SPY"] = "ETF"
     clean_dict["QQQ"] = "ETF"
@@ -61,7 +58,8 @@ def get_categorized_universe():
     return clean_dict
 
 def calculate_metrics(df):
-    if len(df) < 50:
+    # ยอมรับหุ้นที่เพิ่งเข้าตลาดได้ 30 วันขึ้นไป
+    if len(df) < 30:
         return None
 
     close = df['Close']
@@ -70,9 +68,8 @@ def calculate_metrics(df):
     low = df['Low']
 
     latest_close = round(float(close.iloc[-1]), 2)
-    # กรองสินทรัพย์ราคาต่ำกว่า 2 ดอลลาร์ทิ้ง
-    if latest_close < 2.0:
-        return None
+    
+    # 🌟 ปลดล็อกข้อจำกัดด้านราคา: ไม่สนใจว่าราคาขั้นต่ำเท่าไหร่ (ลบ if latest_close < ... ทิ้งไปแล้ว)
 
     ema20 = close.ewm(span=20, adjust=False).mean()
     ema50 = close.ewm(span=50, adjust=False).mean()
@@ -82,8 +79,8 @@ def calculate_metrics(df):
     latest_vol = float(volume.iloc[-1])
     avg_vol = float(vol_20ma.iloc[-1]) if pd.notnull(vol_20ma.iloc[-1]) and vol_20ma.iloc[-1] > 0 else latest_vol
     
-    # กรองสินทรัพย์ที่ไม่มีสภาพคล่องทิ้ง (เทรดเฉลี่ยน้อยกว่า 5,000 หุ้น/วัน)
-    if avg_vol < 5000:
+    # 🌟 เงื่อนไขใหม่: ยอมรับเฉพาะสินทรัพย์ที่มี Volume เฉลี่ย 2,500 หุ้น/วัน ขึ้นไป
+    if avg_vol < 2500:
         return None
 
     vol_ratio = round(latest_vol / avg_vol, 2)
@@ -137,7 +134,7 @@ def run_screener():
         print(f"📦 Batch {batch_no}/{total_batches} ({len(batch)} Tickers)...")
 
         try:
-            data = yf.download(batch, period="1y", interval="1d", group_by="ticker", threads=True, progress=False, timeout=30)
+            data = yf.download(batch, period="1y", interval="1d", group_by="ticker", threads=True, progress=False, timeout=40)
 
             for t in batch:
                 try:
@@ -165,21 +162,19 @@ def run_screener():
         except Exception as e:
             print(f"⚠️ Batch {batch_no} ขัดข้อง: {e}")
 
-        # พัก 2 วินาทีระหว่างก้อน เพื่อป้องกันโดนแบน IP
-        time.sleep(2.0)
+        # พัก 2.5 วินาที เพื่อป้องกัน Yahoo บล็อก
+        time.sleep(2.5)
 
     if len(results) > 0:
         df_all = pd.DataFrame(results)
         
-        # 🌟 แยก Dataframe เพื่อคัดโควตา (Stock 3,700 / ETF 800)
         df_stocks = df_all[df_all['Asset_Type'] == 'Common Stock']
         df_etfs = df_all[df_all['Asset_Type'] == 'ETF']
 
-        # เรียงตามสภาพคล่องสูงสุด แล้วตัดให้พอดีกับโควตา
+        # เรียงลำดับจากวอลุ่มสูงไปต่ำ และตัดให้พอดีกับโควตา
         df_stocks = df_stocks.sort_values(by="Avg_Volume", ascending=False).head(TARGET_STOCKS)
         df_etfs = df_etfs.sort_values(by="Avg_Volume", ascending=False).head(TARGET_ETFS)
 
-        # นำกลับมารวมกันเป็น 4,500 ตัว
         final_df = pd.concat([df_stocks, df_etfs])
         
         final_df = final_df.sort_values(by=["Status", "Vol_Ratio"], ascending=[True, False])
