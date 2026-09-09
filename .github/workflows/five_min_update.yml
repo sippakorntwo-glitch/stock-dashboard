@@ -2,7 +2,9 @@ name: 5-Minute Auto Price Updater
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    # รันทุก 5 นาที เฉพาะช่วง 13:00 - 21:59 UTC (ตรงกับ 20:00 - 04:59 น. เวลาไทย) วันจันทร์ - ศุกร์
+    # ครอบคลุมเวลาตลาดหุ้นสหรัฐเปิดพอดี (ประหยัดโควตานาทีฟรีของ GitHub และไม่โดนแบน)
+    - cron: '*/5 13-21 * * 1-5'
   workflow_dispatch:
 
 jobs:
@@ -24,15 +26,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run screener
+      # -------------------------------------------------------------
+      # กลับมาใช้ fast_updater.py เพื่ออัปเดตราคาแบบไว (ไม่ใช้ screener แล้ว)
+      # -------------------------------------------------------------
+      - name: Run fast updater
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-        run: python screener.py
+        run: python fast_updater.py
 
       - name: Commit and push updated CSV
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add daily_watchlist.csv
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update watchlist to 2500 stocks [skip ci]" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update prices [skip ci]" && git push)
