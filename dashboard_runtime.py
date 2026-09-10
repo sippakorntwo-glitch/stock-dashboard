@@ -98,8 +98,18 @@ def settings():
 
 
 @st.cache_resource
+def _cached_data_cache(version, cache_path):
+    return DashboardCache(Path(cache_path))
+
+
 def get_data_cache(version=APP_VERSION):
-    return DashboardCache(Path(os.environ.get('DASHBOARD_CACHE_FILE', str(Path(__file__).parent/'dashboard_cache.sqlite3'))))
+    # Canonicalize arguments before Streamlit hashes them. Calls with an omitted
+    # default and an explicit version must share the very same reader hook.
+    path = Path(os.environ.get('DASHBOARD_CACHE_FILE', str(Path(__file__).parent/'dashboard_cache.sqlite3')))
+    return _cached_data_cache(version, str(path.resolve()))
+
+
+get_data_cache.clear = _cached_data_cache.clear
 
 
 @st.cache_resource
