@@ -9,7 +9,7 @@ import streamlit as st
 import dashboard_core as core
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-09-10.12'
+APP_VERSION = '2026-09-11.13'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row
@@ -60,7 +60,6 @@ def summary_is_current(row, now=None):
 
 def build_universe_frame(csv_frame, saved=None, classifications=None):
     frame, outside = base_build_frame(csv_frame, saved, classifications)
-    # Clear obsolete CSV indicators only when the newer saved observation is eligible.
     computed = list(dict.fromkeys([*core.WATCHLIST_NUMERIC_COLUMNS, 'Suggested_Stop', *EXTRA_NUMERIC]))
     indexed = frame.set_index('Ticker')
     rows = [r for t,r in (saved or {}).items() if t in indexed.index and r.get('Data_Status') == 'โหลดสำเร็จ']
@@ -97,33 +96,43 @@ def settings():
     return config
 
 
+def _cache_path():
+    return str(Path(os.environ.get('DASHBOARD_CACHE_FILE', str(Path(__file__).parent/'dashboard_cache.sqlite3'))).resolve())
+
+
 @st.cache_resource
 def _cached_data_cache(version, cache_path):
     return DashboardCache(Path(cache_path))
 
 
 def get_data_cache(version=APP_VERSION):
-    # Canonicalize arguments before Streamlit hashes them. Calls with an omitted
-    # default and an explicit version must share the very same reader hook.
-    path = Path(os.environ.get('DASHBOARD_CACHE_FILE', str(Path(__file__).parent/'dashboard_cache.sqlite3')))
-    return _cached_data_cache(version, str(path.resolve()))
+    # Always hash explicit arguments, including the release version.
+    return _cached_data_cache(version, _cache_path())
 
 
 get_data_cache.clear = _cached_data_cache.clear
 
 
 @st.cache_resource
+def _cached_remote_reader(version, cache_path, config):
+    cache = _cached_data_cache(version, cache_path)
+    reader = SnapshotReader(ObjectStore(config), cache)
+    cache.remote = reader
+    return reader, ''
+
+
 def get_remote_reader(version=APP_VERSION):
+    # An omitted default must not reuse a reader from a previous release.
     try:
         config = settings()
         if config is None:
             return None, 'ยังไม่ได้ตั้งค่าแหล่งข้อมูล'
-        cache = get_data_cache(version)
-        reader = SnapshotReader(ObjectStore(config), cache)
-        cache.remote = reader
-        return reader, ''
+        return _cached_remote_reader(version, _cache_path(), config)
     except Exception as exc:
         return None, f'ตั้งค่าแหล่งข้อมูลไม่สำเร็จ ({type(exc).__name__})'
+
+
+get_remote_reader.clear = _cached_remote_reader.clear
 
 
 class ReadOnlyUpdater:
@@ -147,10 +156,15 @@ def live_enabled():
 
 
 @st.cache_resource
+def _cached_updater(version, cache_path, enabled):
+    return core.BackgroundUpdates(_cached_data_cache(version, cache_path)) if enabled else ReadOnlyUpdater()
+
+
 def get_updater(version=APP_VERSION):
-    return core.BackgroundUpdates(get_data_cache(version)) if live_enabled() else ReadOnlyUpdater()
+    return _cached_updater(version, _cache_path(), live_enabled())
 
 
+get_updater.clear = _cached_updater.clear
 core.WATCHLIST_NUMERIC_COLUMNS = list(dict.fromkeys([*core.WATCHLIST_NUMERIC_COLUMNS, *EXTRA_NUMERIC]))
 core.DashboardCache = DashboardCache
 core.scan_snapshot_row = scan_snapshot_row

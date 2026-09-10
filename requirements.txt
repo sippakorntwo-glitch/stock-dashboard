@@ -1,4 +1,5 @@
-# Pinned direct dependencies; pandas wheels selected for the host's Python.
+# Research Workspace release 2026-09-11.13; tested on Python 3.12 and 3.14.
+# Keep this deployment manifest in sync with the release's runtime cache version.
 streamlit==1.63.0
 pandas==2.2.3; python_version < "3.14"
 pandas==3.0.5; python_version >= "3.14"
