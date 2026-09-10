@@ -1,0 +1,83 @@
+name: Full browser verification
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/full_browser.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    if: ${{ toJSON(github.event.repository.private) == 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install application and browser
+        run: |
+          python -m pip install -r requirements.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Verify all six views on real server with public prepared data
+        env:
+          PYTHONUNBUFFERED: '1'
+          DASHBOARD_ALLOW_LIVE_UPDATES: 'false'
+          DASHBOARD_CACHE_FILE: work/full-browser.sqlite3
+        run: |
+          python - <<'PY'
+          import os, subprocess, sys, time
+          from pathlib import Path
+          import requests
+          import production_smoke
+          Path('work').mkdir(exist_ok=True)
+          log = Path('work/full-browser.log')
+          with log.open('w') as output:
+              process = subprocess.Popen([sys.executable, '-m', 'streamlit', 'run', 'app.py', '--server.headless=true', '--server.address=127.0.0.1', '--server.port=8501'], stdout=output, stderr=subprocess.STDOUT)
+              try:
+                  for i in range(60):
+                      if process.poll() is not None:
+                          raise RuntimeError('Application server stopped')
+                      try:
+                          if requests.get('http://127.0.0.1:8501/_stcore/health', timeout=2).status_code == 200:
+                              break
+                      except requests.RequestException:
+                          pass
+                      time.sleep(1)
+                  production_smoke.URL = 'http://127.0.0.1:8501/'
+                  production_smoke.run()
+                  print('ALL_SIX_VIEWS_VERIFIED_ON_CI_SERVER_WITH_REAL_DATA', flush=True)
+              finally:
+                  process.terminate()
+                  try:
+                      process.wait(timeout=10)
+                  except subprocess.TimeoutExpired:
+                      process.kill(); process.wait(timeout=5)
+                  print('SERVER_LOG:', log.read_text()[-16000:], flush=True)
+          PY
+      - name: Observe public hosting separately without authentication
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from urllib.parse import urlsplit
+          import requests
+          from playwright.sync_api import sync_playwright
+          response = requests.get('https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/dashboard-data/dashboard/latest.json', timeout=30)
+          response.raise_for_status()
+          m = response.json()
+          print('CURRENT_DATA_COVERAGE:', json.dumps({k: m.get(k) for k in ('generation','published_at','coverage','bootstrap_pending','report')}, ensure_ascii=False), flush=True)
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              page = browser.new_page()
+              failed = []
+              page.on('response', lambda r: failed.append({'path': urlsplit(r.url).path, 'status': r.status}) if r.status >= 400 and urlsplit(r.url).hostname == 'my-stock-terminal.streamlit.app' else None)
+              page.goto('https://my-stock-terminal.streamlit.app/', wait_until='domcontentloaded', timeout=60000)
+              page.wait_for_timeout(20000)
+              url = urlsplit(page.url)
+              print('PUBLIC_HOSTING_OBSERVATION:', json.dumps({'url': url.scheme+'://'+url.netloc+url.path, 'title': page.title(), 'headings': page.get_by_role('heading').all_text_contents(), 'public_text': page.locator('body').inner_text()[:6500], 'failed_paths': failed}, ensure_ascii=False), flush=True)
+              browser.close()
+          PY
