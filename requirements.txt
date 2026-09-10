@@ -1,7 +1,9 @@
-streamlit
-pandas
-numpy
-yfinance
-plotly
-requests
-streamlit-autorefresh
+# Pinned direct dependencies; Python 3.12 deployment target.
+streamlit==1.63.0
+pandas==2.2.3
+numpy==2.3.5
+yfinance==1.7.0
+plotly==6.5.2
+pyarrow==25.0.1
+streamlit-autorefresh==1.0.1
+requests==2.34.2
