@@ -10,38 +10,44 @@ jobs:
   inspect:
     if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 7
     steps:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install public browser
         run: |
-          python -m pip install playwright==1.55.0
-          python -m playwright install --with-deps chromium
-      - name: Inspect public app without authentication
+          python -m pip install -q playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+      - name: Inspect public comparison without authentication
+        env:
+          PYTHONUNBUFFERED: '1'
         run: |
           python - <<'PY'
           import json
           from urllib.parse import urlsplit
           from playwright.sync_api import sync_playwright
           with sync_playwright() as p:
-              browser = p.chromium.launch(headless=True)
-              page = browser.new_page(viewport={'width': 1440, 'height': 1000})
-              errors = []
-              page.on('pageerror', lambda error: errors.append(str(error)[:500]))
-              response = page.goto('https://my-stock-terminal.streamlit.app/', wait_until='domcontentloaded', timeout=60000)
-              page.wait_for_timeout(20000)
-              u = urlsplit(page.url)
-              result = {'http_status': response.status if response else None,
-                        'url': u.scheme + '://' + u.netloc + u.path,
-                        'title': page.title(), 'headings': page.get_by_role('heading').all_text_contents(),
-                        'public_text': page.locator('body').inner_text()[:9000],
-                        'exceptions': page.locator('[data-testid="stException"]').all_text_contents(),
-                        'javascript_errors': errors}
-              print('PUBLIC_SITE_DIAGNOSTIC:', json.dumps(result, ensure_ascii=False), flush=True)
-              for frame in page.frames[1:]:
-                  u = urlsplit(frame.url)
-                  print('FRAME:', u.scheme + '://' + u.netloc + u.path, flush=True)
+              browser=p.chromium.launch(headless=True)
+              page=browser.new_page(viewport={'width':1440,'height':1000})
+              page.on('pageerror',lambda e: print('JS_ERROR:',str(e)[:800],flush=True))
+              page.goto('https://my-stock-terminal.streamlit.app/',wait_until='domcontentloaded',timeout=60000)
+              app=None
+              for _ in range(60):
+                  for f in page.frames:
+                      if f.get_by_role('heading',name='Stock Research Workspace',exact=True).count(): app=f;break
+                  if app: break
+                  page.wait_for_timeout(1000)
+              if app is None: raise RuntimeError('No application frame')
+              for view in ['เปรียบเทียบหลายตัว','สถานะข้อมูล']:
+                  app.locator('[data-testid="stSidebar"]').get_by_text(view,exact=True).click()
+                  page.wait_for_timeout(30000)
+                  u=urlsplit(app.url)
+                  report={'view':view,'url':u.scheme+'://'+u.netloc+u.path,
+                          'text':app.locator('body').inner_text()[:12000],
+                          'exceptions':app.locator('[data-testid="stException"]').all_text_contents(),
+                          'plotly_count':app.locator('[data-testid="stPlotlyChart"]').count(),
+                          'iframes':[urlsplit(f.url).path for f in page.frames]}
+                  print('PUBLIC_VIEW_DIAGNOSTIC:',json.dumps(report,ensure_ascii=False),flush=True)
               browser.close()
           PY
