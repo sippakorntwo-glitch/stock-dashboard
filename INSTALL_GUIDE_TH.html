@@ -1,0 +1,379 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Stock Dashboard — คู่มือทีละคลิก v12</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f5f8;color:#1c2a3a;font:16px/1.9 Tahoma,"Segoe UI",sans-serif}main{max-width:1050px;margin:30px auto;background:#fff;padding:40px;border:1px solid #dce2ec;border-radius:12px}h1{font-size:30px;line-height:1.5;color:#153652}h2{font-size:23px;margin:38px 0 16px;border-top:2px solid #d6e2ef;padding-top:24px}h3{font-size:19px}a{color:#0757a7;overflow-wrap:anywhere}pre{background:#122234;color:#edf5ff;border-radius:8px;padding:20px;overflow:auto;font:14px/1.8 Consolas,monospace}code{font-family:Consolas,monospace}p code,li code,td code{background:#edf2f7;padding:2px 5px;border-radius:4px}li{padding-left:4px;margin-bottom:9px}table{border-collapse:collapse;width:100%;font-size:14px;margin:20px 0}th,td{border:1px solid #d5deea;padding:12px;text-align:left;vertical-align:top}th{background:#eaf0f7}strong{color:#173e60}@media(max-width:760px){main{margin:0;padding:20px;border:0;border-radius:0}h1{font-size:25px}h2{font-size:21px}table{display:block;overflow:auto}}@media print{body{background:white}main{max-width:none;margin:0;border:0;padding:0}h2{break-after:avoid}pre{white-space:pre-wrap;color:black;background:#f0f0f0}a{color:inherit}}</style></head><body><main><h1>คู่มือติดตั้ง Stock Dashboard แบบทีละคลิก</h1>
+<p>รุ่นชุดแก้ไข <strong>2026-09-10.12</strong> · Repository <strong>sippakorntwo-glitch/stock-dashboard</strong></p>
+<h2>ก่อนเริ่ม: ใช้ ZIP รุ่น v12 เท่านั้น</h2>
+<p>ZIP ก่อนหน้ารุ่น 2026-09-10.11 มีการทดสอบล้มเหลว 1 รายการ: test เรียก <code>history_missing</code> ด้วย 3 arguments แต่โปรแกรมรับเพียง 1 argument ชุด v12 แก้การเรียกใน test ให้ตรงกับโปรแกรม โดยคง assertions เดิมไว้ เพิ่ม regression tests และให้ตัวตรวจใช้ <code>METRIC_VERSION</code> ร่วมกันแทนตัวเลขที่เขียนตายตัว</p>
+<p>ผลออฟไลน์ของชุด v12: <strong>40 passed, 1 skipped</strong> ส่วนที่ข้ามคือการทดสอบด้วย Streamlit จริง ยังไม่ได้ติดตั้ง dependencies จริงครบชุด ไม่ได้ดึง Yahoo จริง ไม่ได้เผยแพร่ข้อมูลจริง และไม่ได้ทดสอบกราฟ JavaScript ในเบราว์เซอร์จริง ต้องตรวจ GitHub Checks และเว็บจริงตามขั้นตอนด้านล่าง ไม่ใช่คำรับรองว่าทั้งระบบพร้อม production แล้ว</p>
+<p>โค้ดใหม่ยังเป็นไฟล์สำหรับอัปโหลด ไม่ได้ commit เข้า main ในคำตอบนี้ ตรวจ GitHub พบ main และ improve/research-workspace-20260910 อยู่ที่ commit 0be231ae7373bf61126bf506b4528c5411c85265 เหมือนกัน ณ เวลาตรวจ</p>
+<h2>ภาพรวม: ทำงานที่ไหนบ้าง</h2>
+<table>
+<thead>
+<tr>
+  <th>สถานที่</th>
+  <th>ใช้ทำอะไร</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>คอมพิวเตอร์ Windows</td>
+  <td>ดาวน์โหลดและแตก ZIP เท่านั้น ไม่จำเป็นต้องติดตั้ง Python หรือ GitHub Desktop สำหรับวิธีนี้</td>
+</tr>
+<tr>
+  <td>เว็บไซต์ GitHub</td>
+  <td>อัปโหลดไฟล์ ตรวจ tests รวมโค้ด และเริ่มงานเตรียมข้อมูล</td>
+</tr>
+<tr>
+  <td>เว็บไซต์ Streamlit</td>
+  <td>เปิดแอป ดู Logs และตั้งค่าแอปเมื่อจำเป็น</td>
+</tr>
+</tbody>
+</table>
+<p>Repository คือโฟลเดอร์โปรเจกต์ออนไลน์; branch คือชุดงานแยก; commit คือบันทึกการเปลี่ยนแปลง; Pull Request หรือ PR คือหน้าขอรวมงานเข้าชุดหลัก; Merge คือรวมโค้ด; Actions คือระบบรันงานอัตโนมัติ</p>
+<p><strong>ก่อน Merge ต้องเข้าใจ:</strong> ระบบเก็บข้อมูลชุดนี้เผยแพร่ข้อมูลตลาดไปยัง GitHub Releases ใน repository สาธารณะ ตรวจสิทธิใช้/เผยแพร่ข้อมูลจากผู้ให้บริการก่อนเปิดใช้งาน อย่าใส่พอร์ตส่วนตัว ต้นทุน เลขบัญชี รหัสผ่าน หรือ token ลงในไฟล์ที่อัปโหลด การทำให้ repo เป็น Public ไม่ได้ให้สิทธิแจกจ่ายข้อมูลของผู้ให้บริการโดยอัตโนมัติ</p>
+<h2>1. เปิดโปรเจกต์ให้ถูกและเข้าสู่ระบบ</h2>
+<ol>
+<li>เปิด <a href="https://github.com/sippakorntwo-glitch/stock-dashboard">Repository ของคุณ</a> ใน Chrome หรือ Edge</li>
+<li>ถ้ามีปุ่ม Sign in ให้เข้าสู่ระบบด้วยบัญชี GitHub ที่เป็นเจ้าของ repo นี้</li>
+<li>ตรวจข้อความด้านบนว่าเป็น <code>sippakorntwo-glitch / stock-dashboard</code></li>
+<li>คลิกแท็บ <strong>Code</strong> ซึ่งเป็นแท็บรายชื่อไฟล์ ไม่ใช่แท็บ Actions</li>
+<li>มองเหนือรายชื่อไฟล์ทางซ้าย จะมีปุ่มเลือก branch ที่แสดงชื่อ <code>main</code> หรือชื่อ branch อื่น</li>
+</ol>
+<p><strong>จุดตรวจ:</strong> อยู่ในหน้าไฟล์ของ stock-dashboard และเห็นปุ่มเลือก branch อย่าสร้าง repository ใหม่</p>
+<h2>2. สำรองโค้ดเดิม</h2>
+<ol>
+<li>กดปุ่มเลือก branch พิมพ์ <code>main</code> แล้วเลือก main</li>
+<li>ตรวจอีกครั้งว่าปุ่ม branch แสดง main</li>
+<li>กดปุ่มสีเขียว <strong>Code</strong> เหนือรายชื่อไฟล์</li>
+<li>ในเมนูที่เปิดขึ้นเลือก <strong>Download ZIP</strong></li>
+<li>เก็บไฟล์ที่ดาวน์โหลดไว้เป็นสำรอง เปลี่ยนชื่อบน Windows ได้ เช่น <code>stock-dashboard-backup-before-upgrade.zip</code></li>
+<li>แยกไฟล์สำรองนี้ออกจาก ZIP อัปเกรด อย่าลากไฟล์สำรองกลับไปอัปโหลดแทนชุดใหม่</li>
+</ol>
+<p><strong>จุดตรวจ:</strong> มี ZIP ของโค้ดเดิมในเครื่องหนึ่งชุด และยังไม่ได้ลบไฟล์ใดใน GitHub การสำรองด้วย Download ZIP ไม่รวม Streamlit Secrets และข้อมูล runtime ที่อยู่นอก repo</p>
+<h2>3. ดาวน์โหลดและแตกไฟล์อัปเกรด</h2>
+<ol>
+<li>กลับไปที่คำตอบในแชต ดาวน์โหลด <strong>stock_dashboard_upgrade_2026-09-10_v12.zip</strong></li>
+<li>กด <strong>Windows + E</strong> เพื่อเปิด File Explorer แล้วเข้า Downloads</li>
+<li>คลิกขวาที่ ZIP รุ่น v12 แล้วเลือก <strong>Extract All… / แยกทั้งหมด…</strong></li>
+<li>เลือกโฟลเดอร์ใหม่ เช่น <code>Downloads\stock-dashboard-upgrade-v12</code> แล้วกด Extract</li>
+<li>เปิดโฟลเดอร์ที่แตกแล้ว ไม่ทำงานจากหน้าต่าง ZIP โดยตรง</li>
+<li>ตรวจว่าเห็น <code>app.py</code>, <code>update_data.py</code>, <code>dashboard_runtime.py</code> พร้อมโฟลเดอร์ <code>.github</code>, <code>.streamlit</code>, <code>tests</code> อยู่ระดับเดียวกัน</li>
+<li>ไม่ต้องดับเบิลคลิกไฟล์ <code>.py</code> หรือ <code>.cmd</code> เพราะรอบนี้เราติดตั้งผ่านเว็บไซต์</li>
+</ol>
+<p>หากไม่เห็นนามสกุลไฟล์ บน Windows 11 ใช้ <strong>View → Show → File name extensions</strong> และ <strong>Hidden items</strong> บน Windows 10 ใช้ View/Options เพื่อเปิดการแสดงนามสกุลและไฟล์ซ่อน ไม่ต้องเปลี่ยนชื่อ app.py เป็น app.py.txt</p>
+<p><strong>จุดตรวจ:</strong> เป็นโฟลเดอร์ธรรมดา และมีไฟล์ที่แตกครบ ZIP มี 27 ไฟล์รวมไฟล์ในโฟลเดอร์ย่อย จำนวนรายการที่หน้า root ของ File Explorer จึงไม่จำเป็นต้องเท่ากับ 27</p>
+<h2>4. เปิด branch อัปเกรดที่เตรียมไว้</h2>
+<ol>
+<li>กลับไปที่ GitHub แท็บ Code</li>
+<li>กดปุ่ม branch ที่แสดง main</li>
+<li>ในช่องค้นหาพิมพ์ <code>improve/research-workspace-20260910</code></li>
+<li>เลือก branch ชื่อนี้จากรายการ ไม่ต้องสร้าง branch ชื่ออื่น</li>
+<li>ตรวจว่าชื่อ branch ที่แสดงเปลี่ยนจาก main เป็นชื่ออัปเกรดแล้ว หากข้อความยาวจนตัด ให้กดเมนูดูชื่อเต็ม</li>
+</ol>
+<p>หรือเปิด <a href="https://github.com/sippakorntwo-glitch/stock-dashboard/tree/improve/research-workspace-20260910">branch อัปเกรดโดยตรง</a></p>
+<p><strong>จุดตรวจ:</strong> ยังอยู่หน้า root ของ repo ไม่อยู่ใน .github/workflows หรือโฟลเดอร์อื่น และ branch เป็น improve/research-workspace-20260910</p>
+<p>ชื่อ <code>dashboard-data</code> ไม่ใช่ branch สำหรับอัปโหลดโค้ด อย่าใช้ชื่อนั้นในขั้นตอนนี้</p>
+<h2>5. อัปโหลดไฟล์ใหม่ให้ถูกตำแหน่ง</h2>
+<ol>
+<li>ในหน้า root ของ branch อัปเกรด กด <strong>Add file → Upload files</strong></li>
+<li>จัดหน้าต่าง GitHub และ File Explorer ให้อยู่ข้างกัน</li>
+<li>ใน File Explorer เปิดโฟลเดอร์ v12 จนเห็นไฟล์ app.py อยู่ตรงหน้า ไม่ใช่เลือกโฟลเดอร์ที่ครอบทั้งหมดจากด้านนอก</li>
+<li>คลิกพื้นที่ไฟล์ในโฟลเดอร์นั้นแล้วกด <strong>Ctrl + A</strong> เพื่อเลือกไฟล์และโฟลเดอร์ทั้งหมดที่แตกออกมา</li>
+<li>ลากสิ่งที่เลือกไปยังกรอบอัปโหลดใน GitHub โฟลเดอร์ย่อยต้องถูกลากไปด้วย</li>
+<li>ดูรายการที่อัปโหลด ตรวจว่ามี <code>app.py</code>, <code>update_data.py</code>, <code>.github/workflows/validate.yml</code> และ <code>.streamlit/config.toml</code></li>
+<li>ไฟล์ app.py ใหม่ต้องอยู่ข้าง daily_watchlist.csv เดิม ไม่ใช่ <code>stock-dashboard-upgrade-v12/app.py</code></li>
+<li>ยังไม่ลบ app.py เดิมเอง การอัปโหลดไฟล์ชื่อและตำแหน่งเดิมบน branch นี้ใช้แทนเนื้อหาของไฟล์นั้น ส่วนไฟล์ที่ไม่อัปโหลดไม่ได้ถูกสั่งลบโดยขั้นตอนนี้</li>
+</ol>
+<p><strong>ตำแหน่งที่ถูกต้อง</strong></p>
+<pre><code class="language-text">app.py
+update_data.py
+dashboard_core.py
+dashboard_runtime.py
+dashboard_ui.py
+analytics.py
+data_sync.py
+github_store.py
+requirements.txt
+requirements-dev.txt
+.gitignore
+.github/workflows/five_min_update.yml
+.github/workflows/validate.yml
+.streamlit/config.toml
+tests/...
+</code></pre>
+<p><strong>ตำแหน่งที่ผิด</strong></p>
+<pre><code class="language-text">stock-dashboard-upgrade-v12/app.py
+stock-dashboard-upgrade-v12/update_data.py
+</code></pre>
+<p>ถ้ารายการอัปโหลดผิดชั้น ให้ยกเลิกการอัปโหลดก่อนบันทึก แล้วเริ่มจากหน้า root ใหม่ อย่า Commit ทั้งที่รู้ว่าตำแหน่งผิด</p>
+<p>อย่าอัปโหลด ZIP เป็นไฟล์เดียว และอย่าอัปโหลด secrets.toml จริง แม้มี .gitignore ก็ไม่ควรเชื่อว่าไฟล์ที่เลือกอัปโหลดผ่านเว็บจะถูกกรองให้อัตโนมัติ</p>
+<h2>6. บันทึกการอัปโหลดลง branch</h2>
+<ol>
+<li>เลื่อนลงส่วน <strong>Commit changes</strong> ของหน้าอัปโหลด</li>
+<li>ช่องชื่อ commit ใส่ <code>Install research workspace v12 and prepared data pipeline</code></li>
+<li>ช่องคำอธิบายยาวปล่อยว่างได้</li>
+<li>ถ้ามีตัวเลือกให้เลือก <strong>Commit directly to the improve/research-workspace-20260910 branch</strong></li>
+<li>ถ้าข้อความกลับแสดง <code>main</code> ให้หยุดและกลับไปเลือก branch อัปเกรดให้ถูกก่อน ไม่บันทึกตรง main</li>
+<li>กดปุ่มยืนยัน ซึ่งหน้าจออาจใช้ชื่อ <strong>Commit changes</strong> หรือ <strong>Propose changes</strong></li>
+<li>เมื่อกลับมาหน้าไฟล์ คลิก <code>update_data.py</code> ตรวจว่าเปิดเห็นโค้ดได้ แล้วกลับมาหน้า root</li>
+<li>เปิด <code>.github → workflows</code> ต้องเห็นทั้ง <code>five_min_update.yml</code> และ <code>validate.yml</code></li>
+<li>กลับ root เปิด <code>.streamlit</code> ต้องเห็น <code>config.toml</code> และเปิด <code>tests</code> ต้องเห็นไฟล์ทดสอบ</li>
+<li>ตรวจว่า <code>daily_watchlist.csv</code>, <code>fast_updater.py</code>, <code>screener.py</code>, <code>app_backup.py</code> เดิมยังอยู่</li>
+</ol>
+<p><strong>จุดตรวจ:</strong> branch อัปเกรดมีไฟล์ใหม่แล้ว main ยังไม่ได้ถูกแทนด้วยโค้ดใหม่</p>
+<p>app.py ใหม่มีขนาดสั้นกว่าของเดิมมาก เป็นเรื่องปกติ เพราะโค้ดส่วนต่าง ๆ อยู่ใน dashboard_core.py, dashboard_runtime.py และ dashboard_ui.py</p>
+<h2>7. เปิด Pull Request เพื่อรวมเข้าชุดหลัก</h2>
+<ol>
+<li>ที่หน้า branch อัปเกรด กด <strong>Compare &amp; pull request</strong> เมื่อมีแถบแจ้งขึ้น</li>
+<li>ถ้าไม่มีแถบ ให้กดแท็บ <strong>Pull requests → New pull request</strong></li>
+<li>ตั้งฝั่ง <strong>base</strong> เป็น <code>main</code></li>
+<li>ตั้งฝั่ง <strong>compare</strong> เป็น <code>improve/research-workspace-20260910</code></li>
+<li>ต้องเห็นรายการไฟล์ที่ต่างกัน ถ้าขึ้น There isn't anything to compare แปลว่ายังไม่ได้ commit ไฟล์ หรือเลือก branch ผิด ตรวจขั้น 4–6 ก่อน</li>
+<li>กด <strong>Create pull request</strong> เพื่อเปิดฟอร์มเมื่อหน้าจอต้องผ่านหน้าดู diff ก่อน</li>
+<li>ใส่ชื่อ <code>Upgrade Stock Dashboard to Research Workspace v12</code></li>
+<li>ใส่คำอธิบาย เช่น <code>Add prepared-data collection, research views and validation tests. Preserve existing watchlist.</code></li>
+<li>กด <strong>Create pull request</strong> เพื่อยืนยัน ไม่เลือก Create draft pull request สำหรับเส้นทางนี้</li>
+</ol>
+<p><strong>จุดตรวจ:</strong> ได้หน้า PR พร้อมหมายเลข เช่น #1 หรือหมายเลขที่ GitHub กำหนด อย่าใช้หมายเลขตัวอย่างเป็นเลขจริง</p>
+<h2>8. ตรวจ Checks และไฟล์ที่จะเปลี่ยน</h2>
+<ol>
+<li>ในหน้า PR เปิดแท็บ <strong>Files changed</strong></li>
+<li>ตรวจเส้นทางไฟล์เหมือนขั้น 5 และตรวจว่าไม่ได้ลบ daily_watchlist.csv หรือใส่ข้อมูลลับ</li>
+<li>app.py แสดงลบบรรทัดจำนวนมากได้ เพราะเปลี่ยนเป็น entrypoint สั้น ๆ แต่ต้องมี dashboard_core.py อยู่ด้วย</li>
+<li>เปิดแท็บ <strong>Checks</strong></li>
+<li>เลือก <strong>Validate dashboard → tests</strong> หรือชื่อที่ GitHub แสดงเป็นชุด workflow/job เดียวกัน</li>
+<li>เปิด <strong>Install dependencies</strong> ตรวจว่าขั้นตอนติดตั้งไลบรารีจบสำเร็จ</li>
+<li>เปิด <strong>Compile and test with real Streamlit and mocked data providers</strong> ตรวจผลการทดสอบ</li>
+<li>ถ้ามีปุ่มอนุมัติ workflow ให้ตรวจว่าตรงกับ PR ของคุณเองก่อนอนุมัติ</li>
+</ol>
+<table>
+<thead>
+<tr>
+  <th>สถานะ</th>
+  <th>ทำอย่างไร</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>In progress / Queued</td>
+  <td>งานยังไม่จบ ยังไม่ Merge</td>
+</tr>
+<tr>
+  <td>Failure / เครื่องหมายแดง</td>
+  <td>เปิดขั้นตอนที่ล้มเหลว อ่าน error ยังไม่ Merge</td>
+</tr>
+<tr>
+  <td>Skipped / ไม่มี Checks</td>
+  <td>ไม่ใช่หลักฐานว่าทดสอบผ่าน ตรวจไฟล์ validate.yml และสิทธิ Actions</td>
+</tr>
+<tr>
+  <td>Success / ผ่าน tests ครบ</td>
+  <td>ไปตรวจข้อควรทราบก่อน Merge ในขั้นถัดไป</td>
+</tr>
+</tbody>
+</table>
+<p>ชุด v12 มี tests 41 รายการ ออฟไลน์ผ่าน 40 และข้าม AppTest 1 รายการ บน GitHub ที่ติดตั้ง dependencies จริง workflow ไม่ได้เปิด flag stub จึงควรรัน AppTest ด้วย หากล้มเหลวอย่าปิด test หรือลบเงื่อนไขเพื่อให้เขียว</p>
+<p>ห้ามใส่ <code>DASHBOARD_OFFLINE_TEST_STUBS=1</code> ใน Actions หรือ Streamlit และอย่าใส่ <code>[skip ci]</code> ใน commit อัปเกรดที่ต้องการให้ทดสอบ</p>
+<h2>9. Merge หลังตรวจผ่านแล้ว</h2>
+<p>ก่อนทำขั้นนี้: ยืนยันว่า Checks ผ่านจริง ไม่มีไฟล์ลับ และยอมรับว่าระบบเก็บข้อมูลจะเผยแพร่ข้อมูลใน repo สาธารณะหลังเปิดใช้งาน ตารางอัปเดตสามารถเริ่มทำงานตามกำหนดเมื่อ workflow อยู่บน main แล้ว</p>
+<ol>
+<li>กลับแท็บ <strong>Conversation</strong> ของ PR</li>
+<li>เลื่อนลงบริเวณกล่องรวมโค้ด</li>
+<li>ถ้ามี merge conflict หรือยังมี Checks ค้าง ไม่กดข้ามเงื่อนไข</li>
+<li>กด <strong>Merge pull request</strong> ถ้าแสดงวิธีอื่น กดลูกศรแล้วเลือก <strong>Create a merge commit</strong> สำหรับเส้นทางนี้</li>
+<li>กด <strong>Confirm merge</strong></li>
+<li>ตรวจว่ามีสถานะ <strong>Merged</strong></li>
+<li>กลับแท็บ Code เลือก branch main เปิด update_data.py ให้แน่ใจว่าไฟล์อยู่บน main แล้ว</li>
+</ol>
+<p><strong>จุดตรวจ:</strong> ตอนนี้ main เป็นโค้ดใหม่แล้ว Streamlit ที่ผูก main/app.py อาจเริ่ม redeploy จากการเปลี่ยนแปลงนี้ ไม่ใช่แค่ขั้น Reboot ที่จะเปลี่ยนเว็บ</p>
+<p>ไม่จำเป็นต้องลบ branch อัปเกรดทันที เก็บไว้จนตรวจการใช้งานเสร็จได้</p>
+<h2>10. รัน bootstrap ครั้งแรก</h2>
+<ol>
+<li>เปิดแท็บ <strong>Actions</strong> ของ repository</li>
+<li>ในแถบซ้ายเลือก <strong>Update market data (free)</strong> ไม่ใช่ Validate dashboard</li>
+<li>กด <strong>Run workflow</strong> ทางด้านขวาเหนือรายการรัน</li>
+<li>เลือก <strong>Branch: main</strong></li>
+<li>เลือก <strong>mode: bootstrap</strong></li>
+<li>กดปุ่ม <strong>Run workflow</strong> ภายในกล่องที่เปิดอยู่เพื่อยืนยัน</li>
+<li>กลับมาดูรายการรัน และเปิดแถวล่าสุดของรอบที่เพิ่งเริ่ม ไม่ใช่รอบเก่าที่ล้มเหลว</li>
+<li>คลิก job ชื่อ <strong>update</strong></li>
+<li>เปิดขั้นตอน <strong>Validate required files</strong> แล้วตรวจว่าผ่าน</li>
+<li>เปิด <strong>Update and publish prepared data</strong> เพื่อดูความคืบหน้า</li>
+</ol>
+<p>bootstrap ใช้เติมประวัติ/ข้อมูลพื้นฐาน/ปันผลที่ขาด ส่วน daily ใช้อัปเดตรายวัน ไม่รับประกันว่าครบ 4,900 ตัวในรอบเดียวและไม่ควรกดรันถี่ ๆ เมื่อผู้ให้บริการจำกัดคำขอ</p>
+<p><strong>ถ้าไม่เห็น Run workflow:</strong> ตรวจว่าเลือก workflow เฉพาะตัว ไม่อยู่หน้า All workflows และไฟล์มี workflow_dispatch อยู่บน default branch main แล้ว</p>
+<p><strong>ถ้า Actions ถูกปิด:</strong> เปิด Settings → Actions → General ตรวจว่าไม่ได้ Disable actions และอนุญาต actions/checkout, actions/setup-python ที่ workflow ใช้ อย่าขยายสิทธิทุก workflow เป็น write โดยไม่มีเหตุผล ชุดนี้ระบุ contents: write ไว้เฉพาะงานเก็บข้อมูลแล้ว</p>
+<p>ไม่ต้องสร้าง Personal Access Token และไม่ต้องคัดลอก token จากแชต งานใช้ GITHUB_TOKEN ของ GitHub Actions เอง หน้าเว็บอ่านข้อมูลสาธารณะโดยไม่ใช้ token เขียน</p>
+<h2>11. ตรวจว่าชุดข้อมูลถูกเผยแพร่</h2>
+<p>เมื่อขั้นตอนเผยแพร่สำเร็จ เปิด Summary ของรอบ Actions ดูหัวข้อ <strong>Prepared market data</strong> โดยอ่านค่า Prices available, checked today, Industry และ Bootstrap symbols remaining ไม่ดูแค่เครื่องหมายเขียว</p>
+<p>จากนั้นกลับ Code เปิดเมนู branch เลือก <code>dashboard-data</code> แล้วเปิด <code>dashboard/latest.json</code></p>
+<p><strong>จุดตรวจ:</strong> เห็น generation, published_at, coverage, report และ references ของไฟล์ข้อมูล ไม่ต้องแก้ JSON นี้เอง</p>
+<p>เปิด <a href="https://github.com/sippakorntwo-glitch/stock-dashboard/releases">Releases</a> แล้วเลือก Release ชื่อที่ขึ้นต้น <code>dashboard-data-</code> และขยาย Assets ควรพบไฟล์ที่ระบบสร้าง เช่น:</p>
+<pre><code class="language-text">summary.json.gz
+manifest.json
+checkpoint.sqlite3
+details--&lt;หมายเลข&gt;.jsonl.gz
+</code></pre>
+<p>จำนวน details ขึ้นกับข้อมูลที่มี ไม่จำเป็นต้องครบทุกหมายเลขในรอบแรก และ <code>watchlist.csv</code> ไม่ได้เป็น Release asset แยกในชุดโค้ดนี้ CSV ต้นทางถูกเก็บเป็นข้อมูลใน summary</p>
+<p>อย่าสร้าง branch ข้อมูลหรืออัปโหลด SQLite ลง main ด้วยมือ ระบบสร้างเมื่อเผยแพร่ครั้งแรก หน้าเว็บอ่าน summary/details ส่วน checkpoint.sqlite3 ใช้กู้ข้อมูลให้รอบ collector ถัดไป</p>
+<p>Success หมายถึงบันทึกงานที่ทำได้สำเร็จ ไม่ได้แปลว่าหุ้นทุกตัวครบและราคาปัจจุบันเสมอ</p>
+<h2>12. เปิดเว็บเดิมและตรวจ Streamlit</h2>
+<ol>
+<li>เปิด <a href="https://my-stock-terminal.streamlit.app">Dashboard เดิม</a></li>
+<li>เมื่อโค้ดใหม่ถูกใช้ ควรเห็นชื่อ <strong>Stock Research Workspace</strong> และเมนู 6 มุมมอง</li>
+<li>หากเว็บยังหน้าตาเดิม เข้าสู่ <a href="https://share.streamlit.io/">Streamlit workspace</a> ด้วยบัญชีเจ้าของแอป</li>
+<li>เลือก workspace ของเจ้าของ repo <code>sippakorntwo-glitch</code> และหาแอปเดิม ไม่สร้างแอปใหม่แทนทันที</li>
+<li>จากหน้าเว็บแอป กด <strong>Manage app</strong> มุมขวาล่างเพื่อเปิด Logs</li>
+<li>เปิดเมนูสามจุดของแผง Logs แล้วเลือก <strong>Reboot app</strong> จากนั้นกด Reboot ยืนยันเมื่อจำเป็น การ reboot จะรบกวนคนที่กำลังเปิดเว็บอยู่</li>
+<li>อีกทางคือในหน้า workspace กดสามจุดของแอป → <strong>Reboot</strong> → ยืนยัน</li>
+<li>ดู Logs ว่าติดตั้ง dependencies และเปิด app.py สำเร็จหรือไม่</li>
+</ol>
+<p>แอปเดิมต้องผูกกับ <strong>repository sippakorntwo-glitch/stock-dashboard, branch main, entrypoint app.py</strong> ไม่เปลี่ยนไปใช้ dashboard_core.py หรือ update_data.py หากไม่เห็น Manage app ให้ตรวจการเข้าสู่ระบบและสิทธิใน Streamlit ก่อน การเชื่อม GitHub กับแชตไม่ได้ทำให้เบราว์เซอร์ล็อกอิน Streamlit เป็นเจ้าของโดยอัตโนมัติ</p>
+<p>อย่าเลือก Delete app ในขั้นตอนปกติ Python ของ workflow ตั้ง 3.12 ไม่ได้เปลี่ยน Python ของแอปที่ deploy แล้วอัตโนมัติ ถ้า Logs บอกว่า Python ไม่รองรับ dependencies ให้ตรวจปัญหานั้นแยก การเปลี่ยน Python ของแอปเดิมตามเอกสาร Streamlit ต้อง redeploy ไม่ใช่แก้จากหน้า Secrets</p>
+<h2>13. Secrets — ทำเฉพาะเมื่อจำเป็น</h2>
+<p>ค่าเริ่มต้นของโค้ดชี้ repository ของคุณแล้ว จึงไม่จำเป็นต้องเพิ่ม Secrets เพียงเพื่ออ่าน public snapshot และไม่ต้องแทนที่ Secrets เดิมทั้งหมด</p>
+<p>หากต้องการระบุค่าให้ชัด:</p>
+<ol>
+<li>เข้า Streamlit workspace กดสามจุดข้างแอป → Settings หรือ Manage app → สามจุด → Settings</li>
+<li>ใน <strong>App settings</strong> เลือกแท็บ <strong>Secrets</strong> ไม่ใช่เมนู Settings มุมขวาบนที่เปลี่ยนหน้าตาเฉย ๆ</li>
+<li>ตรวจว่ามี key เดิมเหล่านี้หรือไม่ ถ้ามีให้แก้ค่าบรรทัดเดิม ไม่เพิ่ม key ซ้ำ</li>
+<li>ใส่ค่า top-level ดังนี้ ถ้าในไฟล์มีหัวข้อ <code>[section]</code> ให้ใส่กลุ่มนี้ก่อนหัวข้อแรก ไม่ใส่ไปเป็นสมาชิกของ section อื่น</li>
+</ol>
+<pre><code class="language-toml">DASHBOARD_DATA_REPO = &quot;sippakorntwo-glitch/stock-dashboard&quot;
+DASHBOARD_DATA_VISIBILITY = &quot;public&quot;
+DASHBOARD_DATA_BRANCH = &quot;dashboard-data&quot;
+DASHBOARD_ALLOW_LIVE_UPDATES = false
+</code></pre>
+<ol start="5">
+<li>รักษา Secrets อื่นที่ยังใช้ ไม่ลบทั้งหมดโดยไม่ทราบหน้าที่ แล้วกด <strong>Save</strong></li>
+<li>ใช้ false ตัวพิมพ์เล็กและไม่มีเครื่องหมายคำพูดตามตัวอย่าง</li>
+</ol>
+<p>ห้ามนำ token จริงไปใส่ secrets.example.toml แล้ว commit ห้ามอัปโหลด .streamlit/secrets.toml จริง และไม่ต้องใส่ DASHBOARD_GITHUB_TOKEN ในเว็บโหมดสาธารณะ ค่า DASHBOARD_SNAPSHOT_DIR หรือ visibility เก่าที่ขัดกันต้องแก้เฉพาะที่ตั้งค่าจริง</p>
+<p>DASHBOARD_ALLOW_LIVE_UPDATES=false ทำให้หน้าเว็บเน้นอ่าน prepared data การเปิด true เพิ่มปุ่มเรียก Yahoo โดยผู้ชมที่เข้าถึงเว็บได้ทุกคน ไม่ใช่สิทธิ admin-only จึงยังคง false ในการติดตั้งครั้งแรก</p>
+<h2>14. ตรวจเว็บทีละหน้า</h2>
+<ol>
+<li>เลือก <strong>สถานะข้อมูล</strong> ตรวจรุ่นโปรแกรมเป็น <strong>2026-09-10.12</strong> และมี generation/เวลาเผยแพร่ ถ้ามีเพียงเลขรุ่นแต่ยังไม่มี snapshot แปลว่าโค้ดขึ้นแล้วแต่ข้อมูลยังไม่พร้อม</li>
+<li>เลือก <strong>ภาพรวมและค้นหา</strong> ตรวจจำนวนรายชื่อรวม 4,900 ตัวและจำนวนมีราคาแยกต่างหาก ค้น AAPL แล้วลอง clear ช่องค้นหา</li>
+<li>ในช่อง <strong>Ticker ที่ต้องการวิเคราะห์</strong> ด้านซ้าย พิมพ์ AAPL แล้วกด Enter ช่องนี้ต่างจากช่องค้นตาราง</li>
+<li>เลือก <strong>กราฟและแผนซื้อ</strong> แล้วเลือกช่วง 1 ปี ตรวจแท่งราคาและปุ่ม EMA/RSI/MACD ถ้ายังไม่มีประวัติให้ดูงานข้อมูลก่อน</li>
+<li>เลือก <strong>พื้นฐานและปันผล</strong> ตรวจเวลาดึงและช่องข้อมูลที่ขาด ไม่ตีความ missing ว่าไม่มีปันผลเสมอ</li>
+<li>เลือก <strong>ความเสี่ยง</strong> ตรวจช่วงข้อมูลจริงและกราฟ Drawdown</li>
+<li>เลือก <strong>เปรียบเทียบหลายตัว</strong> เลือก AAPL กับ SPY และเพิ่ม MSFT เมื่อมีข้อมูล ระบบเปรียบเทียบสูงสุด 6 ตัวและใช้วันที่ร่วมกัน</li>
+<li>กลับ <strong>สถานะข้อมูล</strong> ตรวจข้อผิดพลาดและเวลาของราคา ไม่ดูแค่เวลาที่เปิดหน้าเว็บ</li>
+</ol>
+<p>การสแกนใหม่ใช้ข้อมูลรายวัน ไม่ใช่ราคาสตรีมสด ระบบแผนซื้ออาจแสดงรอยืนยันเพราะ quote เก่า ไม่ได้หมายความว่าต้องลดเกณฑ์เพื่อให้ขึ้นซื้อ รายการโปรดอยู่ในเซสชัน ให้ดาวน์โหลด CSV เพื่อเก็บถาวร</p>
+<h2>เวลางานอัตโนมัติ</h2>
+<table>
+<thead>
+<tr>
+  <th>งาน</th>
+  <th>เวลาไทยตาม workflow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>daily</td>
+  <td>13:17 วันอังคาร–เสาร์</td>
+</tr>
+<tr>
+  <td>bootstrap</td>
+  <td>01:17, 07:17, 19:17 ทุกวัน</td>
+</tr>
+<tr>
+  <td>หน้าเว็บตรวจ snapshot</td>
+  <td>โดยปกติทุก 5 นาทีขณะที่เปิดหน้าเว็บ หรือกดตรวจชุดข้อมูลใหม่</td>
+</tr>
+</tbody>
+</table>
+<p>ชื่อ five_min_update.yml เป็นชื่อเดิม ไม่ได้แปลว่าดึงหุ้นทั้งตลาดทุก 5 นาที GitHub schedule อาจเริ่มล่าช้าหรือข้ามบางรอบ จึงดูเวลาใน run จริงประกอบ</p>
+<h2>ทางแก้เมื่อการลากโฟลเดอร์ไม่สำเร็จ</h2>
+<p>ใช้เส้นทางนี้เฉพาะเมื่ออัปโหลดแบบทั้งชุดไม่รักษาโฟลเดอร์ อย่าทำซ้ำหากไฟล์อยู่ถูกที่แล้ว</p>
+<ol>
+<li>ที่ root ของ branch อัปเกรดอัปโหลดเฉพาะไฟล์ที่อยู่ root ก่อน</li>
+<li>เปิด <code>.github → workflows</code> บน GitHub แล้ว Add file → Upload files อัปโหลดไฟล์ YAML สองตัวจาก <code>.github/workflows</code> ในเครื่องโดยไม่ลากโฟลเดอร์ครอบ</li>
+<li>หากยังไม่มี <code>.streamlit</code> ให้กลับ root กด <strong>Add file → Create new file</strong> ใส่ชื่อ <code>.streamlit/config.toml</code> แล้วเปิดไฟล์ config.toml จาก ZIP ด้วย Notepad คัดลอกเนื้อหาทั้งหมดลง editor จากนั้นบันทึกลง branch อัปเกรด เครื่องหมาย <code>/</code> ในชื่อเป็นเส้นทางโฟลเดอร์</li>
+<li>สำหรับ tests ที่ยังไม่มี ใช้ root → Create new file ชื่อ <code>tests/conftest.py</code> คัดลอกเนื้อหาจากไฟล์ ZIP แล้วบันทึก จากนั้นเปิดโฟลเดอร์ tests ที่สร้างแล้วและ Upload files ที่เหลือจาก tests ในเครื่อง</li>
+<li>ตรวจเส้นทางทั้งหมดอีกครั้งก่อนเปิด PR</li>
+</ol>
+<h2>เมื่อเกิดข้อผิดพลาด</h2>
+<table>
+<thead>
+<tr>
+  <th>อาการ</th>
+  <th>จุดตรวจ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>ไม่มีความต่างให้เปิด PR</td>
+  <td>ยังไม่ commit ไฟล์ใหม่ หรือเลือก base/compare ผิด</td>
+</tr>
+<tr>
+  <td>No such file update_data.py</td>
+  <td>ไฟล์อยู่ผิดชั้น หรือกำลังดู run/branch เก่า</td>
+</tr>
+<tr>
+  <td>ModuleNotFoundError</td>
+  <td>อัปโหลดไฟล์ไม่ครบ/ผิดตำแหน่ง หรือ dependencies ติดตั้งล้มเหลว</td>
+</tr>
+<tr>
+  <td>No matching distribution found</td>
+  <td>ดูชื่อแพ็กเกจ เวอร์ชันและ Python ใน Install dependencies อย่าเปลี่ยนเป็นเวอร์ชันล่าสุดทุกตัวแบบสุ่ม</td>
+</tr>
+<tr>
+  <td>tests แดง</td>
+  <td>คัดลอกชื่อ test และ traceback โดยไม่ใส่ Secrets ยังไม่ Merge</td>
+</tr>
+<tr>
+  <td>workflow ถูก Skipped</td>
+  <td>ตรวจ public-only condition และสิทธิ Actions ไม่ถือว่า tests ผ่าน</td>
+</tr>
+<tr>
+  <td>HTTP 403 ตอนเผยแพร่</td>
+  <td>ดู contents: write และนโยบาย repo/องค์กร ไม่เพิ่ม token ในเว็บเพื่อแก้</td>
+</tr>
+<tr>
+  <td>HTTP 404 ตอนอ่านข้อมูล</td>
+  <td>ตรวจ bootstrap, dashboard-data/dashboard/latest.json และ Release ของ generation นั้น</td>
+</tr>
+<tr>
+  <td>Yahoo 429</td>
+  <td>หยุดกดซ้ำ ดู backoff และใช้ข้อมูลเดิม ไม่เพิ่ม concurrency เพื่อหลบการจำกัด</td>
+</tr>
+<tr>
+  <td>UI รุ่นใหม่แต่กราฟว่าง</td>
+  <td>โค้ดพร้อมแต่หุ้นนั้นอาจไม่มีประวัติที่โหลดสำเร็จ ตรวจ coverage</td>
+</tr>
+<tr>
+  <td>ไม่เห็น Manage app</td>
+  <td>เข้า Streamlit ด้วยบัญชีเจ้าของและเลือก workspace ให้ตรง</td>
+</tr>
+</tbody>
+</table>
+<p>อ่าน log ของรอบล่าสุดที่ตรงกับ commit อัปเกรด ไม่กด Re-run รอบเก่าเพื่อทดสอบโค้ดใหม่ เพราะการรันซ้ำอาจใช้ commit เดิมของรอบนั้น ให้เริ่ม Run workflow ใหม่เมื่อจะทดสอบ main ปัจจุบัน</p>
+<h2>ย้อนกลับ</h2>
+<p>ก่อน Merge: หยุดทำใน branch อัปเกรดหรือปิด PR ได้ main ไม่ถูกแทนที่</p>
+<p>หลัง Merge:</p>
+<ol>
+<li>ไป Pull requests → Closed เลือก PR อัปเกรดที่มีสถานะ Merged</li>
+<li>เลื่อนลงหา <strong>Revert</strong></li>
+<li>กดเพื่อสร้าง PR ย้อนกลับ ตรวจความเปลี่ยนแปลงแล้ว Merge PR ใหม่นั้น</li>
+<li>ตรวจ Streamlit และใช้ Reboot เมื่อจำเป็น อย่าใช้ force push หรือลบทั้ง repo</li>
+<li>ถ้าต้องหยุดงานข้อมูลแยกจากการย้อนโค้ด ไป Actions เลือก Update market data (free) → เมนูสามจุด → Disable workflow การ Revert โค้ดไม่ใช่การลบ Release ข้อมูลที่เผยแพร่ไปแล้ว</li>
+</ol>
+<p>หาก Revert ติด conflict อย่าล้างไฟล์ทั้งหมดเพื่อหลบปัญหา ให้ตรวจและแก้ความขัดแย้งก่อน</p>
+<h2>แหล่งอ้างอิง</h2>
+<ul>
+<li><a href="https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository">GitHub: Upload files</a></li>
+<li><a href="https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives">GitHub: Download source archives</a></li>
+<li><a href="https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-a-pull-request">GitHub: Create a pull request</a></li>
+<li><a href="https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/merging-a-pull-request">GitHub: Merge a pull request</a></li>
+<li><a href="https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow">GitHub: Run a workflow manually</a></li>
+<li><a href="https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows">GitHub: Workflow events</a></li>
+<li><a href="https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/reverting-a-pull-request">GitHub: Revert a pull request</a></li>
+<li><a href="https://support.microsoft.com/en-us/windows/experience/storage-filemanagement/zip-and-unzip-files">Microsoft: Zip and unzip files</a></li>
+<li><a href="https://support.microsoft.com/en-us/windows/experience/fileexplorer/file-explorer-in-windows">Microsoft: File Explorer</a></li>
+<li><a href="https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app">Streamlit: Manage app</a></li>
+<li><a href="https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/reboot-your-app">Streamlit: Reboot</a></li>
+<li><a href="https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/app-settings">Streamlit: App settings and Secrets</a></li>
+<li><a href="https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/upgrade-python">Streamlit: Python version</a></li>
+</ul>
+</main></body></html>
