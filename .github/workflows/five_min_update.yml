@@ -43,6 +43,13 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: python -m pip install --no-cache-dir -r requirements.txt
+      - name: Validate required files
+        run: |
+          test -f update_data.py
+          test -f data_sync.py
+          test -f github_store.py
+          test -f dashboard_core.py
+          python -m compileall -q app.py dashboard_core.py dashboard_runtime.py dashboard_ui.py analytics.py update_data.py data_sync.py github_store.py
       - name: Update and publish prepared data
         env:
           EVENT_NAME: ${{ github.event_name }}
