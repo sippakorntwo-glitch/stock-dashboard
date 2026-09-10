@@ -67,8 +67,8 @@ def run():
             if view==VIEWS[0]:
                 app.locator('[data-testid="stDataFrame"]').first.wait_for(timeout=30000)
             elif view==VIEWS[1]:
-                # Request an actual year, not the default one-month (about 20 bars).
-                app.get_by_role('radio',name='1 ปี',exact=True).check()
+                # Click the visible label; Streamlit covers its native radio input.
+                app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 ปี',exact=True).click()
                 chart_frame=None
                 for _ in range(90):
                     no_exception(app)
