@@ -294,6 +294,7 @@ import plotly.graph_objects as go
 WATCHLIST_FILE = Path(__file__).resolve().parent / "daily_watchlist.csv"
 NUMERIC_COLUMNS = ["Close", "Historical_Return", "Return_2Y", "Return_3Y", "Vol_Ratio", "RSI_14", "MACD",
                    "MACD_Signal", "ATR", "Suggested_Stop", "EMA20", "EMA50", "SMA200"]
+WATCHLIST_NUMERIC_COLUMNS = NUMERIC_COLUMNS + ["Return_Calc_Version", "History_Years_Loaded"]
 # === UNIVERSE SETTINGS — จำนวนรายชื่อและขนาดการโหลด ===
 COMMON_STOCK_LIMIT = 4200
 ETF_LIMIT = 700
@@ -6951,6 +6952,19 @@ def remember_quotes(existing, incoming):
     return result
 
 
+def numeric_watchlist_series(values):
+    """Use a nullable-compatible float destination, including for integer CSVs.
+
+    pandas 3 rejects assigning numbers to its new string dtype, and rejects
+    fractional quotes in integer columns. Convert the whole numeric column
+    before applying incoming values instead of relying on implicit upcasting.
+    """
+    converted = pd.to_numeric(values, errors="coerce")
+    array = converted.to_numpy(dtype="float64", na_value=np.nan, copy=True)
+    array[~np.isfinite(array)] = np.nan
+    return pd.Series(array, index=values.index, dtype="float64")
+
+
 def build_universe_frame(csv_frame, saved=None, classifications=None):
     """Fixed counts; preserve CSV observations and keep excluded rows separately."""
     original=csv_frame.copy()
@@ -6968,10 +6982,10 @@ def build_universe_frame(csv_frame, saved=None, classifications=None):
         # Import metadata explicitly: a file modification time is not a quote time.
         for col,default in [("Data_Source","CSV เดิม"),("Data_Status","จาก CSV"),("Data_Time",""),("Price_AsOf","")]:
             frame.loc[selected.index,col]=selected[col].fillna(default) if col in selected else default
-    for col in NUMERIC_COLUMNS:
+    for col in WATCHLIST_NUMERIC_COLUMNS:
         if col not in frame:
             frame[col]=np.nan
-        frame[col]=pd.to_numeric(frame[col],errors="coerce")
+        frame[col]=numeric_watchlist_series(frame[col])
     if saved:
         fresh=pd.DataFrame([row for t,row in saved.items() if t in frame.index])
         if not fresh.empty:
@@ -6986,9 +7000,16 @@ def build_universe_frame(csv_frame, saved=None, classifications=None):
                 if col in ("Asset_Type","Security_Name"):
                     continue
                 values=fresh.loc[allowed,col].dropna()
-                if col not in frame:
-                    frame[col]=np.nan if col in NUMERIC_COLUMNS else ""
                 if not values.empty:
+                    if col in WATCHLIST_NUMERIC_COLUMNS:
+                        # Include internal numeric metadata as well as visible metrics.
+                        values = numeric_watchlist_series(values)
+                    elif col not in frame:
+                        frame[col] = pd.Series(index=frame.index, dtype=object)
+                    else:
+                        # Unknown CSV/provider fields may legitimately contain mixed
+                        # scalar types. Preserve them without a strict string target.
+                        frame[col] = frame[col].astype(object)
                     frame.loc[values.index,col]=values
             # A successfully recalculated missing return must not masquerade as
             # an older CSV return under the new price timestamp.
@@ -7007,8 +7028,8 @@ def build_universe_frame(csv_frame, saved=None, classifications=None):
             continue
         for col in ("Industry", "Industry_Source", "Industry_Time"):
             frame.at[ticker, col] = metadata.get(col, "")
-    for col in NUMERIC_COLUMNS:
-        frame[col]=pd.to_numeric(frame[col],errors="coerce")
+    for col in WATCHLIST_NUMERIC_COLUMNS:
+        frame[col]=numeric_watchlist_series(frame[col])
     outside=original.loc[~original.Ticker.isin(tickers)].copy()
     return frame.reset_index(),outside
 
@@ -7040,7 +7061,7 @@ import zlib
 from collections import deque
 from io import StringIO
 
-APP_VERSION = "2026-09-09.5"
+APP_VERSION = "2026-09-10.6"
 CACHE_FILE = Path(os.environ.get("DASHBOARD_CACHE_FILE", str(Path(__file__).resolve().parent / "dashboard_cache.sqlite3")))
 SCAN_TIME_BUDGET_SECONDS = 600
 _PROVIDER_LOCK = threading.RLock()
@@ -7881,14 +7902,14 @@ def parse_watchlist(data: bytes) -> pd.DataFrame:
     if "Status" not in frame:
         frame["Status"] = "ไม่มีข้อมูล"
     frame["Status"] = frame.Status.fillna("ไม่มีข้อมูล").astype(str).str.strip().str.upper()
-    for col in NUMERIC_COLUMNS:
+    for col in WATCHLIST_NUMERIC_COLUMNS:
         if col not in frame:
             frame[col] = np.nan
         elif not pd.api.types.is_numeric_dtype(frame[col]):
             frame[col] = pd.to_numeric(
                 frame[col].astype(str).str.replace(",", "", regex=False)
                 .str.replace("$", "", regex=False).str.replace("%", "", regex=False), errors="coerce")
-        frame[col] = frame[col].replace([np.inf, -np.inf], np.nan)
+        frame[col] = numeric_watchlist_series(frame[col])
     return frame.reset_index(drop=True)
 
 
