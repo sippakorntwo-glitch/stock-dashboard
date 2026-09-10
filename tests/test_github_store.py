@@ -53,7 +53,7 @@ class FakeGitHub:
         if method != 'GET' and headers['Authorization'] != 'Bearer writer': return Response(403)
         data = kwargs.get('json', {})
         params = kwargs.get('params', {})
-        if path == '/' and method == 'GET': return Response(200, {'private':self.private,'default_branch':'main'})
+        if path in ('', '/') and method == 'GET': return Response(200, {'private':self.private,'default_branch':'main'})
         if path.startswith('/git/ref/heads/') and method == 'GET':
             branch = path.removeprefix('/git/ref/heads/')
             return Response(200, {'object': {'sha': self.branches[branch]}}) if branch in self.branches else Response(404)
@@ -141,8 +141,7 @@ class GitHubTests(unittest.TestCase):
         self.assertEqual(len(app.DashboardCache(self.root/'new-worker.sqlite3').history('AAPL')[0]),1000)
     def test_original_csv_stays_in_private_data_repository_and_reaches_dashboard(self):
         self.api.watchlist=b'Ticker,Close,Industry\nMSFT,99,Software\n'
-        csv=self.store.read_watchlist_csv()
-        manifest=worker.publish_snapshot(self.store,self.cache,('AAPL','MSFT'),{},watchlist_csv=csv.decode())
+        manifest=worker.publish_snapshot(self.store,self.cache,('AAPL','MSFT'),{},watchlist_csv=self.store.read_watchlist_csv().decode())
         local=app.DashboardCache(self.root/'csv-web.sqlite3')
         reader=sync.SnapshotReader(self.store,local)
         reader._sync()
@@ -222,9 +221,7 @@ class GitHubTests(unittest.TestCase):
         self.assertEqual(job['env']['DASHBOARD_DATA_BRANCH'], 'dashboard-data')
         self.assertFalse(any('cache' in step.get('with',{}) for step in job['steps']))
         self.assertFalse(any('upload-artifact' in step.get('uses','') for step in job['steps']))
-        req=(root/'requirements.txt').read_text()
-        self.assertNotIn('boto3',req)
+        self.assertNotIn('boto3',(root/'requirements.txt').read_text())
         self.assertNotIn('R2_',json.dumps(job['env']))
-
 
 if __name__=='__main__': unittest.main(verbosity=2)
