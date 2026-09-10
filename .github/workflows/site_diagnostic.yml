@@ -24,15 +24,29 @@ jobs:
           PYTHONUNBUFFERED: '1'
         run: |
           python - <<'PY'
-          import json
+          import json,re
           from urllib.parse import urlsplit
           from playwright.sync_api import sync_playwright
           def clean(url):
               p=urlsplit(url)
               return p.scheme+'://'+p.netloc+p.path
+          allowed={'repo','repository','repositoryName','repositoryOwner','branch','branchName','filePath','mainModule','commit','commitSha','commitHash','gitRef','githubUrl','githubRepository','githubBranch','githubFilePath','appUrl','appName','appId','owner','status'}
+          def fields(value,path=''):
+              found={}
+              if isinstance(value,dict):
+                  for k,v in value.items():
+                      key=path+'.'+k if path else k
+                      if k in allowed and isinstance(v,(str,int,bool,type(None))):
+                          found[key]=clean(v) if isinstance(v,str) and v.startswith(('https://','http://')) else v
+                      elif isinstance(v,(dict,list)): found.update(fields(v,key))
+              elif isinstance(value,list):
+                  for i,v in enumerate(value[:30]): found.update(fields(v,path+'.'+str(i)))
+              return found
           with sync_playwright() as p:
               browser=p.chromium.launch(headless=True)
               page=browser.new_page(viewport={'width':1440,'height':1000})
+              responses=[]
+              page.on('response',lambda r: responses.append(r) if 'json' in r.headers.get('content-type','') and urlsplit(r.url).hostname in ('my-stock-terminal.streamlit.app','share.streamlit.io') else None)
               page.goto('https://my-stock-terminal.streamlit.app/',wait_until='domcontentloaded',timeout=60000)
               app=None
               for _ in range(60):
@@ -42,16 +56,24 @@ jobs:
                   page.wait_for_timeout(1000)
               if app:
                   app.locator('[data-testid="stSidebar"]').get_by_text('สถานะข้อมูล',exact=True).click()
-                  page.wait_for_timeout(4000)
+                  page.wait_for_timeout(5000)
                   menu=app.locator('[data-testid="stMainMenu"]')
-                  if menu.count():
-                      menu.first.click()
-                      page.wait_for_timeout(1000)
+                  if menu.count(): menu.first.click();page.wait_for_timeout(1000)
+              for r in responses[:40]:
+                  try:
+                      parsed=fields(r.json())
+                      print('PUBLIC_HOST_METADATA:',json.dumps({'endpoint':clean(r.url),'status':r.status,'source_fields':parsed},ensure_ascii=False),flush=True)
+                  except Exception: pass
               for f in page.frames:
                   try:
                       links=f.locator('a[href]').evaluate_all('(els)=>els.map(e=>({text:e.innerText,href:e.href}))')
                       for link in links: link['href']=clean(link['href'])
-                      print('PUBLIC_DEPLOYMENT_SOURCE:',json.dumps({'url':clean(f.url),'links':links,'buttons':f.get_by_role('button').all_text_contents(),'text':f.locator('body').inner_text()[:8500]},ensure_ascii=False),flush=True)
+                      print('PUBLIC_DEPLOYMENT_SOURCE:',json.dumps({'url':clean(f.url),'links':links,'text':f.locator('body').inner_text()[:8000]},ensure_ascii=False),flush=True)
+                      for script in f.locator('script[type="application/json"]').all():
+                          try:
+                              parsed=fields(json.loads(script.inner_text()))
+                              if parsed: print('PUBLIC_BOOTSTRAP_SOURCE:',json.dumps(parsed,ensure_ascii=False),flush=True)
+                          except Exception: pass
                   except Exception as e: print('FRAME_ERROR:',type(e).__name__,flush=True)
               browser.close()
           PY
