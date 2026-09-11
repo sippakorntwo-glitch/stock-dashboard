@@ -15,8 +15,9 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 import yfinance as yf
+from dashboard_help import help_table
 
-PERIODS = ["1 วัน", "5 วัน", "7 วัน", "1 เดือน", "3 เดือน", "6 เดือน", "1 ปี", "2 ปี", "3 ปี"]
+PERIODS = ["1 วัน", "3 วัน", "5 วัน", "7 วัน", "1 เดือน", "3 เดือน", "6 เดือน", "1 ปี", "2 ปี", "3 ปี", "5 ปี", "10 ปี"]
 CDN = "https://unpkg.com/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"
 
 
@@ -95,7 +96,7 @@ def build_payload(frame: pd.DataFrame, ticker: str, period: str,
     intraday = interval != "1d"
     if intraday and f.index.tz is None:
         raise ValueError("ข้อมูลระหว่างวันไม่มีเขตเวลา จึงยังแสดงเวลาตลาดอย่างถูกต้องไม่ได้")
-    if period in ["1 วัน", "5 วัน", "7 วัน"]:
+    if period in ["1 วัน", "3 วัน", "5 วัน", "7 วัน"]:
         count = int(period.split()[0])
         sessions = f.index.normalize().unique()
         begin = sessions[max(0, len(sessions) - count)]
@@ -245,7 +246,7 @@ function create(){
   grid:{vertLines:{color:'#1b2332'},horzLines:{color:'#1e2838'}},
   crosshair:{mode:L.CrosshairMode.Normal,vertLine:{color:'#75849a',labelBackgroundColor:'#354259'},horzLine:{color:'#75849a',labelBackgroundColor:'#354259'}},
   rightPriceScale:{borderColor:'#2a3343',autoScale:true,mode:opts.log?L.PriceScaleMode.Logarithmic:L.PriceScaleMode.Normal,scaleMargins:{top:.1,bottom:.1},minimumWidth:76},leftPriceScale:{visible:false},
-  timeScale:{borderColor:'#2a3343',rightOffset:4,barSpacing:12,minBarSpacing:2,timeVisible:p.intraday,secondsVisible:false,allowShiftVisibleRangeOnWhitespaceReplacement:false},
+  timeScale:{borderColor:'#2a3343',rightOffset:4,barSpacing:12,minBarSpacing:.05,timeVisible:p.intraday,secondsVisible:false,allowShiftVisibleRangeOnWhitespaceReplacement:false},
   localization:{locale:'en-US',timeFormatter:t=>dateFmt(t)},
   handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:false},handleScale:{axisPressedMouseMove:true,mouseWheel:true,pinch:true,axisDoubleClickReset:true}
  });
@@ -265,6 +266,7 @@ function create(){
  const panes=chart.panes();
  const weights=[Math.max(320,height-30-(opts.volume?95:0)-(opts.rsi?140:0)-(opts.macd?140:0)),...(opts.volume?[95]:[]),...(opts.rsi?[140]:[]),...(opts.macd?[140]:[])];
  panes.forEach((pane,i)=>pane.setStretchFactor(weights[i]));
+ chart.timeScale().subscribeVisibleLogicalRangeChange(r=>{if(r){el('chart').dataset.rangeFrom=String(r.from);el('chart').dataset.rangeTo=String(r.to);}});
  if(currentRange)chart.timeScale().setVisibleLogicalRange(currentRange);else reset();
  chart.subscribeCrosshairMove(param=>{const v=param.seriesData.get(candles);const r=v&&byTime.get(String(v.time));readout(r||last);});
  for(const name of Object.keys(opts))el(name).setAttribute('aria-pressed',String(opts[name]));
@@ -279,7 +281,7 @@ for(const name of Object.keys(opts))el(name).onclick=()=>{
  else create();
 };
 el('reset').onclick=reset;
-new ResizeObserver(()=>{if(chart){chart.resize(el('chart').clientWidth,Math.max(350,el('chartwrap').clientHeight));paneLabels();}}).observe(el('chartwrap'));
+new ResizeObserver(()=>{if(chart){const r=chart.timeScale().getVisibleLogicalRange();chart.resize(el('chart').clientWidth,Math.max(350,el('chartwrap').clientHeight));if(r)chart.timeScale().setVisibleLogicalRange(r);paneLabels();}}).observe(el('chartwrap'));
 document.addEventListener('pointerup',()=>setTimeout(paneLabels,30));
 })();
 </script></body></html>'''
@@ -7741,8 +7743,10 @@ def render_dividends(ticker, result, currency, price):
         st.plotly_chart(fig,**width_options(st.plotly_chart),key="dividend_chart")
         a,b=st.columns([1.4,1])
         displayed=data.sort_values("Ex_Date",ascending=False).rename(columns={"Ex_Date":"วันขึ้น XD / Ex-dividend","Dividend_Per_Share":f"ปันผลต่อหน่วย ({currency})"})
-        a.dataframe(displayed,hide_index=True,**width_options(st.dataframe),height=300)
-        b.dataframe(yearly.rename(columns={"Year":"ปี","Total":"รวมต่อหน่วย","Payments":"จำนวนครั้ง"}),hide_index=True,**width_options(st.dataframe),height=300)
+        with a:
+            help_table(displayed,height=300)
+        with b:
+            help_table(yearly.rename(columns={"Year":"ปี","Total":"รวมต่อหน่วย","Payments":"จำนวนครั้ง"}),height=300)
         st.download_button("ดาวน์โหลดประวัติปันผล",data.to_csv(index=False).encode("utf-8-sig"),file_name=f"{ticker}_dividends.csv",mime="text/csv",key="download_dividends")
     st.caption("วันที่ในตารางเป็นวัน Ex-dividend ตามตลาด ไม่ใช่วันเงินเข้าบัญชี จำนวนเงินใช้ตามที่ผู้ให้ข้อมูลรายงาน อาจปรับตามการแตกหุ้น; การจ่ายของ ETF อาจมีองค์ประกอบอื่นนอกจากเงินปันผล และข้อมูลนี้ไม่ได้แยกภาษี/คืนทุน")
 
@@ -7865,13 +7869,13 @@ def render_decision(ticker, ctx, info, scored, plan, is_etf, div_result, currenc
     a.metric("คะแนนที่ได้",f"{scored['score']} / 100")
     b.metric("ความครบของข้อมูล",f"{scored['coverage']} / 100")
     c.metric("คะแนนต่ำสุด–สูงสุดที่เป็นไปได้",f"{scored['score']}–{scored['upper']}")
-    st.dataframe(pd.DataFrame([
+    help_table(pd.DataFrame([
         {"ช่วงคะแนน":"80–100","ความหมาย":"ผ่านระดับคะแนนสำหรับพิจารณาเข้า ต้องผ่านเงื่อนไขราคา/ความเสี่ยงด้วย"},
         {"ช่วงคะแนน":"60–79","ความหมาย":"เฝ้าดู / รอจังหวะ ยังไม่ผ่านเกณฑ์เข้า"},
         {"ช่วงคะแนน":"40–59","ความหมาย":"ยังไม่ควรเข้าตามโมเดลนี้"},
         {"ช่วงคะแนน":"0–39","ความหมาย":"งดเข้าตามโมเดลนี้"}]),hide_index=True,**width_options(st.dataframe))
     st.caption(("โปรไฟล์ ETF: แทน P/E และราคาเป้าหมายด้วยผลตอบแทน 3 เดือนและความแข็งแกร่งเทียบ SPY" if is_etf else "โปรไฟล์หุ้น: รวมเงื่อนไขแนวโน้ม โมเมนตัม วอลุ่ม ความผันผวน P/E และราคาเป้าหมาย")+" · ข้อมูลที่ขาดไม่ถูกนับเป็นผ่าน และไม่มีการหารปรับให้คะแนนสูงขึ้น")
-    st.dataframe(scored["rows"],hide_index=True,**width_options(st.dataframe),height=370,
+    help_table(scored["rows"],hide_index=True,**width_options(st.dataframe),height=370,
                  column_config={"ช่วง / คะแนน":st.column_config.TextColumn(width="large")})
     bar=ctx.get("metrics",{}).get("Bar_Date","ไม่มีข้อมูล")
     st.caption(f"เกณฑ์เทคนิคใช้แท่งรายวันก่อนวันปัจจุบันตามตลาด ล่าสุด {bar} เพื่อไม่เทียบวอลุ่มระหว่างวันกับวอลุ่มเต็มวัน")
