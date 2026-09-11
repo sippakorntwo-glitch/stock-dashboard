@@ -1,0 +1,55 @@
+name: Verify deployed English return table
+on:
+  push:
+    branches: [verify/english-return-periods-v20]
+    paths: [.github/workflows/verify_english_returns.yml]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install read-only production verifier
+        run: |
+          python -m pip install -q playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+      - name: Independently verify all eight English CSV periods against real public prices
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python - <<'PY'
+          import json,os,re
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright,expect
+          import production_smoke as smoke
+          from return_table_smoke import verify_return_table
+          version=re.search(r"APP_VERSION\s*=\s*['\"]([^'\"]+)",Path('dashboard_runtime.py').read_text()).group(1)
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True)
+              page=browser.new_page(viewport={'width':1440,'height':1000})
+              try:
+                  app=smoke.wait_for_release(page,version)
+                  app.get_by_role('heading',name='รายงานความครบของข้อมูลทุกส่วน',exact=True).wait_for(timeout=120000)
+                  smoke.chart_for_symbol(page,app,'AAPL')
+                  report=verify_return_table(page,app)
+                  report.update(url=smoke.URL,expected_version=version,deployed_version=version)
+                  print('ENGLISH_RETURN_PRODUCTION_REPORT:',json.dumps(report,ensure_ascii=False),flush=True)
+                  with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+                      f.write('### Actual public return-table verification\n\n```json\n'+json.dumps(report,ensure_ascii=False,indent=2)+'\n```\n')
+              except Exception:
+                  smoke.diagnose(page)
+                  raise
+              finally:
+                  browser.close()
+          PY
+      - name: Repeat the unchanged strict whole-site browser checks
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python production_smoke.py
