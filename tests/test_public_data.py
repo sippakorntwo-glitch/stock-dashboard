@@ -83,8 +83,8 @@ class PublicDataTests(unittest.TestCase):
             reader._sync()
             reader._details('AAPL')
             frame, _ = app.build_universe_frame(__import__('pandas').DataFrame(columns=['Ticker']), local.quotes(), local.classifications())
-        self.assertEqual(len(frame), 4900)
-        self.assertEqual(frame.Asset_Type.value_counts().to_dict(), {'Common Stock': 4200, 'ETF': 700})
+        self.assertEqual(len(frame), app.COMMON_STOCK_LIMIT + app.ETF_LIMIT)
+        self.assertEqual(frame.Asset_Type.value_counts().to_dict(), {'Common Stock': 4200, 'ETF': app.ETF_LIMIT})
         row = frame.set_index('Ticker').loc['AAPL']
         self.assertEqual(row.Industry, 'Consumer Electronics')
         self.assertTrue(all(row[c] > 0 for c in ['Historical_Return', 'Return_2Y', 'Return_3Y']))

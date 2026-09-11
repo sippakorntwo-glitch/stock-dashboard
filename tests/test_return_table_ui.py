@@ -26,7 +26,7 @@ overview(frame,selectable=True,prepared=frame)
     at=AppTest.from_string(script,default_timeout=30).run()
     assert not at.exception,str(at.exception)
     data=at.dataframe[0]
-    assert tuple(data.value.columns[6:14])==RETURN_FIELDS
+    assert tuple(data.value.columns[7:15])==RETURN_FIELDS
     config=json.loads(data.proto.columns)
     for field,label in RETURN_LABELS.items():
         assert config[field]['label']==label

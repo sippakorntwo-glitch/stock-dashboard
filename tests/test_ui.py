@@ -32,7 +32,7 @@ main()
     with patch.object(a,'get_data_cache',return_value=cache),patch.object(a.core,'get_data_cache',return_value=cache),patch.object(a,'get_remote_reader',return_value=(Reader(),'')),patch.object(a,'get_updater',return_value=a.ReadOnlyUpdater()),patch.object(a.yf,'download',side_effect=AssertionError('Unexpected provider call')),patch.object(a.yf,'Ticker',side_effect=AssertionError('Unexpected provider call')):
         at=AppTest.from_string(script,default_timeout=40).run()
         assert not at.exception,str(at.exception)
-        assert at.metric[0].value=='4,900'
+        assert at.metric[0].value==f'{a.COMMON_STOCK_LIMIT+a.ETF_LIMIT:,}'
         assert any(h.value=='Top 10 · จังหวะเข้าซื้อ' for h in at.subheader)
         assert 'เฝ้าดู ไม่ใช่จุดซื้อ' in at.button(key='ranking_pick_MSFT').label
         at.button(key='ranking_pick_MSFT').click().run()

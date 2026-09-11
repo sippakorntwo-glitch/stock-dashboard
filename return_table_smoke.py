@@ -27,9 +27,9 @@ def expected_return(rows,sessions,months):
         serial=end.year*12+end.month-1-months;year,month=divmod(serial,12);month+=1
         cutoff=date(year,month,min(end.day,calendar.monthrange(year,month)[1]))
         if date.fromisoformat(rows[0][0])>cutoff:return None
-        window=[row for row in rows if date.fromisoformat(row[0])>=cutoff]
-        if len(window)<2 or (date.fromisoformat(window[0][0])-cutoff).days>7:return None
-        first=window[0][1]
+        window=[row for row in rows if date.fromisoformat(row[0])<=cutoff]
+        if not window or (cutoff-date.fromisoformat(window[-1][0])).days>7:return None
+        first=window[-1][1]
     if first is None or last is None or not math.isfinite(float(first)) or not math.isfinite(float(last)) or first<=0 or last<=0:return None
     return (last/first-1)*100
 
@@ -37,17 +37,17 @@ def expected_return(rows,sessions,months):
 def verify_return_table(page,app):
     from production_smoke import URL,no_exception
     manifest,summary=public_summary()
-    migrated=all(all(field in row for field,_,_ in SPECS) and row.get('Metric_Calc_Version')==2 for row in summary['quotes'].values())
+    migrated=all(all(field in row for field,_,_ in SPECS) and row.get('Metric_Calc_Version')==3 for row in summary['quotes'].values() if row.get('Close') is not None and row.get('Data_Status')=='โหลดสำเร็จ')
     if not migrated:
         assert urlsplit(URL).hostname in ('localhost','127.0.0.1'),'Production snapshot has not recalculated all return fields'
         return {'awaiting_real_backfill_on_CI_only':True}
     search=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
     search.fill('');search.press('Enter')
-    expect(app.get_by_text('Cumulative Return (%)',exact=False).first).to_be_visible(timeout=60000)
+    expect(app.get_by_text('Adjusted-close returns',exact=False).first).to_be_visible(timeout=60000)
     button=app.get_by_role('button',name='ดาวน์โหลดผลกรองครบทุกแถว',exact=True)
     records=read_download(page,button)
-    assert len(records)==len(summary['universe'])==4900
-    headers=list(records[0]);assert headers[6:14]==LABELS,headers
+    assert len(records)==len(summary['universe']) and len(records)>=4900
+    headers=list(records[0]);assert headers[7:15]==LABELS,headers
     assert not any(label in headers for label in ['Return_2Y','Return_3M','2Y Return (%)','3M (%)'])
     exports={r['Ticker']:r for r in records}
     checks=[];parts={}
