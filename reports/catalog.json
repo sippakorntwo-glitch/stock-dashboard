@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-11T21:26:53.406551+00:00",
+  "recorded_at": "2026-09-11T21:59:52.975736+00:00",
   "run_id": "34643576727",
   "source_sha": "104f89bf166bafdfef5a69ee489a3737bbbd90a9",
   "started_at": "2026-09-11T20:20:10.526269+00:00",
@@ -59,15 +59,33 @@
       "metadata_jobs_attempted": 3346,
       "metadata_jobs_remaining_in_round": 6596,
       "finished_at": "2026-09-11T21:22:04.416990+00:00"
+    },
+    {
+      "started_at": "2026-09-11T21:26:54.302598+00:00",
+      "mode": "bootstrap",
+      "price_attempted": 0,
+      "price_success": 0,
+      "price_failed": 0,
+      "metadata_success": 3340,
+      "metadata_failed": 2,
+      "rate_limited": false,
+      "errors": [
+        "GEMQ/dividends: ValueError",
+        "MLCC/dividends: ValueError"
+      ],
+      "metadata_jobs_due": 6596,
+      "metadata_jobs_attempted": 3342,
+      "metadata_jobs_remaining_in_round": 3254,
+      "finished_at": "2026-09-11T21:55:01.533799+00:00"
     }
   ],
   "coverage": {
     "universe": 9876,
     "prices": 9868,
     "checked_today": 9868,
-    "industry": 6408,
-    "info": 6578,
-    "dividends": 6578,
+    "industry": 7909,
+    "info": 8249,
+    "dividends": 8247,
     "return_1y": 8086,
     "return_2y": 6896,
     "return_3y": 6138
@@ -76,15 +94,15 @@
     "universe": 9876,
     "prices": 9868,
     "histories": 9868,
-    "info": 6578,
-    "industry": 6408,
-    "dividends_checked": 6578,
-    "dividends_with_payments": 3770,
-    "dividends_no_payments": 2808,
-    "unattempted_info": 3298,
-    "unattempted_dividends": 3298
+    "info": 8249,
+    "industry": 7909,
+    "dividends_checked": 8247,
+    "dividends_with_payments": 4995,
+    "dividends_no_payments": 3252,
+    "unattempted_info": 1627,
+    "unattempted_dividends": 1627
   },
-  "bootstrap_pending": 3468,
-  "generation": "generations/20260911T212237Z-36833eff",
-  "published_at": "2026-09-11T21:26:50.089409+00:00"
+  "bootstrap_pending": 1967,
+  "generation": "generations/20260911T215536Z-1975bc72",
+  "published_at": "2026-09-11T21:59:49.702452+00:00"
 }
