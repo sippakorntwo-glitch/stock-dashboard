@@ -46,4 +46,6 @@ def verify_enhancements(page,app):
         assert abs(float(data['rangeTo'])-(len(payload['records'])+3))<6,data
         report['ranges'].append({'period':period,'interval':payload['interval'],'bars':len(payload['records']),'visible_bars':len(payload['records'])-payload['visibleStart'],'first':payload['range_first'],'last':payload['range_last']})
     app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 ปี',exact=True).click()
+    from performance_smoke import verify_growth_and_plain_cells
+    report['growth_and_plain_cells']=verify_growth_and_plain_cells(page,app)
     return report
