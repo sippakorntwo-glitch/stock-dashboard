@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p work
           python -m compileall -q .
-          python -m pytest -q tests > work/catalog-tests.log 2>&1 || { tail -100 work/catalog-tests.log; exit 1; }
+          env -u DASHBOARD_DATA_REPO -u DASHBOARD_GITHUB_TOKEN -u DASHBOARD_DATA_VISIBILITY -u DASHBOARD_DATA_BRANCH -u DASHBOARD_CACHE_FILE python -m pytest -q tests > work/catalog-tests.log 2>&1 || { tail -100 work/catalog-tests.log; exit 1; }
       - name: Complete real price and profile collection, preserving checkpoints
         run: python finish_data.py > work/catalog-collection.log 2>&1 || { tail -80 work/catalog-collection.log; exit 1; }
       - name: Record task outcome including failures
