@@ -93,7 +93,11 @@ def overview(frame, selectable=False, prepared=None):
         st.caption('หุ้นที่เลือก: '+st.session_state.get('selected_ticker','AAPL'))
         st.markdown('[↓ ไปยังกราฟและรายละเอียดด้านล่าง](#selected-stock)')
     st.caption(RETURN_CAPTION)
-    st.download_button('ดาวน์โหลดผลกรองครบทุกแถว',export_watchlist(work).to_csv(index=False).encode('utf-8-sig'),'filtered_watchlist.csv','text/csv',on_click='ignore')
+    st.download_button('ดาวน์โหลดผลกรองครบทุกแถว',export_watchlist(work).to_csv(index=False).encode('utf-8-sig'), 'filtered_watchlist.csv','text/csv',on_click='ignore')
+    import html, json
+    receipt=html.escape(json.dumps(work.attrs.get('applied_filters',{}),ensure_ascii=False),quote=True)
+    # The marker is emitted AFTER the CSV button for this exact rendered result.
+    st.markdown(f'<span class="export-ready" data-controls="{receipt}" data-count="{len(work)}"></span>',unsafe_allow_html=True)
     return work
 
 

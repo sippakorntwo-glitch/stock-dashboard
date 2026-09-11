@@ -14,7 +14,7 @@ from quality_smoke import public_summary, read_download
 
 def wait_applied(app,label,value):
     app.wait_for_function("""([label,value]) => {
-        const e=document.querySelector('.screener-ready');
+        const e=document.querySelector('.export-ready');
         if(!e) return false;
         const actual=JSON.parse(e.dataset.controls)[label];
         return Array.isArray(actual) ? actual.includes(value) : actual===value;
@@ -24,7 +24,7 @@ def wait_applied(app,label,value):
 def reset_controls(app):
     app.locator('.st-key-overview_controls').get_by_role('button',name='Reset Filters',exact=True).click()
     app.wait_for_function("""() => {
-        const e=document.querySelector('.screener-ready');
+        const e=document.querySelector('.export-ready');
         if(!e) return false;
         const s=JSON.parse(e.dataset.controls);
         return s['Asset Type']==='All' && s['Return Display']==='Cumulative (Adjusted Close)'

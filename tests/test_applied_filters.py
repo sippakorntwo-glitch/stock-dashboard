@@ -12,19 +12,23 @@ def applied(at):
 
 
 @pytest.mark.skipif(os.environ.get('DASHBOARD_OFFLINE_TEST_STUBS')=='1',reason='Requires real Streamlit AppTest')
-def test_combined_controls_report_only_the_completed_filter_state():
+def test_combined_controls_report_only_the_completed_filter_state(tmp_path,monkeypatch):
     from streamlit.testing.v1 import AppTest
+    import dashboard_runtime as a
+    cache=a.DashboardCache(tmp_path/'applied-ui.sqlite3')
+    monkeypatch.setattr(a,'get_data_cache',lambda:cache)
     script='''
 import pandas as pd
 import streamlit as st
 from filters_ui import filter_universe
+from dashboard_views import overview
 f=pd.DataFrame([
  {'Ticker':'TESTA','Asset_Type':'Common Stock','Security_Name':'Fixture A','Industry':'Software','Status':'PASS','Close':100.,'Return_1M':5.},
  {'Ticker':'TESTB','Asset_Type':'ETF','Security_Name':'Fixture B','Industry':'Derivative Income','Status':'FAIL','Close':50.,'Return_1M':2.},
  {'Ticker':'TESTC','Asset_Type':'ETF','Security_Name':'Fixture C','Industry':'Derivative Income','Status':'FAIL','Close':40.,'Return_1M':-1.},
 ])
 r=filter_universe(f)
-if r is not None:st.dataframe(r)
+if r is not None:overview(f,prepared=r)
 '''
     at=AppTest.from_string(script,default_timeout=20).run()
     assert not at.exception,str(at.exception)
@@ -33,6 +37,9 @@ if r is not None:st.dataframe(r)
     at.multiselect(key='screen_cat_Industry').set_value(['Derivative Income']).run()
     assert not at.exception,str(at.exception)
     assert at.dataframe[0].value.Ticker.tolist()==['TESTB','TESTC']
+    receipt=next(m.value for m in at.markdown if 'class="export-ready"' in m.value)
+    exported=json.loads(html.unescape(re.search(r'data-controls="([^"]*)"',receipt).group(1)))
+    assert exported==applied(at)
     assert applied(at)['Asset Type']=='ETF'
     assert applied(at)['Industry / ETF Category']==['Derivative Income']
     at.multiselect(key='screen_periods').set_value(['Return_1M']).run()

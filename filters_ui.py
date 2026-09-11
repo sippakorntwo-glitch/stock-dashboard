@@ -100,6 +100,7 @@ def filter_universe(frame):
         label=labels_for_mode(mode).get(field,METRICS.get(field,field))
         applied['Minimum '+label]=lower
         applied['Maximum '+label]=upper
+    work.attrs['applied_filters']=applied
     encoded=html.escape(json.dumps(applied,ensure_ascii=False),quote=True)
     description=html.escape(f'Applied: {asset} · {len(work):,} results · {mode}')
     st.markdown(f'<output class="screener-ready" data-controls="{encoded}" data-count="{len(work)}">{description}</output>',unsafe_allow_html=True)
