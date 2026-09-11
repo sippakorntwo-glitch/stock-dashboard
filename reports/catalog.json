@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-11T21:59:52.975736+00:00",
+  "recorded_at": "2026-09-11T22:32:04.942890+00:00",
   "run_id": "34643576727",
   "source_sha": "104f89bf166bafdfef5a69ee489a3737bbbd90a9",
   "started_at": "2026-09-11T20:20:10.526269+00:00",
@@ -77,15 +77,32 @@
       "metadata_jobs_attempted": 3342,
       "metadata_jobs_remaining_in_round": 3254,
       "finished_at": "2026-09-11T21:55:01.533799+00:00"
+    },
+    {
+      "started_at": "2026-09-11T21:59:53.873915+00:00",
+      "mode": "bootstrap",
+      "price_attempted": 0,
+      "price_success": 0,
+      "price_failed": 0,
+      "metadata_success": 3253,
+      "metadata_failed": 1,
+      "rate_limited": false,
+      "errors": [
+        "XLCU/dividends: ValueError"
+      ],
+      "metadata_jobs_due": 3254,
+      "metadata_jobs_attempted": 3254,
+      "metadata_jobs_remaining_in_round": 0,
+      "finished_at": "2026-09-11T22:27:10.869751+00:00"
     }
   ],
   "coverage": {
     "universe": 9876,
     "prices": 9868,
     "checked_today": 9868,
-    "industry": 7909,
-    "info": 8249,
-    "dividends": 8247,
+    "industry": 9335,
+    "info": 9876,
+    "dividends": 9873,
     "return_1y": 8086,
     "return_2y": 6896,
     "return_3y": 6138
@@ -94,15 +111,15 @@
     "universe": 9876,
     "prices": 9868,
     "histories": 9868,
-    "info": 8249,
-    "industry": 7909,
-    "dividends_checked": 8247,
-    "dividends_with_payments": 4995,
-    "dividends_no_payments": 3252,
-    "unattempted_info": 1627,
-    "unattempted_dividends": 1627
+    "info": 9876,
+    "industry": 9335,
+    "dividends_checked": 9873,
+    "dividends_with_payments": 6074,
+    "dividends_no_payments": 3799,
+    "unattempted_info": 0,
+    "unattempted_dividends": 0
   },
-  "bootstrap_pending": 1967,
-  "generation": "generations/20260911T215536Z-1975bc72",
-  "published_at": "2026-09-11T21:59:49.702452+00:00"
+  "bootstrap_pending": 541,
+  "generation": "generations/20260911T222746Z-460199fd",
+  "published_at": "2026-09-11T22:32:01.592377+00:00"
 }
