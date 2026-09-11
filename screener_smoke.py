@@ -22,16 +22,24 @@ def wait_applied(app,label,value):
 
 
 def reset_controls(app):
+    previous=app.evaluate("""() => {
+        const e=document.querySelector('.export-ready') || document.querySelector('.screener-ready');
+        return e ? (JSON.parse(e.dataset.controls)['Reset Version'] || 0) : 0;
+    }""")
     app.locator('.st-key-overview_controls').get_by_role('button',name='Reset Filters',exact=True).click()
-    app.wait_for_function("""() => {
+    app.wait_for_function("""previous => {
         const e=document.querySelector('.export-ready');
         if(!e) return false;
         const s=JSON.parse(e.dataset.controls);
-        return s['Asset Type']==='All' && s['Return Display']==='Cumulative (Adjusted Close)'
+        return s['Reset Version']>previous && s['Asset Type']==='All'
+            && s['Return Display']==='Cumulative (Adjusted Close)'
             && s['Search Ticker / Company / Industry']===''
             && Object.values(s).filter(Array.isArray).every(v=>v.length===0)
             && !Object.keys(s).some(k=>k.startsWith('Minimum ')||k.startsWith('Maximum '));
-    }""",timeout=60000)
+    }""",arg=previous,timeout=60000)
+    asset=app.locator('[data-testid="stSelectbox"]').filter(has=app.get_by_text('Asset Type',exact=True)).first
+    expect(asset.get_by_role('combobox')).to_contain_text('All')
+    expect(app.get_by_text('Return_1M: maximum is below minimum',exact=True)).to_have_count(0,timeout=30000)
 
 
 def choose(app,label,value,multi=False):
@@ -105,7 +113,9 @@ def verify_screener(page,app):
     assert all(r['1 Month (%)'] and float(r['1 Month (%)'])>=0 for r in filtered)
     report['combined_numeric_filter']={'rows':len(filtered),'minimum_1m':0}
     maximum=controls.get_by_role('spinbutton',name='Maximum 1 Month (%)',exact=True)
-    minimum.fill('10');minimum.press('Enter');maximum.fill('0');maximum.press('Enter')
+    minimum.fill('10');minimum.press('Enter')
+    wait_applied(app,'Minimum 1 Month (%)',10)
+    maximum.fill('0');maximum.press('Enter')
     expect(app.get_by_text('Return_1M: maximum is below minimum',exact=True)).to_be_visible(timeout=30000)
     no_exception(app);report['invalid_bounds_handled']=True
     reset_controls(app)
@@ -134,7 +144,6 @@ def verify_screener(page,app):
     assert first and float(minute.get_attribute('data-price'))>0
     observed=datetime.fromisoformat(minute.get_attribute('data-bar-time'))
     assert observed<=datetime.now(timezone.utc)
-    # Verify a second actual provider acquisition, not a cosmetic countdown.
     local=datetime.now(timezone.utc).astimezone(__import__('zoneinfo').ZoneInfo('America/New_York'))
     if local.weekday()<5 and 4<=local.hour<20:
         deadline=time.monotonic()+100
@@ -154,7 +163,7 @@ def verify_screener(page,app):
     report['theme']={'background':app.locator('.stApp').evaluate('(e)=>getComputedStyle(e).backgroundImage'),
                      'metric_background':app.locator('[data-testid="stMetric"]').first.evaluate('(e)=>getComputedStyle(e).backgroundImage')}
     assert 'gradient' in report['theme']['background'] and 'gradient' in report['theme']['metric_background']
-    exp.click()  # Show the normal compact controls in the responsive screenshots.
+    exp.click()
     app.get_by_role('heading',name='Stock Research Workspace',exact=True).scroll_into_view_if_needed()
     report['desktop_screenshot']=snapshot_image(page,'v22-desktop')
     page.set_viewport_size({'width':390,'height':844})
