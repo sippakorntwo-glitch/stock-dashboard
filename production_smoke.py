@@ -1,4 +1,4 @@
-"""Exercise the real single-page app, actual canvas selection, and real charts.
+"""Exercise the real single-page app, actual table selection, and real charts.
 
 The report always names its target URL; localhost success is not production success.
 """
@@ -87,11 +87,13 @@ def click_filtered_stock(page,app,ticker,*,row_selector=False):
     query.fill(ticker);query.press('Enter')
     expect(app.get_by_text('หุ้นในผลค้นหา: '+ticker,exact=True)).to_be_visible(timeout=30000)
     page.wait_for_timeout(1000)
-    canvas=app.locator('.st-key-stock_picker_table canvas').first
-    canvas.scroll_into_view_if_needed()
-    # Actual mouse input on the first displayed row: company cell or row selector.
-    # The app sets row_height=36. This does not inject state or call a JS callback.
-    canvas.click(position={'x':16 if row_selector else 180,'y':54})
+    # Glide draws into a canvas but receives real pointer events on its scroller.
+    # Target that surface, not the underlying canvas, and keep clear of the header.
+    surface=app.locator('.st-key-stock_picker_table .dvn-scroller').first
+    expect(surface).to_be_visible()
+    surface.evaluate('(el)=>el.scrollIntoView({block:"center",inline:"nearest"})')
+    page.wait_for_timeout(300)
+    surface.click(position={'x':16 if row_selector else 180,'y':54})
     expect(app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)).to_have_value(ticker,timeout=30000)
     expect(app.get_by_role('heading',name=re.compile('^'+re.escape(ticker)+r' ·'))).to_be_visible(timeout=30000)
     return chart_for_symbol(page,app,ticker)
@@ -113,13 +115,13 @@ def run():
             page.wait_for_timeout(1000)
             if chart.locator('#error').is_visible(): raise RuntimeError('Candlestick JavaScript error')
             verify_sections(app)
+            print('VERIFIED_INITIAL_SINGLE_PAGE: AAPL; all research sections',flush=True)
             report.update(chart=True,chart_bars=len(payload['records']),chart_last_bar=payload.get('lastBar'),deployed_version=version,views=list(VIEWS))
             for ticker,row_selector in [('MSFT',False),('AAPL',True)]:
                 chart,payload=click_filtered_stock(page,app,ticker,row_selector=row_selector)
                 verify_sections(app)
                 report['selections'].append({'ticker':ticker,'via':'row' if row_selector else 'cell','bars':len(payload['records'])})
                 print('VERIFIED_STOCK_SELECTION:',ticker,flush=True)
-            # Manual input is still available; SPY defaults to comparing against QQQ.
             field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
             field.fill('SPY');field.press('Enter')
             chart,payload=chart_for_symbol(page,app,'SPY')
