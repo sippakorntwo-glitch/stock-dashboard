@@ -93,7 +93,7 @@ def overview(frame, selectable=False, prepared=None):
         st.caption('หุ้นที่เลือก: '+st.session_state.get('selected_ticker','AAPL'))
         st.markdown('[↓ ไปยังกราฟและรายละเอียดด้านล่าง](#selected-stock)')
     st.caption(RETURN_CAPTION)
-    st.download_button('ดาวน์โหลดผลกรองครบทุกแถว',export_watchlist(work).to_csv(index=False).encode('utf-8-sig'),'filtered_watchlist.csv','text/csv')
+    st.download_button('ดาวน์โหลดผลกรองครบทุกแถว',export_watchlist(work).to_csv(index=False).encode('utf-8-sig'),'filtered_watchlist.csv','text/csv',on_click='ignore')
     return work
 
 

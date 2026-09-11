@@ -12,6 +12,28 @@ from playwright.sync_api import expect
 from quality_smoke import public_summary, read_download
 
 
+def wait_applied(app,label,value):
+    app.wait_for_function("""([label,value]) => {
+        const e=document.querySelector('.screener-ready');
+        if(!e) return false;
+        const actual=JSON.parse(e.dataset.controls)[label];
+        return Array.isArray(actual) ? actual.includes(value) : actual===value;
+    }""",arg=[label,value],timeout=60000)
+
+
+def reset_controls(app):
+    app.locator('.st-key-overview_controls').get_by_role('button',name='Reset Filters',exact=True).click()
+    app.wait_for_function("""() => {
+        const e=document.querySelector('.screener-ready');
+        if(!e) return false;
+        const s=JSON.parse(e.dataset.controls);
+        return s['Asset Type']==='All' && s['Return Display']==='Cumulative (Adjusted Close)'
+            && s['Search Ticker / Company / Industry']===''
+            && Object.values(s).filter(Array.isArray).every(v=>v.length===0)
+            && !Object.keys(s).some(k=>k.startsWith('Minimum ')||k.startsWith('Maximum '));
+    }""",timeout=60000)
+
+
 def choose(app,label,value,multi=False):
     testid='stMultiSelect' if multi else 'stSelectbox'
     widget=app.locator('[data-testid="'+testid+'"]').filter(has=app.get_by_text(label,exact=True)).first
@@ -23,6 +45,7 @@ def choose(app,label,value,multi=False):
         field.fill(value)
     app.get_by_role('option',name=value,exact=True).click(timeout=15000)
     if multi:control.press('Escape')
+    wait_applied(app,label,value)
 
 
 def snapshot_image(page,name):
@@ -57,7 +80,7 @@ def verify_screener(page,app):
     controls=app.locator('.st-key-overview_controls')
     exp=controls.get_by_text('Advanced Filters',exact=True)
     exp.click()
-    controls.get_by_role('button',name='Reset Filters',exact=True).click()
+    reset_controls(app)
     search=controls.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
     expect(search).to_have_value('',timeout=30000)
     button=app.get_by_role('button',name='ดาวน์โหลดผลกรองครบทุกแถว',exact=True)
@@ -72,11 +95,12 @@ def verify_screener(page,app):
     choose(app,'Industry / ETF Category',category,multi=True)
     selected=read_download(page,button)
     assert selected and any(r['Ticker']=='QQQI' for r in selected)
-    assert all(r['Asset Type']=='ETF' and r['Industry / ETF Category']==category for r in selected)
+    assert all(r['Asset Type']=='ETF' and r['Industry / ETF Category']==category for r in selected), {'selected_rows':len(selected),'bad_rows':[r['Ticker'] for r in selected if r['Asset Type']!='ETF' or r['Industry / ETF Category']!=category][:10]}
     report['category_filter']={'category':category,'rows':len(selected),'QQQI':True}
     choose(app,'Return Periods to Filter','1 Month (%)',multi=True)
     minimum=controls.get_by_role('spinbutton',name='Minimum 1 Month (%)',exact=True)
     minimum.fill('0');minimum.press('Enter')
+    wait_applied(app,'Minimum 1 Month (%)',0)
     filtered=read_download(page,button)
     assert all(r['1 Month (%)'] and float(r['1 Month (%)'])>=0 for r in filtered)
     report['combined_numeric_filter']={'rows':len(filtered),'minimum_1m':0}
@@ -84,9 +108,10 @@ def verify_screener(page,app):
     minimum.fill('10');minimum.press('Enter');maximum.fill('0');maximum.press('Enter')
     expect(app.get_by_text('Return_1M: maximum is below minimum',exact=True)).to_be_visible(timeout=30000)
     no_exception(app);report['invalid_bounds_handled']=True
-    controls.get_by_role('button',name='Reset Filters',exact=True).click()
+    reset_controls(app)
     choose(app,'Return Display','Annualized (3Y / 5Y only)')
     search.fill('AAPL');search.press('Enter')
+    wait_applied(app,'Search Ticker / Company / Industry','AAPL')
     expect(app.get_by_text('หุ้นในผลค้นหา: AAPL',exact=True)).to_be_visible(timeout=30000)
     annual=read_download(page,button)
     assert len(annual)==1 and annual[0]['Ticker']=='AAPL'
@@ -94,11 +119,11 @@ def verify_screener(page,app):
         expected=summary['quotes']['AAPL']['Return_Observations'][field]['annualized']
         assert annual[0][label] and math.isclose(float(annual[0][label]),expected,rel_tol=1e-7)
     report['annualized_csv_verified']=True
-    controls.get_by_role('button',name='Reset Filters',exact=True).click()
+    reset_controls(app)
     search.fill('NO-MATCH-FOR-FINAL-CHECK');search.press('Enter')
     expect(app.get_by_text('ผ่านตัวกรอง 0 ตัว',exact=False)).to_be_visible(timeout=30000)
     no_exception(app);report['empty_results_handled']=True
-    controls.get_by_role('button',name='Reset Filters',exact=True).click()
+    reset_controls(app)
     chart,payload=click_filtered_stock(page,app,'QQQI')
     assert payload['ticker']=='QQQI' and not payload.get('demo')
     report['QQQI_chart_bars']=len(payload['records'])
@@ -141,6 +166,6 @@ def verify_screener(page,app):
     report['mobile_screenshot']=snapshot_image(page,'v22-mobile')
     page.set_viewport_size({'width':1440,'height':1000})
     exp.click()
-    controls.get_by_role('button',name='Reset Filters',exact=True).click()
+    reset_controls(app)
     report['result']='passed'
     return report

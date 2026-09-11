@@ -36,6 +36,7 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #ff
 .quote-symbol span { color:#c3bddf; font-weight:400; padding-left:.5rem; }
 .quote-price { font-size:2.7rem; color:#f3faff; font-variant-numeric:tabular-nums; font-weight:750; }
 .quote-delta { font-size:1.1rem; padding-left:1rem; color:#cfdcf0; font-weight:500; }
+.screener-ready { display:block; margin:.5rem 0; padding:.6rem .8rem; border-left:3px solid #70e4bd; border-radius:6px; background:#122c35; color:#c9f2e5; font-size:.8rem; }
 .workspace-nav { display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0 1rem; }
 .workspace-nav a { color:#d6eeff; background:#152541; border:1px solid #3e567a; border-radius:20px; padding:.38rem .85rem; text-decoration:none; font-size:.86rem; }
 .workspace-nav a:hover { color:#fff; border-color:#9f9cf2; background:#273157; }

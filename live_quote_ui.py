@@ -42,7 +42,7 @@ def render_live_quote(ticker):
               <div class="quote-price">{value['price']:,.4f}<span class="quote-delta">{delta}</span></div>
               <div style="color:{color}">{label} · อายุแท่ง {age/60:,.1f} นาที</div></div>'''
             st.markdown(text,unsafe_allow_html=True)
-            st.caption('เวลาเริ่มแท่ง 1 นาที: '+a.thai_time(value['bar_time'])+' · รับข้อมูล: '+a.thai_time(value['fetched_at']))
+            st.caption('เวลาข้อมูลราคา 1 นาที: '+a.thai_time(value['bar_time'])+' · รับข้อมูล: '+a.thai_time(value['fetched_at']))
             st.caption('Yahoo Finance · รวม pre/post-market เมื่อมีข้อมูล · % เทียบ previous close ที่ผู้ให้ข้อมูลรายงาน')
         else:
             st.info('กำลังขอราคาของหุ้นที่เลือก โดยไม่หยุดการทำงานส่วนอื่น' if busy else 'ยังไม่มีราคา 1 นาทีที่ตรวจสอบได้ — ใช้ข้อมูลรายวันด้านล่างประกอบ')

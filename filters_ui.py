@@ -1,5 +1,7 @@
 """English advanced screener. No market-data calls when changing filters."""
 from __future__ import annotations
+import html
+import json
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -90,5 +92,16 @@ def filter_universe(frame):
     if sort not in work:work[sort]=np.nan
     work=work.sort_values([sort,'Ticker'] if sort!='Ticker' else ['Ticker'],ascending=not descending,na_position='last',kind='stable')
     work.attrs['return_mode']=mode
+    applied={'Asset Type':asset,'Trend Status':status,'Return Display':mode,
+             'Search Ticker / Company / Industry':query,
+             'Return Periods to Filter':[labels_for_mode(mode)[f] for f in periods]}
+    applied.update({label:categories.get(field,[]) for field,label in CATEGORIES.items()})
+    for field,(lower,upper) in bounds.items():
+        label=labels_for_mode(mode).get(field,METRICS.get(field,field))
+        applied['Minimum '+label]=lower
+        applied['Maximum '+label]=upper
+    encoded=html.escape(json.dumps(applied,ensure_ascii=False),quote=True)
+    description=html.escape(f'Applied: {asset} · {len(work):,} results · {mode}')
+    st.markdown(f'<output class="screener-ready" data-controls="{encoded}" data-count="{len(work)}">{description}</output>',unsafe_allow_html=True)
     st.caption(f'{len(work):,} matching securities / {len(frame):,} catalog members. Return basis: {mode}.')
     return work

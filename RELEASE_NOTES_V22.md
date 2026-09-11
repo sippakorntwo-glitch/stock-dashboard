@@ -56,3 +56,5 @@ show source SHA, target URL and actual results. A green collection job alone
 is not evidence of full market-data completeness. Consult the published counts.
 
 The Nasdaq ETF flag also includes exchange-traded notes; these are identified in their security names and are not legally the same as investment funds. First-time chart requests wake the page as soon as the background load finishes, while routine intraday refreshes remain confined to the chart fragment.
+
+Applied filter receipts expose the exact completed filter state and result count. CSV export uses that displayed result without triggering an unrelated page rerun. Browser checks wait for the actual applied state before downloading, not for a guessed sleep interval. Metadata queues retain stock/ETF and profile/dividend fairness while prioritizing missing and then oldest observations.
