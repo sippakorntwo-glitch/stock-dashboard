@@ -21,10 +21,10 @@ jobs:
           python -m pip install -q -r requirements-dev.txt
           python -m compileall -q .
           python -m pytest -q tests
-      - name: Commit validated source changes to the feature branch
+      - name: Commit only application code (workflow edits require the owner connection)
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add dashboard_views.py dashboard_ui.py dashboard_runtime.py app.py workspace_boot.py enhanced_smoke.py tests/conftest.py tests/test_ui.py README.md .github/workflows/deploy_verify.yml .github/workflows/full_browser.yml
-          git commit -m 'Apply tested Top 10 board integration and deployment verification'
+          git add dashboard_views.py dashboard_ui.py dashboard_runtime.py app.py workspace_boot.py enhanced_smoke.py tests/conftest.py tests/test_ui.py README.md
+          git commit -m 'Apply tested Top 10 board application and UI integration'
           git push origin HEAD:feat/top10-buy-watch-board
