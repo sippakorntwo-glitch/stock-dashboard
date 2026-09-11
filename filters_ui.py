@@ -22,10 +22,21 @@ CATEGORIES={'Industry':'Industry / ETF Category','Sector':'Sector','Country':'Co
 
 
 def reset_filters():
-    for key in list(st.session_state):
-        if key.startswith('screen_'):del st.session_state[key]
-    st.session_state['stock_search']=''
-    st.session_state['table_page']=1
+    # Deleting a widget key can reconnect it to its old browser value on the
+    # next event. Write every default in this callback so both sides reset.
+    defaults={'screen_asset':'All','screen_status':'All','screen_return_mode':RETURN_MODES[0],
+              'screen_sort':'Ticker','screen_descending':False,'screen_periods':[],
+              'screen_metrics':[],'screen_required':[],'screen_price_age':4,
+              'screen_profile_age':14,'stock_search':'','table_page':1}
+    for field in CATEGORIES:
+        defaults['screen_cat_'+field]=[]
+    for field in ('missing','fresh','profile_fresh','above_sma','bullish','favourites'):
+        defaults['screen_'+field]=False
+    for field in (*RETURN_FIELDS,*METRICS):
+        defaults['screen_min_'+field]=None
+        defaults['screen_max_'+field]=None
+    st.session_state.update(defaults)
+    st.session_state['_filter_reset_version']=st.session_state.get('_filter_reset_version',0)+1
 
 
 def filter_universe(frame):
@@ -48,9 +59,10 @@ def filter_universe(frame):
         cols=st.columns(2)
         for i,(field,label) in enumerate(CATEGORIES.items()):
             options=categorical_values(frame,field)
-            # Full catalog options prevent stale selections when another filter changes.
             key='screen_cat_'+field
-            if key in st.session_state:st.session_state[key]=[v for v in st.session_state[key] if v in options]
+            if key in st.session_state:
+                valid=[v for v in st.session_state[key] if v in options]
+                if valid!=st.session_state[key]:st.session_state[key]=valid
             categories[field]=cols[i%2].multiselect(label,options,key=key)
         st.markdown('**Return Filters**')
         labels=labels_for_mode(mode)
@@ -94,6 +106,7 @@ def filter_universe(frame):
     work.attrs['return_mode']=mode
     applied={'Asset Type':asset,'Trend Status':status,'Return Display':mode,
              'Search Ticker / Company / Industry':query,
+             'Reset Version':st.session_state.get('_filter_reset_version',0),
              'Return Periods to Filter':[labels_for_mode(mode)[f] for f in periods]}
     applied.update({label:categories.get(field,[]) for field,label in CATEGORIES.items()})
     for field,(lower,upper) in bounds.items():
