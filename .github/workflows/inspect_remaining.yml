@@ -1,0 +1,28 @@
+name: Verify residual upstream data gaps
+on:
+  push:
+    branches: [audit/remaining-metadata-v19]
+    paths: ['inspect_remaining.py', '.github/workflows/inspect_remaining.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    if: ${{ toJSON(github.event.repository.private) == 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q -r requirements.txt
+      - run: python inspect_remaining.py
+        env:
+          PYTHONUNBUFFERED: '1'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: remaining-upstream-data-audit
+          path: work/remaining_data.json
+          retention-days: 7
