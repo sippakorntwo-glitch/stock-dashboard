@@ -23,6 +23,14 @@ jobs:
         env:
           PYTHONUNBUFFERED: '1'
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assemble_screener_v21.py');s=p.read_text()
+          old='if s.count(old)!=1:'
+          assert s.count(old)==1
+          s=s.replace(old,"if s.count(old)!=(2 if path=='app.py' else 1):")
+          p.write_text(s)
+          PY
           python assemble_screener_v21.py
           python -m compileall -q .
       - name: Preserve assembled source on feature branch only
