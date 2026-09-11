@@ -54,9 +54,13 @@ def pending_bootstrap(universe, quotes, metadata):
         for kind in ("info", "dividends"):
             if f"{kind}:{ticker}" not in metadata:
                 missing.append(kind)
+            elif kind == "info" and metadata[f"info:{ticker}"].get("classification_available") is False:
+                missing.append(kind)
         if missing:
             pending.add(ticker)
-            due.extend(retry_due(metadata, kind, ticker) for kind in missing)
+            due.extend(max(retry_due(metadata, kind, ticker),
+                stamp_seconds(metadata.get(f"info:{ticker}", {}).get("fetched_at")) + 86400
+                if kind == "info" and metadata.get(f"info:{ticker}", {}).get("classification_available") is False else 0) for kind in missing)
     return len(pending), min(due) if due else None
 
 
@@ -64,6 +68,9 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
     """Upload an immutable generation, then atomically replace its small pointer."""
     if cache.error:
         raise RuntimeError("Local cache could not be persisted; refusing to publish")
+    from data_quality import prepare_cached_metadata, make_quality
+    prepare_cached_metadata(cache, universe, app.ETF_NAMES)
+    quality = make_quality(cache, universe, etfs=app.ETF_NAMES)
     generation = "generations/" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()) + "-" + uuid.uuid4().hex[:8]
     with tempfile.TemporaryDirectory(prefix="snapshot-") as folder:
         folder = Path(folder)
@@ -106,7 +113,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
             "return_3y": sum(app.number(r.get("Return_3Y")) is not None for r in quotes.values()),
         }
         summary = {"schema": SCHEMA, "quotes": quotes, "classifications": classifications,
-                   "universe": list(universe), "watchlist_csv": watchlist_csv}
+                   "universe": list(universe), "watchlist_csv": watchlist_csv, "quality": quality}
         raw = pack(summary)
         summary_ref = {"key": generation + "/summary.json.gz", "sha256": digest(raw)}
         store.write(summary_ref["key"], raw)
@@ -125,7 +132,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
         manifest = {"schema": SCHEMA, "generation": generation, "published_at": utc_now(),
                     "previous_generation": (previous or {}).get("generation"),
                     "summary": summary_ref, "details": details, "checkpoint": checkpoint_ref,
-                    "coverage": coverage, "report": report,
+                    "coverage": coverage, "quality_counts": quality["counts"], "report": report,
                     "bootstrap_pending": pending, "bootstrap_next_due": next_due,
                     "catalog_as_of": app.CATALOG_AS_OF, "app_version": app.APP_VERSION}
         manifest_raw = json.dumps(manifest, ensure_ascii=False, allow_nan=False).encode()
@@ -194,38 +201,9 @@ def collect(cache, universe, mode, price_minutes=35, metadata_minutes=20, metada
             report["rate_limited"] = True
             break
         time.sleep(app.SCAN_INTERVAL_SECONDS)
-    metadata = object_metadata(cache)
-    jobs = []
-    for ticker in universe:
-        for kind in ("info", "dividends"):
-            old = metadata.get(f"{kind}:{ticker}")
-            age = now - stamp_seconds((old or {}).get("fetched_at"))
-            if ((old is None or (mode == "daily" and age >= 7 * 86400))
-                    and retry_due(metadata, kind, ticker) <= now):
-                jobs.append((kind, ticker, old is not None, stamp_seconds((old or {}).get("fetched_at"))))
-    jobs.sort(key=lambda j: (j[2], j[3], order[j[1]], j[0]))
-    worker = app.BackgroundUpdates(cache)
-    deadline = time.monotonic() + metadata_minutes * 60
-    failures_in_row = 0
-    if not report["rate_limited"]:
-        for kind, ticker, _, _ in jobs[:metadata_limit]:
-            if time.monotonic() >= deadline:
-                break
-            try:
-                worker._job(kind, ticker, "1d")
-                record_attempt(cache, kind, ticker, True)
-                report["metadata_success"] += 1
-                failures_in_row = 0
-            except Exception as exc:
-                record_attempt(cache, kind, ticker, False)
-                report["metadata_failed"] += 1
-                failures_in_row += 1
-                # No credentials in errors: provider errors contain only market request context.
-                report["errors"] = (report["errors"] + [f"{ticker}/{kind}: {type(exc).__name__}"])[-20:]
-                if failures_in_row >= 5 or any(s in str(exc).lower() for s in ("429", "rate limit", "too many")):
-                    report["rate_limited"] = True
-                    break
-            time.sleep(1)
+    from metadata_repair import collect_metadata
+    collect_metadata(cache, universe, mode, metadata_minutes, metadata_limit, report,
+                     app=app, get_metadata=object_metadata, record_attempt=record_attempt)
     report["finished_at"] = utc_now()
     return report
 

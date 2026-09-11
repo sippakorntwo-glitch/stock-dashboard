@@ -93,6 +93,8 @@ def overview(frame, selectable=False, prepared=None):
     page = st.number_input('หน้าตาราง — หน้าละ 500 ตัว',min_value=1,max_value=pages,step=1,key='table_page')
     fields = ['Ticker','Security_Name','Industry','Asset_Type','Status','Close','Return_1D','Return_3M','Historical_Return','Return_2Y','Return_3Y','RSI_14','ATR_Pct','Volatility_20D','Dollar_Volume_20D','Price_AsOf','Data_Status']
     shown = page_slice(work,page).reindex(columns=fields)
+    from quality_views import industry_display, snapshot_quality, placeholder_options
+    shown = industry_display(shown, snapshot_quality(a.get_data_cache()))
     styled = shown.style.format(precision=2,na_rep='—').map(a.return_cell_style,subset=['Return_1D','Return_3M','Historical_Return','Return_2Y','Return_3Y'])
     config = a.watchlist_column_config()
     for field,label in {'Return_1D':'1D (%)','Return_3M':'3M (%)','ATR_Pct':'ATR / ราคา (%)','Volatility_20D':'Volatility 20D ต่อปี (%)'}.items():
@@ -111,7 +113,7 @@ def overview(frame, selectable=False, prepared=None):
         st.caption('คลิกชื่อหุ้นหรือช่องใดก็ได้ในแถว เพื่อแสดงกราฟและข้อมูลทั้งหมดด้านล่าง')
         if len(tickers)==1: st.caption('หุ้นในผลค้นหา: '+tickers[0])
     with st.container(key='stock_picker_table'):
-        st.dataframe(styled,hide_index=True,height=520,row_height=36,column_config=config,**options,**a.width_options(st.dataframe))
+        st.dataframe(styled,hide_index=True,height=520,row_height=36,column_config=config,**options,**placeholder_options(),**a.width_options(st.dataframe))
     st.caption(f'ผ่านตัวกรอง {len(work):,} ตัว · ช่อง — คือไม่มีข้อมูล ไม่ใช่ศูนย์ · PASS เป็นสถานะแนวโน้ม ไม่ใช่คำสั่งซื้อ')
     if selectable:
         st.caption('หุ้นที่เลือก: '+st.session_state.get('selected_ticker','AAPL'))
@@ -158,11 +160,12 @@ def fundamentals(ticker,history,info,row):
             ('Return on equity','returnOnEquity',True),('Return on assets','returnOnAssets',True),('Operating cash flow','operatingCashflow',False),('Free cash flow','freeCashflow',False),
             ('เงินสดรวม','totalCash',False),('หนี้รวม','totalDebt',False),('เป้าหมายเฉลี่ยนักวิเคราะห์','targetMeanPrice',False),('จำนวนนักวิเคราะห์','numberOfAnalystOpinions',False)]
     if etf: fields=[('หมวดกองทุน','category',False),('กลุ่มกองทุน','fundFamily',False),('สินทรัพย์กองทุน','totalAssets',False),('NAV ต่อหน่วย','navPrice',False),('Beta 3Y จากแหล่งข้อมูล','beta3Year',False)]
+    from quality_views import profile_value, profile_field_state, profile_unit
     records=[]
     for label,key,pct in fields:
         raw=info.get(key); n=a.number(raw)
-        value=a.show_number(n*100,'%') if pct and n is not None else a.show_number(n) if n is not None else raw if isinstance(raw,str) else 'ไม่มีข้อมูล'
-        records.append({'มิติ':label,'ค่า':value,'ฟิลด์ต้นทาง':key})
+        value=a.show_number(n*100,'%') if pct and n is not None else a.show_number(n) if n is not None else profile_value(raw,info)
+        records.append({'มิติ':label,'ค่า':value,'หน่วย': '%' if pct else profile_unit(info,key),'สถานะข้อมูล':profile_field_state(info,key),'ฟิลด์ต้นทาง':key})
     table(pd.DataFrame(records),height=480)
     st.caption('อัตราการเติบโตและอัตรากำไรเป็นค่าที่แหล่งข้อมูลรายงาน ช่วงอ้างอิงอาจต่างกัน ตัวเลขมูลค่าและกระแสเงินสดใช้สกุลที่ผู้ให้ข้อมูลระบุ ไม่ใช่มูลค่ายุติธรรมอัตโนมัติ')
     if info.get('longBusinessSummary'):
@@ -232,6 +235,7 @@ def compare(ticker,frame):
         rows.append({'Ticker':symbol,'Return (%)':stats['return_pct'],'Volatility (%)':stats['volatility_pct'],'Max drawdown (%)':stats['max_drawdown_pct'],
                      'Beta vs SPY':beta_to_benchmark(result['prices'],symbol) if 'SPY' in result['prices'] else None})
     table(pd.DataFrame(rows))
+    if 'SPY' not in result['prices']:st.caption('Beta vs SPY: ต้องเลือก SPY ในชุดเปรียบเทียบก่อน จึงมี benchmark ให้คำนวณ ไม่ใช่ค่า Beta เท่ากับศูนย์')
     if not result['correlation'].empty:
         st.subheader('Correlation ของผลตอบแทนรายวัน')
         help_table(result['correlation'].style.format('{:.2f}',na_rep='—'),hide_index=False,correlation=True)
@@ -254,6 +258,8 @@ def health(reader,frame,cache):
     if cache.error: st.warning('Local cache มีข้อผิดพลาด: '+cache.error)
     table(pd.DataFrame([quality_counts(frame)]))
     st.caption('workflow สีเขียวหมายถึงบันทึกความคืบหน้าสำเร็จ ไม่ใช่ทุกตัวมีราคาล่าสุด; recent ใช้ 4 วันปฏิทิน ไม่ใช่ปฏิทินวันทำการตลาดสหรัฐ วันหยุดยาวอาจถูกจัดว่าเก่า')
+    from quality_views import render_quality_report
+    render_quality_report(cache,frame)
     st.link_button('เปิด GitHub Actions','https://github.com/sippakorntwo-glitch/stock-dashboard/actions')
 
 

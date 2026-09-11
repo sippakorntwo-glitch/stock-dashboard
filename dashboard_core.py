@@ -7687,7 +7687,7 @@ def _fetch_dividends(ticker):
 def load_dividend_history(ticker):
     stored, _ = get_data_cache().get(f"dividends:{ticker}")
     if not stored:
-        return {"data": None, "fetched_at": "", "error": "ยังไม่มีประวัติปันผล กดโหลด/อัปเดตหุ้นที่เลือก", "coverage_start": "", "coverage_end": ""}
+        return {"data": None, "fetched_at": "", "error": "ยังรอประวัติปันผลจากงานเก็บข้อมูลอัตโนมัติ ตรวจรายละเอียดในหัวข้อข้อมูลที่ขาด", "coverage_start": "", "coverage_end": ""}
     data = pd.DataFrame(stored.get("records", []), columns=["Ex_Date", "Dividend_Per_Share"])
     data["Ex_Date"] = pd.to_datetime(data.Ex_Date)
     return {**stored, "data": data}
