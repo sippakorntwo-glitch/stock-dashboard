@@ -59,3 +59,13 @@ jobs:
           p=Path('work/verification-tests.log')
           publish_report('verifier-task',{'result':os.environ['RESULT'],'tests':p.read_text(errors='replace')[-16000:] if p.exists() else 'Test step did not run'})
           PY
+      - name: Preserve real browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-browser-evidence
+          path: |
+            work/*-report.json
+            work/*.png
+            work/*.log
+          retention-days: 3
