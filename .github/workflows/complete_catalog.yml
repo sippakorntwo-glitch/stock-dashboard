@@ -1,0 +1,52 @@
+name: Complete expanded ETF catalog
+on:
+  push:
+    branches: [feat/returns-filters-etf-v21]
+    paths: [.github/workflows/complete_catalog.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: prepared-market-data
+  cancel-in-progress: false
+jobs:
+  complete:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 170
+    permissions:
+      contents: write
+    env:
+      DASHBOARD_DATA_REPO: ${{ github.repository }}
+      DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DASHBOARD_DATA_VISIBILITY: public
+      DASHBOARD_DATA_BRANCH: dashboard-data
+      DASHBOARD_CACHE_FILE: work/complete.sqlite3
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q -r requirements-dev.txt
+      - name: Check exact calculation and catalog code before publication
+        run: |
+          mkdir -p work
+          python -m compileall -q .
+          python -m pytest -q tests > work/catalog-tests.log 2>&1 || { tail -100 work/catalog-tests.log; exit 1; }
+      - name: Complete real price and profile collection, preserving checkpoints
+        run: python finish_data.py > work/catalog-collection.log 2>&1 || { tail -80 work/catalog-collection.log; exit 1; }
+      - name: Record task outcome including failures
+        if: always()
+        env:
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from verification_report import publish_report
+          logs={p.name:p.read_text(errors='replace')[-18000:] for p in Path('work').glob('*.log')}
+          publish_report('catalog-task', {'result':os.environ['RESULT'], 'logs':logs})
+          PY
