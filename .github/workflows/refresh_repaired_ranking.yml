@@ -1,0 +1,62 @@
+name: Verify ranking after completed data repair
+on:
+  push:
+    branches: [audit/remaining-metadata-v19]
+    paths: ['.github/workflows/refresh_repaired_ranking.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: ${{ toJSON(github.event.repository.private) == 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    concurrency:
+      group: top10-ranking-publication
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q -r requirements.txt
+      - name: Recalculate real ranking from the fully backfilled canonical snapshot
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          PYTHONUNBUFFERED: '1'
+        run: python ranking_job.py --publish
+      - name: Explain residual computed-field inputs without fabricating values
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python - <<'PY'
+          import gzip,json
+          from collections import defaultdict
+          from data_sync import ObjectStore,read_manifest,read_checked,shard_number
+          import dashboard_runtime as a
+          import pandas as pd
+          from io import StringIO
+          store=ObjectStore({'backend':'github','DASHBOARD_DATA_REPO':a.DEFAULT_REPO,'DASHBOARD_DATA_VISIBILITY':'public','DASHBOARD_DATA_BRANCH':'dashboard-data'})
+          m=read_manifest(store);s=json.loads(gzip.decompress(read_checked(store,m['summary'])))
+          missing=defaultdict(dict)
+          for t,q in s['quality']['symbols'].items():
+              fields=[k for k,v in q.get('missing_metrics',{}).items() if v=='missing_inputs' and k in ('Vol_Ratio','Return_3Y')]
+              if fields:missing[str(shard_number(t))][t]=fields
+          report=[]
+          for slot,symbols in missing.items():
+              for line in gzip.decompress(read_checked(store,m['details'][slot])).splitlines():
+                  t,key,value,meta=json.loads(line)
+                  if t not in symbols or key!='history:1d:'+t:continue
+                  f=pd.read_json(StringIO(value),orient='split');f.index=pd.to_datetime(f.index)
+                  row=s['quotes'][t]
+                  before=f['Volume'].iloc[-21:-1]
+                  period=f.loc[f.index>=f.index[-1]-pd.DateOffset(years=3),'Close']
+                  report.append({'ticker':t,'missing':symbols[t],'bars':len(f),'volume_prior20_mean':None if before.empty or pd.isna(before.mean()) else float(before.mean()),'last_volume':None if pd.isna(f.Volume.iloc[-1]) else float(f.Volume.iloc[-1]),'close_start_3y':float(period.iloc[0]) if len(period) else None,'close_end_3y':float(period.iloc[-1]) if len(period) else None,'recalculated_3y':a.snapshot_return(a.completed_daily_history(f),36)})
+          print('RESIDUAL_CALCULATION_INPUTS:',json.dumps(report,ensure_ascii=False,allow_nan=False),flush=True)
+          PY
