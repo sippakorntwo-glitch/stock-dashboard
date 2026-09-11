@@ -1,7 +1,6 @@
-"""Thai research workspace. Views are rendered on demand, not all at once."""
+"""Reusable research sections for the single-page workspace."""
 from __future__ import annotations
 import math
-import re
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -9,6 +8,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import dashboard_runtime as a
 from analytics import clean_close, risk_metrics, comparison, beta_to_benchmark, quality_counts
+from dashboard_selection import table_key, apply_table_selection
 VIEWS = ['ภาพรวมและค้นหา','กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว','สถานะข้อมูล']
 
 
@@ -40,14 +40,14 @@ def original_watchlist():
         return original
 
 
-def overview(frame):
+def overview(frame, selectable=False):
     work = frame.copy()
     for field in a.EXTRA_NUMERIC:
         if field not in work: work[field] = np.nan
     x,y,z = st.columns([1,1,2])
     asset = x.selectbox('ประเภท', ['ทั้งหมด','Common Stock','ETF'])
     status = y.selectbox('สถานะ', ['ทั้งหมด','PASS','FAIL'])
-    query = z.text_input('ค้นหา Ticker / บริษัท / อุตสาหกรรม').strip()
+    query = z.text_input('ค้นหา Ticker / บริษัท / อุตสาหกรรม',key='stock_search').strip()
     if asset != 'ทั้งหมด': work = work.loc[work.Asset_Type.eq(asset)]
     if status != 'ทั้งหมด': work = work.loc[work.Status.eq(status)]
     if query:
@@ -65,7 +65,7 @@ def overview(frame):
         keep = z.checkbox('แสดงแถวที่ข้อมูลยังไม่ครบ',value=True)
         favourites = st.checkbox('เฉพาะรายการโปรดในเซสชันนี้')
     if high < low:
-        st.warning('ราคาสูงสุดต้องไม่น้อยกว่าราคาขั้นต่ำ'); return
+        st.warning('ราคาสูงสุดต้องไม่น้อยกว่าราคาขั้นต่ำ'); return None
     for field in ['Close','RSI_14','Historical_Return']:
         s = work[field]
         valid = s.between(low,high) if field=='Close' else s.between(*rsi) if field=='RSI_14' else s.ge(minimum)
@@ -89,9 +89,27 @@ def overview(frame):
     for field,label in {'Return_1D':'1D (%)','Return_3M':'3M (%)','ATR_Pct':'ATR / ราคา (%)','Volatility_20D':'Volatility 20D ต่อปี (%)'}.items():
         config[field]=st.column_config.NumberColumn(label,format='%.2f')
     config['Dollar_Volume_20D']=st.column_config.NumberColumn('ราคา × Volume เฉลี่ย 20D',format='%.0f',help='ค่าประมาณจากราคาปรับแล้ว ไม่ใช่มูลค่าซื้อขายจริงจากตลาด')
-    st.dataframe(styled,hide_index=True,height=520,column_config=config,**a.width_options(st.dataframe))
+    options = {}
+    if selectable:
+        tickers = tuple(shown.Ticker.astype(str))
+        key = table_key(tickers, st.session_state.get('_table_epoch',0))
+        # Capture the visible order BEFORE any filter, sort, page or data rerun.
+        def on_select():
+            apply_table_selection(st.session_state,key,tickers)
+        options = dict(key=key,on_select=on_select,selection_mode=['single-row','single-cell'])
+        st.caption('คลิกชื่อหุ้นหรือช่องใดก็ได้ในแถว เพื่อแสดงกราฟและข้อมูลทั้งหมดด้านล่าง')
+        if len(tickers)==1: st.caption('หุ้นในผลค้นหา: '+tickers[0])
+    with st.container(key='stock_picker_table'):
+        st.dataframe(styled,hide_index=True,height=520,row_height=36,column_config=config,**options,**a.width_options(st.dataframe))
     st.caption(f'ผ่านตัวกรอง {len(work):,} ตัว · ช่อง — คือไม่มีข้อมูล ไม่ใช่ศูนย์ · PASS เป็นสถานะแนวโน้ม ไม่ใช่คำสั่งซื้อ')
+    if selectable:
+        st.caption('หุ้นที่เลือก: '+st.session_state.get('selected_ticker','AAPL'))
+        st.markdown('[↓ ไปยังกราฟและรายละเอียดด้านล่าง](#selected-stock)')
     st.download_button('ดาวน์โหลดผลกรองครบทุกแถว',work.to_csv(index=False).encode('utf-8-sig'),'filtered_watchlist.csv','text/csv')
+    return work
+
+
+def industry_summary(work):
     st.subheader('ความแข็งแกร่งแยกอุตสาหกรรม / หมวด ETF')
     grouped=work.groupby(['Asset_Type','Industry'],dropna=True).agg(observations=('Return_3M','count'),median_return_3m=('Return_3M','median')).reset_index()
     grouped=grouped.loc[grouped.observations.ge(3)].sort_values('median_return_3m',ascending=False).head(20)
@@ -103,7 +121,7 @@ def overview(frame):
 def technical(ticker,daily_history,info,row):
     periods=['1 เดือน','3 เดือน','6 เดือน','1 ปี','2 ปี','3 ปี']
     if a.live_enabled(): periods=['1 วัน','5 วัน','7 วัน']+periods
-    period=st.radio('ช่วงเวลาแสดงกราฟ',periods,horizontal=True)
+    period=st.radio('ช่วงเวลาแสดงกราฟ',periods,index=periods.index('1 ปี'),horizontal=True,key='chart_period')
     interval='5m' if period=='1 วัน' else '15m' if period in ('5 วัน','7 วัน') else '1d'
     chart_history,meta=a.get_data_cache().history(ticker,interval)
     if interval!='1d' and st.button('ดึงกราฟระหว่างวันจาก Yahoo'):
@@ -128,7 +146,7 @@ def technical(ticker,daily_history,info,row):
     div=a.load_dividend_history(ticker)
     a.render_decision(ticker,ctx,info,scored,plan,is_etf,div,currency)
     analysis,metrics,_=a.build_analysis(ctx.get('metrics',{}),row,info)
-    with st.expander('ตารางวิเคราะห์ 360° และแหล่งข้อมูล'):
+    with st.expander('ตารางวิเคราะห์ 360° และแหล่งข้อมูล',expanded=True):
         table(analysis,height=450)
     a.render_position_sizer(ticker,row,metrics,currency)
     st.caption('ราคาชุดรายวันอาจไม่ผ่านเกณฑ์ quote อายุไม่เกิน 15 นาที ระบบจึงคงสถานะรอยืนยัน ไม่ลดเกณฑ์เพื่อให้เกิดสัญญาณซื้อ')
@@ -152,7 +170,7 @@ def fundamentals(ticker,history,info,row):
     table(pd.DataFrame(records),height=480)
     st.caption('อัตราการเติบโตและอัตรากำไรเป็นค่าที่แหล่งข้อมูลรายงาน ช่วงอ้างอิงอาจต่างกัน ตัวเลขมูลค่าและกระแสเงินสดใช้สกุลที่ผู้ให้ข้อมูลระบุ ไม่ใช่มูลค่ายุติธรรมอัตโนมัติ')
     if info.get('longBusinessSummary'):
-        with st.expander('ธุรกิจ / กลยุทธ์กองทุน'): st.write(info['longBusinessSummary'])
+        with st.expander('ธุรกิจ / กลยุทธ์กองทุน',expanded=True): st.write(info['longBusinessSummary'])
     result=a.load_dividend_history(ticker)
     # Prefer a dated daily price over a potentially week-old info quote for yield.
     price=a.number(row.get('Close'))
@@ -173,7 +191,7 @@ def fundamentals(ticker,history,info,row):
 def risk(ticker,history):
     if history is None: st.info('ยังไม่มีประวัติราคาให้คำนวณความเสี่ยง'); return
     close=clean_close(a.completed_daily_history(history))
-    years=st.radio('ช่วงตัวอย่างความเสี่ยง',['1 ปี','3 ปี','5 ปี','ทั้งหมด'],horizontal=True)
+    years=st.radio('ช่วงตัวอย่างความเสี่ยง',['1 ปี','3 ปี','5 ปี','ทั้งหมด'],horizontal=True,key='risk_period')
     if close.empty: st.info('ยังไม่มีแท่งรายวันที่ใช้คำนวณได้'); return
     if years!='ทั้งหมด': close=close.loc[close.index>=close.index[-1]-pd.DateOffset(years=int(years.split()[0]))]
     stats=risk_metrics(close.to_frame('Close'))
@@ -190,7 +208,12 @@ def risk(ticker,history):
 
 def compare(ticker,frame):
     symbols=list(dict.fromkeys([ticker,'SPY','QQQ','MSFT',*frame.Ticker.tolist()]))
-    chosen=st.multiselect('เลือก 2–6 ตัว',symbols,default=list(dict.fromkeys([ticker,'SPY'])),max_selections=6)
+    defaults=[ticker,'SPY' if ticker!='SPY' else 'QQQ']
+    # Keep custom choices through refreshes; a new selected ticker resets them in the callback.
+    if 'comparison_symbols' not in st.session_state:
+        st.session_state['comparison_symbols']=defaults
+    st.session_state['comparison_symbols']=[s for s in st.session_state['comparison_symbols'] if s in symbols][:6]
+    chosen=st.multiselect('เลือก 2–6 ตัว',symbols,max_selections=6,key='comparison_symbols')
     period=st.selectbox('ช่วงเปรียบเทียบ',['3 เดือน','6 เดือน','1 ปี','3 ปี'],index=2)
     months=int(period.split()[0])*(12 if 'ปี' in period else 1)
     histories={}
@@ -239,62 +262,6 @@ def health(reader,frame,cache):
 
 
 def main():
-    st.set_page_config(page_title='Stock Research Workspace',page_icon='📊',layout='wide')
-    st.markdown('''<style>.block-container{padding-top:1.5rem;max-width:1700px}
-    [data-testid="stMetric"]{border:1px solid #26384b;border-radius:12px;padding:14px;background:#101c2b}
-    [data-testid="stMetricValue"]{font-size:1.65rem}</style>''',unsafe_allow_html=True)
-    reader,error=a.get_remote_reader()
-    if reader: reader.refresh()
-    revision=reader.status()['revision'] if reader else 0
-    cache=a.get_data_cache()
-    original=original_watchlist()
-    frame,outside=a.build_universe_frame(original,cache.quotes(),cache.classifications())
-    st.sidebar.title('Stock Research')
-    view=st.sidebar.radio('มุมมอง',VIEWS)
-    ticker=a.normalize_symbol(st.sidebar.text_input('Ticker สำหรับวิเคราะห์',value='AAPL'))
-    valid=bool(re.fullmatch(r'[A-Z0-9.^=/_-]{1,30}',ticker))
-    favourites=st.session_state.setdefault('favourites',[])
-    if st.sidebar.button('เพิ่ม / ลบรายการโปรด',disabled=not valid):
-        if ticker in favourites: favourites.remove(ticker)
-        elif len(favourites)<25: favourites.append(ticker)
-    if favourites:
-        st.sidebar.caption('รายการโปรด: '+', '.join(favourites))
-        st.sidebar.download_button('บันทึกรายการโปรด',pd.DataFrame({'Ticker':favourites}).to_csv(index=False).encode('utf-8-sig'),'my_watchlist.csv','text/csv')
-    st.sidebar.caption('รายการโปรดเก็บเฉพาะเซสชัน ดาวน์โหลดเพื่อเก็บไว้ถาวร')
-    if st.sidebar.button('ตรวจชุดข้อมูลใหม่',disabled=reader is None) and reader: reader.refresh(force=True)
-    if a.live_enabled() and valid:
-        if st.sidebar.button('ดึงหุ้นนี้จาก Yahoo'):
-            for kind in ('history','info','dividends'): a.get_updater().request(ticker,kind,'1d')
-    st.title('Stock Research Workspace')
-    st.caption('แนวโน้ม • พื้นฐาน • ปันผล • ความเสี่ยง • เปรียบเทียบ | ข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด')
-    counts=quality_counts(frame)
-    for box,label,key in zip(st.columns(4),['รายการทั้งหมด','มีราคา','ราคาภายใน 4 วัน','มีราคาแต่ไม่ระบุวัน'],['total','priced','recent','unknown_time']): box.metric(label,f'{counts[key]:,}')
-    if error: st.warning(error)
-    state=reader.status() if reader else {'manifest':{}}
-    if state.get('error'): st.warning(state['error'])
-    if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
-    else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
-    if view==VIEWS[0]:
-        overview(frame)
-        if not outside.empty:
-            with st.expander(f'CSV นอกชุดหลัก ({len(outside):,} ตัว)'): table(outside)
-    elif view==VIEWS[-1]: health(reader,frame,cache)
-    elif not valid: st.warning('กรุณากรอก Ticker ให้ถูกต้อง')
-    else:
-        history,meta=cache.history(ticker)
-        info,_=cache.get('info:'+ticker); info=info or {}
-        selected=frame.loc[frame.Ticker.eq(ticker)]
-        row=selected.iloc[0].to_dict() if not selected.empty else {}
-        st.subheader(f"{ticker} · {info.get('shortName') or row.get('Security_Name') or ''}")
-        st.caption(f"วันที่ราคา Watchlist: {row.get('Price_AsOf') or 'ไม่ระบุ'} | ประวัติดึงสำเร็จ {a.thai_time(meta.get('fetched_at'))} | quote ณ {a.thai_time(info.get('regularMarketTime'))}")
-        if view==VIEWS[1]: technical(ticker,history,info,row)
-        elif view==VIEWS[2]: fundamentals(ticker,history,info,row)
-        elif view==VIEWS[3]: risk(ticker,history)
-        elif view==VIEWS[4]: compare(ticker,frame)
-    end=reader.status() if reader else {'busy':False,'revision':0}
-    if reader and not end['busy'] and end['revision']!=revision: st.rerun()
-    worker=a.get_updater().state()
-    if worker['busy'] or end['busy']: st.caption('กำลังอ่านหรืออัปเดตข้อมูลที่เลือก ข้อมูลเดิมยังใช้งานได้')
-    from streamlit_autorefresh import st_autorefresh
-    st_autorefresh(interval=3000 if worker['busy'] or end['busy'] else 300_000,key='research_refresh')
-    st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')
+    # Keep the historical import entrypoint without a second navigation implementation.
+    from dashboard_ui import main as single_page_main
+    single_page_main()

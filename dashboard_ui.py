@@ -1,21 +1,20 @@
-"""Research navigation with native Streamlit polling for completed data loads."""
+"""One-page workspace: click a stock in the table; research appears below it."""
 from __future__ import annotations
 import re
 import pandas as pd
 import streamlit as st
 import dashboard_runtime as a
 from analytics import quality_counts
+from dashboard_selection import set_selected
 from dashboard_views import (VIEWS, table, plot, original_watchlist, overview,
-                             technical, fundamentals, risk, compare, health)
+                             industry_summary, technical, fundamentals, risk, compare, health)
+
+LAYOUT = 'single-page'
 
 
 @st.fragment(run_every=2)
 def _poll_data(reader, rendered_revision, rendered_worker_revision):
-    """Poll only the small status block; rerender charts only when data changes.
-
-    The previous third-party iframe timer could leave a completed download
-    invisible until a manual click. Native fragment scheduling needs no iframe.
-    """
+    """Refresh the page only when a selected data load has actually changed."""
     if reader:
         reader.refresh()
         state = reader.status()
@@ -30,9 +29,13 @@ def _poll_data(reader, rendered_revision, rendered_worker_revision):
         st.caption('พร้อมใช้งาน · ตรวจชุดข้อมูลใหม่อัตโนมัติทุก 5 นาที')
 
 
+def _manual_ticker():
+    set_selected(st.session_state, a.normalize_symbol(st.session_state['ticker_input']), reset_table=True)
+
+
 def main():
     st.set_page_config(page_title='Stock Research Workspace',page_icon='📊',layout='wide')
-    st.markdown('''<style>.block-container{padding-top:1.5rem;max-width:1700px}
+    st.markdown('''<style>.block-container{padding-top:2.5rem;max-width:1700px}
     [data-testid="stMetric"]{border:1px solid #26384b;border-radius:12px;padding:14px;background:#101c2b}
     [data-testid="stMetricValue"]{font-size:1.65rem}</style>''',unsafe_allow_html=True)
     reader,error=a.get_remote_reader()
@@ -42,9 +45,12 @@ def main():
     cache=a.get_data_cache()
     original=original_watchlist()
     frame,outside=a.build_universe_frame(original,cache.quotes(),cache.classifications())
+    if 'selected_ticker' not in st.session_state:
+        set_selected(st.session_state,'AAPL')
     st.sidebar.title('Stock Research')
-    view=st.sidebar.radio('มุมมอง',VIEWS)
-    ticker=a.normalize_symbol(st.sidebar.text_input('Ticker สำหรับวิเคราะห์',value='AAPL'))
+    st.sidebar.caption('หน้าเดียว · คลิกหุ้นในตาราง แล้วดูกราฟและรายละเอียดด้านล่าง')
+    st.sidebar.text_input('Ticker สำหรับวิเคราะห์',key='ticker_input',on_change=_manual_ticker)
+    ticker=st.session_state['selected_ticker']
     valid=bool(re.fullmatch(r'[A-Z0-9.^=/_-]{1,30}',ticker))
     favourites=st.session_state.setdefault('favourites',[])
     if st.sidebar.button('เพิ่ม / ลบรายการโปรด',disabled=not valid):
@@ -59,7 +65,8 @@ def main():
         if st.sidebar.button('ดึงหุ้นนี้จาก Yahoo'):
             for kind in ('history','info','dividends'): a.get_updater().request(ticker,kind,'1d')
     st.title('Stock Research Workspace')
-    st.caption('แนวโน้ม • พื้นฐาน • ปันผล • ความเสี่ยง • เปรียบเทียบ | ข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด')
+    st.caption('หน้าเดียว: ตารางหุ้น → กราฟและแผนซื้อ → พื้นฐานและปันผล → ความเสี่ยง → เปรียบเทียบ → สถานะข้อมูล')
+    st.caption('ข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด · รุ่นโปรแกรม '+a.APP_VERSION)
     counts=quality_counts(frame)
     for box,label,key in zip(st.columns(4),['รายการทั้งหมด','มีราคา','ราคาภายใน 4 วัน','มีราคาแต่ไม่ระบุวัน'],['total','priced','recent','unknown_time']): box.metric(label,f'{counts[key]:,}')
     if error: st.warning(error)
@@ -67,12 +74,12 @@ def main():
     if state.get('error'): st.warning(state['error'])
     if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
     else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
-    if view==VIEWS[0]:
-        overview(frame)
-        if not outside.empty:
-            with st.expander(f'CSV นอกชุดหลัก ({len(outside):,} ตัว)'): table(outside)
-    elif view==VIEWS[-1]: health(reader,frame,cache)
-    elif not valid: st.warning('กรุณากรอก Ticker ให้ถูกต้อง')
+    with st.container(key='research_overview'):
+        work=overview(frame,selectable=True)
+    st.divider()
+    st.header('วิเคราะห์หุ้นที่เลือก',anchor='selected-stock')
+    if not valid:
+        st.warning('กรุณากรอก Ticker ให้ถูกต้อง หรือคลิกเลือกหุ้นจากตาราง')
     else:
         if reader: reader.request(ticker)
         history,meta=cache.history(ticker)
@@ -81,9 +88,28 @@ def main():
         row=selected.iloc[0].to_dict() if not selected.empty else {}
         st.subheader(f"{ticker} · {info.get('shortName') or row.get('Security_Name') or ''}")
         st.caption(f"วันที่ราคา Watchlist: {row.get('Price_AsOf') or 'ไม่ระบุ'} | ประวัติดึงสำเร็จ {a.thai_time(meta.get('fetched_at'))} | quote ณ {a.thai_time(info.get('regularMarketTime'))}")
-        if view==VIEWS[1]: technical(ticker,history,info,row)
-        elif view==VIEWS[2]: fundamentals(ticker,history,info,row)
-        elif view==VIEWS[3]: risk(ticker,history)
-        elif view==VIEWS[4]: compare(ticker,frame)
+        # Render once per selected symbol, not once per row in the catalog.
+        with st.container(key='research_technical'):
+            st.header('กราฟและแผนซื้อ')
+            technical(ticker,history,info,row)
+        st.divider()
+        with st.container(key='research_fundamentals'):
+            st.header('พื้นฐานและปันผล')
+            fundamentals(ticker,history,info,row)
+        st.divider()
+        with st.container(key='research_risk'):
+            st.header('ความเสี่ยง')
+            risk(ticker,history)
+        st.divider()
+        with st.container(key='research_comparison'):
+            st.header('เปรียบเทียบหลายตัว')
+            compare(ticker,frame)
+    st.divider()
+    if work is not None:
+        industry_summary(work)
+    if not outside.empty:
+        with st.expander(f'CSV นอกชุดหลัก ({len(outside):,} ตัว)'): table(outside)
+    with st.container(key='research_health'):
+        health(reader,frame,cache)
     _poll_data(reader,revision,worker_revision)
     st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')

@@ -9,7 +9,7 @@ import workspace_boot as boot
 
 
 def test_refresh_decision_requires_version_and_native_poll():
-    expected='2026-09-11.13'
+    expected='test-release'
     good=SimpleNamespace(APP_VERSION=expected)
     native=SimpleNamespace(_poll_data=lambda:None)
     assert not boot.needs_refresh(good,native,expected)
@@ -24,15 +24,17 @@ def test_stale_modules_recover_without_mutating_old_references(tmp_path):
 import dashboard_runtime as old_runtime
 import dashboard_ui as old_ui
 import workspace_boot
+expected = old_runtime.APP_VERSION
 old_runtime.APP_VERSION = 'previous-release'
 old_ui._poll_data = None
-runtime, ui = workspace_boot.ensure_release('2026-09-11.13')
-assert runtime.APP_VERSION == '2026-09-11.13'
+runtime, ui = workspace_boot.ensure_release(expected)
+assert runtime.APP_VERSION == expected
 assert callable(ui._poll_data)
+assert ui.LAYOUT == 'single-page'
 assert runtime is not old_runtime and ui is not old_ui
 assert old_runtime.APP_VERSION == 'previous-release'
 assert old_ui._poll_data is None
-again_runtime, again_ui = workspace_boot.ensure_release('2026-09-11.13')
+again_runtime, again_ui = workspace_boot.ensure_release(expected)
 assert again_runtime is runtime and again_ui is ui
 assert runtime.core.DashboardCache is runtime.DashboardCache
 assert runtime.core.scan_snapshot_row is runtime.scan_snapshot_row
