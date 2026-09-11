@@ -23,17 +23,19 @@ jobs:
         run: |
           mkdir -p work
           if ! grep -q '2026-09-12.22' app.py; then python finish_release.py; fi
+          python finish_polish.py
           python - <<'PY'
           from pathlib import Path
           p=Path('.streamlit/config.toml');s=p.read_text()
           if 'maxUploadSize' not in s:s += 'maxUploadSize = 5\n\n[browser]\ngatherUsageStats = false\n'
           p.write_text(s)
+          p=Path('screener_smoke.py');s=p.read_text().replace("get_by_text('Return Calculation Details',exact=True)","get_by_text('Return Calculation Details — QQQI',exact=True)");p.write_text(s)
           PY
           python -m compileall -q .
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add app.py dashboard_runtime.py dashboard_ui.py chart_ranges.py workspace_boot.py filters_ui.py tests/conftest.py .streamlit/config.toml
-          git diff --cached --quiet || git commit -m 'Integrate final colorful UI, isolated minute-price refresh and coherent audit records'
+          git add app.py dashboard_runtime.py dashboard_ui.py dashboard_views.py chart_ranges.py workspace_boot.py filters_ui.py tests/conftest.py .streamlit/config.toml ranking_board.py live_quote_ui.py screener_smoke.py
+          git diff --cached --quiet || git commit -m 'Preserve chart budget and make selection, timestamps and navigation coherent'
           git push origin HEAD:feat/returns-filters-etf-v21
       - name: Full application and regression suite
         run: python -m pytest -q tests > work/final-tests.log 2>&1 || { tail -140 work/final-tests.log; exit 1; }
