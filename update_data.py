@@ -71,6 +71,9 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
     from data_quality import prepare_cached_metadata, make_quality
     prepare_cached_metadata(cache, universe, app.ETF_NAMES)
     quality = make_quality(cache, universe, etfs=app.ETF_NAMES)
+    from screening import profile_rows
+    from catalog_extension import fingerprint
+    screener = profile_rows(cache, universe)
     generation = "generations/" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()) + "-" + uuid.uuid4().hex[:8]
     with tempfile.TemporaryDirectory(prefix="snapshot-") as folder:
         folder = Path(folder)
@@ -113,7 +116,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
             "return_3y": sum(app.number(r.get("Return_3Y")) is not None for r in quotes.values()),
         }
         summary = {"schema": SCHEMA, "quotes": quotes, "classifications": classifications,
-                   "universe": list(universe), "watchlist_csv": watchlist_csv, "quality": quality}
+                   "universe": list(universe), "watchlist_csv": watchlist_csv, "quality": quality, "screener": screener}
         raw = pack(summary)
         summary_ref = {"key": generation + "/summary.json.gz", "sha256": digest(raw)}
         store.write(summary_ref["key"], raw)
@@ -134,7 +137,8 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
                     "summary": summary_ref, "details": details, "checkpoint": checkpoint_ref,
                     "coverage": coverage, "quality_counts": quality["counts"], "report": report,
                     "bootstrap_pending": pending, "bootstrap_next_due": next_due,
-                    "catalog_as_of": app.CATALOG_AS_OF, "app_version": app.APP_VERSION}
+                    "catalog_as_of": app.CATALOG_AS_OF, "app_version": app.APP_VERSION,
+                    "catalog_fingerprint": fingerprint(universe), "etf_directory_as_of": app.ETF_DIRECTORY_AS_OF}
         manifest_raw = json.dumps(manifest, ensure_ascii=False, allow_nan=False).encode()
         store.write(generation + "/manifest.json", manifest_raw)
         # A single object PUT becomes visible only after complete upload. No partial generation exposed.
@@ -263,7 +267,9 @@ def main():
             return
     store = ObjectStore(config, writable=True)
     previous = read_manifest(store)
-    if args.mode == "bootstrap" and previous:
+    from catalog_extension import fingerprint
+    same_catalog = previous and previous.get("catalog_fingerprint") == fingerprint(app.select_universe())
+    if args.mode == "bootstrap" and previous and same_catalog:
         due = previous.get("bootstrap_next_due")
         if not previous.get("bootstrap_pending") or (due is not None and due > time.time()):
             print("No bootstrap work due. Daily update remains scheduled.")

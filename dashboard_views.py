@@ -45,45 +45,9 @@ def original_watchlist():
 
 
 def filter_universe(frame):
-    work = frame.copy()
-    for field in a.EXTRA_NUMERIC:
-        if field not in work: work[field] = np.nan
-    x,y,z = st.columns([1,1,2])
-    asset = x.selectbox('ประเภท', ['ทั้งหมด','Common Stock','ETF'])
-    status = y.selectbox('สถานะ', ['ทั้งหมด','PASS','FAIL'])
-    query = z.text_input('ค้นหา Ticker / บริษัท / อุตสาหกรรม',key='stock_search').strip()
-    if asset != 'ทั้งหมด': work = work.loc[work.Asset_Type.eq(asset)]
-    if status != 'ทั้งหมด': work = work.loc[work.Status.eq(status)]
-    if query:
-        mask = pd.Series(False,index=work.index)
-        for field in ['Ticker','Security_Name','Industry']:
-            mask |= work[field].fillna('').astype(str).str.contains(query,case=False,regex=False)
-        work = work.loc[mask]
-    with st.expander('ตัวกรองราคา / ผลตอบแทน / คุณภาพข้อมูล'):
-        x,y,z = st.columns(3)
-        low = x.number_input('ราคาขั้นต่ำ',min_value=0.0,value=0.0)
-        high = x.number_input('ราคาสูงสุด',min_value=0.0,value=max(5000.0,a.number(frame.Close.max()) or 0.0))
-        rsi = y.slider('RSI 14',0,100,(0,100))
-        fresh = y.checkbox('ราคาไม่เกิน 4 วันปฏิทินและระบุวันที่')
-        minimum = z.number_input('Minimum 1 Year Return (%)',value=-100.0)
-        keep = z.checkbox('แสดงแถวที่ข้อมูลยังไม่ครบ',value=True)
-        favourites = st.checkbox('เฉพาะรายการโปรดในเซสชันนี้')
-    if high < low:
-        st.warning('ราคาสูงสุดต้องไม่น้อยกว่าราคาขั้นต่ำ'); return None
-    for field in ['Close','RSI_14','Historical_Return']:
-        s = work[field]
-        valid = s.between(low,high) if field=='Close' else s.between(*rsi) if field=='RSI_14' else s.ge(minimum)
-        work = work.loc[valid | s.isna() if keep else valid]
-    if fresh:
-        dates = pd.to_datetime(work.Price_AsOf,errors='coerce',utc=True).dt.tz_localize(None)
-        age = (pd.Timestamp.now(tz='America/New_York').tz_localize(None).normalize()-dates.dt.normalize()).dt.days
-        work = work.loc[age.between(0,4)]
-    if favourites: work = work.loc[work.Ticker.isin(st.session_state.get('favourites',[]))]
-    x,y = st.columns([3,1])
-    sort = x.selectbox('เรียงตาม',['Ticker',*RETURN_FIELDS,'RSI_14','ATR_Pct','Volatility_20D','Dollar_Volume_20D'],format_func=lambda key: RETURN_LABELS.get(key,key))
-    descending = y.checkbox('มากไปน้อย',value=sort!='Ticker')
-    work = work.sort_values(sort,ascending=not descending,na_position='last')
-    return work
+    from filters_ui import filter_universe as advanced_filter
+    return advanced_filter(frame)
+
 
 
 def overview(frame, selectable=False, prepared=None):
@@ -102,7 +66,14 @@ def overview(frame, selectable=False, prepared=None):
     for field,label in {'ATR_Pct':'ATR / ราคา (%)','Volatility_20D':'Volatility 20D ต่อปี (%)'}.items():
         config[field]=st.column_config.NumberColumn(label,format='%.2f')
     config['Dollar_Volume_20D']=st.column_config.NumberColumn('ราคา × Volume เฉลี่ย 20D',format='%.0f',help='ค่าประมาณจากราคาปรับแล้ว ไม่ใช่มูลค่าซื้อขายจริงจากตลาด')
-    config.update(return_column_config())
+    from return_periods import EXPORT_LABELS
+    mode = work.attrs.get('return_mode', 'Cumulative (Adjusted Close)')
+    for field,label in EXPORT_LABELS.items():
+        if field in config and isinstance(config[field],dict):
+            config[field] = {**config[field], 'label':label}
+        elif field in fields:
+            config[field] = st.column_config.Column(label)
+    config.update(return_column_config(mode))
     config = column_help(fields,config)
     st.caption(f'แสดง {len(shown):,} ตัวในหน้านี้ · หน้า {page:,} / {pages:,}')
     options = {}
@@ -136,6 +107,8 @@ def industry_summary(work):
 
 
 def technical(ticker,daily_history,info,row):
+    from return_audit_ui import render_return_audit
+    render_return_audit(ticker,daily_history,row)
     render_chart(ticker,daily_history)
     # Daily criteria must NEVER be calculated from the selected intraday chart.
     is_etf=a.asset_is_etf(ticker,row,info)

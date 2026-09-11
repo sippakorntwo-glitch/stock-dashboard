@@ -83,7 +83,7 @@ def verify_sections(app):
 
 
 def click_filtered_stock(page,app,ticker,*,row_selector=False):
-    query=app.get_by_role('textbox',name='ค้นหา Ticker / บริษัท / อุตสาหกรรม',exact=True)
+    query=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
     query.fill(ticker);query.press('Enter')
     expect(app.get_by_text('หุ้นในผลค้นหา: '+ticker,exact=True)).to_be_visible(timeout=30000)
     page.wait_for_timeout(1000)

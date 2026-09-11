@@ -56,6 +56,9 @@ def main():
     consume_selection(cache)
     original=original_watchlist()
     frame,outside=a.build_universe_frame(original,cache.quotes(),cache.classifications())
+    from screening import enrich_frame
+    profiles,_=cache.get('remote:screener',request_remote=False)
+    frame=enrich_frame(frame,profiles or {})
     if 'selected_ticker' not in st.session_state:
         set_selected(st.session_state,'AAPL')
     st.sidebar.title('Stock Research')
@@ -88,6 +91,10 @@ def main():
         if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
         else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
         render_family_counts(cache)
+        etfs=int(frame.Asset_Type.eq('ETF').sum())
+        st.caption(f'Catalog: {len(frame)-etfs:,} stocks + {etfs:,} ETFs. ETF directory: {a.ETF_DIRECTORY_AS_OF or "legacy"}. Listing coverage is not data coverage; missing records are prepared in bounded batches.')
+        if a.ETF_DIRECTORY_CONFLICTS:
+            st.caption(f'{len(a.ETF_DIRECTORY_CONFLICTS)} symbol-type conflicts retained for review; no automatic stock reclassification.')
         with st.container(key='overview_controls'):
             work=filter_universe(frame)
     with top_right:

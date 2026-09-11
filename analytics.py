@@ -4,7 +4,7 @@ import math
 import numpy as np
 import pandas as pd
 TRADING_DAYS = 252
-METRIC_VERSION = 2
+METRIC_VERSION = 3
 
 
 def finite(value):
@@ -70,8 +70,9 @@ def extended_snapshot(history):
         v = (pd.to_numeric(history.Close, errors='coerce') * pd.to_numeric(history.Volume, errors='coerce')).tail(20)
         if v.notna().all() and np.isfinite(v).all() and v.ge(0).all():
             out['Dollar_Volume_20D'] = float(v.mean())
-    from return_periods import table_returns
+    from return_periods import table_returns, return_observations
     out.update(table_returns(history))
+    out['Return_Observations'] = return_observations(history)
     return out
 
 

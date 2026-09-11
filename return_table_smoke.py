@@ -41,7 +41,7 @@ def verify_return_table(page,app):
     if not migrated:
         assert urlsplit(URL).hostname in ('localhost','127.0.0.1'),'Production snapshot has not recalculated all return fields'
         return {'awaiting_real_backfill_on_CI_only':True}
-    search=app.get_by_role('textbox',name='ค้นหา Ticker / บริษัท / อุตสาหกรรม',exact=True)
+    search=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
     search.fill('');search.press('Enter')
     expect(app.get_by_text('Cumulative Return (%)',exact=False).first).to_be_visible(timeout=60000)
     button=app.get_by_role('button',name='ดาวน์โหลดผลกรองครบทุกแถว',exact=True)

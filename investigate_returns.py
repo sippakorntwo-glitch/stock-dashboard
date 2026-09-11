@@ -59,7 +59,7 @@ def main():
                 observations=[]
                 for field,label,sessions,months in RETURN_SPECS:
                     prices=f.Close;adj=f['Adj Close']
-                    old=period_observation(daily_closes(h),sessions=sessions,months=months) if h is not None else {}
+                    old=period_observation(daily_closes(h.loc[h.index.tz_localize(None).normalize()<=end]),sessions=sessions,months=months) if h is not None else {}
                     obs=period_observation(adj,sessions=sessions,months=months)
                     pobs=period_observation(prices,sessions=sessions,months=months)
                     stored=row.get(field);v=obs.get('value')
