@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-11T22:32:04.942890+00:00",
+  "recorded_at": "2026-09-11T22:37:01.799921+00:00",
   "run_id": "34643576727",
   "source_sha": "104f89bf166bafdfef5a69ee489a3737bbbd90a9",
   "started_at": "2026-09-11T20:20:10.526269+00:00",
@@ -120,6 +120,137 @@
     "unattempted_dividends": 0
   },
   "bootstrap_pending": 541,
-  "generation": "generations/20260911T222746Z-460199fd",
-  "published_at": "2026-09-11T22:32:01.592377+00:00"
+  "generation": "generations/20260911T223243Z-196142b0",
+  "published_at": "2026-09-11T22:36:58.618769+00:00",
+  "finished_at": "2026-09-11T22:32:06.502914+00:00",
+  "priority": {
+    "QQQI": {
+      "price_asof": "2026-09-10",
+      "price": 54.08000183105469,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "SPYI": {
+      "price_asof": "2026-09-10",
+      "price": 53.18000030517578,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "JEPQ": {
+      "price_asof": "2026-09-10",
+      "price": 59.29999923706055,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "JEPI": {
+      "price_asof": "2026-09-10",
+      "price": 56.2599983215332,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "SCHD": {
+      "price_asof": "2026-09-10",
+      "price": 33.9900016784668,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "DIVO": {
+      "price_asof": "2026-09-10",
+      "price": 47.4900016784668,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "GPIX": {
+      "price_asof": "2026-09-10",
+      "price": 55.209999084472656,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "GPIQ": {
+      "price_asof": "2026-09-10",
+      "price": 55.900001525878906,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "AAPL": {
+      "price_asof": "2026-09-10",
+      "price": 326.57000732421875,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "MSFT": {
+      "price_asof": "2026-09-10",
+      "price": 492.44000244140625,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "SPY": {
+      "price_asof": "2026-09-10",
+      "price": 757.8300170898438,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "QQQ": {
+      "price_asof": "2026-09-10",
+      "price": 708.6900024414062,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "MDY": {
+      "price_asof": "2026-09-10",
+      "price": 673.25,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "DIA": {
+      "price_asof": "2026-09-10",
+      "price": 520.75,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "GLD": {
+      "price_asof": "2026-09-10",
+      "price": 396.3599853515625,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    },
+    "OIH": {
+      "price_asof": "2026-09-10",
+      "price": 420.2200012207031,
+      "metric_version": 3,
+      "info": true,
+      "dividends": true,
+      "observations": true
+    }
+  }
 }
