@@ -84,7 +84,7 @@ def main():
     report['samples']={}
     for t in ('AAPL','MSFT','SPY','ORCL','AAC'):
         h,meta=cache.history(t)
-        expected=table_returns(app.completed_daily_history(h)) if h is not None else {}
+        expected=table_returns(app.completed_daily_history(h,now=meta.get('fetched_at') or rows.get(t,{}).get('Data_Time'))) if h is not None else {}
         report['samples'][t]={'returns':{RETURN_LABELS[f]:rows.get(t,{}).get(f) for f in RETURN_FIELDS},
                               'price_asof':rows.get(t,{}).get('Price_AsOf'),
                               'history_start':str(h.index[0]) if h is not None else None,

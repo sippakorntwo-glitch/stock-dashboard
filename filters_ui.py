@@ -32,18 +32,15 @@ def filter_universe(frame):
     x,y=st.columns(2)
     asset=x.selectbox('Asset Type',['All','Common Stock','ETF'],key='screen_asset')
     status=y.selectbox('Trend Status',['All','PASS','FAIL','Insufficient Data'],key='screen_status')
-    query=st.text_input('Search Ticker / Company / Industry',key='stock_search').strip()
+    query=st.text_input('Search Ticker / Company / Industry',key='stock_search', help='Exact ticker matches take priority. Use name:MSFT to find every fund or company name containing MSFT.').strip()
     mode=st.selectbox('Return Display',RETURN_MODES,key='screen_return_mode',
         help='Adjusted-close cumulative returns by default. Annualized mode changes only the 3Y/5Y display and filters, not trading scores. Neither mode is a live quote, price-only return, or official fund NAV return.')
     work=display_returns(frame,mode)
     categories={};bounds={};required=[]
     if asset!='All':categories['Asset_Type']=[asset]
     if status!='All':categories['Status']=['ไม่มีข้อมูล','ข้อมูลไม่พอ','INSUFFICIENT'] if status=='Insufficient Data' else [status]
-    if query:
-        mask=pd.Series(False,index=work.index)
-        for field in ['Ticker','Security_Name','Industry']:
-            mask |= work[field].fillna('').astype(str).str.contains(query,case=False,regex=False)
-        work=work.loc[mask]
+    from screening import search_frame
+    work=search_frame(work,query)
     with st.expander('Advanced Filters',expanded=False):
         st.caption('AND between filters; OR within each multi-select. Blank limits mean no restriction. Missing values never become zero.')
         cols=st.columns(2)

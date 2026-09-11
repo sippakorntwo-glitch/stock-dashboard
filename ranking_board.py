@@ -134,7 +134,7 @@ def render_board(cache):
             st.caption('Snapshot ต้นทาง '+a.thai_time(payload.get('source_published_at')))
             st.caption('รอบตามตารางถัดไป '+a.thai_time(payload.get('next_scheduled_at'))+' (อาจล่าช้าตาม GitHub Actions)')
             refresh=payload.get('quote_refresh',{})
-            st.caption(f"ตรวจ quote เพิ่มเติม {refresh.get('success',0)}/{refresh.get('attempted',0)} ตัวในกลุ่มคัดเลือกสูงสุด {refresh.get('limit',20)} ตัว ไม่ใช่ราคาใหม่ทั้ง 4,900 ตัวทุก 30 นาที")
+            st.caption(f"ตรวจ quote เพิ่มเติม {refresh.get('success',0)}/{refresh.get('attempted',0)} ตัวในกลุ่มคัดเลือกสูงสุด {refresh.get('limit',20)} ตัว ไม่ใช่ราคาใหม่ทั้ง {counts.get('total',0):,} ตัวทุก 30 นาที")
             st.write('เทคนิคใช้แท่งรายวันสมบูรณ์; ส่วนจังหวะใช้ quote และโซนเข้าซื้อ สถานะหมดอายุเมื่อ quote เกิน 15 นาที ไม่ค้างคำว่าซื้อได้จนครบรอบใหม่')
             for row in payload['items']:
                 st.markdown('**'+row['ticker']+' · '+str(row.get('name',''))+'**')

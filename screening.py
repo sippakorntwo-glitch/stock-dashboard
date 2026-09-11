@@ -92,3 +92,31 @@ def filter_frame(frame,*,categories=None,bounds=None,max_price_age=None,max_prof
     if bullish_ema:mask &= numeric('Close').gt(numeric('EMA20')) & numeric('EMA20').gt(numeric('EMA50'))
     if favourites is not None:mask &= result.Ticker.isin(favourites)
     return result.loc[mask].copy()
+
+
+def search_frame(frame, query):
+    """Prefer an exact symbol; otherwise literal company/industry search.
+
+    A query such as MSFT must select the company, not the many funds whose
+    names contain MSFT. Prefix name: to deliberately search all name matches.
+    """
+    query = str(query or '').strip()
+    if not query:
+        return frame.copy()
+    names_only = query.casefold().startswith('name:')
+    text = query[5:].strip() if names_only else query
+    if not text:
+        return frame.copy()
+    if not names_only:
+        symbols = frame['Ticker'].fillna('').astype(str).str.upper()
+        exact = symbols.eq(text.upper())
+        if not exact.any():
+            exact = symbols.eq(text.upper().replace('.', '-'))
+        if exact.any():
+            return frame.loc[exact].copy()
+    mask = pd.Series(False, index=frame.index)
+    fields = ('Security_Name',) if names_only else ('Ticker','Security_Name','Industry')
+    for field in fields:
+        values = frame.get(field, pd.Series(index=frame.index, dtype=object))
+        mask |= values.fillna('').astype(str).str.contains(text, case=False, regex=False)
+    return frame.loc[mask].copy()

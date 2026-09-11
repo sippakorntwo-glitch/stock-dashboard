@@ -23,6 +23,10 @@ def render_return_audit(ticker,history,row):
         default=min(asof,close.index[-1])
         first=close.index[0]
         if default<first:st.info('Snapshot date is earlier than the local history; waiting for synchronized data.');return
+        date_key='return_audit_date_'+ticker
+        existing=st.session_state.get(date_key)
+        if existing is not None and not first.date() <= existing <= default.date():
+            st.session_state[date_key]=default.date()
         selected=st.date_input('Return As Of',value=default.date(),min_value=first.date(),max_value=default.date(),
                                key='return_audit_date_'+ticker,
                                help='Choose the same end date as the external site, for example its month-end date. Weekends use the last available daily close before that date. This does not change trading scores.')
@@ -52,6 +56,6 @@ def render_return_audit(ticker,history,row):
                    'The screener annualizes only 3Y and 5Y when that mode is selected. '
                    'A fund distribution rate / SEC yield is not its price return. NAV returns can differ from market-close returns. '
                    'Yahoo dividend-adjusted prices are a return proxy, not a certified fund total-return record. '
-                   'The chart header measures first-visible-candle to last-visible-candle; intraday charts are not the same daily-session baseline as this table.')
+                   'The chart header measures first-to-last candle of the selected preset period (not the current zoom); intraday charts are not the same daily-session baseline as this table.')
         st.download_button('Download Return Calculation Details',table.to_csv(index=False).encode('utf-8-sig'),
                            ticker+'_return_calculation.csv','text/csv',key='download_return_audit_'+ticker)

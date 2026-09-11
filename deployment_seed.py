@@ -7,7 +7,7 @@ import pandas as pd
 from data_sync import ObjectStore, config_from, read_manifest, restore_checkpoint, utc_now
 from update_data import app, collect, publish_snapshot
 
-PRIORITY=('AAPL','MSFT','NVDA','AMZN','GOOGL','META','TSLA','SPY','QQQ','VOO','VTI','SCHD','JEPI','JEPQ','GLD','TLT')
+PRIORITY=('AAPL','MSFT','NVDA','AMZN','GOOGL','META','TSLA','SPY','QQQ','VOO','VTI','SCHD','JEPI','JEPQ','GLD','TLT','QQQI','SPYI')
 
 
 def needs_publication(previous,report):
@@ -36,7 +36,8 @@ def main():
     selected=tuple(t for t in PRIORITY if t in universe)
     report=collect(cache,selected,'daily',price_minutes=3,metadata_minutes=5,metadata_limit=40)
     report.update(deployment_seed=True,priority_symbols=list(selected),finished_at=utc_now())
-    if needs_publication(previous,report):
+    from catalog_extension import fingerprint
+    if needs_publication(previous,report) or (previous or {}).get('catalog_fingerprint') != fingerprint(universe):
         manifest=publish_snapshot(store,cache,universe,report,previous,watchlist_csv=data.decode('utf-8-sig') if data else None)
     else:
         manifest=previous
