@@ -1,0 +1,30 @@
+name: Audit returns and ETF coverage
+on:
+  push:
+    branches: [feat/returns-filters-etf-v21]
+    paths: [investigate_returns.py, .github/workflows/investigate_returns.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q -r requirements.txt
+      - name: Compare actual completed closes at identical dates
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python investigate_returns.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exact-date-return-and-etf-audit
+          path: work/*.json
+          retention-days: 7
