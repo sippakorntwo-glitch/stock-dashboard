@@ -21,6 +21,11 @@ def no_exception(app):
 
 
 def diagnose(page):
+    try:
+        Path('work').mkdir(exist_ok=True)
+        page.screenshot(path='work/browser-failure.png',full_page=False)
+    except Exception as exc:
+        print('SCREENSHOT_DIAGNOSTIC_ERROR:',type(exc).__name__,flush=True)
     for frame in page.frames:
         try:
             u=urlsplit(frame.url)

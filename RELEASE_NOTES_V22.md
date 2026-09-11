@@ -3,7 +3,7 @@
 ## Coverage and filtering
 
 The original 4,200-company selection is retained. The dated Nasdaq Trader ETF
-directory expands the configured universe to 5,676 ETFs / 9,876 total members,
+directory expands the configured universe to 5,676 ETF/ETP directory entries / 9,876 total members,
 including QQQI and SPYI. This is a dated US-listed directory, not all worldwide
 funds, an AUM ranking or a guarantee that every provider field exists.
 
@@ -33,7 +33,7 @@ on failure. There is no extra account or paid provider integration.
 The selected 5-minute chart checks for updates about once per minute while its
 fragment is active, retaining the existing 60 chart requests/hour/server ceiling.
 It does not rebuild all 9,876 rows on chart-only refreshes. Long chart history
-remains cached for 24 hours. All-catalog daily histories and weekly profiles
+remains cached for 24 hours. All-catalog daily histories and incrementally refreshed profiles
 remain scheduled, incremental, bounded Actions jobs, not an intraday stream of
 the entire market. Top 10 remains a separate 30-minute board with its original
 entry safeguards. Minute observations do not turn stale scores into buy signals.
@@ -54,3 +54,5 @@ refresh, chart ranges/inspector, data-quality downloads and mobile dimensions.
 Dated reports on verify/v22-results distinguish local CI from production and
 show source SHA, target URL and actual results. A green collection job alone
 is not evidence of full market-data completeness. Consult the published counts.
+
+The Nasdaq ETF flag also includes exchange-traded notes; these are identified in their security names and are not legally the same as investment funds. First-time chart requests wake the page as soon as the background load finishes, while routine intraday refreshes remain confined to the chart fragment.

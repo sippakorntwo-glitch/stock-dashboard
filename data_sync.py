@@ -246,7 +246,7 @@ class SnapshotReader:
                 self.shards.clear()
                 self.attempted.clear()
                 self.revision += 1
-        self.message = "อ่านชุดข้อมูลที่เตรียมไว้ — ไม่ต้องสแกน 4,900 ตัวบนหน้าเว็บ"
+        self.message = "อ่านชุดข้อมูลที่เตรียมไว้ — ไม่ต้องสแกนทั้งทะเบียนบนหน้าเว็บ"
         self.error = ""
 
     def _details(self, ticker):

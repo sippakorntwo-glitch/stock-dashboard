@@ -157,13 +157,17 @@ def render_chart(ticker,daily_history):
     service=get_chart_service()
     history,meta=a.get_data_cache().history(ticker,'5m' if short else '1d')
     kind='5m' if short else 'long';message=''
+    st.session_state.pop('_chart_first_load_waiting',None)
     if short or long:
         extra,extra_meta=service.read(ticker,kind)
         if extra is not None and (short or not covers_years(history,int(period.split()[0]))):history,meta=extra,extra_meta
         need=short or not covers_years(history,int(period.split()[0]))
         if extra is not None and long:need=True
         if need:
-            if chart_requests_enabled():message=service.request(ticker,kind)
+            if chart_requests_enabled():
+                first_load=history is None or (long and extra is None and not covers_years(history,int(period.split()[0])))
+                if first_load:st.session_state['_chart_first_load_waiting']=ticker
+                message=service.request(ticker,kind)
             elif history is None:message='เจ้าของระบบปิดการดึงกราฟเพิ่มเติม จึงยังไม่มีข้อมูลช่วงนี้'
     if message:
         (st.warning if any(word in message for word in ('ไม่สำเร็จ','จำกัด','พัก','เต็ม','ปิด')) else st.info)(message)
@@ -185,3 +189,10 @@ def render_chart(ticker,daily_history):
         if hasattr(st,'iframe'):st.iframe(html,height=900)
         else:components.html(html,height=900,scrolling=False)
     except (ValueError,TypeError,KeyError) as exc:st.warning(f'แสดงกราฟไม่ได้ ({type(exc).__name__}) ไม่เปลี่ยนข้อมูลให้คะแนนรายวัน')
+
+
+def first_chart_load_finished(state, current_revision, rendered_revision):
+    """Wake once for an awaited chart, never for routine minute refreshes."""
+    waiting=state.get('_chart_first_load_waiting')
+    return bool(waiting and waiting==state.get('selected_ticker')
+                and current_revision!=rendered_revision)

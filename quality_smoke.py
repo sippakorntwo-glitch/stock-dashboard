@@ -61,8 +61,8 @@ def verify_quality(page,app):
     fields=read_download(page,fields_button)
     assert len(fields)==len(quality['columns']) and len(fields)>50
     for row in fields:
-        total=int(row['ทั้งหมดที่ใช้ฟิลด์นี้'])
-        assert total==sum(int(v) for k,v in row.items() if k not in ('ข้อมูล / ฟิลด์','ทั้งหมดที่ใช้ฟิลด์นี้'))
+        field_total=int(row['ทั้งหมดที่ใช้ฟิลด์นี้'])
+        assert field_total==sum(int(v) for k,v in row.items() if k not in ('ข้อมูล / ฟิลด์','ทั้งหมดที่ใช้ฟิลด์นี้'))
     report['field_report']=True
     symbols=read_download(page,app.get_by_role('button',name='ดาวน์โหลดสถานะข้อมูลครบทุกหุ้น',exact=True))
     assert len(symbols)==total and {r['Ticker'] for r in symbols}==set(summary['universe'])

@@ -129,6 +129,7 @@ def verify_screener(page,app):
     report['theme']={'background':app.locator('.stApp').evaluate('(e)=>getComputedStyle(e).backgroundImage'),
                      'metric_background':app.locator('[data-testid="stMetric"]').first.evaluate('(e)=>getComputedStyle(e).backgroundImage')}
     assert 'gradient' in report['theme']['background'] and 'gradient' in report['theme']['metric_background']
+    exp.click()  # Show the normal compact controls in the responsive screenshots.
     app.get_by_role('heading',name='Stock Research Workspace',exact=True).scroll_into_view_if_needed()
     report['desktop_screenshot']=snapshot_image(page,'v22-desktop')
     page.set_viewport_size({'width':390,'height':844})
@@ -139,6 +140,7 @@ def verify_screener(page,app):
     report['mobile_dimensions']=dimensions
     report['mobile_screenshot']=snapshot_image(page,'v22-mobile')
     page.set_viewport_size({'width':1440,'height':1000})
+    exp.click()
     controls.get_by_role('button',name='Reset Filters',exact=True).click()
     report['result']='passed'
     return report

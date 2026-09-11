@@ -26,6 +26,10 @@ def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_cha
         state = {'busy': False, 'revision': 0}
     worker = a.get_updater().state()
     chart_state = get_chart_service().state()
+    from chart_ranges import first_chart_load_finished
+    if first_chart_load_finished(st.session_state,chart_state['revision'],rendered_chart_revision):
+        st.session_state.pop('_chart_first_load_waiting',None)
+        st.rerun()
     if state['revision'] != rendered_revision or worker['revision'] != rendered_worker_revision:
         st.rerun()
     if state['busy'] or worker['busy'] or chart_state['busy']:
@@ -89,7 +93,7 @@ def main():
         else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
         render_family_counts(cache)
         etfs=int(frame.Asset_Type.eq('ETF').sum())
-        st.caption(f'Catalog: {len(frame)-etfs:,} stocks + {etfs:,} ETFs. ETF directory: {a.ETF_DIRECTORY_AS_OF or "legacy"}. Listing coverage is not data coverage; missing records are prepared in bounded batches.')
+        st.caption(f'Catalog: {len(frame)-etfs:,} stocks + {etfs:,} ETF / ETP entries. Directory: {a.ETF_DIRECTORY_AS_OF or "legacy"}. The Nasdaq ETF flag can include ETNs; check each product name. Listing coverage is not data coverage; missing records are prepared in bounded batches.')
         if a.ETF_DIRECTORY_CONFLICTS:
             st.caption(f'{len(a.ETF_DIRECTORY_CONFLICTS)} symbol-type conflicts retained for review; no automatic stock reclassification.')
         with st.container(key='overview_controls'):
