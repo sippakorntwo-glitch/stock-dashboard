@@ -7,7 +7,8 @@ import dashboard_runtime as a
 from analytics import quality_counts
 from dashboard_selection import set_selected
 from chart_ranges import get_chart_service
-from dashboard_views import (VIEWS, table, plot, original_watchlist, overview,
+from ranking_board import render_board, consume_selection
+from dashboard_views import (VIEWS, table, plot, original_watchlist, overview, filter_universe,
                              industry_summary, technical, fundamentals, risk, compare, health)
 
 LAYOUT = 'single-page'
@@ -39,13 +40,18 @@ def main():
     st.set_page_config(page_title='Stock Research Workspace',page_icon='📊',layout='wide')
     st.markdown('''<style>.block-container{padding-top:2.5rem;max-width:1700px}
     [data-testid="stMetric"]{border:1px solid #26384b;border-radius:12px;padding:14px;background:#101c2b}
-    [data-testid="stMetricValue"]{font-size:1.65rem}</style>''',unsafe_allow_html=True)
+    [data-testid="stMetricValue"]{font-size:1.65rem}
+    .st-key-ranking_board [data-testid="stVerticalBlock"]{gap:.25rem}
+    .st-key-ranking_board [data-testid="stButton"] button{min-height:1.9rem;padding:.16rem .5rem}
+    .st-key-ranking_board [data-testid="stButton"] p{font-size:.82rem}
+    .st-key-ranking_board h3{font-size:1.15rem}</style>''',unsafe_allow_html=True)
     reader,error=a.get_remote_reader()
     if reader: reader.refresh()
     revision=reader.status()['revision'] if reader else 0
     worker_revision=a.get_updater().state()['revision']
     chart_revision=get_chart_service().state()['revision']
     cache=a.get_data_cache()
+    consume_selection(cache)
     original=original_watchlist()
     frame,outside=a.build_universe_frame(original,cache.quotes(),cache.classifications())
     if 'selected_ticker' not in st.session_state:
@@ -67,18 +73,25 @@ def main():
     if a.live_enabled() and valid:
         if st.sidebar.button('ดึงหุ้นนี้จาก Yahoo'):
             for kind in ('history','info','dividends'): a.get_updater().request(ticker,kind,'1d')
-    st.title('Stock Research Workspace')
-    st.caption('หน้าเดียว: ตารางหุ้น → กราฟและแผนซื้อ → พื้นฐานและปันผล → ความเสี่ยง → เปรียบเทียบ → สถานะข้อมูล')
-    st.caption('ข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด · รุ่นโปรแกรม '+a.APP_VERSION)
-    counts=quality_counts(frame)
-    for box,label,key in zip(st.columns(4),['รายการทั้งหมด','มีราคา','ราคาภายใน 4 วัน','มีราคาแต่ไม่ระบุวัน'],['total','priced','recent','unknown_time']): box.metric(label,f'{counts[key]:,}')
-    if error: st.warning(error)
-    state=reader.status() if reader else {'manifest':{}}
-    if state.get('error'): st.warning(state['error'])
-    if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
-    else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
+    top_left, top_right = st.columns([2.6, 1.15], gap='large')
+    with top_left:
+        st.title('Stock Research Workspace')
+        st.caption('หน้าเดียว: ตารางหุ้น → กราฟและแผนซื้อ → พื้นฐานและปันผล → ความเสี่ยง → เปรียบเทียบ → สถานะข้อมูล')
+        st.caption('ข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด · รุ่นโปรแกรม '+a.APP_VERSION)
+        counts=quality_counts(frame)
+        for box,label,key in zip(st.columns(4),['รายการทั้งหมด','มีราคา','ราคาภายใน 4 วัน','มีราคาแต่ไม่ระบุวัน'],['total','priced','recent','unknown_time']): box.metric(label,f'{counts[key]:,}')
+        if error: st.warning(error)
+        state=reader.status() if reader else {'manifest':{}}
+        if state.get('error'): st.warning(state['error'])
+        if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
+        else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
+        with st.container(key='overview_controls'):
+            work=filter_universe(frame)
+    with top_right:
+        render_board(cache)
     with st.container(key='research_overview'):
-        work=overview(frame,selectable=True)
+        if work is not None:
+            overview(frame, selectable=True, prepared=work)
     st.divider()
     st.header('วิเคราะห์หุ้นที่เลือก',anchor='selected-stock')
     if not valid:

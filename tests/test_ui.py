@@ -33,6 +33,11 @@ main()
         at=AppTest.from_string(script,default_timeout=40).run()
         assert not at.exception,str(at.exception)
         assert at.metric[0].value=='4,900'
+        assert any(h.value=='Top 10 · น่าจับตาซื้อ' for h in at.subheader)
+        at.button(key='ranking_pick_MSFT').click().run()
+        assert not at.exception,str(at.exception)
+        assert at.sidebar.text_input(key='ticker_input').value=='MSFT'
+        at.sidebar.text_input(key='ticker_input').set_value('AAPL').run()
         assert len(at.sidebar.radio)==0
         for title in ['กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว']:
             assert title in [h.value for h in at.header]

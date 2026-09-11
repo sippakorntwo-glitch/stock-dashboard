@@ -16,3 +16,19 @@ if os.environ.get('DASHBOARD_OFFLINE_TEST_STUBS') == '1':
     yf=types.ModuleType('yfinance')
     def no_network(*args,**kwargs):raise AssertionError('Unexpected provider request in offline test')
     yf.download=yf.Ticker=no_network;sys.modules['yfinance']=yf
+
+
+@pytest.fixture(autouse=True)
+def isolated_ranking_feed(tmp_path, monkeypatch):
+    import json
+    from datetime import datetime, timezone
+    fixture = {
+        'schema': 1, 'model': 'existing-100-point-pullback-v1',
+        'computed_at': datetime.now(timezone.utc).isoformat(),
+        'counts': {'total':4900, 'scanned':4900, 'evaluated':1, 'candidates':1},
+        'items': [{'ticker':'MSFT', 'name':'UNIT TEST FIXTURE', 'score':85, 'coverage':100,
+                   'qualified':False, 'ready_at_calculation':False, 'reasons':[], 'blockers':[]}]
+    }
+    path = tmp_path / 'ranking-unit-fixture.json'
+    path.write_text(json.dumps(fixture))
+    monkeypatch.setenv('DASHBOARD_RANKING_FILE', str(path))

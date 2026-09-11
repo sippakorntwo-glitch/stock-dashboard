@@ -48,4 +48,6 @@ def verify_enhancements(page,app):
     app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 ปี',exact=True).click()
     from performance_smoke import verify_growth_and_plain_cells
     report['growth_and_plain_cells']=verify_growth_and_plain_cells(page,app)
+    from ranking_smoke import verify_board
+    report['top10'] = verify_board(page,app)
     return report
