@@ -19,7 +19,15 @@ jobs:
         with:
           python-version: '3.12'
       - name: Apply guarded source edits
-        run: python apply_quality_upgrade.py
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('apply_quality_upgrade.py')
+          s=p.read_text()
+          assert s.count('        universe = a.select_universe')==1
+          p.write_text(s.replace('        universe = a.select_universe','        universe=a.select_universe',1))
+          PY
+          python apply_quality_upgrade.py
       - name: Compile and run all tests with real dependencies
         run: |
           python -m pip install -q -r requirements-dev.txt
