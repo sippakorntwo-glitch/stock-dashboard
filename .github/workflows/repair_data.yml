@@ -1,0 +1,45 @@
+name: Repair dashboard data gaps
+on:
+  push:
+    branches: [fix/dashboard-data-completeness-v19]
+    paths: ['.github/workflows/repair_data.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  repair:
+    if: ${{ toJSON(github.event.repository.private) == 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    concurrency:
+      group: prepared-market-data
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate the exact repair source before accessing real data
+        run: |
+          python -m pip install -q -r requirements-dev.txt
+          python -m compileall -q .
+          python -m pytest -q tests
+      - name: Fill outstanding profiles and dividends from the real source then publish
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          PYTHONUNBUFFERED: '1'
+        run: python data_repair_job.py --publish --minutes 65 --limit 6500
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: data-repair-before-after-audit
+          path: work/data_repair_*
+          retention-days: 7
+          if-no-files-found: warn

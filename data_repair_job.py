@@ -1,8 +1,4 @@
-"""One owner-authorized repair pass; all repaired values come from the provider.
-
-Use the published universe, preserve checkpoints, verify both before and after,
-and publish only after the available progress and explicit quality states are saved.
-"""
+"""Owner-authorized, bounded repair with before/after audits and no invented fields."""
 from __future__ import annotations
 import argparse
 import gzip
@@ -15,7 +11,7 @@ import dashboard_runtime as a
 from data_sync import ObjectStore, config_from, read_manifest, read_checked, restore_checkpoint, utc_now
 from data_quality import checked_universe, prepare_cached_metadata
 from audit_dashboard import inspect_cache
-from update_data import collect, publish_snapshot, prune_old_generations
+from update_data import collect, publish_snapshot
 
 
 def main():
@@ -49,8 +45,9 @@ def main():
             if current.get('generation')!=previous.get('generation'):raise RuntimeError('Snapshot advanced during repair; refusing to overwrite newer work')
             manifest=publish_snapshot(writer,cache,universe,{**report,'repair_before':before['counts'],'repair_after':after['counts']},current,watchlist_csv=summary.get('watchlist_csv'))
             audit['published_generation']=manifest['generation']
-            # Compact audit is independent of market data; no user-uploaded holdings are exported.
-            cache.put('audit:last-repair',{'before':before['counts'],'after':after['counts']},{'fetched_at':utc_now()})
+            from repair_reporting import publish_report
+            publish_report(writer,manifest,before,after,report)
+        Path('work/data_repair_audit.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2))
         print('DATA_REPAIR_RESULT:',json.dumps({'before':before['counts'],'after':after['counts'],'quote_missing':after['quote_missing'],'information_missing':after['information_missing'],'samples':after['samples'],'collection':report,'published_generation':audit.get('published_generation')},ensure_ascii=False),flush=True)
         if os.environ.get('GITHUB_STEP_SUMMARY'):
             with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('### Data repair verification\n```json\n'+json.dumps({'before':before['counts'],'after':after['counts'],'collection':report},ensure_ascii=False,indent=2)+'\n```\n')
