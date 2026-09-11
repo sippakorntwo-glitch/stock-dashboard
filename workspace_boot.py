@@ -17,7 +17,7 @@ _LOCK = threading.RLock()
 _ROOT = Path(__file__).resolve().parent
 _MODULES = ('dashboard_ui', 'dashboard_views', 'dashboard_runtime',
             'dashboard_core', 'data_sync', 'github_store', 'analytics',
-            'dashboard_help', 'chart_ranges', 'dashboard_selection')
+            'dashboard_help', 'chart_ranges', 'dashboard_selection', 'chart_performance')
 
 
 def needs_refresh(runtime: ModuleType, ui: ModuleType, expected: str) -> bool:

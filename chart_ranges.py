@@ -14,6 +14,7 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 import dashboard_runtime as a
+from chart_performance import period_performance, with_performance
 
 PERIODS=['1 วัน','3 วัน','5 วัน','7 วัน','1 เดือน','3 เดือน','6 เดือน','1 ปี','2 ปี','3 ปี','5 ปี','10 ปี']
 PAGE_SIZE=500
@@ -141,6 +142,7 @@ def range_payload(frame,ticker,period,interval,fetched_at=''):
         count,unit=period.split()
         offset=pd.DateOffset(months=int(count)) if unit=='เดือน' else pd.DateOffset(years=int(count))
         payload['full_window']=frame.index[0]<=frame.index[-1]-offset
+    payload['periodReturn'] = period_performance(payload)
     return payload
 
 
@@ -170,11 +172,12 @@ def render_chart(ticker,daily_history):
         return
     try:
         payload=range_payload(history,ticker,period,'5m' if short else '1d',meta.get('fetched_at',''))
+        st.caption('ผลตอบแทนสะสม = (Close ล่าสุด / Close แรกในช่วงที่เลือก − 1) × 100; ใช้ราคาปรับแล้ว ไม่บวกปันผลซ้ำ ไม่ใช่ CAGR หรือผลตอบแทนสุทธิหลังค่าธรรมเนียม/ภาษี และไม่เปลี่ยนตามการลากหรือซูมกราฟ')
         if not payload['full_window']:st.warning('ประวัติที่มีสั้นกว่าช่วงที่เลือก แสดงเฉพาะข้อมูลจริงที่มี ไม่ถือว่าครบช่วง')
         first=history.index[min(payload['visibleStart'],len(history)-1)];last=history.index[-1]
         st.caption(f'ช่วงข้อมูลที่แสดงจริง: {first:%Y-%m-%d} ถึง {last:%Y-%m-%d} · ดึงสำเร็จ {a.thai_time(meta.get("fetched_at"))}')
         if short and (pd.Timestamp.now(tz=last.tz).date()-last.date()).days>4:st.warning('แท่งระหว่างวันล่าสุดเกิน 4 วันปฏิทิน อาจเป็นวันหยุดหรือข้อมูลเก่า ไม่ใช่ราคา ณ ขณะนี้')
-        html=a.build_chart_html(payload)
+        html=with_performance(a.build_chart_html(payload),payload)
         if hasattr(st,'iframe'):st.iframe(html,height=900)
         else:components.html(html,height=900,scrolling=False)
     except (ValueError,TypeError,KeyError) as exc:st.warning(f'แสดงกราฟไม่ได้ ({type(exc).__name__}) ไม่เปลี่ยนข้อมูลให้คะแนนรายวัน')
