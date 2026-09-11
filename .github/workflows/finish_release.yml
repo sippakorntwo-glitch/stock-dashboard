@@ -19,23 +19,16 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -q -r requirements-dev.txt
-      - name: Integrate guarded application changes
+      - name: Package the reviewed source
         run: |
           mkdir -p work
-          if ! grep -q '2026-09-12.22' app.py; then python finish_release.py; fi
-          python finish_polish.py
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('.streamlit/config.toml');s=p.read_text()
-          if 'maxUploadSize' not in s:s += 'maxUploadSize = 5\n\n[browser]\ngatherUsageStats = false\n'
-          p.write_text(s)
-          p=Path('screener_smoke.py');s=p.read_text().replace("get_by_text('Return Calculation Details',exact=True)","get_by_text('Return Calculation Details — QQQI',exact=True)");p.write_text(s)
-          PY
+          python tidy_release.py
           python -m compileall -q .
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add app.py dashboard_runtime.py dashboard_ui.py dashboard_views.py chart_ranges.py workspace_boot.py filters_ui.py tests/conftest.py .streamlit/config.toml ranking_board.py live_quote_ui.py screener_smoke.py
-          git diff --cached --quiet || git commit -m 'Preserve chart budget and make selection, timestamps and navigation coherent'
+          git add -u
+          git add RETURN_PERIODS.md RELEASE_NOTES_V22.md
+          git diff --cached --quiet || git commit -m 'Package final release, preserve upload/privacy limits and align production verification'
           git push origin HEAD:feat/returns-filters-etf-v21
       - name: Full application and regression suite
         run: python -m pytest -q tests > work/final-tests.log 2>&1 || { tail -140 work/final-tests.log; exit 1; }
@@ -50,6 +43,5 @@ jobs:
           from pathlib import Path
           from verification_report import publish_report
           logs={p.name:p.read_text(errors='replace')[-24000:] for p in Path('work').glob('*.log')}
-          audit=Path('work/source-audit.txt')
-          publish_report('unit',{'result':os.environ['RESULT'],'tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'logs':logs,'source_audit':audit.read_text() if audit.exists() else ''})
+          publish_report('unit',{'result':os.environ['RESULT'],'tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'logs':logs})
           PY
