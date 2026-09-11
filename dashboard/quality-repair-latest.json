@@ -1,0 +1,718 @@
+{
+  "generated_at": "2026-09-11T11:07:11.971286+00:00",
+  "app_version": "2026-09-11.19",
+  "generation": "generations/20260911T110354Z-72b6c3a4",
+  "before": {
+    "universe": 4900,
+    "daily_histories": 4900,
+    "history_ge_200": 4566,
+    "prices": 4900,
+    "information_objects": 2601,
+    "industry": 2593,
+    "classification_recoverable_from_info": 0,
+    "dividend_objects": 2601,
+    "dividend_empty_success": 1434,
+    "stock": 4200,
+    "etf": 700
+  },
+  "after": {
+    "universe": 4900,
+    "daily_histories": 4900,
+    "history_ge_200": 4566,
+    "prices": 4900,
+    "information_objects": 4900,
+    "industry": 4863,
+    "classification_recoverable_from_info": 0,
+    "dividend_objects": 4900,
+    "dividend_empty_success": 2422,
+    "stock": 4200,
+    "etf": 700
+  },
+  "quote_missing": {
+    "Historical_Return": 423,
+    "Return_2Y": 770,
+    "Return_3Y": 967,
+    "SMA200": 334,
+    "Drawdown_52W": 423,
+    "Return_6M": 224,
+    "Suggested_Stop": 34,
+    "Return_3M": 87,
+    "Return_1M": 19,
+    "EMA20": 16,
+    "EMA50": 56,
+    "RSI_14": 13,
+    "MACD": 23,
+    "MACD_Signal": 39,
+    "Vol_Ratio": 26,
+    "ATR": 12,
+    "ATR_Pct": 12,
+    "Dollar_Volume_20D": 16,
+    "Volatility_20D": 17
+  },
+  "information_missing": {
+    "Common Stock": {
+      "enterpriseToEbitda": 839,
+      "freeCashflow": 789,
+      "returnOnEquity": 643,
+      "earningsGrowth": 2277,
+      "trailingPE": 1923,
+      "targetMeanPrice": 1073,
+      "numberOfAnalystOpinions": 1073,
+      "earningsTimestampStart": 611,
+      "revenueGrowth": 738,
+      "forwardPE": 899,
+      "returnOnAssets": 373,
+      "beta": 685,
+      "totalCash": 78,
+      "operatingCashflow": 141,
+      "industry": 14,
+      "sector": 14,
+      "country": 11,
+      "profitMargins": 11,
+      "operatingMargins": 11,
+      "totalDebt": 59,
+      "ask": 36,
+      "priceToBook": 69,
+      "marketCap": 46,
+      "bid": 33
+    },
+    "ETF": {
+      "category": 23,
+      "fundFamily": 23,
+      "totalAssets": 23,
+      "navPrice": 23,
+      "beta3Year": 23
+    }
+  },
+  "ranking_universe_difference": 0,
+  "bad_history": [],
+  "examples": [
+    {
+      "ticker": "AAPL",
+      "type": "Common Stock",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Consumer Electronics",
+        "Industry_Source": "Yahoo Finance / Industry",
+        "Industry_Time": "2026-09-10T16:09:50.695062+00:00"
+      },
+      "history_bars": 1254,
+      "history_first": "2021-09-13T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T05:04:40.718414+00:00",
+        "full_refreshed_at": "2026-09-11T05:04:40.718414+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 184,
+      "industry": "Consumer Electronics",
+      "category": null,
+      "info_meta": {
+        "fetched_at": "2026-09-10T16:09:50.695062+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 345479400000,
+      "regularMarketTime": 1789056589,
+      "dividend_meta": {
+        "fetched_at": "2026-09-10T16:09:49.263322+00:00"
+      },
+      "dividend_rows": 92,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T05:04:44.791767+00:00",
+            "retry_after": "2026-09-11T05:04:44.791718721+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:09:50.723268+00:00",
+            "retry_after": "2026-09-10T16:09:50.723191500+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:09:49.389901+00:00",
+            "retry_after": "2026-09-10T16:09:49.389798880+00:00",
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "type": "Common Stock",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Software - Infrastructure",
+        "Industry_Source": "Yahoo Finance / Industry",
+        "Industry_Time": "2026-09-10T16:09:53.619245+00:00"
+      },
+      "history_bars": 1254,
+      "history_first": "2021-09-13T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T05:04:41.011171+00:00",
+        "full_refreshed_at": "2026-09-11T05:04:41.011171+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 184,
+      "industry": "Software - Infrastructure",
+      "category": null,
+      "info_meta": {
+        "fetched_at": "2026-09-10T16:09:53.619245+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 511108200000,
+      "regularMarketTime": 1789056591,
+      "dividend_meta": {
+        "fetched_at": "2026-09-10T16:09:52.217447+00:00"
+      },
+      "dividend_rows": 91,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T05:04:44.793230+00:00",
+            "retry_after": "2026-09-11T05:04:44.793197632+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:09:53.745928+00:00",
+            "retry_after": "2026-09-10T16:09:53.745841742+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:09:52.381871+00:00",
+            "retry_after": "2026-09-10T16:09:52.381765604+00:00",
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "ticker": "ORCL",
+      "type": "Common Stock",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Software - Infrastructure",
+        "Industry_Source": "Yahoo Finance / Industry",
+        "Industry_Time": "2026-09-10T16:24:23.911268+00:00"
+      },
+      "history_bars": 1254,
+      "history_first": "2021-09-13T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T06:30:21.235283+00:00",
+        "full_refreshed_at": "2026-09-11T06:30:21.235283+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 184,
+      "industry": "Software - Infrastructure",
+      "category": null,
+      "info_meta": {
+        "fetched_at": "2026-09-10T16:24:23.911268+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 511021800000,
+      "regularMarketTime": 1789057462,
+      "dividend_meta": {
+        "fetched_at": "2026-09-10T16:24:22.740364+00:00"
+      },
+      "dividend_rows": 69,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T06:30:23.217907+00:00",
+            "retry_after": "2026-09-11T06:30:23.217873812+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:24:23.916106+00:00",
+            "retry_after": "2026-09-10T16:24:23.916041374+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:24:22.743452+00:00",
+            "retry_after": "2026-09-10T16:24:22.743409872+00:00",
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "ticker": "AEMD",
+      "type": "Common Stock",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Medical Devices",
+        "Industry_Source": "Yahoo Finance / Industry",
+        "Industry_Time": "2026-09-11T03:53:17.935353+00:00"
+      },
+      "history_bars": 1254,
+      "history_first": "2021-09-13T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T06:39:46.070484+00:00",
+        "full_refreshed_at": "2026-09-11T06:39:46.070484+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 165,
+      "industry": "Medical Devices",
+      "category": null,
+      "info_meta": {
+        "fetched_at": "2026-09-11T03:53:17.935353+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 920557800000,
+      "regularMarketTime": 1789070400,
+      "dividend_meta": {
+        "fetched_at": "2026-09-11T03:53:16.580600+00:00"
+      },
+      "dividend_rows": 0,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T06:39:52.490961+00:00",
+            "retry_after": "2026-09-11T06:39:52.490913391+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T03:53:17.974564+00:00",
+            "retry_after": "2026-09-11T03:53:17.974498510+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T03:53:16.583249+00:00",
+            "retry_after": "2026-09-11T03:53:16.583210707+00:00",
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "ticker": "AAC",
+      "type": "Common Stock",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Shell Companies",
+        "Industry_Source": "Yahoo Finance / Industry",
+        "Industry_Time": "2026-09-11T07:00:12.340256+00:00"
+      },
+      "history_bars": 10,
+      "history_first": "2026-08-27T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T06:40:50.427210+00:00",
+        "full_refreshed_at": "2026-09-10T16:18:31.748211+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 115,
+      "industry": "Shell Companies",
+      "category": null,
+      "info_meta": {
+        "fetched_at": "2026-09-11T07:00:12.340256+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 1787837400000,
+      "regularMarketTime": 1788551263,
+      "dividend_meta": {
+        "fetched_at": "2026-09-11T07:00:11.195788+00:00"
+      },
+      "dividend_rows": 0,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T06:40:56.191616+00:00",
+            "retry_after": "2026-09-11T06:40:56.191585064+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T07:00:12.344672+00:00",
+            "retry_after": "2026-09-11T07:00:12.344595432+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T07:00:11.198363+00:00",
+            "retry_after": "2026-09-11T07:00:11.198324680+00:00",
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "ticker": "AEON",
+      "type": "Common Stock",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Biotechnology",
+        "Industry_Source": "Yahoo Finance / Industry",
+        "Industry_Time": "2026-09-11T10:54:14.524864+00:00"
+      },
+      "history_bars": 925,
+      "history_first": "2023-01-03T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T06:51:17.570593+00:00",
+        "full_refreshed_at": "2026-09-11T06:51:17.570593+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 156,
+      "industry": "Biotechnology",
+      "category": null,
+      "info_meta": {
+        "fetched_at": "2026-09-11T10:54:14.524864+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 1672756200000,
+      "regularMarketTime": 1789070400,
+      "dividend_meta": {
+        "fetched_at": "2026-09-11T10:54:14.950590+00:00"
+      },
+      "dividend_rows": 0,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T06:51:17.905898+00:00",
+            "retry_after": "2026-09-11T06:51:17.905867815+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T10:54:14.532132+00:00",
+            "retry_after": "2026-09-11T10:54:14.532091618+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T10:54:14.953786+00:00",
+            "retry_after": "2026-09-11T10:54:14.953741789+00:00",
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "ticker": "AESP",
+      "type": "Common Stock",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Shell Companies",
+        "Industry_Source": "Yahoo Finance / Industry",
+        "Industry_Time": "2026-09-11T10:55:38.495084+00:00"
+      },
+      "history_bars": 50,
+      "history_first": "2026-07-01T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T06:51:51.951069+00:00",
+        "full_refreshed_at": "2026-09-10T16:44:21.615202+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 127,
+      "industry": "Shell Companies",
+      "category": null,
+      "info_meta": {
+        "fetched_at": "2026-09-11T10:55:38.495084+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 1782912600000,
+      "regularMarketTime": 1789070400,
+      "dividend_meta": {
+        "fetched_at": "2026-09-11T10:55:39.009337+00:00"
+      },
+      "dividend_rows": 0,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T06:51:52.300240+00:00",
+            "retry_after": "2026-09-11T06:51:52.300209761+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T10:55:38.504702+00:00",
+            "retry_after": "2026-09-11T10:55:38.504653215+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T10:55:39.012772+00:00",
+            "retry_after": "2026-09-11T10:55:39.012724400+00:00",
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "ticker": "SPY",
+      "type": "ETF",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Large Blend",
+        "Industry_Source": "Yahoo Finance / หมวด ETF",
+        "Industry_Time": "2026-09-10T16:10:10.198810+00:00"
+      },
+      "history_bars": 1254,
+      "history_first": "2021-09-13T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T05:04:42.534762+00:00",
+        "full_refreshed_at": "2026-09-11T05:04:42.534762+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 100,
+      "industry": null,
+      "category": "Large Blend",
+      "info_meta": {
+        "fetched_at": "2026-09-10T16:10:10.198810+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 728317800000,
+      "regularMarketTime": 1789056609,
+      "dividend_meta": {
+        "fetched_at": "2026-09-10T16:10:08.862134+00:00"
+      },
+      "dividend_rows": 135,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T05:04:44.801375+00:00",
+            "retry_after": "2026-09-11T05:04:44.801345110+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:10:10.332014+00:00",
+            "retry_after": "2026-09-10T16:10:10.331924200+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:10:08.921426+00:00",
+            "retry_after": "2026-09-10T16:10:08.921333313+00:00",
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "ticker": "QQQ",
+      "type": "ETF",
+      "summary_date": "2026-09-10",
+      "classification": {
+        "Industry": "Large Growth",
+        "Industry_Source": "Yahoo Finance / หมวด ETF",
+        "Industry_Time": "2026-09-10T16:10:12.978298+00:00"
+      },
+      "history_bars": 1254,
+      "history_first": "2021-09-13T00:00:00.000",
+      "history_last": "2026-09-10T00:00:00.000",
+      "history_meta": {
+        "fetched_at": "2026-09-11T05:04:42.802607+00:00",
+        "full_refreshed_at": "2026-09-11T05:04:42.802607+00:00",
+        "years": 5,
+        "timezone": "America/New_York",
+        "adjusted": true,
+        "last_bar": "2026-09-10 00:00:00",
+        "version": 1
+      },
+      "info_keys": 100,
+      "industry": null,
+      "category": "Large Growth",
+      "info_meta": {
+        "fetched_at": "2026-09-10T16:10:12.978298+00:00",
+        "quality_version": 1,
+        "classification_available": true
+      },
+      "first_trade": 921076200000,
+      "regularMarketTime": 1789056611,
+      "dividend_meta": {
+        "fetched_at": "2026-09-10T16:10:11.678143+00:00"
+      },
+      "dividend_rows": 89,
+      "attempts": {
+        "history": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-11T05:04:44.802747+00:00",
+            "retry_after": "2026-09-11T05:04:44.802717686+00:00",
+            "success": true
+          }
+        ],
+        "info": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:10:12.983924+00:00",
+            "retry_after": "2026-09-10T16:10:12.983852625+00:00",
+            "success": true
+          }
+        ],
+        "dividends": [
+          {
+            "success": true
+          },
+          {
+            "fetched_at": "2026-09-10T16:10:11.741046+00:00",
+            "retry_after": "2026-09-10T16:10:11.740970612+00:00",
+            "success": true
+          }
+        ]
+      }
+    }
+  ],
+  "collection": {
+    "started_at": "2026-09-11T10:24:02.984327+00:00",
+    "mode": "bootstrap",
+    "price_attempted": 0,
+    "price_success": 0,
+    "price_failed": 0,
+    "metadata_success": 4598,
+    "metadata_failed": 0,
+    "rate_limited": false,
+    "errors": [],
+    "metadata_jobs_due": 4598,
+    "metadata_jobs_attempted": 4598,
+    "metadata_jobs_remaining_in_round": 0,
+    "finished_at": "2026-09-11T11:03:33.667431+00:00"
+  }
+}
