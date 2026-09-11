@@ -100,10 +100,14 @@ def test_quality_metadata_round_trip_without_provider(tmp_path):
 def test_ui_placeholders_do_not_pollute_original_industry():
     from quality_views import industry_display,profile_field_state,profile_value
     f=pd.DataFrame({'Ticker':['A','B'],'Industry':[None,'Technology']})
+    before=f.copy(deep=True)
     q={'symbols':{'A':{'industry_state':'not_reported'}}}
     display=industry_display(f,q)
     assert display.Industry.iloc[0]=='แหล่งข้อมูลไม่รายงาน'
-    assert f.Industry.iloc[0] is None and display.Industry.iloc[1]=='Technology'
+    # Pandas 3 stores absent strings as NaN, not Python None. Assert semantics
+    # and exact source-frame preservation rather than implementation identity.
+    assert pd.isna(f.Industry.iloc[0]) and display.Industry.iloc[1]=='Technology'
+    pd.testing.assert_frame_equal(f,before)
     assert profile_field_state({'earningsGrowth':0},'earningsGrowth')=='มีข้อมูล'
     assert profile_value(None,{})=='รอโหลดข้อมูลพื้นฐาน'
 
@@ -111,7 +115,7 @@ def test_ui_placeholders_do_not_pollute_original_industry():
 def test_ranking_uses_verified_membership_not_empty_csv():
     source=Path('ranking_job.py').read_text()
     assert 'checked_universe(summary)' in source
-    assert "a.select_universe(pd.DataFrame(columns=['Ticker']))" not in source
+    assert 'a.select_universe(pd.DataFrame(columns=' not in source
 
 
 def test_quality_counts_do_not_claim_every_fundamental_available(tmp_path):

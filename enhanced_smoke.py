@@ -49,7 +49,9 @@ def verify_enhancements(page,app):
     from performance_smoke import verify_growth_and_plain_cells
     report['growth_and_plain_cells']=verify_growth_and_plain_cells(page,app)
     from ranking_smoke import verify_board
-    report['top10'] = verify_board(page,app)
+    report['top10']=verify_board(page,app)
     from hover_smoke import verify_hover
     report['chart_inspector']=verify_hover(page,app)
+    from quality_smoke import verify_quality
+    report['data_quality']=verify_quality(page,app)
     return report
