@@ -56,4 +56,6 @@ def verify_enhancements(page,app):
     report['data_quality']=verify_quality(page,app)
     from return_table_smoke import verify_return_table
     report['english_return_table']=verify_return_table(page,app)
+    from screener_smoke import verify_screener
+    report['advanced_screener_and_ui']=verify_screener(page,app)
     return report
