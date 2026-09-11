@@ -33,6 +33,12 @@ main()
         at=AppTest.from_string(script,default_timeout=40).run()
         assert not at.exception,str(at.exception)
         assert at.metric[0].value=='4,900'
+        assert any(h.value=='Top 10 · จังหวะเข้าซื้อ' for h in at.subheader)
+        assert 'เฝ้าดู ไม่ใช่จุดซื้อ' in at.button(key='ranking_pick_MSFT').label
+        at.button(key='ranking_pick_MSFT').click().run()
+        assert not at.exception,str(at.exception)
+        assert at.sidebar.text_input(key='ticker_input').value=='MSFT'
+        at.sidebar.text_input(key='ticker_input').set_value('AAPL').run()
         assert len(at.sidebar.radio)==0
         for title in ['กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว']:
             assert title in [h.value for h in at.header]
@@ -46,7 +52,6 @@ main()
         assert at.multiselect(key='comparison_symbols').value==['MSFT','SPY']
         assert at.radio(key='chart_period').value=='3 ปี'
         assert any(h.value.startswith('MSFT ·') for h in at.subheader)
-        # Filtering must not silently change the selected stock.
         at.text_input(key='stock_search').set_value('NO-MATCH-IN-CATALOG').run()
         assert not at.exception,str(at.exception)
         assert at.session_state['selected_ticker']=='MSFT'

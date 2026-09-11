@@ -13,7 +13,7 @@ jobs:
   browser:
     if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,6 +25,10 @@ jobs:
         run: |
           python -m pip install -q -r requirements.txt playwright==1.55.0
           python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+      - name: Prepare real whole-catalog ranking for browser verification
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python ranking_job.py --no-quote-refresh --output work/top10.json
       - name: Check public cold reader independently of the browser
         env:
           PYTHONUNBUFFERED: '1'
@@ -35,6 +39,7 @@ jobs:
           PYTHONUNBUFFERED: '1'
           DASHBOARD_ALLOW_LIVE_UPDATES: 'false'
           DASHBOARD_CACHE_FILE: work/full-browser.sqlite3
+          DASHBOARD_RANKING_FILE: work/top10.json
         run: |
           python - <<'PY'
           import subprocess, sys, time

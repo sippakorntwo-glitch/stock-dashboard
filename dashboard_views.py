@@ -42,7 +42,7 @@ def original_watchlist():
         return original
 
 
-def overview(frame, selectable=False):
+def filter_universe(frame):
     work = frame.copy()
     for field in a.EXTRA_NUMERIC:
         if field not in work: work[field] = np.nan
@@ -81,6 +81,13 @@ def overview(frame, selectable=False):
     sort = x.selectbox('เรียงตาม',['Ticker','Historical_Return','Return_3M','Return_2Y','Return_3Y','RSI_14','ATR_Pct','Volatility_20D','Dollar_Volume_20D'])
     descending = y.checkbox('มากไปน้อย',value=sort!='Ticker')
     work = work.sort_values(sort,ascending=not descending,na_position='last')
+    return work
+
+
+def overview(frame, selectable=False, prepared=None):
+    work = filter_universe(frame) if prepared is None else prepared
+    if work is None:
+        return None
     pages = max(1,math.ceil(len(work)/PAGE_SIZE))
     if st.session_state.get('table_page',1)>pages: st.session_state.table_page=1
     page = st.number_input('หน้าตาราง — หน้าละ 500 ตัว',min_value=1,max_value=pages,step=1,key='table_page')
