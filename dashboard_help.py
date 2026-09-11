@@ -115,6 +115,9 @@ LABEL_COLUMNS=('เกณฑ์','ปัจจัย','มิติ','ข้อ�
 
 
 def field_help(name):
+    from return_periods import return_help
+    tip=return_help(name)
+    if tip is not None:return tip
     name=str(name)
     if name.startswith('ปันผลต่อหน่วย'):return HELP['Dividend_Per_Share']
     return HELP.get(name,f'{name}: ค่าจากชุดข้อมูลที่แสดง ตรวจหน่วย วันที่ และแหล่งข้อมูลประกอบ ช่องว่างไม่ใช่ศูนย์')

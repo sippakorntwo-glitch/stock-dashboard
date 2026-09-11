@@ -60,13 +60,13 @@ def test_snapshot_extended_fields():
     row=runtime.scan_snapshot_row('AAPL',frame(np.linspace(100,200,400)),'2026-09-10T10:00:00Z')
     for key in ['Return_1D','Return_3M','Volatility_20D','Dollar_Volume_20D','Drawdown_52W','ATR_Pct']:
         assert math.isfinite(row[key])
-    assert row['Price_AsOf']=='2026-09-09' and row['Metric_Calc_Version']==1
+    assert row['Price_AsOf']=='2026-09-09' and row['Metric_Calc_Version']==runtime.METRIC_VERSION
 
 
 def test_new_metric_version_requires_backfill(tmp_path):
     from update_data import history_missing
     cache=runtime.DashboardCache(tmp_path/'migration.sqlite3')
-    cache.save_history('AAPL',frame(np.linspace(100,200,400)),'2026-09-10T00:00:00Z',years=5)
+    cache.save_history('AAPL',frame(np.linspace(100,200,400)),'2026-09-10T00:00:00Z',years=runtime.HISTORY_YEARS)
     row=cache.quotes()['AAPL']
     assert not history_missing(row)
     row.pop('Metric_Calc_Version')
@@ -75,7 +75,7 @@ def test_new_metric_version_requires_backfill(tmp_path):
 
 def test_bootstrap_detects_old_metric_version():
     from update_data import pending_bootstrap
-    row = {"History_Years_Loaded": 5, "Return_Calc_Version": runtime.RETURN_CALC_VERSION,
+    row = {"History_Years_Loaded": runtime.HISTORY_YEARS, "Return_Calc_Version": runtime.RETURN_CALC_VERSION,
            "Close": 123.45, "Metric_Calc_Version": runtime.METRIC_VERSION}
     metadata = {"info:AAPL": {}, "dividends:AAPL": {}}
     assert pending_bootstrap(("AAPL",), {"AAPL": row}, metadata) == (0, None)
@@ -86,7 +86,7 @@ def test_bootstrap_detects_old_metric_version():
 
 def test_history_missing_uses_shared_metric_version(monkeypatch):
     from update_data import history_missing
-    row = {"History_Years_Loaded": 5, "Return_Calc_Version": runtime.RETURN_CALC_VERSION,
+    row = {"History_Years_Loaded": runtime.HISTORY_YEARS, "Return_Calc_Version": runtime.RETURN_CALC_VERSION,
            "Close": 123.45, "Metric_Calc_Version": runtime.METRIC_VERSION}
     assert not history_missing(row)
     monkeypatch.setattr(runtime, "METRIC_VERSION", runtime.METRIC_VERSION + 1)

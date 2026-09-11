@@ -18,8 +18,8 @@ LABELS = {'available':'มีข้อมูล','pending':'รอโหลด�
           'not_applicable':'ไม่ใช้กับสินทรัพย์นี้'}
 STOCK_FIELDS = ['currency','industry','sector','country','marketCap','forwardPE','trailingPE','priceToBook','enterpriseToEbitda','revenueGrowth','earningsGrowth','profitMargins','operatingMargins','returnOnEquity','returnOnAssets','operatingCashflow','freeCashflow','totalCash','totalDebt','targetMeanPrice','numberOfAnalystOpinions','regularMarketPrice','regularMarketTime','beta','bid','ask','earningsTimestampStart']
 ETF_FIELDS = ['currency','category','fundFamily','totalAssets','navPrice','beta3Year','regularMarketPrice','regularMarketTime']
-BARS_REQUIRED = {'Close':1,'Return_1D':2,'EMA20':20,'EMA50':50,'SMA200':200,'RSI_14':15,'MACD':26,'MACD_Signal':34,'Vol_Ratio':21,'ATR':14,'ATR_Pct':14,'Dollar_Volume_20D':20,'Volatility_20D':21,'Drawdown_52W':252,'Suggested_Stop':14}
-MONTHS_REQUIRED = {'Return_1M':1,'Return_3M':3,'Return_6M':6,'Historical_Return':12,'Return_2Y':24,'Return_3Y':36}
+BARS_REQUIRED = {'Close':1,'Return_1D':2,'Return_3D':4,'Return_7D':8,'EMA20':20,'EMA50':50,'SMA200':200,'RSI_14':15,'MACD':26,'MACD_Signal':34,'Vol_Ratio':21,'ATR':14,'ATR_Pct':14,'Dollar_Volume_20D':20,'Volatility_20D':21,'Drawdown_52W':252,'Suggested_Stop':14}
+MONTHS_REQUIRED = {'Return_1M':1,'Return_3M':3,'Return_6M':6,'Historical_Return':12,'Return_2Y':24,'Return_3Y':36,'Return_5Y':60}
 QUOTE_FIELDS = list(BARS_REQUIRED) + list(MONTHS_REQUIRED)
 
 

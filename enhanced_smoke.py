@@ -54,4 +54,6 @@ def verify_enhancements(page,app):
     report['chart_inspector']=verify_hover(page,app)
     from quality_smoke import verify_quality
     report['data_quality']=verify_quality(page,app)
+    from return_table_smoke import verify_return_table
+    report['english_return_table']=verify_return_table(page,app)
     return report

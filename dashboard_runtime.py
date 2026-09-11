@@ -9,7 +9,7 @@ import streamlit as st
 import dashboard_core as core
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-09-11.19'
+APP_VERSION = '2026-09-12.20'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row
@@ -17,7 +17,8 @@ base_is_current = core.summary_is_current
 base_build_frame = core.build_universe_frame
 base_select_universe = core.select_universe
 BASE_HAS_REMOTE = 'request_remote' in inspect.signature(BaseCache.get).parameters
-EXTRA_NUMERIC = ['Return_1D','Return_1M','Return_3M','Return_6M','Volatility_20D','Dollar_Volume_20D','Drawdown_52W','ATR_Pct','Metric_Calc_Version']
+from return_periods import RETURN_FIELDS
+EXTRA_NUMERIC = list(dict.fromkeys([*RETURN_FIELDS,'Return_3M','Volatility_20D','Dollar_Volume_20D','Drawdown_52W','ATR_Pct','Metric_Calc_Version']))
 
 
 class ClosingConnection(sqlite3.Connection):
