@@ -30,7 +30,7 @@ jobs:
         run: |
           python -m pip install -q -r requirements-dev.txt playwright==1.55.0
           python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
-      - name: Recheck all regressions on this exact source
+      - name: Recheck all regressions on the final reviewed source
         run: |
           mkdir -p work
           python -m compileall -q .
