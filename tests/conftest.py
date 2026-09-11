@@ -20,6 +20,7 @@ if os.environ.get('DASHBOARD_OFFLINE_TEST_STUBS') == '1':
 
 @pytest.fixture(autouse=True)
 def isolated_ranking_feed(tmp_path, monkeypatch):
+    monkeypatch.setenv('DASHBOARD_ALLOW_MINUTE_QUOTES','false')
     import json
     from datetime import datetime, timezone
     fixture = {

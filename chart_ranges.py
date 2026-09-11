@@ -1,5 +1,5 @@
 """Bounded selected-stock chart history, isolated from screening/valuation.
-One provider request at a time, 60/hour/server, bounded queue, TTL and backoff.
+One provider request at a time, 120/hour/server, bounded queue, TTL and backoff.
 No credentials, remote writes, synthetic prices or bulk scans.
 """
 from __future__ import annotations
@@ -73,7 +73,7 @@ class ChartHistoryService:
             job=(ticker,kind)
             if job in self.pending:return 'กำลังโหลดประวัติกราฟที่เลือก'
             while self.calls and self.calls[0]<now-3600:self.calls.popleft()
-            if len(self.calls)+len(self.pending)>=60:return 'ถึงขีดจำกัด 60 คำขอกราฟต่อชั่วโมงของเซิร์ฟเวอร์ ใช้ข้อมูลที่มีไปก่อน'
+            if len(self.calls)+len(self.pending)>=120:return 'ถึงขีดจำกัด 120 คำขอกราฟต่อชั่วโมงของเซิร์ฟเวอร์ ใช้ข้อมูลที่มีไปก่อน'
             if len(self.pending)>=8:return 'คิวกราฟเต็มชั่วคราว ใช้ข้อมูลที่มีและลองใหม่ภายหลัง'
             self.jobs.append(job);self.pending.add(job)
             if self.thread is None or not self.thread.is_alive():
@@ -108,7 +108,7 @@ class ChartHistoryService:
                     return
                 ticker,kind=self.jobs.popleft()
                 self.calls.append(time.time())
-            error='';ttl=900 if kind=='5m' else 86400
+            error='';ttl=60 if kind=='5m' else 86400
             try:self._fetch(ticker,kind)
             except Exception as exc:
                 limited=any(word in str(exc).lower() for word in ('429','rate limit','too many')) or 'RateLimit' in type(exc).__name__
@@ -147,6 +147,7 @@ def range_payload(frame,ticker,period,interval,fetched_at=''):
     return payload
 
 
+@st.fragment(run_every=60)
 def render_chart(ticker,daily_history):
     period=st.radio('ช่วงเวลาแสดงกราฟ',PERIODS,index=PERIODS.index('1 ปี'),horizontal=True,key='chart_period',
         help='ช่วงย้อนหลัง ไม่ใช่ขนาดแท่ง: 1/3/5/7 วันใช้ 5 นาทีและนับวันซื้อขายล่าสุดที่มีข้อมูล; เดือน/ปีใช้แท่งรายวัน')
@@ -165,7 +166,7 @@ def render_chart(ticker,daily_history):
     if message:
         (st.warning if any(word in message for word in ('ไม่สำเร็จ','จำกัด','พัก','เต็ม','ปิด')) else st.info)(message)
     if short:
-        st.caption('1 วัน / 3 วัน = 1 / 3 วันซื้อขายล่าสุดที่มีข้อมูล ไม่ใช่ 24 / 72 ชั่วโมง · แท่ง 5 นาที เฉพาะเวลาตลาดปกติ · แคชอย่างน้อย 15 นาที ไม่ใช่ราคาสตรีมสด')
+        st.caption('1 วัน / 3 วัน = 1 / 3 วันซื้อขายล่าสุดที่มีข้อมูล ไม่ใช่ 24 / 72 ชั่วโมง · แท่ง 5 นาที เฉพาะเวลาตลาดปกติ · ตรวจใหม่ประมาณทุก 1 นาที; แท่งยังเป็น 5 นาที และผู้ให้ข้อมูลอาจล่าช้า ไม่ใช่ราคาสตรีมสด')
     elif long:
         st.caption('5 ปี / 10 ปีใช้แท่งรายวัน ดึงประวัติเฉพาะหุ้นที่เลือกเมื่อจำเป็นและเก็บแคช 24 ชั่วโมง; หุ้นเข้าตลาดใหม่อาจมีไม่ครบช่วง')
     if history is None or history.empty:

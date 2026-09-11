@@ -11,7 +11,7 @@ from catalog_extension import install as install_catalog
 install_catalog(core)
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-09-12.21'
+APP_VERSION = '2026-09-12.22'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row
@@ -87,6 +87,7 @@ def select_universe(csv_frame=None):
 
 
 def scan_snapshot_row(ticker, history, stamp):
+    history = core.completed_daily_history(history, now=stamp)
     row = base_snapshot(ticker, history, stamp)
     row.update(extended_snapshot(core.completed_daily_history(history)))
     atr, close = core.number(row.get('ATR')), core.number(row.get('Close'))
@@ -116,6 +117,14 @@ def build_universe_frame(csv_frame, saved=None, classifications=None):
                     indexed[col] = float('nan')
                 indexed[col] = core.numeric_watchlist_series(indexed[col])
                 indexed.loc[incoming.index[eligible],col] = core.numeric_watchlist_series(incoming.loc[eligible,col])
+    if rows:
+        observations = {}
+        for t in incoming.index[eligible]:
+            source = (saved or {}).get(t, {})
+            if (core.number(source.get('Metric_Calc_Version')) == METRIC_VERSION
+                    and isinstance(source.get('Return_Observations'), dict)):
+                observations[t] = source['Return_Observations']
+        indexed['Return_Observations'] = pd.Series(observations, dtype=object)
     return indexed.reset_index(), outside
 
 

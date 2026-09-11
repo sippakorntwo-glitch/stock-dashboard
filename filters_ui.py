@@ -38,7 +38,7 @@ def filter_universe(frame):
     work=display_returns(frame,mode)
     categories={};bounds={};required=[]
     if asset!='All':categories['Asset_Type']=[asset]
-    if status!='All':categories['Status']=['ไม่มีข้อมูล' if status=='Insufficient Data' else status]
+    if status!='All':categories['Status']=['ไม่มีข้อมูล','ข้อมูลไม่พอ','INSUFFICIENT'] if status=='Insufficient Data' else [status]
     if query:
         mask=pd.Series(False,index=work.index)
         for field in ['Ticker','Security_Name','Industry']:
