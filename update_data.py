@@ -112,6 +112,8 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
             "return_2y": sum(app.number(r.get("Return_2Y")) is not None for r in quotes.values()),
             "return_3y": sum(app.number(r.get("Return_3Y")) is not None for r in quotes.values()),
         }
+        from return_periods import RETURN_FIELDS
+        coverage["return_periods"] = {field: sum(app.number(r.get(field)) is not None for r in quotes.values()) for field in RETURN_FIELDS}
         summary = {"schema": SCHEMA, "quotes": quotes, "classifications": classifications,
                    "universe": list(universe), "watchlist_csv": watchlist_csv, "quality": quality}
         raw = pack(summary)

@@ -11,6 +11,8 @@ from analytics import clean_close, risk_metrics, comparison, beta_to_benchmark, 
 from dashboard_selection import table_key, apply_table_selection
 from dashboard_help import help_table, column_help
 from chart_ranges import PAGE_SIZE, page_slice, render_chart
+from return_periods import (RETURN_FIELDS, RETURN_LABELS, RETURN_CAPTION, TABLE_FIELDS,
+                            return_column_config, export_watchlist)
 VIEWS = ['ภาพรวมและค้นหา','กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว','สถานะข้อมูล']
 
 
@@ -63,7 +65,7 @@ def filter_universe(frame):
         high = x.number_input('ราคาสูงสุด',min_value=0.0,value=max(5000.0,a.number(frame.Close.max()) or 0.0))
         rsi = y.slider('RSI 14',0,100,(0,100))
         fresh = y.checkbox('ราคาไม่เกิน 4 วันปฏิทินและระบุวันที่')
-        minimum = z.number_input('ผลตอบแทน 1 ปีขั้นต่ำ (%)',value=-100.0)
+        minimum = z.number_input('Minimum 1 Year Return (%)',value=-100.0)
         keep = z.checkbox('แสดงแถวที่ข้อมูลยังไม่ครบ',value=True)
         favourites = st.checkbox('เฉพาะรายการโปรดในเซสชันนี้')
     if high < low:
@@ -78,7 +80,7 @@ def filter_universe(frame):
         work = work.loc[age.between(0,4)]
     if favourites: work = work.loc[work.Ticker.isin(st.session_state.get('favourites',[]))]
     x,y = st.columns([3,1])
-    sort = x.selectbox('เรียงตาม',['Ticker','Historical_Return','Return_3M','Return_2Y','Return_3Y','RSI_14','ATR_Pct','Volatility_20D','Dollar_Volume_20D'])
+    sort = x.selectbox('เรียงตาม',['Ticker',*RETURN_FIELDS,'RSI_14','ATR_Pct','Volatility_20D','Dollar_Volume_20D'],format_func=lambda key: RETURN_LABELS.get(key,key))
     descending = y.checkbox('มากไปน้อย',value=sort!='Ticker')
     work = work.sort_values(sort,ascending=not descending,na_position='last')
     return work
@@ -91,15 +93,16 @@ def overview(frame, selectable=False, prepared=None):
     pages = max(1,math.ceil(len(work)/PAGE_SIZE))
     if st.session_state.get('table_page',1)>pages: st.session_state.table_page=1
     page = st.number_input('หน้าตาราง — หน้าละ 500 ตัว',min_value=1,max_value=pages,step=1,key='table_page')
-    fields = ['Ticker','Security_Name','Industry','Asset_Type','Status','Close','Return_1D','Return_3M','Historical_Return','Return_2Y','Return_3Y','RSI_14','ATR_Pct','Volatility_20D','Dollar_Volume_20D','Price_AsOf','Data_Status']
+    fields = list(TABLE_FIELDS)
     shown = page_slice(work,page).reindex(columns=fields)
     from quality_views import industry_display, snapshot_quality, placeholder_options
     shown = industry_display(shown, snapshot_quality(a.get_data_cache()))
-    styled = shown.style.format(precision=2,na_rep='—').map(a.return_cell_style,subset=['Return_1D','Return_3M','Historical_Return','Return_2Y','Return_3Y'])
+    styled = shown.style.format(precision=2,na_rep='—').map(a.return_cell_style,subset=list(RETURN_FIELDS))
     config = a.watchlist_column_config()
-    for field,label in {'Return_1D':'1D (%)','Return_3M':'3M (%)','ATR_Pct':'ATR / ราคา (%)','Volatility_20D':'Volatility 20D ต่อปี (%)'}.items():
+    for field,label in {'ATR_Pct':'ATR / ราคา (%)','Volatility_20D':'Volatility 20D ต่อปี (%)'}.items():
         config[field]=st.column_config.NumberColumn(label,format='%.2f')
     config['Dollar_Volume_20D']=st.column_config.NumberColumn('ราคา × Volume เฉลี่ย 20D',format='%.0f',help='ค่าประมาณจากราคาปรับแล้ว ไม่ใช่มูลค่าซื้อขายจริงจากตลาด')
+    config.update(return_column_config())
     config = column_help(fields,config)
     st.caption(f'แสดง {len(shown):,} ตัวในหน้านี้ · หน้า {page:,} / {pages:,}')
     options = {}
@@ -118,7 +121,8 @@ def overview(frame, selectable=False, prepared=None):
     if selectable:
         st.caption('หุ้นที่เลือก: '+st.session_state.get('selected_ticker','AAPL'))
         st.markdown('[↓ ไปยังกราฟและรายละเอียดด้านล่าง](#selected-stock)')
-    st.download_button('ดาวน์โหลดผลกรองครบทุกแถว',work.to_csv(index=False).encode('utf-8-sig'),'filtered_watchlist.csv','text/csv')
+    st.caption(RETURN_CAPTION)
+    st.download_button('ดาวน์โหลดผลกรองครบทุกแถว',export_watchlist(work).to_csv(index=False).encode('utf-8-sig'),'filtered_watchlist.csv','text/csv')
     return work
 
 

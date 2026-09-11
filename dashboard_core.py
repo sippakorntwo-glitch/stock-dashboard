@@ -305,7 +305,7 @@ WATCHLIST_NUMERIC_COLUMNS = NUMERIC_COLUMNS + ["Return_Calc_Version", "History_Y
 # === UNIVERSE SETTINGS — จำนวนรายชื่อและขนาดการโหลด ===
 COMMON_STOCK_LIMIT = 4200
 ETF_LIMIT = 700
-HISTORY_YEARS = 5  # Three full calendar years plus warm-up / non-trading dates.
+HISTORY_YEARS = 6  # One-year buffer for full calendar 5Y returns.
 RETURN_CALC_VERSION = 2
 SCAN_BATCH_SIZE = 25
 SCAN_INTERVAL_SECONDS = 1
@@ -7319,7 +7319,8 @@ def history_request(old, meta, years=HISTORY_YEARS):
     except (ValueError, TypeError, AttributeError):
         reconcile = True
     if old is None or old.empty or int(meta.get("years", 0)) < years or reconcile:
-        return {"period": f"{max(years, int(meta.get('years', 0)))}y"}
+        depth = max(years, int(meta.get("years", 0)))
+        return {"start": (pd.Timestamp.now(tz="America/New_York").normalize() - pd.DateOffset(years=depth)).strftime("%Y-%m-%d"), "_full_window": True}
     # Include overlap for corrected bars; the full stored series remains in use.
     return {"start": (old.index[-1] - pd.Timedelta(days=7)).strftime("%Y-%m-%d")}
 
@@ -7372,6 +7373,7 @@ def fetch_daily_batch(tickers, cache, *, force=False, years=HISTORY_YEARS):
         groups.setdefault(tuple(request.items()), []).append(ticker)
     for key, symbols in groups.items():
         kwargs = dict(key)
+        full_window = bool(kwargs.pop("_full_window", False)) or "period" in kwargs
         try:
             with _PROVIDER_LOCK:
                 batch = yf.download(symbols, interval="1d", group_by="ticker", auto_adjust=True,
@@ -7381,22 +7383,22 @@ def fetch_daily_batch(tickers, cache, *, force=False, years=HISTORY_YEARS):
                     old, meta = stored[ticker]
                     fresh = _extract_batch(batch, ticker, len(symbols))
                     merged, adjusted = merge_daily_history(old, fresh)
-                    if adjusted and "start" in kwargs:
+                    if adjusted and not full_window:
                         with _PROVIDER_LOCK:
                             full = yf.download([ticker], period=f"{max(years, int(meta.get('years', 2)))}y", interval="1d",
                                                auto_adjust=True, group_by="ticker", threads=False, progress=False,
                                                timeout=DOWNLOAD_TIMEOUT_SECONDS)
                         merged = normalize_history(_extract_batch(full, ticker, 1))
-                    elif "period" in kwargs:
+                    elif full_window:
                         # A full response is authoritative; do not retain old adjusted rows.
                         merged = normalize_history(fresh)
                     stamp = datetime.now(timezone.utc).isoformat()
                     row = scan_snapshot_row(ticker, merged, stamp)
                     row["History_Years_Loaded"] = max(years, int(meta.get("years", years)))
-                    full_stamp = stamp if "period" in kwargs or adjusted else meta.get("full_refreshed_at", meta.get("fetched_at", stamp))
+                    full_stamp = stamp if full_window or adjusted else meta.get("full_refreshed_at", meta.get("fetched_at", stamp))
                     cache.save_history(ticker, merged, stamp, years=max(years, int(meta.get("years", years))), full_refreshed_at=full_stamp)
                     rows[ticker] = row
-                    stats["incremental" if "start" in kwargs and not adjusted else "initial"] += 1
+                    stats["incremental" if not full_window and not adjusted else "initial"] += 1
                 except Exception as exc:
                     rows[ticker]["Data_Status"] = "โหลดไม่สำเร็จ"
                     errors.append(f"{ticker}: {str(exc)[:240]}")
