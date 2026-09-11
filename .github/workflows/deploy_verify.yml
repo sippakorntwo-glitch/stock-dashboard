@@ -37,8 +37,33 @@ jobs:
           DASHBOARD_CACHE_FILE: work/dashboard_cache.sqlite3
           PYTHONUNBUFFERED: '1'
         run: python deployment_seed.py
+  ranking:
+    if: ${{ toJSON(github.event.repository.private) == 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    concurrency:
+      group: top10-ranking-publication
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q -r requirements.txt
+      - name: Publish whole-catalog Top 10 board
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          PYTHONUNBUFFERED: '1'
+        run: python ranking_job.py --publish
   browser:
-    needs: seed
+    needs: [seed, ranking]
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
