@@ -15,6 +15,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import dashboard_runtime as a
 from chart_performance import period_performance, with_performance
+from chart_inspector import with_inspector
 
 PERIODS=['1 วัน','3 วัน','5 วัน','7 วัน','1 เดือน','3 เดือน','6 เดือน','1 ปี','2 ปี','3 ปี','5 ปี','10 ปี']
 PAGE_SIZE=500
@@ -177,7 +178,7 @@ def render_chart(ticker,daily_history):
         first=history.index[min(payload['visibleStart'],len(history)-1)];last=history.index[-1]
         st.caption(f'ช่วงข้อมูลที่แสดงจริง: {first:%Y-%m-%d} ถึง {last:%Y-%m-%d} · ดึงสำเร็จ {a.thai_time(meta.get("fetched_at"))}')
         if short and (pd.Timestamp.now(tz=last.tz).date()-last.date()).days>4:st.warning('แท่งระหว่างวันล่าสุดเกิน 4 วันปฏิทิน อาจเป็นวันหยุดหรือข้อมูลเก่า ไม่ใช่ราคา ณ ขณะนี้')
-        html=with_performance(a.build_chart_html(payload),payload)
+        html=with_inspector(with_performance(a.build_chart_html(payload),payload))
         if hasattr(st,'iframe'):st.iframe(html,height=900)
         else:components.html(html,height=900,scrolling=False)
     except (ValueError,TypeError,KeyError) as exc:st.warning(f'แสดงกราฟไม่ได้ ({type(exc).__name__}) ไม่เปลี่ยนข้อมูลให้คะแนนรายวัน')

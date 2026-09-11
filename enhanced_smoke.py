@@ -50,4 +50,6 @@ def verify_enhancements(page,app):
     report['growth_and_plain_cells']=verify_growth_and_plain_cells(page,app)
     from ranking_smoke import verify_board
     report['top10'] = verify_board(page,app)
+    from hover_smoke import verify_hover
+    report['chart_inspector']=verify_hover(page,app)
     return report
