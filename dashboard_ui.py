@@ -11,6 +11,8 @@ from ranking_board import render_board, consume_selection
 from dashboard_views import (VIEWS, table, plot, original_watchlist, overview, filter_universe,
                              industry_summary, technical, fundamentals, risk, compare, health)
 
+from quality_views import render_family_counts, render_symbol_quality
+
 LAYOUT = 'single-page'
 
 
@@ -85,6 +87,7 @@ def main():
         if state.get('error'): st.warning(state['error'])
         if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
         else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
+        render_family_counts(cache)
         with st.container(key='overview_controls'):
             work=filter_universe(frame)
     with top_right:
@@ -104,6 +107,7 @@ def main():
         row=selected.iloc[0].to_dict() if not selected.empty else {}
         st.subheader(f"{ticker} · {info.get('shortName') or row.get('Security_Name') or ''}")
         st.caption(f"วันที่ราคา Watchlist: {row.get('Price_AsOf') or 'ไม่ระบุ'} | ประวัติดึงสำเร็จ {a.thai_time(meta.get('fetched_at'))} | quote ณ {a.thai_time(info.get('regularMarketTime'))}")
+        render_symbol_quality(ticker,cache,history,info)
         # Render once per selected symbol, not once per row in the catalog.
         with st.container(key='research_technical'):
             st.header('กราฟและแผนซื้อ')

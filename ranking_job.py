@@ -78,7 +78,11 @@ def main():
         cache=a.DashboardCache(cache_path)
         if cache.error:raise RuntimeError('Cannot read verified checkpoint')
         import pandas as pd
-        universe=a.select_universe(pd.DataFrame(columns=['Ticker']))
+        from data_sync import read_checked
+        from data_quality import checked_universe
+        import gzip
+        summary=json.loads(gzip.decompress(read_checked(store,manifest['summary'])))
+        universe=checked_universe(summary)
         before,counts,excluded=rank_all(cache,universe)
         report={'attempted':0,'success':0,'failed':0,'limit':20,'mode':'disabled-for-verification'}
         if not args.no_quote_refresh:report=refresh_shortlist(cache,before)

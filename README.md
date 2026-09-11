@@ -78,3 +78,12 @@
 การชี้กราฟทำงานในเบราว์เซอร์เท่านั้น ไม่ส่ง request ใหม่ ไม่เปลี่ยนราคา/ผลตอบแทนช่วงกราฟ/สูตรให้คะแนน/Top 10/ตารางข้อมูล และไม่เพิ่ม Tooltip คืนในตารางอธิบายที่นำออกไปแล้ว ข้อมูลที่ตรึงไม่ใช่ราคาที่กำลังอัปเดต
 
 อ้างอิง API ของ Lightweight Charts 5.0 (รุ่น library ที่ใช้ 5.0.9): MouseEventParams, IPaneApi, subscribeCrosshairMove, subscribeClick; เพิ่ม browser regressions ที่ใช้เมาส์จริงกับ ORCL/SPY และตรวจค่าจาก candles จริงก่อนรายงานผลใช้งาน
+
+
+## v19 — Data completeness repair
+
+The market checkpoint, UI and Top 10 use the same deployed catalog. The ranking job validates and reads the snapshot's exact universe rather than re-deriving a different truncated list from an empty CSV. Metadata queues rotate stocks, ETFs, profiles and dividends; failed requests respect retry timestamps. Missing classifications in an otherwise successful profile are retried daily, not suppressed indefinitely by the existence of an info object.
+
+Every snapshot contains field-level availability and per-symbol diagnostics. Tables use an explicit missing-value placeholder, with distinct pending/failed/not-reported/short-history/no-payment states. A successful empty dividend history is not confused with an unattempted request. Missing analyst forecasts or short IPO histories are never filled with invented zeros. Existing scoring, 500-row selection, cumulative returns, chart point inspector, Top 10 schedules and security remain unchanged.
+
+`audit_dashboard.py` verifies the public checkpoint read-only. `data_repair_job.py --publish` is restricted to an owner GitHub workflow with the same public repository and concurrency lock; it records before/after coverage and keeps valid observations on failure. Quality counts indicate availability, not comprehensive investment analysis or a guarantee that every field exists for every security.

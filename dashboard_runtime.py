@@ -9,12 +9,13 @@ import streamlit as st
 import dashboard_core as core
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-09-11.18'
+APP_VERSION = '2026-09-11.19'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row
 base_is_current = core.summary_is_current
 base_build_frame = core.build_universe_frame
+base_select_universe = core.select_universe
 BASE_HAS_REMOTE = 'request_remote' in inspect.signature(BaseCache.get).parameters
 EXTRA_NUMERIC = ['Return_1D','Return_1M','Return_3M','Return_6M','Volatility_20D','Dollar_Volume_20D','Drawdown_52W','ATR_Pct','Metric_Calc_Version']
 
@@ -37,11 +38,49 @@ class DashboardCache(BaseCache):
             remote.request(key.rsplit(':', 1)[-1])
         return super().get(key, request_remote=False) if BASE_HAS_REMOTE else super().get(key)
 
+    def put(self, key, value, meta):
+        from data_quality import industry_value, timestamp, VERSION
+        meta = dict(meta)
+        if key.startswith('info:') and isinstance(value, dict):
+            old, oldmeta = self.get(key, request_remote=False)
+            stamp = meta.get('fetched_at') or value.get('_Fetched_At_UTC')
+            if old and timestamp(oldmeta.get('fetched_at')) > timestamp(stamp):
+                return
+            ticker = key.split(':', 1)[1]
+            meta.update(quality_version=VERSION, classification_available=industry_value(value, ticker in core.ETF_NAMES or value.get('quoteType')=='ETF') is not None)
+            super().put(key, value, meta)
+            self.save_classification(ticker, {**value, '_Fetched_At_UTC':stamp or ''})
+            return
+        return super().put(key, value, meta)
+
     def save_classification(self, ticker, info):
+        from data_quality import industry_value, timestamp
         is_etf = ticker in core.ETF_NAMES or info.get('quoteType') == 'ETF'
-        value = core.clean_industry(info.get('category') if is_etf else info.get('industry'))
-        if value is not None:
-            super().save_classification(ticker, info)
+        value = industry_value(info, is_etf)
+        if value is None:
+            return
+        import json
+        with self._lock:
+            old = self._fallback_classifications.get(ticker, {})
+            if not self.error:
+                with self.connect() as db:
+                    saved = db.execute('SELECT body FROM classifications WHERE ticker=?', (ticker,)).fetchone()
+                    if saved: old = json.loads(saved[0])
+            if timestamp(old.get('Industry_Time')) > timestamp(info.get('_Fetched_At_UTC')):
+                return
+            normalized = {**info, 'category' if is_etf else 'industry':value}
+            super().save_classification(ticker, normalized)
+
+
+def select_universe(csv_frame=None):
+    # Empty/default callers (including tests and rankers) use the same deployed CSV
+    # as the dashboard, not a different truncated 4,200-stock alphabetical pool.
+    if csv_frame is None or csv_frame.empty:
+        if core.WATCHLIST_FILE.exists():
+            csv_frame = pd.read_csv(core.WATCHLIST_FILE, usecols=['Ticker'], dtype=str)
+        else:
+            csv_frame = pd.DataFrame(columns=['Ticker'])
+    return base_select_universe(csv_frame)
 
 
 def scan_snapshot_row(ticker, history, stamp):
@@ -170,6 +209,7 @@ core.DashboardCache = DashboardCache
 core.scan_snapshot_row = scan_snapshot_row
 core.summary_is_current = summary_is_current
 core.build_universe_frame = build_universe_frame
+core.select_universe = select_universe
 core.get_data_cache = get_data_cache
 core.get_updater = get_updater
 core.APP_VERSION = APP_VERSION

@@ -136,7 +136,7 @@ def _plain(value):
     try:
         if value is None or pd.isna(value):return '—'
     except (TypeError,ValueError):pass
-    return str(value)
+    return '—' if str(value).strip().casefold() in ('none','nan','null','n/a','') else str(value)
 
 
 def table_html(frame,height=420):
@@ -166,4 +166,5 @@ def help_table(data,*,height=420,hide_index=True,column_config=None,width='stret
     if isinstance(frame,pd.DataFrame) and len(frame)<=100 and any(c in frame for c in LABEL_COLUMNS) and not kwargs.get('on_select'):
         st.html(table_html(frame,height));return None
     columns=frame.columns if hasattr(frame,'columns') else []
+    kwargs.setdefault('placeholder','—')
     return st.dataframe(data,height=height,hide_index=hide_index,column_config=column_help(columns,column_config,correlation),width=width,**kwargs)
