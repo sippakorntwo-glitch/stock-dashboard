@@ -6,6 +6,7 @@ import streamlit as st
 import dashboard_runtime as a
 from analytics import quality_counts
 from dashboard_selection import set_selected
+from chart_ranges import get_chart_service
 from dashboard_views import (VIEWS, table, plot, original_watchlist, overview,
                              industry_summary, technical, fundamentals, risk, compare, health)
 
@@ -13,7 +14,7 @@ LAYOUT = 'single-page'
 
 
 @st.fragment(run_every=2)
-def _poll_data(reader, rendered_revision, rendered_worker_revision):
+def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_chart_revision=0):
     """Refresh the page only when a selected data load has actually changed."""
     if reader:
         reader.refresh()
@@ -21,9 +22,10 @@ def _poll_data(reader, rendered_revision, rendered_worker_revision):
     else:
         state = {'busy': False, 'revision': 0}
     worker = a.get_updater().state()
-    if state['revision'] != rendered_revision or worker['revision'] != rendered_worker_revision:
+    chart_state = get_chart_service().state()
+    if state['revision'] != rendered_revision or worker['revision'] != rendered_worker_revision or chart_state['revision'] != rendered_chart_revision:
         st.rerun()
-    if state['busy'] or worker['busy']:
+    if state['busy'] or worker['busy'] or chart_state['busy']:
         st.caption('กำลังอ่านข้อมูลที่เลือก ข้อมูลเดิมยังใช้งานได้ — แสดงผลให้อัตโนมัติเมื่อโหลดเสร็จ')
     else:
         st.caption('พร้อมใช้งาน · ตรวจชุดข้อมูลใหม่อัตโนมัติทุก 5 นาที')
@@ -42,6 +44,7 @@ def main():
     if reader: reader.refresh()
     revision=reader.status()['revision'] if reader else 0
     worker_revision=a.get_updater().state()['revision']
+    chart_revision=get_chart_service().state()['revision']
     cache=a.get_data_cache()
     original=original_watchlist()
     frame,outside=a.build_universe_frame(original,cache.quotes(),cache.classifications())
@@ -111,5 +114,5 @@ def main():
         with st.expander(f'CSV นอกชุดหลัก ({len(outside):,} ตัว)'): table(outside)
     with st.container(key='research_health'):
         health(reader,frame,cache)
-    _poll_data(reader,revision,worker_revision)
+    _poll_data(reader,revision,worker_revision,chart_revision)
     st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')

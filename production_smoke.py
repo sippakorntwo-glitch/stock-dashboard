@@ -74,7 +74,7 @@ def verify_sections(app):
     for section,title in [('research_technical','กราฟและแผนซื้อ'),('research_fundamentals','พื้นฐานและปันผล'),('research_risk','ความเสี่ยง'),('research_comparison','เปรียบเทียบหลายตัว')]:
         expect(app.locator('.st-key-'+section).get_by_role('heading',name=title,exact=True)).to_be_visible(timeout=60000)
     expect(app.locator('.st-key-research_fundamentals').get_by_role('heading',name=re.compile('ประวัติปันผล'))).to_be_visible(timeout=60000)
-    expect(app.locator('.st-key-research_fundamentals [data-testid="stDataFrame"]').first).to_be_visible()
+    expect(app.locator('.st-key-research_fundamentals .workspace-help-table').first).to_be_visible()
     expect(app.locator('.st-key-research_risk [data-testid="stPlotlyChart"]')).to_have_count(2,timeout=60000)
     expect(app.locator('.st-key-research_comparison [data-testid="stPlotlyChart"]')).to_have_count(1,timeout=120000)
     expect(app.locator('.st-key-research_comparison').get_by_role('heading',name='Correlation ของผลตอบแทนรายวัน')).to_be_visible(timeout=30000)
@@ -128,6 +128,8 @@ def run():
             verify_sections(app)
             expect(app.locator('.st-key-research_comparison').get_by_text('QQQ',exact=True).first).to_be_visible()
             report['selections'].append({'ticker':'SPY','via':'manual','bars':len(payload['records'])})
+            from enhanced_smoke import verify_enhancements
+            report['enhancements']=verify_enhancements(page,app)
             report['result']='passed'
             print('BROWSER_SMOKE_REPORT:',json.dumps(report,ensure_ascii=False),flush=True)
             summary=os.environ.get('GITHUB_STEP_SUMMARY')

@@ -9,11 +9,13 @@ import streamlit.components.v1 as components
 import dashboard_runtime as a
 from analytics import clean_close, risk_metrics, comparison, beta_to_benchmark, quality_counts
 from dashboard_selection import table_key, apply_table_selection
+from dashboard_help import help_table, column_help
+from chart_ranges import PAGE_SIZE, page_slice, render_chart
 VIEWS = ['ภาพรวมและค้นหา','กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว','สถานะข้อมูล']
 
 
 def table(frame, **kwargs):
-    st.dataframe(frame, hide_index=True, **a.width_options(st.dataframe), **kwargs)
+    return help_table(frame, **kwargs)
 
 
 def plot(fig, key, height=420):
@@ -79,16 +81,18 @@ def overview(frame, selectable=False):
     sort = x.selectbox('เรียงตาม',['Ticker','Historical_Return','Return_3M','Return_2Y','Return_3Y','RSI_14','ATR_Pct','Volatility_20D','Dollar_Volume_20D'])
     descending = y.checkbox('มากไปน้อย',value=sort!='Ticker')
     work = work.sort_values(sort,ascending=not descending,na_position='last')
-    pages = max(1,math.ceil(len(work)/100))
+    pages = max(1,math.ceil(len(work)/PAGE_SIZE))
     if st.session_state.get('table_page',1)>pages: st.session_state.table_page=1
-    page = st.number_input('หน้าตาราง — หน้าละ 100 ตัว',min_value=1,max_value=pages,step=1,key='table_page')
+    page = st.number_input('หน้าตาราง — หน้าละ 500 ตัว',min_value=1,max_value=pages,step=1,key='table_page')
     fields = ['Ticker','Security_Name','Industry','Asset_Type','Status','Close','Return_1D','Return_3M','Historical_Return','Return_2Y','Return_3Y','RSI_14','ATR_Pct','Volatility_20D','Dollar_Volume_20D','Price_AsOf','Data_Status']
-    shown = work.iloc[(page-1)*100:page*100].reindex(columns=fields)
+    shown = page_slice(work,page).reindex(columns=fields)
     styled = shown.style.format(precision=2,na_rep='—').map(a.return_cell_style,subset=['Return_1D','Return_3M','Historical_Return','Return_2Y','Return_3Y'])
     config = a.watchlist_column_config()
     for field,label in {'Return_1D':'1D (%)','Return_3M':'3M (%)','ATR_Pct':'ATR / ราคา (%)','Volatility_20D':'Volatility 20D ต่อปี (%)'}.items():
         config[field]=st.column_config.NumberColumn(label,format='%.2f')
     config['Dollar_Volume_20D']=st.column_config.NumberColumn('ราคา × Volume เฉลี่ย 20D',format='%.0f',help='ค่าประมาณจากราคาปรับแล้ว ไม่ใช่มูลค่าซื้อขายจริงจากตลาด')
+    config = column_help(fields,config)
+    st.caption(f'แสดง {len(shown):,} ตัวในหน้านี้ · หน้า {page:,} / {pages:,}')
     options = {}
     if selectable:
         tickers = tuple(shown.Ticker.astype(str))
@@ -119,22 +123,7 @@ def industry_summary(work):
 
 
 def technical(ticker,daily_history,info,row):
-    periods=['1 เดือน','3 เดือน','6 เดือน','1 ปี','2 ปี','3 ปี']
-    if a.live_enabled(): periods=['1 วัน','5 วัน','7 วัน']+periods
-    period=st.radio('ช่วงเวลาแสดงกราฟ',periods,index=periods.index('1 ปี'),horizontal=True,key='chart_period')
-    interval='5m' if period=='1 วัน' else '15m' if period in ('5 วัน','7 วัน') else '1d'
-    chart_history,meta=a.get_data_cache().history(ticker,interval)
-    if interval!='1d' and st.button('ดึงกราฟระหว่างวันจาก Yahoo'):
-        a.get_updater().request(ticker,'history',interval)
-    if chart_history is None:
-        st.info('ยังไม่มีประวัติสำหรับกราฟที่เลือก ชุดอัตโนมัติจะเติมประวัติรายวัน')
-    else:
-        try:
-            payload=a.build_payload(chart_history,ticker,period,interval,meta.get('fetched_at',''))
-            html=a.build_chart_html(payload)
-            if hasattr(st,'iframe'): st.iframe(html,height=900)
-            else: components.html(html,height=900,scrolling=False)
-        except Exception as exc: st.warning(f'แสดงกราฟไม่ได้ ({type(exc).__name__})')
+    render_chart(ticker,daily_history)
     # Daily criteria must NEVER be calculated from the selected intraday chart.
     is_etf=a.asset_is_etf(ticker,row,info)
     benchmark,_=a.get_data_cache().history('SPY') if is_etf else (None,{})
@@ -238,7 +227,7 @@ def compare(ticker,frame):
     table(pd.DataFrame(rows))
     if not result['correlation'].empty:
         st.subheader('Correlation ของผลตอบแทนรายวัน')
-        st.dataframe(result['correlation'].style.format('{:.2f}',na_rep='—'),**a.width_options(st.dataframe))
+        help_table(result['correlation'].style.format('{:.2f}',na_rep='—'),hide_index=False,correlation=True)
     st.caption('Correlation ใช้อย่างน้อย 20 จุดผลตอบแทน; Beta อย่างน้อย 60 จุด คำนวณจากวันที่ร่วมกัน ไม่ใช่ Beta จากหน้าข้อมูลบริษัท และอดีตไม่รับประกันความสัมพันธ์ในอนาคต')
     st.download_button('ดาวน์โหลดชุดราคาเปรียบเทียบ',result['prices'].to_csv().encode('utf-8-sig'),'comparison_prices.csv','text/csv')
 
