@@ -37,7 +37,7 @@ def render_live_quote(ticker):
             color = '#8ff0d0' if recent else '#ffce80'
             change = value.get('change_pct')
             delta = '—' if change is None else f'{change:+.2f}%'
-            text = f'''<div class="minute-quote" data-ticker="{html.escape(ticker)}" data-state="{state}" data-price="{value['price']}" data-bar-time="{html.escape(value['bar_time'])}">
+            text = f'''<div class="minute-quote" data-ticker="{html.escape(ticker)}" data-state="{state}" data-price="{value['price']}" data-bar-time="{html.escape(value['bar_time'])}" data-fetched-at="{html.escape(value['fetched_at'])}">
               <div class="quote-symbol">{html.escape(ticker)} <span>{html.escape(value['currency'])}</span></div>
               <div class="quote-price">{value['price']:,.4f}<span class="quote-delta">{delta}</span></div>
               <div style="color:{color}">{label} · อายุแท่ง {age/60:,.1f} นาที</div></div>'''

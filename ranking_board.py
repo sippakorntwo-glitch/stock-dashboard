@@ -68,6 +68,7 @@ def consume_selection(cache):
 
 
 def queue_selection(row):
+    set_selected(st.session_state,row['ticker'],reset_table=True)
     st.session_state['_ranking_pending']=(row['ticker'],row.get('info',{}),row.get('info_meta',{}))
 
 

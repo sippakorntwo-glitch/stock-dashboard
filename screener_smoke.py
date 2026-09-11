@@ -121,7 +121,7 @@ def verify_screener(page,app):
         report['auto_refresh_verified']='outside request window: 30-minute budget applies'
     report['minute_price']={'price':float(minute.get_attribute('data-price')),'bar_time':minute.get_attribute('data-bar-time'),
                             'fetched_at':minute.get_attribute('data-fetched-at'),'state':minute.get_attribute('data-state')}
-    app.get_by_text('Return Calculation Details',exact=True).click()
+    app.get_by_text('Return Calculation Details — QQQI',exact=True).click()
     expect(app.get_by_role('button',name='Download Return Calculation Details',exact=True)).to_be_visible(timeout=30000)
     no_exception(app)
     theme=app.locator('#workspace-theme-v22')

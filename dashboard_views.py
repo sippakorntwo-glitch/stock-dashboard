@@ -223,7 +223,7 @@ def compare(ticker,frame):
 def health(reader,frame,cache):
     state=reader.status() if reader else {'manifest':{},'error':'ยังไม่มีแหล่งข้อมูล'}
     manifest=state.get('manifest',{})
-    st.subheader('สถานะข้อมูลและระบบ')
+    st.subheader('สถานะข้อมูลและระบบ',anchor='system-status')
     st.write('รุ่นโปรแกรม',a.APP_VERSION)
     st.write('ชุดข้อมูล',manifest.get('generation','ยังไม่เผยแพร่'))
     st.write('เผยแพร่สำเร็จ',a.thai_time(manifest.get('published_at')))

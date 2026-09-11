@@ -1,5 +1,5 @@
 """Bounded selected-stock chart history, isolated from screening/valuation.
-One provider request at a time, 120/hour/server, bounded queue, TTL and backoff.
+One provider request at a time, 60/hour/server, bounded queue, TTL and backoff.
 No credentials, remote writes, synthetic prices or bulk scans.
 """
 from __future__ import annotations
@@ -73,7 +73,7 @@ class ChartHistoryService:
             job=(ticker,kind)
             if job in self.pending:return 'กำลังโหลดประวัติกราฟที่เลือก'
             while self.calls and self.calls[0]<now-3600:self.calls.popleft()
-            if len(self.calls)+len(self.pending)>=120:return 'ถึงขีดจำกัด 120 คำขอกราฟต่อชั่วโมงของเซิร์ฟเวอร์ ใช้ข้อมูลที่มีไปก่อน'
+            if len(self.calls)+len(self.pending)>=60:return 'ถึงขีดจำกัด 60 คำขอกราฟต่อชั่วโมงของเซิร์ฟเวอร์ ใช้ข้อมูลที่มีไปก่อน'
             if len(self.pending)>=8:return 'คิวกราฟเต็มชั่วคราว ใช้ข้อมูลที่มีและลองใหม่ภายหลัง'
             self.jobs.append(job);self.pending.add(job)
             if self.thread is None or not self.thread.is_alive():
@@ -149,6 +149,8 @@ def range_payload(frame,ticker,period,interval,fetched_at=''):
 
 @st.fragment(run_every=60)
 def render_chart(ticker,daily_history):
+    if st.session_state.get('selected_ticker',ticker) != ticker:
+        return
     period=st.radio('ช่วงเวลาแสดงกราฟ',PERIODS,index=PERIODS.index('1 ปี'),horizontal=True,key='chart_period',
         help='ช่วงย้อนหลัง ไม่ใช่ขนาดแท่ง: 1/3/5/7 วันใช้ 5 นาทีและนับวันซื้อขายล่าสุดที่มีข้อมูล; เดือน/ปีใช้แท่งรายวัน')
     short=period.endswith('วัน');long=period in ('5 ปี','10 ปี')
