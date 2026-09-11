@@ -1,0 +1,61 @@
+name: Verify complete workspace
+on:
+  push:
+    branches: [feat/returns-filters-etf-v21]
+    paths: [.github/workflows/verify_workspace.yml]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Verification target
+        type: choice
+        options: [local, production]
+        default: production
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual application and browser dependencies
+        run: |
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+      - name: Recheck all regressions on this exact source
+        run: |
+          mkdir -p work
+          python -m compileall -q .
+          python -m pytest -q tests > work/verification-tests.log 2>&1 || { tail -120 work/verification-tests.log; exit 1; }
+      - name: Strict browser checks with real public observations
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ inputs.target }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          if [ "$TARGET" = "production" ]; then
+            python verify_workspace.py --production
+          else
+            python verify_workspace.py
+          fi
+      - name: Record workflow outcome
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from verification_report import publish_report
+          p=Path('work/verification-tests.log')
+          publish_report('verifier-task',{'result':os.environ['RESULT'],'tests':p.read_text(errors='replace')[-16000:] if p.exists() else 'Test step did not run'})
+          PY
