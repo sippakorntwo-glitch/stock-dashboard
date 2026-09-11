@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-11T20:31:12.279534+00:00",
+  "recorded_at": "2026-09-11T20:53:57.663952+00:00",
   "run_id": "34643576727",
   "source_sha": "104f89bf166bafdfef5a69ee489a3737bbbd90a9",
   "started_at": "2026-09-11T20:20:10.526269+00:00",
@@ -21,23 +21,46 @@
       "metadata_jobs_attempted": 10,
       "metadata_jobs_remaining_in_round": 0,
       "finished_at": "2026-09-11T20:27:12.999781+00:00"
+    },
+    {
+      "started_at": "2026-09-11T20:31:13.338685+00:00",
+      "mode": "bootstrap",
+      "price_attempted": 4971,
+      "price_success": 4963,
+      "price_failed": 8,
+      "metadata_success": 0,
+      "metadata_failed": 0,
+      "rate_limited": false,
+      "errors": [
+        "ACBE: ไม่พบแท่งรายวันที่สมบูรณ์",
+        "ACBH: ไม่พบแท่งรายวันที่สมบูรณ์",
+        "GEMQ: ไม่พบแท่งรายวันที่สมบูรณ์",
+        "MLCC: ไม่พบแท่งรายวันที่สมบูรณ์",
+        "XLCD: ไม่พบแท่งราคาที่สมบูรณ์",
+        "XLCU: ไม่พบแท่งราคาที่สมบูรณ์",
+        "XLPD: ไม่พบแท่งราคาที่สมบูรณ์",
+        "XLPU: ไม่พบแท่งราคาที่สมบูรณ์"
+      ],
+      "metadata_jobs_due": 9942,
+      "metadata_jobs_attempted": 0,
+      "finished_at": "2026-09-11T20:49:06.002592+00:00"
     }
   ],
   "coverage": {
     "universe": 9876,
-    "prices": 4906,
-    "checked_today": 4905,
+    "prices": 9868,
+    "checked_today": 9868,
     "industry": 4868,
     "info": 4905,
     "dividends": 4905,
-    "return_1y": 4483,
-    "return_2y": 4135,
-    "return_3y": 3935
+    "return_1y": 8086,
+    "return_2y": 6896,
+    "return_3y": 6138
   },
   "quality_counts": {
     "universe": 9876,
-    "prices": 4906,
-    "histories": 4905,
+    "prices": 9868,
+    "histories": 9868,
     "info": 4905,
     "industry": 4868,
     "dividends_checked": 4905,
@@ -47,6 +70,6 @@
     "unattempted_dividends": 4971
   },
   "bootstrap_pending": 5008,
-  "generation": "generations/20260911T202734Z-5afd0979",
-  "published_at": "2026-09-11T20:31:09.020186+00:00"
+  "generation": "generations/20260911T204937Z-cd483091",
+  "published_at": "2026-09-11T20:53:54.216077+00:00"
 }
