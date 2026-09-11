@@ -5,7 +5,6 @@ import gzip
 import hashlib
 import io
 import json
-import re
 from urllib.request import Request,urlopen
 from urllib.parse import urlsplit
 from playwright.sync_api import expect
@@ -66,11 +65,13 @@ def verify_quality(page,app):
     assert len(symbols)==4900 and {r['Ticker'] for r in symbols}==set(summary['universe'])
     assert all(r['Industry_Status'] not in ('','None','nan') for r in symbols)
     report['symbol_report']=True
+    # Reuse daily prepared observations; do not spend provider calls to test metadata.
+    app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 ปี',exact=True).click()
     inspected=[]
     ticker_input=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
     for ticker in ('AEON','AESP','SPY'):
         ticker_input.fill(ticker);ticker_input.press('Enter')
-        chart,payload=chart_for_symbol(page,app,ticker) if ticker!='AESP' else (None,None)
+        if ticker!='AESP':chart_for_symbol(page,app,ticker)
         exp=app.get_by_text('ตรวจข้อมูลที่ขาดของ '+ticker,exact=True)
         expect(exp).to_be_visible(timeout=60000)
         exp.click();page.wait_for_timeout(700)
