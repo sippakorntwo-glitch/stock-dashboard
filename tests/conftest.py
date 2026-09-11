@@ -2,6 +2,7 @@
 import os
 import sys
 import types
+import pytest
 from functools import lru_cache
 if os.environ.get('DASHBOARD_OFFLINE_TEST_STUBS') == '1':
     def cache(fn=None, **kwargs):
