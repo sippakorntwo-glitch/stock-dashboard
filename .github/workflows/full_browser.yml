@@ -13,7 +13,7 @@ jobs:
   browser:
     if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -87,3 +87,12 @@ jobs:
                   except Exception as e: print('FRAME_READ:',type(e).__name__)
               browser.close()
           PY
+      - name: Preserve browser screenshots and server evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-browser-evidence
+          path: |
+            work/*.png
+            work/*.log
+          retention-days: 3

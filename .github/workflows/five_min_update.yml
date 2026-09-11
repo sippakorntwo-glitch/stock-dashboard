@@ -1,5 +1,4 @@
 name: Update market data (free)
-
 on:
   workflow_dispatch:
     inputs:
@@ -11,36 +10,32 @@ on:
   schedule:
     # 13:17 Thailand, Tue-Sat. New York has crossed midnight (including winter).
     - cron: "17 6 * * 2-6"
-    # 07:17, 19:17 and 01:17 Thailand; only missing data, auto-skip once complete.
+    # Missing-data continuation, not a live quote stream.
     - cron: "17 0,12,18 * * *"
-
 permissions:
   contents: write
-
 concurrency:
   group: prepared-market-data
   cancel-in-progress: false
-
 jobs:
   update:
-    # Evaluated before allocating a runner. Null/unknown visibility fails closed.
     if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 110
     env:
       DASHBOARD_DATA_REPO: ${{ github.repository }}
       DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       DASHBOARD_DATA_VISIBILITY: public
       DASHBOARD_DATA_BRANCH: dashboard-data
       DASHBOARD_CACHE_FILE: work/dashboard_cache.sqlite3
-      PYTHONUNBUFFERED: "1"
+      PYTHONUNBUFFERED: '1'
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - name: Install dependencies
         run: python -m pip install --no-cache-dir -r requirements.txt
       - name: Validate required files
@@ -64,4 +59,10 @@ jobs:
           else
             mode="bootstrap"
           fi
-          python update_data.py --mode "$mode" --price-minutes 35 --metadata-minutes 20 --metadata-limit 1000
+          # Larger bounded work budgets support the expanded catalog. Request
+          # pacing, per-symbol cooldowns and the provider circuit breaker remain.
+          if [ "$mode" = "daily" ]; then
+            python update_data.py --mode daily --price-minutes 40 --metadata-minutes 45 --metadata-limit 4500
+          else
+            python update_data.py --mode bootstrap --price-minutes 35 --metadata-minutes 28 --metadata-limit 3000
+          fi
