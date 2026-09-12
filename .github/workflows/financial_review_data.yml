@@ -1,8 +1,5 @@
 name: Financial statement coverage and audit
 on:
-  push:
-    branches: [feat/company-financial-review-v28]
-    paths: [.github/workflows/financial_review_data.yml]
   schedule:
     - cron: '41 1 * * 0'
   workflow_dispatch:
@@ -39,16 +36,7 @@ jobs:
           DASHBOARD_DATA_BRANCH: dashboard-data
           SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT || 'StockResearchWorkspace sippakorntwo@gmail.com' }}
           PYTHONUNBUFFERED: '1'
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('financial_audit_job.py');s=p.read_text()
-          old="if ticker in ('AAPL','MSFT','ORCL','TSLA','AMZN','NVDA','JPM','O','AAAU','QQQI'):examples[ticker]=review"
-          new="if ticker in ('AAPL','MSFT','ORCL','TSLA','AMZN','NVDA','JPM','O','AAAU','QQQI'):examples[ticker]={'counts':review['counts'],'fiscal_period':review['fiscal_period'],'metrics':{r['key']:{k:r[k] for k in ('value','unit','status','basis','grade')} for r in review['rows']}}"
-          assert s.count(old)==1
-          p.write_text(s.replace(old,new))
-          PY
-          python financial_audit_job.py --enrich --publish > work/financial-data.log 2>&1 || { tail -70 work/financial-data.log; exit 1; }
+        run: python financial_audit_job.py --enrich --publish > work/financial-data.log 2>&1 || { tail -70 work/financial-data.log; exit 1; }
       - name: Record task outcome with tested source
         if: always()
         env:
