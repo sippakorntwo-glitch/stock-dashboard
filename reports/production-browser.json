@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-12T10:45:46.233800+00:00",
-  "run_id": "34688919337",
+  "recorded_at": "2026-09-12T10:45:50.686937+00:00",
+  "run_id": "34688919394",
   "source_sha": "48533cd53087761906a73e9350d139437b195c9b",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-12.24",
@@ -327,7 +327,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-12T10:42:08.990675+00:00",
+      "verified_at": "2026-09-12T10:42:00.733076+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
