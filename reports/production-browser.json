@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-12T06:47:07.943837+00:00",
-  "run_id": "34678739669",
+  "recorded_at": "2026-09-12T06:56:18.952658+00:00",
+  "run_id": "34678739686",
   "source_sha": "ce34c9e0eaf6af20ef8d3b1d415fa6631af7dabb",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-12.23",
@@ -41,10 +41,10 @@
       {
         "period": "1 วัน",
         "interval": "5m",
-        "bars": 1717,
-        "visible_bars": 70,
+        "bars": 1716,
+        "visible_bars": 78,
         "first": 1789133400,
-        "last": 1789154100
+        "last": 1789156500
       },
       {
         "period": "3 วัน",
@@ -217,7 +217,7 @@
       "field_report": true,
       "symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260912T062537Z-410fbbc8",
+      "source_generation": "generations/20260912T064102Z-f051e490",
       "counts": {
         "universe": 9876,
         "prices": 9868,
@@ -263,7 +263,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260912T062537Z-410fbbc8",
+      "source_generation": "generations/20260912T064102Z-f051e490",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -326,7 +326,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-12T06:45:12.866991+00:00",
+      "verified_at": "2026-09-12T06:54:45.645983+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
