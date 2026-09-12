@@ -2,7 +2,7 @@ name: Verify complete workspace
 on:
   push:
     branches: [feat/returns-filters-etf-v21]
-    paths: [.github/workflows/verify_workspace.yml]
+    paths: [.github/workflows/verify_workspace.yml, screener_smoke.py]
   workflow_dispatch:
     inputs:
       target:
@@ -12,6 +12,9 @@ on:
         default: production
 permissions:
   contents: read
+concurrency:
+  group: workspace-verification-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
@@ -33,6 +36,7 @@ jobs:
       - name: Recheck regressions including actual widget reset defaults
         run: |
           mkdir -p work
+          git archive --format=zip HEAD > work/review-source.zip
           python -m compileall -q .
           python -m pytest -q tests > work/verification-tests.log 2>&1 || { tail -120 work/verification-tests.log; exit 1; }
       - name: Strict browser checks with real public observations
@@ -59,12 +63,13 @@ jobs:
           p=Path('work/verification-tests.log')
           publish_report('verifier-task',{'result':os.environ['RESULT'],'tests':p.read_text(errors='replace')[-16000:] if p.exists() else 'Test step did not run'})
           PY
-      - name: Preserve real browser evidence
+      - name: Preserve real browser evidence and exact tested source
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: workspace-browser-evidence
           path: |
+            work/review-source.zip
             work/*-report.json
             work/*.png
             work/*.log
