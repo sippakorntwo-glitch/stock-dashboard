@@ -175,5 +175,5 @@ def test_summary_mounts_after_chart_and_is_part_of_coherent_release():
     source=Path('chart_ranges.py').read_text()
     assert source.index('commentary_html(payload)')>source.index('components.html(html,height=900,scrolling=False)')
     assert 'chart_commentary' in Path('workspace_boot.py').read_text()
-    assert '2026-09-12.26' in Path('app.py').read_text()
-    assert '2026-09-12.26' in Path('dashboard_runtime.py').read_text()
+    assert '2026-09-13.27' in Path('app.py').read_text()
+    assert '2026-09-13.27' in Path('dashboard_runtime.py').read_text()

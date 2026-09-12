@@ -1,0 +1,78 @@
+name: Verify chart replacement stability
+on:
+  push:
+    branches: [fix/chart-slot-stability-v27, main]
+    paths: [.github/workflows/verify_chart_slots.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: chart-slots-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the application and real Chromium
+        run: |
+          mkdir -p work
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -60 /tmp/browser-install.log; exit 1; }
+      - name: Apply isolated rendering fix and run every regression
+        run: |
+          if [ -f maintenance/fix_chart_slots_v27.py ]; then
+            test "$GITHUB_REF" = refs/heads/fix/chart-slot-stability-v27
+            python maintenance/fix_chart_slots_v27.py
+          fi
+          python -m compileall -q .
+          python -m pytest -q tests > work/slot-tests.log 2>&1 || { tail -140 work/slot-tests.log; exit 1; }
+          if [ "$GITHUB_REF" = refs/heads/fix/chart-slot-stability-v27 ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -u
+            git diff --cached --quiet || git commit -m 'Fix stale graph commentary by allocating fixed replacement slots before dynamic content'
+            git push origin HEAD:fix/chart-slot-stability-v27
+          fi
+          git archive --format=zip HEAD > work/tested-source.zip
+      - name: Complete real-browser checks, period-switch stress, 65-second timer soak and reloads
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          if [ "$GITHUB_REF" = refs/heads/main ]; then
+            python verify_workspace.py --production
+          else
+            python verify_workspace.py
+          fi
+      - name: Record target, source, and actual outcome
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          from verification_report import publish_report
+          p=Path('work/slot-tests.log')
+          publish_report('v27-completion',{'result':os.environ['RESULT'],'target':'production' if os.environ['GITHUB_REF']=='refs/heads/main' else 'local CI','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tests':p.read_text(errors='replace')[-20000:] if p.exists() else 'Tests did not run'})
+          PY
+      - name: Preserve exact source and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-stability-evidence
+          path: |
+            work/tested-source.zip
+            work/*-report.json
+            work/*.png
+            work/*.log
+          retention-days: 7

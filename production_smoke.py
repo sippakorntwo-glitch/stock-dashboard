@@ -126,7 +126,8 @@ def run():
     with sync_playwright() as p:
         browser=p.chromium.launch(headless=True)
         page=browser.new_page(viewport={'width':1440,'height':1000})
-        page.on('pageerror',lambda e:print('JAVASCRIPT_ERROR:',str(e)[:1000],flush=True))
+        javascript_errors=[]
+        page.on('pageerror',lambda e:(javascript_errors.append(str(e)),print('JAVASCRIPT_ERROR:',str(e)[:1000],flush=True)))
         try:
             app=wait_for_release(page,version)
             app.locator('.workspace-ready[data-generation^="generations/"]').wait_for(state='attached',timeout=120000)
@@ -153,6 +154,8 @@ def run():
             report['selections'].append({'ticker':'SPY','via':'manual','bars':len(payload['records'])})
             from enhanced_smoke import verify_enhancements
             report['enhancements']=verify_enhancements(page,app)
+            report['javascript_errors']=javascript_errors
+            if javascript_errors:raise RuntimeError('Browser JavaScript errors: '+str(javascript_errors[:5]))
             report['result']='passed'
             print('BROWSER_SMOKE_REPORT:',json.dumps(report,ensure_ascii=False),flush=True)
             summary=os.environ.get('GITHUB_STEP_SUMMARY')
