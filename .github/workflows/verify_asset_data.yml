@@ -1,0 +1,99 @@
+name: Verify asset-aware data and sources
+on:
+  push:
+    branches: [fix/asset-aware-data-v25, main]
+    paths: [maintenance/apply_asset_data_v25.py, .github/workflows/verify_asset_data.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: prepared-market-data
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual dependencies and Chromium
+        run: |
+          mkdir -p work
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+      - name: Integrate guarded source on its branch and prove all regressions
+        run: |
+          if [ -f maintenance/apply_asset_data_v25.py ]; then
+            test "$GITHUB_REF" = "refs/heads/fix/asset-aware-data-v25"
+            python maintenance/apply_asset_data_v25.py
+            python - <<'PY'
+          from pathlib import Path
+          p=Path('asset_reference_smoke.py');s=p.read_text()
+          old='detail-{int(slot):03d}.jsonl.gz'
+          assert s.count(old)==1
+          p.write_text(s.replace(old,'details--{slot}.jsonl.gz'))
+          PY
+          fi
+          python -m compileall -q .
+          python -m pytest -q tests > work/asset-tests.log 2>&1 || { tail -140 work/asset-tests.log; exit 1; }
+          if [ "$GITHUB_REF" = "refs/heads/fix/asset-aware-data-v25" ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -u
+            git diff --cached --quiet || git commit -m 'Integrate tested asset-specific availability and read-only official source references'
+            git push origin HEAD:fix/asset-aware-data-v25
+          fi
+          git archive --format=zip HEAD > work/tested-source.zip
+      - name: Audit every catalog member and retain verified source evidence
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          PYTHONUNBUFFERED: '1'
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            python asset_data_audit.py > work/asset-audit.log 2>&1 || { tail -100 work/asset-audit.log; exit 1; }
+          else
+            python asset_data_audit.py --enrich --publish > work/asset-audit.log 2>&1 || { tail -100 work/asset-audit.log; exit 1; }
+          fi
+      - name: Verify all research features, AAAU and absence of the old diagnostic UI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            python verify_workspace.py --production
+          else
+            python verify_workspace.py
+          fi
+      - name: Record actual outcome and source version
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          from verification_report import publish_report
+          logs={p.name:p.read_text(errors='replace')[-20000:] for p in Path('work').glob('asset-*.log')}
+          publish_report('v25-completion',{'result':os.environ['RESULT'],'target':'production' if os.environ['GITHUB_REF']=='refs/heads/main' else 'local CI','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'logs':logs})
+          PY
+      - name: Preserve full audits, exact code and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-aware-data-evidence
+          path: |
+            work/tested-source.zip
+            work/*-report.json
+            work/*.csv
+            work/*.png
+            work/*.log
+          retention-days: 7
