@@ -1,9 +1,11 @@
 {
-  "recorded_at": "2026-09-12T11:47:05.153643+00:00",
-  "run_id": "34691912203",
-  "source_sha": "88a684275b8cfcb856f1c80702c45c3e607f7a45",
+  "recorded_at": "2026-09-12T11:50:19.579356+00:00",
+  "run_id": "34692021204",
+  "source_sha": "ec95d293cad23a580c3d3fc1675cdee192a4ba46",
   "result": "failure",
   "target": "local CI",
-  "tested_sha": "88a684275b8cfcb856f1c80702c45c3e607f7a45",
-  "logs": {}
+  "tested_sha": "ec95d293cad23a580c3d3fc1675cdee192a4ba46",
+  "logs": {
+    "asset-tests.log": ".......F................................................................ [ 22%]\n........................................................................ [ 45%]\n........................................................................ [ 67%]\n........................................................................ [ 90%]\n..............................                                           [100%]\n=================================== FAILURES ===================================\n_________ test_compact_fields_keep_source_dates_and_unconverted_units __________\n\ntmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_compact_fields_keep_sourc0')\n\n    def test_compact_fields_keep_source_dates_and_unconverted_units(tmp_path):\n        import dashboard_runtime as a\n        c=a.DashboardCache(tmp_path/'profile.sqlite3')\n        c.put('info:QQQI',{'fundFamily':'NEOS','currency':'USD','totalAssets':14000000000.,'profitMargins':0.}, {'fetched_at':'2026-09-10T12:00:00Z'})\n        profiles=profile_rows(c,['QQQI','A'])\n        assert profiles['QQQI']['Profit_Margin']==0. and profiles['QQQI']['Profile_AsOf']=='2026-09-10T12:00:00Z'\n        out=enrich_frame(fixture(),profiles).set_index('Ticker')\n>       assert out.loc['QQQI','Size_Millions']==14000. and out.loc['QQQI','Fund_Family']=='NEOS'\nE       assert (np.float64(nan) == 14000.0)\n\ntests/test_advanced_screener.py:73: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_advanced_screener.py::test_compact_fields_keep_source_dates_and_unconverted_units - assert (np.float64(nan) == 14000.0)\n1 failed, 317 passed in 28.63s\n"
+  }
 }
