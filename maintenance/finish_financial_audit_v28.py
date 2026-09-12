@@ -14,8 +14,7 @@ edit('financial_audit_job.py',"            counts=review['counts'];states.update
             counts=review['counts'];states.update(counts)""")
 edit('financial_audit_job.py',"if ticker in ('AAPL','MSFT','ORCL','TSLA','AMZN','NVDA','JPM','O','AAAU','QQQI'):examples[ticker]=review", "if ticker in ('AAPL','MSFT','ORCL','TSLA','AMZN','NVDA','JPM','O','AAAU','QQQI'):examples[ticker]={'counts':review['counts'],'fiscal_period':review['fiscal_period'],'metrics':{r['key']:{k:r[k] for k in ('value','unit','status','basis','grade')} for r in review['rows']}}")
 edit('financial_audit_job.py',"    publish_report('v28-financial-audit',report)","    publish_report('v28-financial-audit' if args.enrich else 'v28-financial-recheck',report)")
-# Retain a successful archive signature to avoid duplicate downloads on retries.
-edit('financial_audit_job.py',"    raw,meta=cache.get('external:sec-ticker-map',request_remote=False)","""    signature=hashlib.sha256('\n'.join(sorted(universe)).encode()).hexdigest()
+edit('financial_audit_job.py',"    raw,meta=cache.get('external:sec-ticker-map',request_remote=False)","""    signature=hashlib.sha256(chr(10).join(sorted(universe)).encode()).hexdigest()
     previous,pmeta=cache.get('external:financial-bulk-success',request_remote=False)
     if (isinstance(previous,dict) and previous.get('method')==METHOD
             and previous.get('catalog_signature')==signature and time.time()-timestamp(pmeta.get('fetched_at'))<20*3600):
@@ -24,7 +23,6 @@ edit('financial_audit_job.py',"    raw,meta=cache.get('external:sec-ticker-map',
 edit('financial_audit_job.py',"            report['available']=True", """            report['available']=True
             cache.put('external:financial-bulk-success',{'method':METHOD,'catalog_signature':signature,'report':dict(report)},
                       {'fetched_at':now})""")
-# Keep provenance read by keyboard/screen readers as well as hover.
 edit('company_research_ui.py','<abbr tabindex="0" title="{escape(tip,quote=True)}">','<abbr tabindex="0" title="{escape(tip,quote=True)}" aria-label="{escape(r[\"metric\"]+\": \"+tip,quote=True)}">')
 Path(__file__).unlink()
 print('Full-catalog arithmetic verification and repeat-safe evidence pipeline completed.')
