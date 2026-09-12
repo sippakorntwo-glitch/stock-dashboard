@@ -10,9 +10,8 @@ from dashboard_selection import set_selected
 from chart_ranges import get_chart_service
 from ranking_board import render_board, consume_selection
 from dashboard_views import (VIEWS, table, plot, original_watchlist, overview, filter_universe,
-                             industry_summary, technical, fundamentals, risk, compare, health)
+                             industry_summary, technical, fundamentals, risk, compare)
 
-from quality_views import render_family_counts, render_symbol_quality
 
 LAYOUT = 'single-page'
 
@@ -86,16 +85,16 @@ def main():
         st.title('Stock Research Workspace')
         from workspace_theme import navigation
         navigation()
-        st.caption('หน้าเดียว: ตารางหุ้น → กราฟและแผนซื้อ → พื้นฐานและปันผล → ความเสี่ยง → เปรียบเทียบ → สถานะข้อมูล')
+        st.caption('หน้าเดียว: ตารางหุ้น → กราฟและแผนซื้อ → พื้นฐานและปันผล → ความเสี่ยง → เปรียบเทียบ')
         st.caption('ข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด · รุ่นโปรแกรม '+a.APP_VERSION)
         counts=quality_counts(frame)
         for box,label,key in zip(st.columns(4),['รายการทั้งหมด','มีราคา','ราคาภายใน 4 วัน','มีราคาแต่ไม่ระบุวัน'],['total','priced','recent','unknown_time']): box.metric(label,f'{counts[key]:,}')
         if error: st.warning(error)
+        if cache.error: st.warning('Local cache มีข้อผิดพลาด: '+cache.error)
         state=reader.status() if reader else {'manifest':{}}
         if state.get('error'): st.warning(state['error'])
         if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
         else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
-        render_family_counts(cache)
         etfs=int(frame.Asset_Type.eq('ETF').sum())
         st.caption(f'Catalog: {len(frame)-etfs:,} stocks + {etfs:,} ETF / ETP entries. Directory: {a.ETF_DIRECTORY_AS_OF or "legacy"}. The Nasdaq ETF flag can include ETNs; check each product name. Listing coverage is not data coverage; missing records are prepared in bounded batches.')
         if a.ETF_DIRECTORY_CONFLICTS:
@@ -121,7 +120,6 @@ def main():
         st.caption(f"วันที่ราคา Watchlist: {row.get('Price_AsOf') or 'ไม่ระบุ'} | ประวัติดึงสำเร็จ {a.thai_time(meta.get('fetched_at'))} | quote ณ {a.thai_time(info.get('regularMarketTime'))}")
         from live_quote_ui import render_live_quote
         render_live_quote(ticker)
-        render_symbol_quality(ticker,cache,history,info)
         # Render once per selected symbol, not once per row in the catalog.
         with st.container(key='research_technical'):
             st.header('กราฟและแผนซื้อ')
@@ -143,10 +141,9 @@ def main():
         industry_summary(work)
     if not outside.empty:
         with st.expander(f'CSV นอกชุดหลัก ({len(outside):,} ตัว)'): table(outside)
-    with st.container(key='research_health'):
-        health(reader,frame,cache)
     _poll_data(reader,revision,worker_revision,chart_revision)
     st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')
     from ui_stability import page_receipt
     st.markdown(page_receipt(a.APP_VERSION,ticker,st.session_state.get('stock_search',''),
-                            time.monotonic()-render_started),unsafe_allow_html=True)
+                            time.monotonic()-render_started,
+                            generation=(reader.status().get('manifest') or {}).get('generation','') if reader else ''),unsafe_allow_html=True)

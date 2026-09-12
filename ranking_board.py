@@ -145,4 +145,4 @@ def render_board(cache):
                 for check in entry_checks(row,now)['checks']:
                     st.caption(('✓ ' if check['passed'] else 'รอ: ')+check['check']+' — '+check['detail'])
                 for blocker in row.get('blockers',[])[:5]:st.caption('เงื่อนไข: '+str(blocker))
-            st.json({'coverage':counts,'excluded':payload.get('excluded',{})},expanded=False)
+            # Detailed coverage remains in the published backend ranking report.

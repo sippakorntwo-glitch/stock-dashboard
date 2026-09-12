@@ -26,7 +26,7 @@ def wait_range(page,app,period,seconds=90):
 
 def verify_enhancements(page,app):
     report={'page_size':500,'tooltips':False,'ranges':[]}
-    query=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
+    query=app.get_by_role('textbox',name='Search Ticker / Company',exact=True)
     query.fill('');query.press('Enter')
     expect(app.get_by_text(re.compile(r'แสดง 500 ตัวในหน้านี้'))).to_be_visible(timeout=30000)
     item=app.locator('.st-key-research_technical .workspace-help-table abbr').filter(has_text='ราคา > EMA20 > EMA50').first

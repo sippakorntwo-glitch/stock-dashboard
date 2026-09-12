@@ -53,4 +53,4 @@ def apply_theme():
     st.markdown(CSS,unsafe_allow_html=True)
 
 def navigation():
-    st.markdown('''<nav class="workspace-nav" aria-label="Research sections"><a href="#selected-stock">กราฟและราคา</a><a href="#fundamentals">พื้นฐานและปันผล</a><a href="#risk">ความเสี่ยง</a><a href="#comparison">เปรียบเทียบ</a><a href="#system-status">สถานะระบบ</a></nav>''',unsafe_allow_html=True)
+    st.markdown('''<nav class="workspace-nav" aria-label="Research sections"><a href="#selected-stock">กราฟและราคา</a><a href="#fundamentals">พื้นฐานและปันผล</a><a href="#risk">ความเสี่ยง</a><a href="#comparison">เปรียบเทียบ</a></nav>''',unsafe_allow_html=True)

@@ -21,7 +21,7 @@ def verify_board(page,app):
     if not labels:
         expect(board.get_by_text(re.compile('ยังไม่มีหุ้นผ่านเงื่อนไขซื้อครบ'))).to_be_visible()
         report['empty_is_honest']=True;return report
-    query=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
+    query=app.get_by_role('textbox',name='Search Ticker / Company',exact=True)
     query.fill('NO-MATCH-FOR-RANK-TEST');query.press('Enter');page.wait_for_timeout(1000)
     expect(board.get_by_text(re.compile(re.escape(f'ตรวจ {total:,}/{total:,} รายชื่อ')))).to_be_visible()
     assert [x.split(' · ')[1] for x in buttons.all_text_contents()]==[x.split(' · ')[1] for x in labels]

@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 from playwright.sync_api import sync_playwright, expect
 
 URL='https://my-stock-terminal.streamlit.app/'
-VIEWS=['ภาพรวมและค้นหา','กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว','สถานะข้อมูล']
+VIEWS=['ภาพรวมและค้นหา','กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว']
 
 
 def no_exception(app):
@@ -97,12 +97,13 @@ def verify_sections(app):
     expect(app.locator('.st-key-research_risk [data-testid="stPlotlyChart"]')).to_have_count(2,timeout=60000)
     expect(app.locator('.st-key-research_comparison [data-testid="stPlotlyChart"]')).to_have_count(1,timeout=120000)
     expect(app.locator('.st-key-research_comparison').get_by_role('heading',name='Correlation ของผลตอบแทนรายวัน')).to_be_visible(timeout=30000)
-    expect(app.locator('.st-key-research_health').get_by_role('heading',name='สถานะข้อมูลและระบบ')).to_be_visible()
+    from clean_ui_smoke import verify_clean_presentation
+    verify_clean_presentation(app)
     no_exception(app)
 
 
 def click_filtered_stock(page,app,ticker,*,row_selector=False):
-    query=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
+    query=app.get_by_role('textbox',name='Search Ticker / Company',exact=True)
     query.fill(ticker);query.press('Enter')
     wait_page_ready(app,app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True).input_value(),ticker)
     expect(app.get_by_text('หุ้นในผลค้นหา: '+ticker,exact=True)).to_be_visible(timeout=30000)
@@ -128,7 +129,7 @@ def run():
         page.on('pageerror',lambda e:print('JAVASCRIPT_ERROR:',str(e)[:1000],flush=True))
         try:
             app=wait_for_release(page,version)
-            app.get_by_text(re.compile(r'generations/')).first.wait_for(timeout=120000)
+            app.locator('.workspace-ready[data-generation^="generations/"]').wait_for(state='attached',timeout=120000)
             app.get_by_text(re.compile('พร้อมใช้งาน · ตรวจชุดข้อมูลใหม่|กำลังอ่านข้อมูลที่เลือก')).first.wait_for(timeout=30000)
             chart,payload=chart_for_symbol(page,app,'AAPL')
             chart.locator('#rsi').click();chart.locator('#macd').click()

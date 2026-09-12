@@ -45,11 +45,21 @@ def filter_universe(frame):
     x,y=st.columns(2)
     asset=x.selectbox('Asset Type',['All','Common Stock','ETF'],key='screen_asset')
     status=y.selectbox('Trend Status',['All','PASS','FAIL','Insufficient Data'],key='screen_status')
-    query=st.text_input('Search Ticker / Company / Industry',key='stock_search', help='Exact ticker matches take priority. Use name:MSFT to find every fund or company name containing MSFT.').strip()
-    mode=st.selectbox('Return Display',RETURN_MODES,key='screen_return_mode',
+    # Keep this dropdown outside Advanced Filters and preserve its existing key.
+    options=categorical_values(frame,'Industry')
+    key='screen_cat_Industry'
+    if key in st.session_state:
+        valid=[v for v in st.session_state[key] if v in options]
+        if valid!=st.session_state[key]:st.session_state[key]=valid
+    industry=st.multiselect('Industry / ETF Category',options,key=key,
+        placeholder='All industries / ETF categories',
+        help='Select one or more industries or ETF categories. Empty means all. Choices come from the published catalog, not guessed labels.')
+    search_box,return_box=st.columns([3,2])
+    query=search_box.text_input('Search Ticker / Company',key='stock_search', help='Exact ticker matches take priority. Use name:MSFT to find every fund or company name containing MSFT.').strip()
+    mode=return_box.selectbox('Return Display',RETURN_MODES,key='screen_return_mode',
         help='Adjusted-close cumulative returns by default. Annualized mode changes only the 3Y/5Y display and filters, not trading scores. Neither mode is a live quote, price-only return, or official fund NAV return.')
     work=display_returns(frame,mode)
-    categories={};bounds={};required=[]
+    categories={'Industry':industry};bounds={};required=[]
     if asset!='All':categories['Asset_Type']=[asset]
     if status!='All':categories['Status']=['ไม่มีข้อมูล','ข้อมูลไม่พอ','INSUFFICIENT'] if status=='Insufficient Data' else [status]
     from screening import search_frame
@@ -57,7 +67,7 @@ def filter_universe(frame):
     with st.expander('Advanced Filters',expanded=False):
         st.caption('AND between filters; OR within each multi-select. Blank limits mean no restriction. Missing values never become zero.')
         cols=st.columns(2)
-        for i,(field,label) in enumerate(CATEGORIES.items()):
+        for i,(field,label) in enumerate((item for item in CATEGORIES.items() if item[0]!='Industry')):
             options=categorical_values(frame,field)
             key='screen_cat_'+field
             if key in st.session_state:
@@ -105,7 +115,7 @@ def filter_universe(frame):
     work=work.sort_values([sort,'Ticker'] if sort!='Ticker' else ['Ticker'],ascending=not descending,na_position='last',kind='stable')
     work.attrs['return_mode']=mode
     applied={'Asset Type':asset,'Trend Status':status,'Return Display':mode,
-             'Search Ticker / Company / Industry':query,
+             'Search Ticker / Company':query,
              'Reset Version':st.session_state.get('_filter_reset_version',0),
              'Return Periods to Filter':[labels_for_mode(mode)[f] for f in periods]}
     applied.update({label:categories.get(field,[]) for field,label in CATEGORIES.items()})

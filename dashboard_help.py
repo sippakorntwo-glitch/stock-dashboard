@@ -112,6 +112,7 @@ _DEFINITIONS = [
 ]
 HELP={alias:description for aliases,description in _DEFINITIONS for alias in aliases.split('|')}
 LABEL_COLUMNS=('เกณฑ์','ปัจจัย','มิติ','ข้อมูล','ช่วงคะแนน')
+PRESENTATION_ONLY_HIDDEN_COLUMNS=frozenset(('ข้อมูลอ้างอิง','แหล่งข้อมูล','ฟิลด์ต้นทาง','สถานะข้อมูล'))
 
 
 def field_help(name):
@@ -149,8 +150,9 @@ def table_html(frame,height=420):
         return f'<{tag}><abbr tabindex="0" title="{escape(tip,quote=True)}" aria-label="{escape(_plain(value)+": "+tip,quote=True)}">{escape(_plain(value))} <small>ⓘ</small></abbr></{tag}>'
     # Keep help ONLY on indicator/criterion names, not values or category/source cells.
     if label == 'ช่วงคะแนน':label = None
-    tooltip_column = list(frame.columns).index(label) if label else -1
-    headers=''.join(cell('th',col) for col in frame.columns)
+    columns=[col for col in frame.columns if col not in PRESENTATION_ONLY_HIDDEN_COLUMNS]
+    tooltip_column = columns.index(label) if label in columns else -1
+    headers=''.join(cell('th',col) for col in columns)
     rows=[];definitions=[]
     for _,row in frame.iterrows():
         key=row.get('ฟิลด์ต้นทาง',row.get(label,''))
@@ -158,7 +160,7 @@ def table_html(frame,height=420):
         if label=='ข้อมูล' and key=='industry':tip='จำนวนรายการที่มีอุตสาหกรรมหรือหมวดกองทุนที่ระบบรู้จัก'
         for extra in ['การแปลผล','ช่วง / คะแนน','ข้อมูลอ้างอิง']:
             if extra in row:tip+='\n'+extra+': '+_plain(row[extra])
-        rows.append('<tr>'+''.join(cell('td',row[col],tip if col==label else None) for col in frame.columns)+'</tr>')
+        rows.append('<tr>'+''.join(cell('td',row[col],tip if col==label else None) for col in columns)+'</tr>')
         if label:definitions.append(f'<dt>{escape(_plain(row[label]))}</dt><dd>{escape(tip)}</dd>')
     css='''<style>.workspace-help-scroll{overflow:auto;border:1px solid #29384c;border-radius:8px}.workspace-help-table{border-collapse:collapse;width:100%;font:14px sans-serif;color:inherit}.workspace-help-table th,.workspace-help-table td{border-bottom:1px solid #29384c;padding:10px 12px;text-align:left;vertical-align:top}.workspace-help-table th{position:sticky;top:0;background:#142135;z-index:1}.workspace-help-table abbr{border:0;text-decoration:none;cursor:help}.workspace-help-table abbr:focus{outline:2px solid #34d399;outline-offset:3px}.workspace-help-table small{color:#91b8bf}.workspace-glossary{font:14px sans-serif;margin:8px 0 16px}.workspace-glossary summary{cursor:pointer}.workspace-glossary dt{font-weight:bold;margin-top:10px}.workspace-glossary dd{margin:4px 0 10px 12px;line-height:1.6;white-space:pre-line}</style>'''
     return css+f'<div class="workspace-help-scroll" style="max-height:{int(height or 420)}px"><table class="workspace-help-table" data-tooltip-column="{tooltip_column}"><thead><tr>{headers}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'+f'<details class="workspace-glossary"><summary>ⓘ อ่านคำอธิบายแต่ละแถว (สำหรับมือถือหรือแป้นพิมพ์)</summary><dl>{"".join(definitions)}</dl></details>'

@@ -42,8 +42,9 @@ def claim_refresh(state: MutableMapping, observed: tuple, rendered: tuple) -> bo
     return True
 
 
-def page_receipt(version: str, ticker: str, query: str, elapsed: float) -> str:
+def page_receipt(version: str, ticker: str, query: str, elapsed: float, *, generation: str = '') -> str:
     values = [html.escape(str(value), quote=True) for value in (version,ticker,query)]
     return (f'<span class="workspace-ready" data-version="{values[0]}" '
             f'data-ticker="{values[1]}" data-search="{values[2]}" '
-            f'data-render-seconds="{elapsed:.3f}"></span>')
+            f'data-render-seconds="{elapsed:.3f}" '
+            f'data-generation="{html.escape(str(generation), quote=True)}"></span>')
