@@ -1,0 +1,205 @@
+--- a/app.py
++++ b/app.py
+@@ -1,7 +1,7 @@
+-"""Stock Research Workspace release 2026-09-12.22; single-page entrypoint."""
++"""Stock Research Workspace release 2026-09-12.23; single-page entrypoint."""
+ import dashboard_runtime as runtime
+ 
+-EXPECTED_RELEASE = '2026-09-12.22'
++EXPECTED_RELEASE = '2026-09-12.23'
+ 
+ 
+ def __getattr__(name):
+--- a/dashboard_runtime.py
++++ b/dashboard_runtime.py
+@@ -11,7 +11,7 @@
+ install_catalog(core)
+ from analytics import extended_snapshot, METRIC_VERSION
+ from data_sync import ObjectStore, SnapshotReader, config_from
+-APP_VERSION = '2026-09-12.22'
++APP_VERSION = '2026-09-12.23'
+ DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
+ BaseCache = core.DashboardCache
+ base_snapshot = core.scan_snapshot_row
+@@ -102,9 +102,12 @@
+ 
+ 
+ def build_universe_frame(csv_frame, saved=None, classifications=None):
+-    frame, outside = base_build_frame(csv_frame, saved, classifications)
++    # Parse classification timestamps in two vectorized operations instead
++    # of roughly 20,000 scalar parses on every user interaction.
++    frame, outside = base_build_frame(csv_frame, saved, None)
+     computed = list(dict.fromkeys([*core.WATCHLIST_NUMERIC_COLUMNS, 'Suggested_Stop', *EXTRA_NUMERIC]))
+-    indexed = frame.set_index('Ticker')
++    from ui_stability import merge_classifications
++    indexed = merge_classifications(frame.set_index('Ticker'), classifications)
+     rows = [r for t,r in (saved or {}).items() if t in indexed.index and r.get('Data_Status') == 'โหลดสำเร็จ']
+     if rows:
+         incoming = pd.DataFrame(rows).drop_duplicates('Ticker', keep='last').set_index('Ticker')
+--- a/dashboard_ui.py
++++ b/dashboard_ui.py
+@@ -1,6 +1,7 @@
+ """One-page workspace: click a stock in the table; research appears below it."""
+ from __future__ import annotations
+ import re
++import time
+ import pandas as pd
+ import streamlit as st
+ import dashboard_runtime as a
+@@ -27,10 +28,12 @@
+     worker = a.get_updater().state()
+     chart_state = get_chart_service().state()
+     from chart_ranges import first_chart_load_finished
+-    if first_chart_load_finished(st.session_state,chart_state['revision'],rendered_chart_revision):
+-        st.session_state.pop('_chart_first_load_waiting',None)
+-        st.rerun()
+-    if state['revision'] != rendered_revision or worker['revision'] != rendered_worker_revision:
++    from ui_stability import claim_refresh
++    first_chart = first_chart_load_finished(st.session_state,chart_state['revision'],rendered_chart_revision)
++    observed = (a.APP_VERSION,state['revision'],worker['revision'],chart_state['revision'] if first_chart else None)
++    rendered = (a.APP_VERSION,rendered_revision,rendered_worker_revision,rendered_chart_revision if first_chart else None)
++    if claim_refresh(st.session_state,observed,rendered):
++        if first_chart:st.session_state.pop('_chart_first_load_waiting',None)
+         st.rerun()
+     if state['busy'] or worker['busy'] or chart_state['busy']:
+         st.caption('กำลังอ่านข้อมูลที่เลือก ข้อมูลเดิมยังใช้งานได้ — แสดงผลให้อัตโนมัติเมื่อโหลดเสร็จ')
+@@ -43,6 +46,7 @@
+ 
+ 
+ def main():
++    render_started = time.monotonic()
+     st.set_page_config(page_title='Stock Research Workspace',page_icon='📊',layout='wide')
+     from workspace_theme import apply_theme
+     apply_theme()
+@@ -143,3 +147,6 @@
+         health(reader,frame,cache)
+     _poll_data(reader,revision,worker_revision,chart_revision)
+     st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')
++    from ui_stability import page_receipt
++    st.markdown(page_receipt(a.APP_VERSION,ticker,st.session_state.get('stock_search',''),
++                            time.monotonic()-render_started),unsafe_allow_html=True)
+--- a/data_sync.py
++++ b/data_sync.py
+@@ -267,14 +267,17 @@
+                 self.shards.popitem(last=False)
+         else:
+             self.shards.move_to_end(slot)
++        changed = False
+         for key, value, meta in self.shards[slot].get(ticker, []):
+             # Bypass the reader hook when comparing local data to remote data.
+             with self.cache._lock:
+                 old, oldmeta = self.cache.get(key, request_remote=False)
+                 if old is None or stamp_seconds(meta.get("fetched_at")) > stamp_seconds(oldmeta.get("fetched_at")):
+                     self.cache.put(key, value, meta)
++                    changed = True
+         self.attempted[marker] = float("inf")
+-        self.revision += 1
++        if changed:
++            self.revision += 1
+ 
+     def _run(self):
+         try:
+--- a/workspace_boot.py
++++ b/workspace_boot.py
+@@ -15,7 +15,7 @@
+ 
+ _LOCK = threading.RLock()
+ _ROOT = Path(__file__).resolve().parent
+-_MODULES = ('dashboard_ui', 'dashboard_views', 'dashboard_runtime', 'dashboard_core', 'data_sync', 'github_store', 'analytics', 'dashboard_help', 'chart_ranges', 'dashboard_selection', 'chart_performance', 'ranking_board', 'ranking_engine', 'ranking_policy', 'data_quality', 'metadata_repair', 'quality_views', 'chart_inspector', 'return_periods', 'catalog_extension', 'screening', 'filters_ui', 'return_audit_ui', 'workspace_theme', 'live_quotes', 'live_quote_ui')
++_MODULES = ('dashboard_ui', 'dashboard_views', 'dashboard_runtime', 'dashboard_core', 'data_sync', 'github_store', 'analytics', 'dashboard_help', 'chart_ranges', 'dashboard_selection', 'chart_performance', 'ranking_board', 'ranking_engine', 'ranking_policy', 'data_quality', 'metadata_repair', 'quality_views', 'chart_inspector', 'return_periods', 'catalog_extension', 'screening', 'filters_ui', 'return_audit_ui', 'workspace_theme', 'live_quotes', 'live_quote_ui', 'ui_stability')
+ 
+ 
+ def needs_refresh(runtime: ModuleType, ui: ModuleType, expected: str) -> bool:
+--- a/production_smoke.py
++++ b/production_smoke.py
+@@ -29,7 +29,7 @@
+     for frame in page.frames:
+         try:
+             u=urlsplit(frame.url)
+-            print('BROWSER_FRAME:',json.dumps({'url':u.scheme+'://'+u.netloc+u.path,'payload_count':frame.locator('#payload').count(),'canvas_count':frame.locator('canvas').count(),'text':frame.locator('body').inner_text()[:12000]},ensure_ascii=False),flush=True)
++            print('BROWSER_FRAME:',json.dumps({'url':u.scheme+'://'+u.netloc+u.path,'payload_count':frame.locator('#payload').count(),'canvas_count':frame.locator('canvas').count(),'text':frame.locator('body').inner_text()[:12000], 'inputs':frame.locator('input').evaluate_all('(xs)=>xs.filter(x=>x.type!=="password").map(x=>({label:x.getAttribute("aria-label"),value:x.value}))'), 'receipts':frame.locator('.workspace-ready,.export-ready').evaluate_all('(xs)=>xs.map(x=>({...x.dataset}))')},ensure_ascii=False),flush=True)
+         except Exception as exc: print('FRAME_DIAGNOSTIC_ERROR:',type(exc).__name__,flush=True)
+ 
+ 
+@@ -58,7 +58,21 @@
+     raise RuntimeError('Production did not load the expected single-page release')
+ 
+ 
++def wait_page_ready(app,ticker,query=None):
++    # A new chart can appear before the slower sections finish. Wait for the
++    # real completed page, not a guessed sleep or an old section's DOM.
++    app.wait_for_function("""([ticker,query]) => {
++        const nodes=[...document.querySelectorAll('.workspace-ready')];
++        const e=nodes.at(-1);
++        return e && e.dataset.ticker===ticker
++            && (query===null || e.dataset.search===query)
++            && !e.closest('[data-stale="true"]');
++    }""",arg=[ticker,query],timeout=120000)
++    no_exception(app)
++
++
+ def chart_for_symbol(page,app,ticker):
++    wait_page_ready(app,ticker)
+     deadline=time.monotonic()+120
+     while time.monotonic()<deadline:
+         no_exception(app)
+@@ -90,6 +104,7 @@
+ def click_filtered_stock(page,app,ticker,*,row_selector=False):
+     query=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
+     query.fill(ticker);query.press('Enter')
++    wait_page_ready(app,app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True).input_value(),ticker)
+     expect(app.get_by_text('หุ้นในผลค้นหา: '+ticker,exact=True)).to_be_visible(timeout=30000)
+     page.wait_for_timeout(1000)
+     # Glide draws into a canvas but receives real pointer events on its scroller.
+--- /dev/null
++++ b/ui_stability.py
+@@ -0,0 +1,49 @@
++"""Fast, equivalent catalog joins and idempotent session refresh coordination.
++
++No provider calls, score changes, or synthetic market values. The completion
++receipt is emitted only after this session's complete research page is built.
++"""
++from __future__ import annotations
++import html
++from typing import MutableMapping
++import pandas as pd
++
++
++def merge_classifications(frame: pd.DataFrame, classifications: dict | None) -> pd.DataFrame:
++    """Vectorized equivalent of the original per-ticker timestamp comparison."""
++    records = {
++        ticker: {field: row.get(field, '') for field in ('Industry','Industry_Source','Industry_Time')}
++        for ticker, row in (classifications or {}).items()
++        if ticker in frame.index and row.get('Industry')
++    }
++    if not records:
++        return frame
++    incoming = pd.DataFrame.from_dict(records, orient='index')
++    old = pd.to_datetime(frame.loc[incoming.index,'Industry_Time'], utc=True, errors='coerce', format='mixed')
++    new = pd.to_datetime(incoming['Industry_Time'], utc=True, errors='coerce', format='mixed')
++    eligible = old.isna() | (new.notna() & old.le(new))
++    indices = incoming.index[eligible]
++    for field in ('Industry','Industry_Source','Industry_Time'):
++        # Preserve provider None and unknown source fields; never invent a label.
++        frame[field] = frame[field].astype(object)
++        frame.loc[indices,field] = incoming.loc[indices,field]
++    return frame
++
++
++def claim_refresh(state: MutableMapping, observed: tuple, rendered: tuple) -> bool:
++    """Consume a changed data revision BEFORE requesting a full rerun.
++
++    A queued automatic fragment can retain the old rendered arguments. It must
++    not cancel successive user reruns by requesting the same revision again.
++    """
++    if observed == rendered or state.get('_claimed_data_refresh') == observed:
++        return False
++    state['_claimed_data_refresh'] = observed
++    return True
++
++
++def page_receipt(version: str, ticker: str, query: str, elapsed: float) -> str:
++    values = [html.escape(str(value), quote=True) for value in (version,ticker,query)]
++    return (f'<span class="workspace-ready" data-version="{values[0]}" '
++            f'data-ticker="{values[1]}" data-search="{values[2]}" '
++            f'data-render-seconds="{elapsed:.3f}"></span>')
