@@ -43,29 +43,40 @@ jobs:
           p.write_text(s)
           PY
           fi
+          for patch in maintenance/finish_financial_audit_v28.py maintenance/review_financial_edges_v28.py; do
+            if [ -f "$patch" ]; then
+              test "$GITHUB_REF" = refs/heads/feat/company-financial-review-v28
+              python "$patch"
+            fi
+          done
           python -m compileall -q .
           python -m pytest -q tests > work/company-tests.log 2>&1 || { tail -130 work/company-tests.log; exit 1; }
           if [ "$GITHUB_REF" = refs/heads/feat/company-financial-review-v28 ]; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add -u
-            git diff --cached --quiet || git commit -m 'Integrate tested company financial review and separate technical/fund metrics'
+            git diff --cached --quiet || git commit -m 'Integrate tested financial review, independent arithmetic audit and safe sector interpretation'
             git push origin HEAD:feat/company-financial-review-v28
           fi
           git archive --format=zip HEAD > work/tested-source.zip
-      - name: Verify actual financial data is published before browser assertions
+      - name: Verify filed financial data is present in the public snapshot
         run: |
           python - <<'PY'
           import time
           from quality_smoke import public_summary
           from company_review_smoke import source_objects
-          for attempt in range(30):
+          for attempt in range(12):
             manifest,_=public_summary()
             ref=source_objects('AAPL',manifest).get('reference:AAPL',({},{}))[0]
             if ref.get('financial_statements',{}).get('annual'):break
             time.sleep(30)
-          else:raise RuntimeError('Filed statement data was not published; do not claim this release complete')
+          else:raise RuntimeError('Filed statements were not published; this release cannot be called complete')
           PY
+      - name: Independently audit every company metric and existing price return
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: python financial_audit_job.py > work/company-data-recheck.log 2>&1 || { tail -100 work/company-data-recheck.log; exit 1; }
       - name: Full real-browser system and company financial review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -89,13 +100,14 @@ jobs:
           p=Path('work/company-tests.log')
           publish_report('v28-completion',{'result':os.environ['RESULT'],'target':'production' if os.environ['GITHUB_REF']=='refs/heads/main' else 'local CI','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tests':p.read_text(errors='replace')[-20000:] if p.exists() else 'Test step did not run'})
           PY
-      - name: Preserve tested source and browser evidence
+      - name: Preserve tested source, whole-catalog audits and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: company-review-evidence
           path: |
             work/tested-source.zip
+            work/company-*.csv
             work/*-report.json
             work/*.png
             work/*.log
