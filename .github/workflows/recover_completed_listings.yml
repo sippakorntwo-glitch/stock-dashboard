@@ -1,7 +1,7 @@
 name: Verify recovered new listings
 on:
   workflow_run:
-    workflows: [Refresh and audit release data]
+    workflows: [Refresh and audit release data, Deploy and verify workspace]
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -12,7 +12,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   recover:
-    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+    # A historical browser timeout must not strand an otherwise valid data
+    # checkpoint. Recovery still validates it and respects source cooldowns.
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false' && (github.event_name == 'workflow_dispatch' || contains(fromJSON('["success","failure"]'), github.event.workflow_run.conclusion))
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
