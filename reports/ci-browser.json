@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-09-12T11:19:18.942323+00:00",
-  "run_id": "34689750729",
-  "source_sha": "d9775fa5e38ca896ea283699a2b498a29c932f19",
+  "recorded_at": "2026-09-12T12:09:29.874401+00:00",
+  "run_id": "34692145947",
+  "source_sha": "603b9abd16de7065437e14a0710daaffd80ed121",
   "url": "http://127.0.0.1:8501/",
   "expected_version": "2026-09-12.25",
   "layout": "single-page",
@@ -64,8 +64,8 @@
       {
         "period": "10 ปี",
         "interval": "1d",
-        "bars": 2765,
-        "visible_bars": 2514,
+        "bars": 2764,
+        "visible_bars": 2513,
         "first": "2016-09-12",
         "last": "2026-09-11"
       }
@@ -104,13 +104,13 @@
         {
           "ticker": "SPY",
           "period": "10 ปี",
-          "percent": 314.7410428501781,
+          "percent": 314.7409741677153,
           "display": "+314.74%",
           "first": "2016-09-12",
           "last": "2026-09-11",
-          "start_price": 184.28125,
+          "start_price": 184.28128051757812,
           "end_price": 764.2899780273438,
-          "bars": 2514
+          "bars": 2513
         },
         {
           "ticker": "SPY",
@@ -212,13 +212,13 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260912T110544Z-0115f559",
+      "source_generation": "generations/20260912T115553Z-6362bf77",
       "counts": {
         "universe": 9876,
         "prices": 9875,
         "histories": 9875,
         "info": 9876,
-        "industry": 9336,
+        "industry": 9349,
         "dividends_checked": 9875,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3801,
@@ -264,7 +264,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260912T110544Z-0115f559",
+      "source_generation": "generations/20260912T115553Z-6362bf77",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -327,7 +327,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "http://127.0.0.1:8501/",
-      "verified_at": "2026-09-12T11:17:44.583466+00:00",
+      "verified_at": "2026-09-12T12:07:56.822158+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -348,7 +348,7 @@
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-12T11:18:46.468066+00:00",
+        "fetched_at": "2026-09-12T12:08:58.783396+00:00",
         "state": "stale"
       },
       "theme": {
@@ -377,15 +377,15 @@
       "SEC_examples": [
         {
           "ticker": "AAPL",
-          "verified_cik": null,
-          "stored_fiscal_records": 0,
-          "submissions_checked_at": null
+          "verified_cik": 320193,
+          "stored_fiscal_records": 9,
+          "submissions_checked_at": "2026-09-12T11:53:51.828805+00:00"
         },
         {
           "ticker": "MSFT",
-          "verified_cik": null,
-          "stored_fiscal_records": 0,
-          "submissions_checked_at": null
+          "verified_cik": 789019,
+          "stored_fiscal_records": 9,
+          "submissions_checked_at": "2026-09-12T11:53:53.927928+00:00"
         }
       ],
       "result": "passed"
@@ -393,10 +393,10 @@
   },
   "result": "passed",
   "server_memory": {
-    "VmHWM": "733996 kB",
-    "VmRSS": "620820 kB"
+    "VmHWM": "709068 kB",
+    "VmRSS": "622628 kB"
   },
   "target": "http://127.0.0.1:8501/",
-  "tested_sha": "f1f346b86d342b7d9a23535a29cb71057eb6c6d6",
-  "server_log_tail": "2026-09-12 11:15:45.941 Uvicorn server started on 127.0.0.1:8501\n\n  You can now view your Streamlit app in your browser.\n\n  URL: http://127.0.0.1:8501\n\n  Stopping...\n"
+  "tested_sha": "e6a67080f5787633515ddfbb8210e0e2a4e9111e",
+  "server_log_tail": "2026-09-12 12:05:55.242 Uvicorn server started on 127.0.0.1:8501\n\n  You can now view your Streamlit app in your browser.\n\n  URL: http://127.0.0.1:8501\n\n  Stopping...\n"
 }
