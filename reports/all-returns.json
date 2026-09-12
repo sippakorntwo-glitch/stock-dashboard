@@ -1,127 +1,35 @@
 {
-  "recorded_at": "2026-09-12T06:30:41.370852+00:00",
-  "run_id": "34676966119",
-  "source_sha": "cbde1a301db7b707cff965d491f16facfbb116c1",
+  "recorded_at": "2026-09-12T07:03:20.772538+00:00",
+  "run_id": "34679424039",
+  "source_sha": "6e3ca88cc27d6ec1cf52ab7614ff0de3ca23cafb",
   "catalog_members": 9876,
-  "priced_members": 9868,
-  "periods_checked": 78944,
+  "priced_members": 9875,
+  "periods_checked": 79000,
   "numeric_periods": 67556,
-  "unavailable_periods": 11388,
+  "unavailable_periods": 11444,
   "max_difference_pp": 1.3642420526593924e-11,
   "errors": [],
   "unpriced_tickers": [
-    "ACBE",
-    "ACBH",
-    "GEMQ",
-    "MLCC",
-    "XLCD",
-    "XLCU",
-    "XLPD",
-    "XLPU"
+    "XLCU"
   ],
   "error_count": 0,
   "result": "passed",
-  "audited_at": "2026-09-12T06:30:31.248621+00:00",
-  "generation": "generations/20260912T062537Z-410fbbc8",
-  "published_at": "2026-09-12T06:29:49.267670+00:00",
+  "audited_at": "2026-09-12T07:03:19.192673+00:00",
+  "generation": "generations/20260912T065824Z-7da3621a",
+  "published_at": "2026-09-12T07:02:38.369138+00:00",
   "quality_counts": {
     "universe": 9876,
-    "prices": 9868,
-    "histories": 9868,
+    "prices": 9875,
+    "histories": 9875,
     "info": 9876,
     "industry": 9335,
-    "dividends_checked": 9873,
+    "dividends_checked": 9875,
     "dividends_with_payments": 6074,
-    "dividends_no_payments": 3799,
+    "dividends_no_payments": 3801,
     "unattempted_info": 0,
     "unattempted_dividends": 0
   },
   "missing_price_diagnostic": {
-    "ACBE": {
-      "rows": 1,
-      "last_observations": [
-        {
-          "date": "2026-09-11 00:00:00-04:00",
-          "values": {
-            "Open": 24.999900817871094,
-            "High": 25.010000228881836,
-            "Low": 24.903499603271484,
-            "Close": 24.903499603271484,
-            "Adj Close": 24.903499603271484,
-            "Volume": 1116.0
-          }
-        }
-      ],
-      "note": "Diagnostic only; no raw close substituted for adjusted returns."
-    },
-    "ACBH": {
-      "rows": 1,
-      "last_observations": [
-        {
-          "date": "2026-09-11 00:00:00-04:00",
-          "values": {
-            "Open": 24.94969940185547,
-            "High": 24.94969940185547,
-            "Low": 24.94969940185547,
-            "Close": 24.94969940185547,
-            "Adj Close": 24.94969940185547,
-            "Volume": 61.0
-          }
-        }
-      ],
-      "note": "Diagnostic only; no raw close substituted for adjusted returns."
-    },
-    "GEMQ": {
-      "rows": 1,
-      "last_observations": [
-        {
-          "date": "2026-09-11 00:00:00-04:00",
-          "values": {
-            "Open": 24.56290054321289,
-            "High": 24.56290054321289,
-            "Low": 24.56290054321289,
-            "Close": 24.56290054321289,
-            "Adj Close": 24.56290054321289,
-            "Volume": 0.0
-          }
-        }
-      ],
-      "note": "Diagnostic only; no raw close substituted for adjusted returns."
-    },
-    "MLCC": {
-      "rows": 1,
-      "last_observations": [
-        {
-          "date": "2026-09-11 00:00:00-04:00",
-          "values": {
-            "Open": 51.13999938964844,
-            "High": 51.25,
-            "Low": 51.0099983215332,
-            "Close": 51.0099983215332,
-            "Adj Close": 51.0099983215332,
-            "Volume": 1300.0
-          }
-        }
-      ],
-      "note": "Diagnostic only; no raw close substituted for adjusted returns."
-    },
-    "XLCD": {
-      "rows": 1,
-      "last_observations": [
-        {
-          "date": "2026-09-11 00:00:00-04:00",
-          "values": {
-            "Open": 47.6343994140625,
-            "High": 47.6343994140625,
-            "Low": 47.6343994140625,
-            "Close": 47.6343994140625,
-            "Adj Close": 47.6343994140625,
-            "Volume": 8.0
-          }
-        }
-      ],
-      "note": "Diagnostic only; no raw close substituted for adjusted returns."
-    },
     "XLCU": {
       "rows": 1,
       "last_observations": [
@@ -134,40 +42,6 @@
             "Close": 26.158700942993164,
             "Adj Close": 26.158700942993164,
             "Volume": 0.0
-          }
-        }
-      ],
-      "note": "Diagnostic only; no raw close substituted for adjusted returns."
-    },
-    "XLPD": {
-      "rows": 1,
-      "last_observations": [
-        {
-          "date": "2026-09-11 00:00:00-04:00",
-          "values": {
-            "Open": 49.423301696777344,
-            "High": 49.423301696777344,
-            "Low": 49.423301696777344,
-            "Close": 49.423301696777344,
-            "Adj Close": 49.423301696777344,
-            "Volume": 7.0
-          }
-        }
-      ],
-      "note": "Diagnostic only; no raw close substituted for adjusted returns."
-    },
-    "XLPU": {
-      "rows": 1,
-      "last_observations": [
-        {
-          "date": "2026-09-11 00:00:00-04:00",
-          "values": {
-            "Open": 25.23710060119629,
-            "High": 25.23710060119629,
-            "Low": 25.23710060119629,
-            "Close": 25.23710060119629,
-            "Adj Close": 25.23710060119629,
-            "Volume": 8.0
           }
         }
       ],
