@@ -37,9 +37,10 @@ def verify_company_review(page,app):
         card=app.locator('.company-review')
         expect(card).to_have_count(1)
         expect(card).to_have_attribute('data-ticker',ticker)
-        observations={}
+        observations={};by_label={}
         for row in card.locator('tr[data-metric]').all():
             key=row.get_attribute('data-metric');observations[key]=json.loads(row.get_attribute('data-observation'))
+            by_label[row.locator('td').first.inner_text().split('ⓘ')[0].strip()]=observations[key]
             tooltip=row.locator('abbr[title]')
             expect(tooltip).to_have_count(1)
             assert len(tooltip.get_attribute('title'))>100
@@ -72,7 +73,7 @@ def verify_company_review(page,app):
         assert len(rows)==len(observations)
         assert all('Definition' in r and r['Definition'] for r in rows)
         for row in rows:
-            metric=next(o for k,o in observations.items() if card.locator('tr[data-metric="'+k+'"]').locator('td').first.inner_text().replace(' ⓘ','').strip()==row['Metric'])
+            metric=by_label[row['Metric']]
             if metric['value'] is None:assert not row['Value']
             else:assert math.isclose(float(row['Value']),metric['value'],rel_tol=1e-8,abs_tol=1e-7)
         assert card.locator('[data-financial-group]').count()>=8

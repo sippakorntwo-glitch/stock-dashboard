@@ -55,6 +55,11 @@ def enrich_bulk(cache,universe,etfs,profiles):
     circuit,_=cache.get('external:sec-circuit',request_remote=False)
     if isinstance(circuit,dict) and timestamp(circuit.get('next_attempt_after'))>time.time():
         report['error']='SEC persistent cooldown still active';return report
+    signature=hashlib.sha256(chr(10).join(sorted(universe)).encode()).hexdigest()
+    previous,pmeta=cache.get('external:financial-bulk-success',request_remote=False)
+    if (isinstance(previous,dict) and previous.get('method')==METHOD
+            and previous.get('catalog_signature')==signature and time.time()-timestamp(pmeta.get('fetched_at'))<20*3600):
+        return {**previous['report'],'reused_verified_archive':True}
     raw,meta=cache.get('external:sec-ticker-map',request_remote=False)
     client=SecClient(max_requests=1)
     try:
@@ -103,6 +108,8 @@ def enrich_bulk(cache,universe,etfs,profiles):
                     except (ValueError,TypeError,KeyError,json.JSONDecodeError) as exc:
                         report['errors'].append({'ticker':ticker,'error':type(exc).__name__})
             report['available']=True
+            cache.put('external:financial-bulk-success',{'method':METHOD,'catalog_signature':signature,'report':dict(report)},
+                      {'fetched_at':now})
     except (requests.RequestException,ValueError,OSError) as exc:
         report['error']=type(exc).__name__+': '+str(exc)[:250]
         status=getattr(getattr(exc,'response',None),'status_code',None)
@@ -130,6 +137,10 @@ def audit_reviews(cache,universe,etfs):
             reference=objects.get('reference:'+ticker,({},{}))[0]
             review=build_review(ticker,info,reference,is_etf=ticker in etfs)
             if len(review['rows'])!=len(METRICS):raise RuntimeError('Metric coverage contract failed')
+            from financial_review_validation import validate_review
+            validation=validate_review(review)
+            totals['arithmetic_values_checked']+=validation['checked_values']
+            failures.extend({'ticker':ticker,**error} for error in validation['errors'])
             counts=review['counts'];states.update(counts)
             if ticker not in etfs:
                 totals['companies_with_filed_statements']+=bool(review['fiscal_period'])
@@ -144,7 +155,7 @@ def audit_reviews(cache,universe,etfs):
                 'Missing':counts.get('missing',0),'Invalid':counts.get('invalid',0),
                 'Missing_Metrics':'; '.join(r['metric'] for r in review['rows'] if r['status']=='missing'),
                 'Invalid_Metrics':'; '.join(r['metric'] for r in review['rows'] if r['status']=='invalid')})
-            if ticker in ('AAPL','MSFT','ORCL','TSLA','AMZN','NVDA','JPM','O','AAAU','QQQI'):examples[ticker]=review
+            if ticker in ('AAPL','MSFT','ORCL','TSLA','AMZN','NVDA','JPM','O','AAAU','QQQI'):examples[ticker]={'counts':review['counts'],'fiscal_period':review['fiscal_period'],'metrics':{r['key']:{k:r[k] for k in ('value','unit','status','basis','grade')} for r in review['rows']}}
     field_report={k:dict(v) for k,v in fields.items()}
     with open('work/company-metric-coverage.csv','w',newline='',encoding='utf-8-sig') as f:
         names=['Metric','Available','Missing','Invalid','Not_Meaningful','Not_Applicable'];writer=csv.DictWriter(f,fieldnames=names);writer.writeheader()
@@ -186,7 +197,7 @@ def main():
         updated=publish_snapshot(store,cache,universe,{'task':'full-catalog financial statements','financial_method':METHOD},manifest,watchlist_csv=source.get('watchlist_csv'))
         report['published_generation']=updated['generation'];report['published_at']=updated['published_at']
     report['finished_at']=utc_now()
-    publish_report('v28-financial-audit',report)
+    publish_report('v28-financial-audit' if args.enrich else 'v28-financial-recheck',report)
     print(json.dumps({k:v for k,v in report.items() if k!='examples'},ensure_ascii=False,allow_nan=False),flush=True)
 
 if __name__=='__main__':main()

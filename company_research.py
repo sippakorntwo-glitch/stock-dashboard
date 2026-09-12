@@ -11,7 +11,7 @@ METHOD='company-review-v1'
 SPECIAL_SECTORS={'financial services','real estate'}
 PROVIDER_ONLY={'market_cap','forward_pe','trailing_pe','price_book','price_sales','ev_ebitda','ev_sales','payout','target','analysts','eps','revenue_growth','earnings_growth'}
 RATIOS_POSITIVE={'forward_pe','trailing_pe','price_book','price_sales','ev_ebitda'}
-NONNEGATIVE={'assets','liabilities','cash','debt','interest_expense','current_ratio','quick_ratio','cash_ratio','analysts','payout','buybacks','dividends_paid','capex','sbc'}
+NONNEGATIVE={'assets','liabilities','cash','debt','interest_expense','current_ratio','quick_ratio','cash_ratio','analysts','payout','buybacks','dividends_paid','capex','dividend_yield'}
 STATUS_TEXT={'missing':'Not reported','not_applicable':'N/A — Not applicable','not_meaningful':'N/M — Not meaningful','invalid':'— (invalid source value)'}
 
 
@@ -61,7 +61,7 @@ def build_review(ticker,info,reference=None,*,is_etf=False,as_of=None,wacc=None)
     if wacc is not None and not 0<=wacc<=100:raise ValueError('WACC assumption must be between 0 and 100 percent')
     statements=reference.get('financial_statements',{})
     annual=statements.get('annual',[]) if statements.get('method')==STATEMENT_METHOD else []
-    annual=[p for p in annual if isinstance(p,dict) and p.get('end') and p['end']<=current.date().isoformat()]
+    annual=[p for p in annual if isinstance(p,dict) and p.get('end') and p['end']<=current.date().isoformat() and p.get('filed') and p['filed']<=current.date().isoformat()]
     annual=sorted(annual,key=lambda p:p['end'],reverse=True)
     period=annual[0] if annual else None
     calculated=derived_metrics(period,annual[1] if len(annual)>1 else None) if period else {}
@@ -98,6 +98,8 @@ def build_review(ticker,info,reference=None,*,is_etf=False,as_of=None,wacc=None)
         if not is_etf and status=='available':
             if spec.key in NONNEGATIVE and value<0:status='invalid'
             if spec.key in RATIOS_POSITIVE and value<=0:status='not_meaningful'
+            if spec.key=='de' and value<0:
+                status='not_meaningful';note='A negative debt/equity ratio is not low leverage; investigate non-positive equity or source inconsistency.'
             if spec.key in ('price_book','de','roe') and source.startswith('Yahoo') and book is not None and book<=0:
                 status='not_meaningful';note='Provider book value is non-positive; do not interpret this equity ratio as favorable.'
             if spec.key=='payout' and (finite(info.get('trailingEps')) is not None and finite(info['trailingEps'])<=0):status='not_meaningful'

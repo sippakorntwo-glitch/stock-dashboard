@@ -50,7 +50,7 @@ def finite(value):
 
 
 def parse_statements(payload,cik,as_of=None,currency=None):
-    if isinstance(cik,bool) or int(payload.get('cik',0))!=int(cik):raise ValueError('Company facts CIK mismatch')
+    if isinstance(cik,bool) or isinstance(payload.get('cik'),bool) or int(payload.get('cik',0))!=int(cik):raise ValueError('Company facts CIK mismatch')
     today=date.fromisoformat(str(as_of or date.today())[:10])
     gaap=payload.get('facts',{}).get('us-gaap',{})
     observations=defaultdict(dict);durations={};ambiguities=0

@@ -64,4 +64,6 @@ def verify_enhancements(page,app):
     report['asset_aware_sources']=verify_asset_reference(page,app)
     from chart_stability_smoke import verify_chart_stability
     report['chart_refresh_stability']=verify_chart_stability(page,app)
+    from company_review_smoke import verify_company_review
+    report['company_financial_review']=verify_company_review(page,app)
     return report
