@@ -1,0 +1,1439 @@
+{
+  "recorded_at": "2026-09-12T11:10:01.561157+00:00",
+  "run_id": "34689750729",
+  "source_sha": "d9775fa5e38ca896ea283699a2b498a29c932f19",
+  "started_at": "2026-09-12T11:05:02.329283+00:00",
+  "source_generation": "generations/20260912T103925Z-4dee212f",
+  "arithmetic": {
+    "catalog_members": 9876,
+    "priced_members": 9875,
+    "periods_checked": 79000,
+    "numeric_periods": 67556,
+    "unavailable_periods": 11444,
+    "max_difference_pp": 1.3642420526593924e-11,
+    "errors": [],
+    "unpriced_tickers": [
+      "XLCU"
+    ],
+    "error_count": 0,
+    "result": "passed"
+  },
+  "before": {
+    "catalog_members": 9876,
+    "counts": {
+      "company": 4200,
+      "with_missing_applicable_fields": 8729,
+      "with_invalid_fields": 12,
+      "portfolio_fund": 4863,
+      "non_equity_fund": 812,
+      "physical_gold": 1
+    },
+    "field_counts": {
+      "stock.currency": {
+        "available": 4200
+      },
+      "stock.industry": {
+        "available": 4187,
+        "not_reported": 13
+      },
+      "stock.sector": {
+        "available": 4187,
+        "not_reported": 13
+      },
+      "stock.country": {
+        "available": 4189,
+        "not_reported": 11
+      },
+      "stock.marketCap": {
+        "available": 4155,
+        "not_reported": 45
+      },
+      "stock.forwardPE": {
+        "available": 2437,
+        "not_meaningful": 860,
+        "not_reported": 899,
+        "invalid": 4
+      },
+      "stock.trailingPE": {
+        "available": 2269,
+        "not_reported": 1923,
+        "invalid": 8
+      },
+      "stock.priceToBook": {
+        "available": 4132,
+        "not_reported": 68
+      },
+      "stock.enterpriseToEbitda": {
+        "available": 3361,
+        "not_reported": 839
+      },
+      "stock.revenueGrowth": {
+        "available": 3462,
+        "not_reported": 738
+      },
+      "stock.earningsGrowth": {
+        "available": 1923,
+        "not_reported": 2277
+      },
+      "stock.profitMargins": {
+        "available": 4189,
+        "not_reported": 11
+      },
+      "stock.operatingMargins": {
+        "available": 4189,
+        "not_reported": 11
+      },
+      "stock.returnOnEquity": {
+        "available": 3557,
+        "not_reported": 643
+      },
+      "stock.returnOnAssets": {
+        "available": 3827,
+        "not_reported": 373
+      },
+      "stock.operatingCashflow": {
+        "available": 4059,
+        "not_reported": 141
+      },
+      "stock.freeCashflow": {
+        "available": 3411,
+        "not_reported": 789
+      },
+      "stock.totalCash": {
+        "available": 4122,
+        "not_reported": 78
+      },
+      "stock.totalDebt": {
+        "available": 4141,
+        "not_reported": 59
+      },
+      "stock.targetMeanPrice": {
+        "available": 3127,
+        "not_reported": 1073
+      },
+      "stock.numberOfAnalystOpinions": {
+        "available": 3127,
+        "not_reported": 1073
+      },
+      "stock.regularMarketPrice": {
+        "available": 4200
+      },
+      "stock.regularMarketTime": {
+        "available": 4200
+      },
+      "stock.beta": {
+        "available": 3515,
+        "not_reported": 685
+      },
+      "stock.bid": {
+        "available": 4167,
+        "not_reported": 33
+      },
+      "stock.ask": {
+        "available": 4164,
+        "not_reported": 36
+      },
+      "stock.earningsTimestampStart": {
+        "available": 3589,
+        "not_reported": 611
+      },
+      "stock.category": {
+        "not_applicable": 4200
+      },
+      "stock.fundFamily": {
+        "not_applicable": 4200
+      },
+      "stock.totalAssets": {
+        "not_applicable": 4200
+      },
+      "stock.navPrice": {
+        "not_applicable": 4200
+      },
+      "stock.beta3Year": {
+        "not_applicable": 4200
+      },
+      "stock.forwardEps": {
+        "available": 3299,
+        "not_reported": 901
+      },
+      "stock.trailingEps": {
+        "available": 4024,
+        "not_reported": 176
+      },
+      "stock.annualReportExpenseRatio": {
+        "not_applicable": 4200
+      },
+      "fund.currency": {
+        "available": 5676
+      },
+      "fund.industry": {
+        "not_applicable": 5676
+      },
+      "fund.sector": {
+        "not_applicable": 5676
+      },
+      "fund.country": {
+        "not_reported": 5650,
+        "available": 26
+      },
+      "fund.marketCap": {
+        "not_applicable": 5676
+      },
+      "fund.forwardPE": {
+        "not_reported": 4838,
+        "not_applicable": 813,
+        "not_meaningful": 11,
+        "available": 14
+      },
+      "fund.trailingPE": {
+        "available": 3384,
+        "not_applicable": 813,
+        "not_reported": 1479
+      },
+      "fund.priceToBook": {
+        "available": 111,
+        "not_reported": 4752,
+        "not_applicable": 813
+      },
+      "fund.enterpriseToEbitda": {
+        "not_applicable": 5676
+      },
+      "fund.revenueGrowth": {
+        "not_applicable": 5676
+      },
+      "fund.earningsGrowth": {
+        "not_applicable": 5676
+      },
+      "fund.profitMargins": {
+        "not_applicable": 5676
+      },
+      "fund.operatingMargins": {
+        "not_applicable": 5676
+      },
+      "fund.returnOnEquity": {
+        "not_applicable": 5676
+      },
+      "fund.returnOnAssets": {
+        "not_applicable": 5676
+      },
+      "fund.operatingCashflow": {
+        "not_applicable": 5676
+      },
+      "fund.freeCashflow": {
+        "not_applicable": 5676
+      },
+      "fund.totalCash": {
+        "not_applicable": 5676
+      },
+      "fund.totalDebt": {
+        "not_applicable": 5676
+      },
+      "fund.targetMeanPrice": {
+        "not_applicable": 5676
+      },
+      "fund.numberOfAnalystOpinions": {
+        "not_applicable": 5676
+      },
+      "fund.regularMarketPrice": {
+        "available": 5676
+      },
+      "fund.regularMarketTime": {
+        "available": 5676
+      },
+      "fund.beta": {
+        "not_reported": 5675,
+        "available": 1
+      },
+      "fund.bid": {
+        "available": 5610,
+        "not_reported": 66
+      },
+      "fund.ask": {
+        "available": 5610,
+        "not_reported": 66
+      },
+      "fund.earningsTimestampStart": {
+        "not_applicable": 5676
+      },
+      "fund.category": {
+        "available": 5149,
+        "not_reported": 527
+      },
+      "fund.fundFamily": {
+        "available": 5150,
+        "not_reported": 526
+      },
+      "fund.totalAssets": {
+        "available": 5141,
+        "not_reported": 535
+      },
+      "fund.navPrice": {
+        "available": 5152,
+        "not_reported": 524
+      },
+      "fund.beta3Year": {
+        "available": 5149,
+        "not_reported": 527
+      },
+      "fund.forwardEps": {
+        "not_applicable": 5676
+      },
+      "fund.trailingEps": {
+        "not_applicable": 5676
+      },
+      "fund.annualReportExpenseRatio": {
+        "not_reported": 5676
+      }
+    },
+    "examples": {
+      "AAPL": {
+        "asset_profile": "company",
+        "field_states": {
+          "currency": "available",
+          "industry": "available",
+          "sector": "available",
+          "country": "available",
+          "marketCap": "available",
+          "forwardPE": "available",
+          "trailingPE": "available",
+          "priceToBook": "available",
+          "enterpriseToEbitda": "available",
+          "revenueGrowth": "available",
+          "earningsGrowth": "available",
+          "profitMargins": "available",
+          "operatingMargins": "available",
+          "returnOnEquity": "available",
+          "returnOnAssets": "available",
+          "operatingCashflow": "available",
+          "freeCashflow": "available",
+          "totalCash": "available",
+          "totalDebt": "available",
+          "targetMeanPrice": "available",
+          "numberOfAnalystOpinions": "available",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "available",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "available",
+          "category": "not_applicable",
+          "fundFamily": "not_applicable",
+          "totalAssets": "not_applicable",
+          "navPrice": "not_applicable",
+          "beta3Year": "not_applicable",
+          "forwardEps": "available",
+          "trailingEps": "available",
+          "annualReportExpenseRatio": "not_applicable"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": "Consumer Electronics",
+          "forwardPE": 33.428104,
+          "trailingPE": 36.673542,
+          "trailingEps": 8.73,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-10T16:09:50.695062+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "MSFT": {
+        "asset_profile": "company",
+        "field_states": {
+          "currency": "available",
+          "industry": "available",
+          "sector": "available",
+          "country": "available",
+          "marketCap": "available",
+          "forwardPE": "available",
+          "trailingPE": "available",
+          "priceToBook": "available",
+          "enterpriseToEbitda": "available",
+          "revenueGrowth": "available",
+          "earningsGrowth": "available",
+          "profitMargins": "available",
+          "operatingMargins": "available",
+          "returnOnEquity": "available",
+          "returnOnAssets": "available",
+          "operatingCashflow": "available",
+          "freeCashflow": "available",
+          "totalCash": "available",
+          "totalDebt": "available",
+          "targetMeanPrice": "available",
+          "numberOfAnalystOpinions": "available",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "available",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "available",
+          "category": "not_applicable",
+          "fundFamily": "not_applicable",
+          "totalAssets": "not_applicable",
+          "navPrice": "not_applicable",
+          "beta3Year": "not_applicable",
+          "forwardEps": "available",
+          "trailingEps": "available",
+          "annualReportExpenseRatio": "not_applicable"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": "Software - Infrastructure",
+          "forwardPE": 20.8389,
+          "trailingPE": 27.36685,
+          "trailingEps": 17.95,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-10T16:09:53.619245+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "ORCL": {
+        "asset_profile": "company",
+        "field_states": {
+          "currency": "available",
+          "industry": "available",
+          "sector": "available",
+          "country": "available",
+          "marketCap": "available",
+          "forwardPE": "available",
+          "trailingPE": "available",
+          "priceToBook": "available",
+          "enterpriseToEbitda": "available",
+          "revenueGrowth": "available",
+          "earningsGrowth": "available",
+          "profitMargins": "available",
+          "operatingMargins": "available",
+          "returnOnEquity": "available",
+          "returnOnAssets": "available",
+          "operatingCashflow": "available",
+          "freeCashflow": "available",
+          "totalCash": "available",
+          "totalDebt": "available",
+          "targetMeanPrice": "available",
+          "numberOfAnalystOpinions": "available",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "available",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "available",
+          "category": "not_applicable",
+          "fundFamily": "not_applicable",
+          "totalAssets": "not_applicable",
+          "navPrice": "not_applicable",
+          "beta3Year": "not_applicable",
+          "forwardEps": "available",
+          "trailingEps": "available",
+          "annualReportExpenseRatio": "not_applicable"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": "Software - Infrastructure",
+          "forwardPE": 14.198464,
+          "trailingPE": 26.708406,
+          "trailingEps": 5.83,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-10T16:24:23.911268+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "SPY": {
+        "asset_profile": "portfolio_fund",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_reported",
+          "trailingPE": "available",
+          "priceToBook": "available",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "not_applicable",
+          "category": "available",
+          "fundFamily": "available",
+          "totalAssets": "available",
+          "navPrice": "available",
+          "beta3Year": "available",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": "Large Blend",
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": 24.494297,
+          "trailingEps": null,
+          "totalAssets": 811937038336,
+          "navPrice": 765.8613,
+          "beta3Year": 1.0
+        },
+        "profile_fetched_at": "2026-09-10T16:10:10.198810+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "QQQI": {
+        "asset_profile": "portfolio_fund",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_reported",
+          "trailingPE": "available",
+          "priceToBook": "not_reported",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "not_applicable",
+          "category": "available",
+          "fundFamily": "available",
+          "totalAssets": "available",
+          "navPrice": "available",
+          "beta3Year": "available",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": "Derivative Income",
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": 29.235441,
+          "trailingEps": null,
+          "totalAssets": 14252521472,
+          "navPrice": 54.5644,
+          "beta3Year": 0.0
+        },
+        "profile_fetched_at": "2026-09-11T20:27:08.182325+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "AAAU": {
+        "asset_profile": "physical_gold",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_applicable",
+          "trailingPE": "not_applicable",
+          "priceToBook": "not_applicable",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "not_applicable",
+          "category": "available",
+          "fundFamily": "available",
+          "totalAssets": "available",
+          "navPrice": "available",
+          "beta3Year": "available",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": "Commodities Focused",
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": null,
+          "trailingEps": null,
+          "totalAssets": 2874477056,
+          "navPrice": 43.51,
+          "beta3Year": 0.45
+        },
+        "profile_fetched_at": "2026-09-11T21:05:40.530161+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "GEMQ": {
+        "asset_profile": "portfolio_fund",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_reported",
+          "trailingPE": "not_reported",
+          "priceToBook": "not_reported",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "not_reported",
+          "ask": "not_reported",
+          "earningsTimestampStart": "not_applicable",
+          "category": "not_reported",
+          "fundFamily": "not_reported",
+          "totalAssets": "not_reported",
+          "navPrice": "not_reported",
+          "beta3Year": "not_reported",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": null,
+          "trailingEps": null,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-11T21:37:46.953351+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "XLCU": {
+        "asset_profile": "portfolio_fund",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_reported",
+          "trailingPE": "not_reported",
+          "priceToBook": "not_reported",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "not_applicable",
+          "category": "not_reported",
+          "fundFamily": "not_reported",
+          "totalAssets": "not_reported",
+          "navPrice": "not_reported",
+          "beta3Year": "not_reported",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": null,
+          "trailingEps": null,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-11T22:24:50.981382+00:00",
+        "price_asof": ""
+      }
+    }
+  },
+  "external_sources": {
+    "mapping_source": "https://www.sec.gov/files/company_tickers.json",
+    "mapping_matched": 0,
+    "submissions_verified": 0,
+    "financial_reports": 0,
+    "industry_fallbacks": [],
+    "reference_symbols": [],
+    "errors": [
+      {
+        "source": "SEC ticker index",
+        "error": "HTTPError"
+      }
+    ],
+    "provider_requests": 1,
+    "blocked": true,
+    "reference_records": 1,
+    "http_evidence": []
+  },
+  "after": {
+    "catalog_members": 9876,
+    "counts": {
+      "company": 4200,
+      "with_missing_applicable_fields": 8729,
+      "with_invalid_fields": 12,
+      "portfolio_fund": 4863,
+      "non_equity_fund": 812,
+      "physical_gold": 1
+    },
+    "field_counts": {
+      "stock.currency": {
+        "available": 4200
+      },
+      "stock.industry": {
+        "available": 4187,
+        "not_reported": 13
+      },
+      "stock.sector": {
+        "available": 4187,
+        "not_reported": 13
+      },
+      "stock.country": {
+        "available": 4189,
+        "not_reported": 11
+      },
+      "stock.marketCap": {
+        "available": 4155,
+        "not_reported": 45
+      },
+      "stock.forwardPE": {
+        "available": 2437,
+        "not_meaningful": 860,
+        "not_reported": 899,
+        "invalid": 4
+      },
+      "stock.trailingPE": {
+        "available": 2269,
+        "not_reported": 1923,
+        "invalid": 8
+      },
+      "stock.priceToBook": {
+        "available": 4132,
+        "not_reported": 68
+      },
+      "stock.enterpriseToEbitda": {
+        "available": 3361,
+        "not_reported": 839
+      },
+      "stock.revenueGrowth": {
+        "available": 3462,
+        "not_reported": 738
+      },
+      "stock.earningsGrowth": {
+        "available": 1923,
+        "not_reported": 2277
+      },
+      "stock.profitMargins": {
+        "available": 4189,
+        "not_reported": 11
+      },
+      "stock.operatingMargins": {
+        "available": 4189,
+        "not_reported": 11
+      },
+      "stock.returnOnEquity": {
+        "available": 3557,
+        "not_reported": 643
+      },
+      "stock.returnOnAssets": {
+        "available": 3827,
+        "not_reported": 373
+      },
+      "stock.operatingCashflow": {
+        "available": 4059,
+        "not_reported": 141
+      },
+      "stock.freeCashflow": {
+        "available": 3411,
+        "not_reported": 789
+      },
+      "stock.totalCash": {
+        "available": 4122,
+        "not_reported": 78
+      },
+      "stock.totalDebt": {
+        "available": 4141,
+        "not_reported": 59
+      },
+      "stock.targetMeanPrice": {
+        "available": 3127,
+        "not_reported": 1073
+      },
+      "stock.numberOfAnalystOpinions": {
+        "available": 3127,
+        "not_reported": 1073
+      },
+      "stock.regularMarketPrice": {
+        "available": 4200
+      },
+      "stock.regularMarketTime": {
+        "available": 4200
+      },
+      "stock.beta": {
+        "available": 3515,
+        "not_reported": 685
+      },
+      "stock.bid": {
+        "available": 4167,
+        "not_reported": 33
+      },
+      "stock.ask": {
+        "available": 4164,
+        "not_reported": 36
+      },
+      "stock.earningsTimestampStart": {
+        "available": 3589,
+        "not_reported": 611
+      },
+      "stock.category": {
+        "not_applicable": 4200
+      },
+      "stock.fundFamily": {
+        "not_applicable": 4200
+      },
+      "stock.totalAssets": {
+        "not_applicable": 4200
+      },
+      "stock.navPrice": {
+        "not_applicable": 4200
+      },
+      "stock.beta3Year": {
+        "not_applicable": 4200
+      },
+      "stock.forwardEps": {
+        "available": 3299,
+        "not_reported": 901
+      },
+      "stock.trailingEps": {
+        "available": 4024,
+        "not_reported": 176
+      },
+      "stock.annualReportExpenseRatio": {
+        "not_applicable": 4200
+      },
+      "fund.currency": {
+        "available": 5676
+      },
+      "fund.industry": {
+        "not_applicable": 5676
+      },
+      "fund.sector": {
+        "not_applicable": 5676
+      },
+      "fund.country": {
+        "not_reported": 5650,
+        "available": 26
+      },
+      "fund.marketCap": {
+        "not_applicable": 5676
+      },
+      "fund.forwardPE": {
+        "not_reported": 4838,
+        "not_applicable": 813,
+        "not_meaningful": 11,
+        "available": 14
+      },
+      "fund.trailingPE": {
+        "available": 3384,
+        "not_applicable": 813,
+        "not_reported": 1479
+      },
+      "fund.priceToBook": {
+        "available": 111,
+        "not_reported": 4752,
+        "not_applicable": 813
+      },
+      "fund.enterpriseToEbitda": {
+        "not_applicable": 5676
+      },
+      "fund.revenueGrowth": {
+        "not_applicable": 5676
+      },
+      "fund.earningsGrowth": {
+        "not_applicable": 5676
+      },
+      "fund.profitMargins": {
+        "not_applicable": 5676
+      },
+      "fund.operatingMargins": {
+        "not_applicable": 5676
+      },
+      "fund.returnOnEquity": {
+        "not_applicable": 5676
+      },
+      "fund.returnOnAssets": {
+        "not_applicable": 5676
+      },
+      "fund.operatingCashflow": {
+        "not_applicable": 5676
+      },
+      "fund.freeCashflow": {
+        "not_applicable": 5676
+      },
+      "fund.totalCash": {
+        "not_applicable": 5676
+      },
+      "fund.totalDebt": {
+        "not_applicable": 5676
+      },
+      "fund.targetMeanPrice": {
+        "not_applicable": 5676
+      },
+      "fund.numberOfAnalystOpinions": {
+        "not_applicable": 5676
+      },
+      "fund.regularMarketPrice": {
+        "available": 5676
+      },
+      "fund.regularMarketTime": {
+        "available": 5676
+      },
+      "fund.beta": {
+        "not_reported": 5675,
+        "available": 1
+      },
+      "fund.bid": {
+        "available": 5610,
+        "not_reported": 66
+      },
+      "fund.ask": {
+        "available": 5610,
+        "not_reported": 66
+      },
+      "fund.earningsTimestampStart": {
+        "not_applicable": 5676
+      },
+      "fund.category": {
+        "available": 5149,
+        "not_reported": 527
+      },
+      "fund.fundFamily": {
+        "available": 5150,
+        "not_reported": 526
+      },
+      "fund.totalAssets": {
+        "available": 5141,
+        "not_reported": 535
+      },
+      "fund.navPrice": {
+        "available": 5152,
+        "not_reported": 524
+      },
+      "fund.beta3Year": {
+        "available": 5149,
+        "not_reported": 527
+      },
+      "fund.forwardEps": {
+        "not_applicable": 5676
+      },
+      "fund.trailingEps": {
+        "not_applicable": 5676
+      },
+      "fund.annualReportExpenseRatio": {
+        "not_reported": 5676
+      }
+    },
+    "examples": {
+      "AAPL": {
+        "asset_profile": "company",
+        "field_states": {
+          "currency": "available",
+          "industry": "available",
+          "sector": "available",
+          "country": "available",
+          "marketCap": "available",
+          "forwardPE": "available",
+          "trailingPE": "available",
+          "priceToBook": "available",
+          "enterpriseToEbitda": "available",
+          "revenueGrowth": "available",
+          "earningsGrowth": "available",
+          "profitMargins": "available",
+          "operatingMargins": "available",
+          "returnOnEquity": "available",
+          "returnOnAssets": "available",
+          "operatingCashflow": "available",
+          "freeCashflow": "available",
+          "totalCash": "available",
+          "totalDebt": "available",
+          "targetMeanPrice": "available",
+          "numberOfAnalystOpinions": "available",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "available",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "available",
+          "category": "not_applicable",
+          "fundFamily": "not_applicable",
+          "totalAssets": "not_applicable",
+          "navPrice": "not_applicable",
+          "beta3Year": "not_applicable",
+          "forwardEps": "available",
+          "trailingEps": "available",
+          "annualReportExpenseRatio": "not_applicable"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": "Consumer Electronics",
+          "forwardPE": 33.428104,
+          "trailingPE": 36.673542,
+          "trailingEps": 8.73,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-10T16:09:50.695062+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "MSFT": {
+        "asset_profile": "company",
+        "field_states": {
+          "currency": "available",
+          "industry": "available",
+          "sector": "available",
+          "country": "available",
+          "marketCap": "available",
+          "forwardPE": "available",
+          "trailingPE": "available",
+          "priceToBook": "available",
+          "enterpriseToEbitda": "available",
+          "revenueGrowth": "available",
+          "earningsGrowth": "available",
+          "profitMargins": "available",
+          "operatingMargins": "available",
+          "returnOnEquity": "available",
+          "returnOnAssets": "available",
+          "operatingCashflow": "available",
+          "freeCashflow": "available",
+          "totalCash": "available",
+          "totalDebt": "available",
+          "targetMeanPrice": "available",
+          "numberOfAnalystOpinions": "available",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "available",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "available",
+          "category": "not_applicable",
+          "fundFamily": "not_applicable",
+          "totalAssets": "not_applicable",
+          "navPrice": "not_applicable",
+          "beta3Year": "not_applicable",
+          "forwardEps": "available",
+          "trailingEps": "available",
+          "annualReportExpenseRatio": "not_applicable"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": "Software - Infrastructure",
+          "forwardPE": 20.8389,
+          "trailingPE": 27.36685,
+          "trailingEps": 17.95,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-10T16:09:53.619245+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "ORCL": {
+        "asset_profile": "company",
+        "field_states": {
+          "currency": "available",
+          "industry": "available",
+          "sector": "available",
+          "country": "available",
+          "marketCap": "available",
+          "forwardPE": "available",
+          "trailingPE": "available",
+          "priceToBook": "available",
+          "enterpriseToEbitda": "available",
+          "revenueGrowth": "available",
+          "earningsGrowth": "available",
+          "profitMargins": "available",
+          "operatingMargins": "available",
+          "returnOnEquity": "available",
+          "returnOnAssets": "available",
+          "operatingCashflow": "available",
+          "freeCashflow": "available",
+          "totalCash": "available",
+          "totalDebt": "available",
+          "targetMeanPrice": "available",
+          "numberOfAnalystOpinions": "available",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "available",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "available",
+          "category": "not_applicable",
+          "fundFamily": "not_applicable",
+          "totalAssets": "not_applicable",
+          "navPrice": "not_applicable",
+          "beta3Year": "not_applicable",
+          "forwardEps": "available",
+          "trailingEps": "available",
+          "annualReportExpenseRatio": "not_applicable"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": "Software - Infrastructure",
+          "forwardPE": 14.198464,
+          "trailingPE": 26.708406,
+          "trailingEps": 5.83,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-10T16:24:23.911268+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "SPY": {
+        "asset_profile": "portfolio_fund",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_reported",
+          "trailingPE": "available",
+          "priceToBook": "available",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "not_applicable",
+          "category": "available",
+          "fundFamily": "available",
+          "totalAssets": "available",
+          "navPrice": "available",
+          "beta3Year": "available",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": "Large Blend",
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": 24.494297,
+          "trailingEps": null,
+          "totalAssets": 811937038336,
+          "navPrice": 765.8613,
+          "beta3Year": 1.0
+        },
+        "profile_fetched_at": "2026-09-10T16:10:10.198810+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "QQQI": {
+        "asset_profile": "portfolio_fund",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_reported",
+          "trailingPE": "available",
+          "priceToBook": "not_reported",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "not_applicable",
+          "category": "available",
+          "fundFamily": "available",
+          "totalAssets": "available",
+          "navPrice": "available",
+          "beta3Year": "available",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": "Derivative Income",
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": 29.235441,
+          "trailingEps": null,
+          "totalAssets": 14252521472,
+          "navPrice": 54.5644,
+          "beta3Year": 0.0
+        },
+        "profile_fetched_at": "2026-09-11T20:27:08.182325+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "AAAU": {
+        "asset_profile": "physical_gold",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_applicable",
+          "trailingPE": "not_applicable",
+          "priceToBook": "not_applicable",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "not_applicable",
+          "category": "available",
+          "fundFamily": "available",
+          "totalAssets": "available",
+          "navPrice": "available",
+          "beta3Year": "available",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": "Commodities Focused",
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": null,
+          "trailingEps": null,
+          "totalAssets": 2874477056,
+          "navPrice": 43.51,
+          "beta3Year": 0.45
+        },
+        "profile_fetched_at": "2026-09-11T21:05:40.530161+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "GEMQ": {
+        "asset_profile": "portfolio_fund",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_reported",
+          "trailingPE": "not_reported",
+          "priceToBook": "not_reported",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "not_reported",
+          "ask": "not_reported",
+          "earningsTimestampStart": "not_applicable",
+          "category": "not_reported",
+          "fundFamily": "not_reported",
+          "totalAssets": "not_reported",
+          "navPrice": "not_reported",
+          "beta3Year": "not_reported",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": null,
+          "trailingEps": null,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-11T21:37:46.953351+00:00",
+        "price_asof": "2026-09-11"
+      },
+      "XLCU": {
+        "asset_profile": "portfolio_fund",
+        "field_states": {
+          "currency": "available",
+          "industry": "not_applicable",
+          "sector": "not_applicable",
+          "country": "not_reported",
+          "marketCap": "not_applicable",
+          "forwardPE": "not_reported",
+          "trailingPE": "not_reported",
+          "priceToBook": "not_reported",
+          "enterpriseToEbitda": "not_applicable",
+          "revenueGrowth": "not_applicable",
+          "earningsGrowth": "not_applicable",
+          "profitMargins": "not_applicable",
+          "operatingMargins": "not_applicable",
+          "returnOnEquity": "not_applicable",
+          "returnOnAssets": "not_applicable",
+          "operatingCashflow": "not_applicable",
+          "freeCashflow": "not_applicable",
+          "totalCash": "not_applicable",
+          "totalDebt": "not_applicable",
+          "targetMeanPrice": "not_applicable",
+          "numberOfAnalystOpinions": "not_applicable",
+          "regularMarketPrice": "available",
+          "regularMarketTime": "available",
+          "beta": "not_reported",
+          "bid": "available",
+          "ask": "available",
+          "earningsTimestampStart": "not_applicable",
+          "category": "not_reported",
+          "fundFamily": "not_reported",
+          "totalAssets": "not_reported",
+          "navPrice": "not_reported",
+          "beta3Year": "not_reported",
+          "forwardEps": "not_applicable",
+          "trailingEps": "not_applicable",
+          "annualReportExpenseRatio": "not_reported"
+        },
+        "selected_values": {
+          "category": null,
+          "industry": null,
+          "forwardPE": null,
+          "trailingPE": null,
+          "trailingEps": null,
+          "totalAssets": null,
+          "navPrice": null,
+          "beta3Year": null
+        },
+        "profile_fetched_at": "2026-09-11T22:24:50.981382+00:00",
+        "price_asof": ""
+      }
+    }
+  },
+  "generation": "generations/20260912T110544Z-0115f559",
+  "coverage": {
+    "universe": 9876,
+    "prices": 9875,
+    "checked_today": 9875,
+    "industry": 9336,
+    "info": 9876,
+    "dividends": 9875,
+    "return_1y": 8091,
+    "return_2y": 6898,
+    "return_3y": 6138
+  },
+  "quality_counts": {
+    "universe": 9876,
+    "prices": 9875,
+    "histories": 9875,
+    "info": 9876,
+    "industry": 9336,
+    "dividends_checked": 9875,
+    "dividends_with_payments": 6074,
+    "dividends_no_payments": 3801,
+    "unattempted_info": 0,
+    "unattempted_dividends": 0
+  },
+  "published_at": "2026-09-12T11:09:58.461239+00:00",
+  "finished_at": "2026-09-12T11:10:01.560909+00:00",
+  "result": "passed",
+  "scope": "Every catalog member and return; primary field validation; bounded SEC reference cross-check, not external verification of every provider field"
+}
