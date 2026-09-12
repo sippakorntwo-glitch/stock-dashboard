@@ -41,6 +41,18 @@ jobs:
           p.write_text(''.join(line for line in lines if line not in obsolete))
           PY
             python maintenance/complete_v25.py
+            python - <<'PY'
+          from pathlib import Path
+          p=Path('screening.py');s=p.read_text()
+          old="    objects=read_objects(cache,('info:',));result={}"
+          new="    from dashboard_runtime import ETF_NAMES\n    objects=read_objects(cache,('info:',));result={}"
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          old="info=safe_numeric_profile(info,ticker,info.get('quoteType')=='ETF')"
+          new="info=safe_numeric_profile(info,ticker,ticker in ETF_NAMES or info.get('quoteType')=='ETF')"
+          assert s.count(old)==1
+          p.write_text(s.replace(old,new))
+          PY
           fi
           python -m compileall -q .
           python -m pytest -q tests > work/asset-tests.log 2>&1 || { tail -140 work/asset-tests.log; exit 1; }
