@@ -44,6 +44,23 @@ def profile_audit(cache,universe,etfs):
     return {'catalog_members':len(universe),'counts':dict(totals),'field_counts':{k:dict(v) for k,v in by_field.items()},'examples':examples},rows,profiles
 
 
+def reference_queue(candidates,references,now=None):
+    """Never let the first 40 names monopolize every capped refresh."""
+    from data_quality import timestamp
+    clock=(now or datetime.now(timezone.utc)).timestamp()
+    eligible=[]
+    for ticker in dict.fromkeys(candidates):
+        record=references.get(ticker,{})
+        cik=record.get('cik')
+        if isinstance(cik,bool) or not isinstance(cik,int) or not 0<cik<10**10:continue
+        checked=timestamp(record.get('checked_at'))
+        attempted=timestamp(record.get('last_attempt_at'))
+        if clock-checked<REFERENCE_TTL or clock-attempted<86400:continue
+        eligible.append(ticker)
+    return sorted(eligible,key=lambda t:max(timestamp(references[t].get('checked_at')),
+                                           timestamp(references[t].get('last_attempt_at'))))
+
+
 def enrich(cache,universe,etfs,profiles,limit=40):
     from data_quality import timestamp,present
     from data_sync import utc_now
@@ -80,14 +97,17 @@ def enrich(cache,universe,etfs,profiles,limit=40):
     classes=cache.classifications()
     missing_industry=[t for t in universe if t not in etfs and not present(classes.get(t,{}).get('Industry'))]
     missing_accounts=[t for t in universe if t not in etfs and any(not present((profiles.get('info:'+t,({},{}))[0] if isinstance(profiles.get('info:'+t,({},{}))[0],dict) else {}).get(f)) for f in ('operatingCashflow','freeCashflow','totalCash'))]
-    candidates=list(dict.fromkeys(['AAAU','AAPL','MSFT','ORCL',*missing_industry,*missing_accounts]))
-    candidates=[t for t in candidates if t in references and references[t].get('cik')]
+    # Urgent examples/gaps first among never-checked records, then the remaining
+    # mapped companies; subsequent runs advance rather than retry the same head.
+    candidates=reference_queue(['AAAU','AAPL','MSFT','ORCL',*missing_industry,*missing_accounts,
+                                *(t for t in universe if t not in etfs)],references)
+    report['due_references']=len(candidates)
     completed=0
     for ticker in candidates:
         previous=references[ticker]
-        if datetime.now(timezone.utc).timestamp()-timestamp(previous.get('checked_at'))<REFERENCE_TTL:continue
         if completed>=limit or client.blocked:break
         completed+=1
+        previous['last_attempt_at']=utc_now()
         try:
             value=collect_reference(client,ticker,previous['cik'],include_facts=ticker not in etfs)
             value={**previous,**value}
@@ -121,7 +141,9 @@ def enrich(cache,universe,etfs,profiles,limit=40):
                   {'fetched_at':stamp})
         report['cooldown_until']=until
     report.update(provider_requests=client.calls,blocked=client.blocked,reference_records=len(references),http_evidence=client.evidence)
-    report['automatic_financials_status']='available' if report['financial_reports'] else 'unavailable; primary observations retained' 
+    report['cached_financial_reports']=sum(bool(value.get('facts')) for value in references.values())
+    report['automatic_financials_status']='available' if report['cached_financial_reports'] else 'unavailable; primary observations retained'
+    report['remaining_due_references']=max(0,len(candidates)-completed)
     return report
 
 
