@@ -62,4 +62,6 @@ def verify_enhancements(page,app):
     report['advanced_screener_and_ui']=verify_screener(page,app)
     from asset_reference_smoke import verify_asset_reference
     report['asset_aware_sources']=verify_asset_reference(page,app)
+    from chart_stability_smoke import verify_chart_stability
+    report['chart_refresh_stability']=verify_chart_stability(page,app)
     return report
