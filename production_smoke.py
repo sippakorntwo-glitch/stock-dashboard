@@ -29,7 +29,7 @@ def diagnose(page):
     for frame in page.frames:
         try:
             u=urlsplit(frame.url)
-            print('BROWSER_FRAME:',json.dumps({'url':u.scheme+'://'+u.netloc+u.path,'payload_count':frame.locator('#payload').count(),'canvas_count':frame.locator('canvas').count(),'text':frame.locator('body').inner_text()[:12000]},ensure_ascii=False),flush=True)
+            print('BROWSER_FRAME:',json.dumps({'url':u.scheme+'://'+u.netloc+u.path,'payload_count':frame.locator('#payload').count(),'canvas_count':frame.locator('canvas').count(),'text':frame.locator('body').inner_text()[:12000], 'inputs':frame.locator('input').evaluate_all('(xs)=>xs.filter(x=>x.type!=="password").map(x=>({label:x.getAttribute("aria-label"),value:x.value}))'), 'receipts':frame.locator('.workspace-ready,.export-ready').evaluate_all('(xs)=>xs.map(x=>({...x.dataset}))')},ensure_ascii=False),flush=True)
         except Exception as exc: print('FRAME_DIAGNOSTIC_ERROR:',type(exc).__name__,flush=True)
 
 
@@ -58,7 +58,21 @@ def wait_for_release(page,version):
     raise RuntimeError('Production did not load the expected single-page release')
 
 
+def wait_page_ready(app,ticker,query=None):
+    # A new chart can appear before the slower sections finish. Wait for the
+    # real completed page, not a guessed sleep or an old section's DOM.
+    app.wait_for_function("""([ticker,query]) => {
+        const nodes=[...document.querySelectorAll('.workspace-ready')];
+        const e=nodes.at(-1);
+        return e && e.dataset.ticker===ticker
+            && (query===null || e.dataset.search===query)
+            && !e.closest('[data-stale="true"]');
+    }""",arg=[ticker,query],timeout=120000)
+    no_exception(app)
+
+
 def chart_for_symbol(page,app,ticker):
+    wait_page_ready(app,ticker)
     deadline=time.monotonic()+120
     while time.monotonic()<deadline:
         no_exception(app)
@@ -90,6 +104,7 @@ def verify_sections(app):
 def click_filtered_stock(page,app,ticker,*,row_selector=False):
     query=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
     query.fill(ticker);query.press('Enter')
+    wait_page_ready(app,app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True).input_value(),ticker)
     expect(app.get_by_text('หุ้นในผลค้นหา: '+ticker,exact=True)).to_be_visible(timeout=30000)
     page.wait_for_timeout(1000)
     # Glide draws into a canvas but receives real pointer events on its scroller.
