@@ -128,7 +128,14 @@ def technical(ticker,daily_history,info,row):
     from asset_semantics import adapt_analysis
     analysis=adapt_analysis(analysis,ticker,info,is_etf)
     with st.expander('ตารางวิเคราะห์ 360°',expanded=True):
-        table(analysis,height=450)
+        if is_etf:
+            table(analysis,height=450)
+        else:
+            from company_research_ui import render_company_review
+            render_company_review(ticker,info,a.get_data_cache())
+            st.markdown('#### Market / Technical')
+            st.caption('Price trend and market risk are separate from company financial quality. Daily trading-score rules above are unchanged.')
+            table(analysis.loc[~analysis['หมวด'].eq('พื้นฐาน')],height=450)
     a.render_position_sizer(ticker,row,metrics,currency)
     st.caption('ราคาชุดรายวันอาจไม่ผ่านเกณฑ์ quote อายุไม่เกิน 15 นาที ระบบจึงคงสถานะรอยืนยัน ไม่ลดเกณฑ์เพื่อให้เกิดสัญญาณซื้อ')
 
@@ -146,6 +153,10 @@ def fundamentals(ticker,history,info,row):
             ('Return on equity','returnOnEquity',True),('Return on assets','returnOnAssets',True),('Operating cash flow','operatingCashflow',False),('Free cash flow','freeCashflow',False),
             ('เงินสดรวม','totalCash',False),('หนี้รวม','totalDebt',False),('เป้าหมายเฉลี่ยนักวิเคราะห์','targetMeanPrice',False),('จำนวนนักวิเคราะห์','numberOfAnalystOpinions',False)]
     if etf: fields=[('หมวดกองทุน','category',False),('กลุ่มกองทุน','fundFamily',False),('สินทรัพย์กองทุน','totalAssets',False),('NAV ต่อหน่วย','navPrice',False),('Beta 3Y จากแหล่งข้อมูล','beta3Year',False),('Portfolio P/E','trailingPE',False)]
+    if not etf:
+        fields=[]
+        st.write('**Business Profile:**',info.get('industry') or 'Industry not reported','·',info.get('sector') or 'Sector not reported','·',info.get('country') or 'Country not reported')
+        st.caption('Financial statements, ratios, screening guides and metric tooltips are grouped above in Company Financial Review. This section retains business context, official filing links and distributions without duplicating the same numeric table.')
     from quality_views import profile_value, profile_field_state, profile_unit
     records=[]
     for label,key,pct in fields:
@@ -154,7 +165,7 @@ def fundamentals(ticker,history,info,row):
         state=field_state(ticker,info,key,is_etf=etf)
         if state!='available':value=display_value(ticker,info,key,is_etf=etf,percent=pct)
         records.append({'มิติ':label,'ค่า':value,'หน่วย': '%' if pct else profile_unit(info,key),'สถานะข้อมูล':state,'ฟิลด์ต้นทาง':key})
-    table(pd.DataFrame(records),height=480)
+    if records:table(pd.DataFrame(records),height=480)
     st.caption('อัตราการเติบโตและอัตรากำไรเป็นค่าที่แหล่งข้อมูลรายงาน ช่วงอ้างอิงอาจต่างกัน ตัวเลขมูลค่าและกระแสเงินสดใช้สกุลที่ผู้ให้ข้อมูลระบุ ไม่ใช่มูลค่ายุติธรรมอัตโนมัติ')
     if info.get('longBusinessSummary'):
         with st.expander('ธุรกิจ / กลยุทธ์กองทุน',expanded=True): st.write(info['longBusinessSummary'])
