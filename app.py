@@ -1,7 +1,7 @@
-"""Stock Research Workspace release 2026-09-12.25; single-page entrypoint."""
+"""Stock Research Workspace release 2026-09-12.26; single-page entrypoint."""
 import dashboard_runtime as runtime
 
-EXPECTED_RELEASE = '2026-09-12.25'
+EXPECTED_RELEASE = '2026-09-12.26'
 
 
 def __getattr__(name):

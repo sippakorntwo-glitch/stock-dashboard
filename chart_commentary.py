@@ -234,7 +234,7 @@ def commentary_html(payload: Mapping, *, now=None) -> str:
         macd_text += ' สูงขึ้นจากแท่งก่อน' if delta>0 else ' ลดลงจากแท่งก่อน' if delta<0 else ' เท่าแท่งก่อน'
     volume_text = ('ยังเปรียบเทียบ Volume ไม่ได้ ต้องมีแท่งล่าสุดและ Volume ครบ 20 แท่งก่อนหน้าโดยค่าเฉลี่ยมากกว่าศูนย์' if data['volume_ratio'] is None else
                    f'Volume ล่าสุด {fmt(data["volume"],0)} เทียบค่าเฉลี่ย 20 แท่งก่อนหน้า {fmt(data["average_volume_20"],0)} = {fmt(data["volume_ratio"],2)}x; '+
-                   ('สูงกว่าค่าเฉลี่ย' if data['volume_ratio']>1 else 'ต่ำกว่าค่าเฉลี่ย' if data['volume_ratio']==1 else 'ต่ำกว่าค่าเฉลี่ย')+' ปริมาณซื้อขายไม่บอกทิศทางด้วยตัวมันเอง')
+                   ('สูงกว่าค่าเฉลี่ย' if data['volume_ratio']>1 else 'ต่ำกว่าค่าเฉลี่ย' if data['volume_ratio']<1 else 'เท่าค่าเฉลี่ย')+' ปริมาณซื้อขายไม่บอกทิศทางด้วยตัวมันเอง')
     level_text = ('ข้อมูลกรอบราคาไม่พอ ต้องมี High/Low ที่ใช้ได้อย่างน้อย 5 แท่งก่อนหน้าในช่วงที่เลือก' if levels['support'] is None else
                   f'กรอบ {levels["bars"]} แท่งก่อนหน้าภายในช่วงที่เลือก (ไม่รวมแท่งล่าสุด): Low {fmt(levels["support"])} / High {fmt(levels["resistance"])}; '+
                   {'inside':'ราคายังอยู่ในกรอบเดิม','breakout':'ราคาล่าสุดสูงกว่าขอบบนเดิม','breakdown':'ราคาล่าสุดต่ำกว่าขอบล่างเดิม'}[levels['state']])
