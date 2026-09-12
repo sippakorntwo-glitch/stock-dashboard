@@ -38,7 +38,7 @@ def reset_controls(app):
             && !Object.keys(s).some(k=>k.startsWith('Minimum ')||k.startsWith('Maximum '));
     }""",arg=previous,timeout=60000)
     asset=app.locator('[data-testid="stSelectbox"]').filter(has=app.get_by_text('Asset Type',exact=True)).first
-    expect(asset.get_by_role('combobox')).to_contain_text('All')
+    expect(asset.get_by_role('combobox')).to_have_value('All')
     expect(app.get_by_text('Return_1M: maximum is below minimum',exact=True)).to_have_count(0,timeout=30000)
 
 
