@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-12T05:22:19.850599+00:00",
-  "run_id": "34674836844",
-  "source_sha": "cd2aec0ee28dd8757d0c463002a211b9687dd51b",
+  "recorded_at": "2026-09-12T06:42:13.628522+00:00",
+  "run_id": "34678377845",
+  "source_sha": "64242923ff20c95513e62f9f57bab15e3c24f476",
   "url": "http://127.0.0.1:8501/",
-  "expected_version": "2026-09-12.22",
+  "expected_version": "2026-09-12.23",
   "layout": "single-page",
   "views": [
     "ภาพรวมและค้นหา",
@@ -18,22 +18,22 @@
     {
       "ticker": "MSFT",
       "via": "cell",
-      "bars": 1507
+      "bars": 1506
     },
     {
       "ticker": "AAPL",
       "via": "row",
-      "bars": 1507
+      "bars": 1506
     },
     {
       "ticker": "SPY",
       "via": "manual",
-      "bars": 1507
+      "bars": 1506
     }
   ],
-  "chart_bars": 1507,
+  "chart_bars": 1506,
   "chart_last_bar": "2026-09-11",
-  "deployed_version": "2026-09-12.22",
+  "deployed_version": "2026-09-12.23",
   "enhancements": {
     "page_size": 500,
     "tooltips": true,
@@ -57,7 +57,7 @@
       {
         "period": "5 ปี",
         "interval": "1d",
-        "bars": 1507,
+        "bars": 1506,
         "visible_bars": 1255,
         "first": "2021-09-13",
         "last": "2026-09-11"
@@ -109,23 +109,23 @@
         {
           "ticker": "SPY",
           "period": "10 ปี",
-          "percent": 314.74093982649254,
+          "percent": 314.74107719141796,
           "display": "+314.74%",
           "first": "2016-09-12",
           "last": "2026-09-11",
-          "start_price": 184.2812957763672,
+          "start_price": 184.28123474121094,
           "end_price": 764.2899780273438,
           "bars": 2514
         },
         {
           "ticker": "SPY",
           "period": "1 ปี",
-          "percent": 17.651108259234817,
-          "display": "+17.65%",
+          "percent": 17.506586570565364,
+          "display": "+17.51%",
           "first": "2025-09-11",
           "last": "2026-09-11",
           "start_price": 650.423095703125,
-          "end_price": 765.22998046875,
+          "end_price": 764.2899780273438,
           "bars": 252
         }
       ]
@@ -137,9 +137,9 @@
       "entry_rows": 0,
       "watch_rows": 10,
       "refresh_schedule": "7,37 * * * *",
-      "first_rank": "01 · TRFK · 83/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
-      "clicked": "TRFK",
-      "chart_bars": 1066,
+      "first_rank": "01 · SCI · 90/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
+      "clicked": "SCI",
+      "chart_bars": 1506,
       "filter_independent": true
     },
     "chart_inspector": {
@@ -217,7 +217,7 @@
       "field_report": true,
       "symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260911T223243Z-196142b0",
+      "source_generation": "generations/20260912T062537Z-410fbbc8",
       "counts": {
         "universe": 9876,
         "prices": 9868,
@@ -241,13 +241,13 @@
           "ticker": "AESP",
           "industry_state": "available",
           "dividend_state": "no_payments",
-          "history_bars": 50
+          "history_bars": 51
         },
         {
           "ticker": "SPY",
           "industry_state": "available",
           "dividend_state": "available",
-          "history_bars": 1507
+          "history_bars": 1506
         }
       ]
     },
@@ -263,57 +263,57 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260911T223243Z-196142b0",
+      "source_generation": "generations/20260912T062537Z-410fbbc8",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
-          "price_asof": "2026-09-10",
+          "price_asof": "2026-09-11",
           "returns": {
-            "1 Day (%)": 3.5612390171702257,
-            "3 Days (%)": 2.0626952771623186,
-            "7 Days (%)": 3.067697974898431,
-            "1 Month (%)": 5.939790105280007,
-            "6 Months (%)": 25.42759596851818,
-            "1 Year (%)": 44.528565203259895,
-            "3 Years (%)": 85.75987675082185,
-            "5 Years (%)": 124.75412044824195
+            "1 Day (%)": 1.7454088133066703,
+            "3 Days (%)": 5.075576412311378,
+            "7 Days (%)": 2.196039745219114,
+            "1 Month (%)": 8.973134703012864,
+            "6 Months (%)": 27.62660359315523,
+            "1 Year (%)": 44.97994775417244,
+            "3 Years (%)": 87.75868650247804,
+            "5 Years (%)": 128.67692663127661
           }
         },
         {
           "ticker": "MSFT",
-          "price_asof": "2026-09-10",
+          "price_asof": "2026-09-11",
           "returns": {
-            "1 Day (%)": 0.1606851530009834,
-            "3 Days (%)": -1.4528736418395582,
-            "7 Days (%)": -2.9273208329315237,
-            "1 Month (%)": -2.508196277587371,
-            "6 Months (%)": 21.85419731345357,
-            "1 Year (%)": -0.7751044684634278,
-            "3 Years (%)": 50.76845195682653,
-            "5 Years (%)": 73.51595355107551
+            "1 Day (%)": 0.6477951477521948,
+            "3 Days (%)": 0.3401139051044444,
+            "7 Days (%)": -1.0758022132949852,
+            "1 Month (%)": -1.438430045322725,
+            "6 Months (%)": 22.91013171317948,
+            "1 Year (%)": -0.25990098705874765,
+            "3 Years (%)": 50.0971886635653,
+            "5 Years (%)": 74.64007537539842
           }
         },
         {
           "ticker": "SPY",
-          "price_asof": "2026-09-10",
+          "price_asof": "2026-09-11",
           "returns": {
-            "1 Day (%)": -0.5994238166152965,
-            "3 Days (%)": -1.6047969088644254,
-            "7 Days (%)": -1.202003891513459,
-            "1 Month (%)": -1.9662900056879762,
-            "6 Months (%)": 12.50440932608825,
-            "1 Year (%)": 17.48163090936874,
-            "3 Years (%)": 76.56254632686652,
-            "5 Years (%)": 82.02980977107744
+            "1 Day (%)": 0.8524287494320992,
+            "3 Days (%)": -0.21803278205192456,
+            "7 Days (%)": 0.32948471132610013,
+            "1 Month (%)": -0.8136964741377262,
+            "6 Months (%)": 13.606020096321902,
+            "1 Year (%)": 17.506586570565364,
+            "3 Years (%)": 76.90417999344493,
+            "5 Years (%)": 83.58151111619345
           }
         },
         {
           "ticker": "AAC",
-          "price_asof": "2026-09-10",
+          "price_asof": "2026-09-11",
           "returns": {
-            "1 Day (%)": 0.0,
-            "3 Days (%)": 0.0,
-            "7 Days (%)": 0.0,
+            "1 Day (%)": 0.5964161375717758,
+            "3 Days (%)": 0.5964161375717758,
+            "7 Days (%)": 0.5964161375717758,
             "1 Month (%)": null,
             "6 Months (%)": null,
             "1 Year (%)": null,
@@ -326,7 +326,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "http://127.0.0.1:8501/",
-      "verified_at": "2026-09-12T05:19:30.631094+00:00",
+      "verified_at": "2026-09-12T06:41:13.258515+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -336,7 +336,7 @@
         "QQQI": true
       },
       "combined_numeric_filter": {
-        "rows": 75,
+        "rows": 108,
         "minimum_1m": 0
       },
       "invalid_bounds_handled": true,
@@ -347,7 +347,7 @@
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-12T05:21:53.406499+00:00",
+        "fetched_at": "2026-09-12T06:41:59.326487+00:00",
         "state": "stale"
       },
       "theme": {
@@ -365,10 +365,10 @@
   },
   "result": "passed",
   "server_memory": {
-    "VmHWM": "771428 kB",
-    "VmRSS": "661876 kB"
+    "VmHWM": "768304 kB",
+    "VmRSS": "757100 kB"
   },
   "target": "http://127.0.0.1:8501/",
-  "tested_sha": "cd2aec0ee28dd8757d0c463002a211b9687dd51b",
-  "server_log_tail": "2026-09-12 05:14:56.997 Uvicorn server started on 127.0.0.1:8501\n\n  You can now view your Streamlit app in your browser.\n\n  URL: http://127.0.0.1:8501\n\n  Stopping...\n"
+  "tested_sha": "e01adf13c423b45fd2a25209cdc270bb73f670d3",
+  "server_log_tail": "2026-09-12 06:39:02.096 Uvicorn server started on 127.0.0.1:8501\n\n  You can now view your Streamlit app in your browser.\n\n  URL: http://127.0.0.1:8501\n\n  Stopping...\n"
 }
