@@ -1,0 +1,134 @@
+name: Verify recovered new listings
+on:
+  workflow_run:
+    workflows: [Refresh and audit release data]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: prepared-market-data
+  cancel-in-progress: false
+jobs:
+  recover:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install tested application and browser dependencies
+        run: |
+          mkdir -p work
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+          python -m pytest -q tests > work/recovery-tests.log 2>&1 || { tail -100 work/recovery-tests.log; exit 1; }
+      - name: Retry only audited missing listings after the acquisition session has ended
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          DASHBOARD_CACHE_FILE: work/recovered.sqlite3
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python - <<'PY'
+          import os,json,time
+          from pathlib import Path
+          import pandas as pd
+          import dashboard_runtime as app
+          import update_data as job
+          from data_sync import ObjectStore,config_from,read_manifest,restore_checkpoint,utc_now
+          from verification_report import publish_report
+          store=ObjectStore(config_from(),writable=True)
+          previous=read_manifest(store)
+          if not previous:raise RuntimeError('Verified preceding snapshot is required')
+          path=Path(os.environ['DASHBOARD_CACHE_FILE'])
+          restore_checkpoint(store,previous,path)
+          cache=app.DashboardCache(path)
+          if cache.error:raise RuntimeError(cache.error)
+          original=app.WATCHLIST_FILE.read_bytes()
+          universe=app.select_universe(app.parse_watchlist(original))
+          quotes=cache.quotes()
+          audited=('ACBE','ACBH','GEMQ','MLCC','XLCD','XLCU','XLPD','XLPU')
+          now=pd.Timestamp.now(tz='America/New_York')
+          candidates=[]
+          for ticker in audited:
+              if ticker not in universe or app.number(quotes.get(ticker,{}).get('Close')) is not None:continue
+              _,attempt=cache.get('attempt:history:'+ticker,request_remote=False)
+              stamp=pd.to_datetime(attempt.get('fetched_at'),utc=True,errors='coerce')
+              # One explicit recovery attempt only after the original session
+              # ended, not aggressive retries and never a rate-limit workaround.
+              if pd.isna(stamp) or now-stamp<pd.Timedelta(hours=6) or stamp.tz_convert('America/New_York').date()>=now.date():continue
+              candidates.append(ticker)
+          report={'started_at':utc_now(),'source_generation':previous['generation'],'candidates':candidates,'recovered':[],'unavailable':[],'dividends':{},'rate_limited':False}
+          if candidates:
+              rows,errors,stats=app.fetch_daily_batch(tuple(candidates),cache,force=True,years=app.HISTORY_YEARS)
+              success=set(rows.loc[rows.Data_Status.eq('โหลดสำเร็จ'),'Ticker'])
+              for ticker in candidates:job.record_attempt(cache,'history',ticker,ticker in success)
+              report.update(recovered=sorted(success),unavailable=sorted(set(candidates)-success),errors=errors,stats=stats)
+              report['rate_limited']=any(any(term in str(error).lower() for term in ('429','too many','rate limit')) for error in errors)
+          if not report['rate_limited']:
+              worker=app.BackgroundUpdates(cache)
+              for ticker in ('GEMQ','MLCC','XLCU'):
+                  if cache.get('dividends:'+ticker,request_remote=False)[0] is not None:continue
+                  _,attempt=cache.get('attempt:dividends:'+ticker,request_remote=False)
+                  stamp=pd.to_datetime(attempt.get('fetched_at'),utc=True,errors='coerce')
+                  if pd.isna(stamp) or now-stamp<pd.Timedelta(hours=6) or stamp.tz_convert('America/New_York').date()>=now.date():continue
+                  try:
+                      worker._job('dividends',ticker,'1d')
+                      job.record_attempt(cache,'dividends',ticker,True)
+                      report['dividends'][ticker]='checked'
+                  except Exception as exc:
+                      job.record_attempt(cache,'dividends',ticker,False)
+                      report['dividends'][ticker]='provider unavailable: '+type(exc).__name__
+                      if any(term in str(exc).lower() for term in ('429','too many','rate limit')):report['rate_limited']=True;break
+                  time.sleep(1)
+          if candidates or report['dividends']:
+              manifest=job.publish_snapshot(store,cache,universe,report,previous,watchlist_csv=original.decode('utf-8-sig'))
+          else:manifest=previous
+          quotes=cache.quotes()
+          dates={}
+          for ticker in universe:
+              date=str(quotes.get(ticker,{}).get('Price_AsOf') or 'unknown')
+              dates[date]=dates.get(date,0)+1
+          report.update(finished_at=utc_now(),generation=manifest['generation'],published_at=manifest['published_at'],coverage=manifest['coverage'],quality_counts=manifest.get('quality_counts',{}),price_date_counts=dates)
+          publish_report('new-listings-recovery',report)
+          print(json.dumps(report,ensure_ascii=False))
+          PY
+      - name: Independently audit the final published return values
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: python audit_all_returns.py --probe-missing > work/final-audit.log 2>&1 || { tail -100 work/final-audit.log; exit 1; }
+      - name: Update the board from the final publication
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          PYTHONUNBUFFERED: '1'
+        run: python ranking_job.py --publish > work/final-ranking.log 2>&1 || { tail -80 work/final-ranking.log; exit 1; }
+      - name: Recheck the real deployed site one final time
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: python verify_workspace.py --production
+      - name: Preserve final code, data and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-recovery-evidence
+          path: |
+            work/*-report.json
+            work/*.log
+            work/*.png
+          retention-days: 7
