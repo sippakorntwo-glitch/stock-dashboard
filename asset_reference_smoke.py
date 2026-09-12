@@ -23,8 +23,17 @@ def verify_asset_reference(page,app):
     from clean_ui_smoke import verify_clean_presentation
     manifest,_=public_summary()
     field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
+    # The preceding screener check ends with Reset Filters. Its export receipt
+    # precedes completion of the selected-stock sections and final widget state.
+    # Wait for that exact empty-query page before typing, not a transient input
+    # that a still-running reset render can replace. Never retry a lost action
+    # or suppress a wrong-symbol assertion.
+    current=field.input_value()
+    wait_page_ready(app,current,query='')
+    expect(field).to_have_value(current)
     field.fill('AAAU');field.press('Enter')
     wait_page_ready(app,'AAAU');chart_for_symbol(page,app,'AAAU')
+    expect(field).to_have_value('AAAU')
     section=app.locator('.st-key-research_fundamentals')
     expect(section.get_by_text('AAAU holds physical gold',exact=False)).to_be_visible()
     technical=app.locator('.st-key-research_technical .workspace-help-table')
@@ -41,6 +50,7 @@ def verify_asset_reference(page,app):
     report={'AAAU_pe_not_applicable':True,'AAAU_issuer_filing_link':True,'diagnostics_still_absent':True,'SEC_examples':[]}
     for ticker in ('AAPL','MSFT'):
         field.fill(ticker);field.press('Enter');wait_page_ready(app,ticker)
+        expect(field).to_have_value(ticker)
         section=app.locator('.st-key-research_fundamentals')
         reference=reference_for(ticker,manifest)
         expander=section.locator('[data-testid="stExpander"]').filter(has=app.get_by_text('Official sources & filed financials',exact=True)).first
