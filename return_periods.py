@@ -1,14 +1,14 @@
-"""One source of truth for watchlist return periods, English labels and exports.
+"""Auditable DAILY adjusted-close returns, never unlabeled live price growth.
 
-Input is completed, adjusted DAILY history. Day periods count observed trading
-sessions; months and years use calendar boundaries, not fixed 21/252 multiples.
-Invalid endpoint prices stay unavailable and never shift the requested period.
+Day horizons count completed session changes. Calendar horizons use the last
+observed close ON OR BEFORE the calendar boundary (previous trading close).
+Missing/invalid endpoints remain unavailable. Annualization is display-only.
 """
 from __future__ import annotations
 import math
 import pandas as pd
 
-# Keep legacy keys used by scoring and stored snapshots; only the UI is renamed.
+RETURN_METHOD_VERSION = 3
 RETURN_SPECS = (
     ('Return_1D', '1 Day', 1, None),
     ('Return_3D', '3 Days', 3, None),
@@ -21,115 +21,129 @@ RETURN_SPECS = (
 )
 RETURN_FIELDS = tuple(item[0] for item in RETURN_SPECS)
 RETURN_LABELS = {field: period + ' (%)' for field, period, _, _ in RETURN_SPECS}
+RETURN_MODES = ('Cumulative (Adjusted Close)', 'Annualized (3Y / 5Y only)')
 RETURN_CAPTION = (
-    'Cumulative Return (%) = (latest adjusted close / starting adjusted close - 1) × 100. '
-    '1/3/7 Days use 1/3/7 completed trading-session changes. Months and years use '
-    'calendar periods and the first observed close on or after the start date. '
-    'Returns end on Price As Of, not the current clock time. Not CAGR; fees, taxes '
-    'and currency conversion are excluded. — means unavailable, not zero.'
+    'Adjusted-close returns, not live quotes or revenue growth. '
+    '1 / 3 / 7 Days count completed trading-session changes, not calendar days. '
+    'Month / Year baselines use the last trading close on or before the calendar start date. '
+    'Cumulative return = (end adjusted close / start adjusted close - 1) × 100. '
+    'Adjusted prices reflect provider dividend/split adjustments; they are not official fund NAV returns. '
+    'Fund websites may show month-end, annualized or price-only results instead. '
+    'See Price As Of and Return Calculation Details before comparing. '
+    'Investor fees, taxes and currency conversion are excluded. — means unavailable, not zero.'
 )
 EXPORT_LABELS = {
-    'Ticker': 'Ticker', 'Security_Name': 'Company / ETF',
-    'Industry': 'Industry / ETF Category', 'Asset_Type': 'Asset Type',
-    'Status': 'Status', 'Close': 'Watchlist Price', **RETURN_LABELS,
-    'RSI_14': 'RSI (14)', 'ATR_Pct': 'ATR / Price (%)',
-    'Volatility_20D': '20-Day Volatility (%)',
-    'Dollar_Volume_20D': '20-Day Average Price × Volume',
-    'Price_AsOf': 'Price As Of', 'Data_Status': 'Data Status',
+    'Ticker':'Ticker','Security_Name':'Company / ETF','Industry':'Industry / ETF Category',
+    'Asset_Type':'Asset Type','Status':'Trend Status','Close':'Watchlist Price',
+    'Price_AsOf':'Price As Of',**RETURN_LABELS,'RSI_14':'RSI (14)','ATR_Pct':'ATR / Price (%)',
+    'Volatility_20D':'20-Day Volatility (%)','Dollar_Volume_20D':'20-Day Average Price × Volume',
+    'Data_Status':'Data Status',
 }
-TABLE_FIELDS = ('Ticker', 'Security_Name', 'Industry', 'Asset_Type', 'Status',
-                'Close', *RETURN_FIELDS, 'RSI_14', 'ATR_Pct', 'Volatility_20D',
-                'Dollar_Volume_20D', 'Price_AsOf', 'Data_Status')
+TABLE_FIELDS = ('Ticker','Security_Name','Industry','Asset_Type','Status','Close',
+                'Price_AsOf',*RETURN_FIELDS,'RSI_14','ATR_Pct','Volatility_20D',
+                'Dollar_Volume_20D','Data_Status')
 
 
 def positive_price(value):
-    if isinstance(value, bool):
-        return None
+    if isinstance(value,bool):return None
     try:
-        result = float(value)
-        return result if math.isfinite(result) and result > 0 else None
-    except (TypeError, ValueError, OverflowError):
-        return None
+        n=float(value)
+        return n if math.isfinite(n) and n>0 else None
+    except (TypeError,ValueError,OverflowError):return None
 
 
 def daily_closes(history):
-    if history is None or history.empty or 'Close' not in history:
-        return pd.Series(dtype=float)
-    close = pd.to_numeric(history['Close'], errors='coerce').copy()
-    index = pd.DatetimeIndex(pd.to_datetime(close.index))
-    close.index = index.tz_localize(None).normalize()
-    close = close.loc[close.index.notna()]
-    # Do not drop invalid prices: that would silently change session offsets.
+    if history is None or history.empty or 'Close' not in history:return pd.Series(dtype=float)
+    close=pd.to_numeric(history['Close'],errors='coerce').copy()
+    close.index=pd.DatetimeIndex(pd.to_datetime(close.index)).tz_localize(None).normalize()
+    close=close.loc[close.index.notna()]
     return close.loc[~close.index.duplicated(keep='last')].sort_index().astype(float)
 
 
-def period_observation(close, *, sessions=None, months=None):
-    if (sessions is None) == (months is None):
-        raise ValueError('Specify exactly one of sessions or months')
-    amount = sessions if sessions is not None else months
-    if not isinstance(amount, int) or isinstance(amount, bool) or amount < 1:
-        raise ValueError('The return period must be a positive integer')
-    result = {'value': None, 'start': None, 'end': None,
-              'start_price': None, 'end_price': None, 'state': 'short_history'}
-    if close.empty:
-        return result
-    result['end'] = close.index[-1].date().isoformat()
-    result['end_price'] = positive_price(close.iloc[-1])
+def period_observation(close,*,sessions=None,months=None):
+    if (sessions is None)==(months is None):raise ValueError('Specify exactly one of sessions or months')
+    amount=sessions if sessions is not None else months
+    if not isinstance(amount,int) or isinstance(amount,bool) or amount<1:raise ValueError('Period must be a positive integer')
+    result={'value':None,'annualized':None,'start':None,'end':None,'requested_start':None,
+            'start_price':None,'end_price':None,'state':'short_history',
+            'basis':'adjusted-close','method_version':RETURN_METHOD_VERSION}
+    if close.empty:return result
+    result.update(end=close.index[-1].date().isoformat(),end_price=positive_price(close.iloc[-1]))
     if sessions is not None:
-        if len(close) <= sessions:
-            return result
-        first = len(close) - sessions - 1
+        if len(close)<=sessions:return result
+        first=len(close)-sessions-1
     else:
-        cutoff = close.index[-1] - pd.DateOffset(months=months)
-        if close.index[0] > cutoff:
-            return result
-        first = int(close.index.searchsorted(cutoff, side='left'))
-        if first >= len(close) - 1:
-            return result
-        if (close.index[first] - cutoff).days > 7:
-            result['state'] = 'missing_inputs'
-            return result
-    result['start'] = close.index[first].date().isoformat()
-    result['start_price'] = positive_price(close.iloc[first])
+        cutoff=close.index[-1]-pd.DateOffset(months=months)
+        result['requested_start']=cutoff.date().isoformat()
+        first=int(close.index.searchsorted(cutoff,side='right'))-1
+        if first<0 or first>=len(close)-1:return result
+        if (cutoff-close.index[first]).days>7:
+            result['state']='missing_inputs';return result
+    result.update(start=close.index[first].date().isoformat(),start_price=positive_price(close.iloc[first]))
     if result['start_price'] is None or result['end_price'] is None:
-        result['state'] = 'missing_inputs'
-        return result
-    value = (result['end_price'] / result['start_price'] - 1) * 100
-    if not math.isfinite(value):
-        result['state'] = 'missing_inputs'
-        return result
-    result.update(value=float(value), state='available')
+        result['state']='missing_inputs';return result
+    value=(result['end_price']/result['start_price']-1)*100
+    if not math.isfinite(value):result['state']='missing_inputs';return result
+    result.update(value=float(value),state='available')
+    # Standard period annualization: do not annualize 1/3/7-day or sub-year changes.
+    if months is not None and months>=12:
+        result['annualized']=float(((result['end_price']/result['start_price'])**(12/months)-1)*100)
     return result
 
 
+def return_observations(history):
+    close=daily_closes(history)
+    return {f:period_observation(close,sessions=d,months=m) for f,_,d,m in RETURN_SPECS}
+
+
 def table_returns(history):
-    close = daily_closes(history)
-    return {field: period_observation(close, sessions=sessions, months=months)['value']
-            for field, _, sessions, months in RETURN_SPECS}
+    return {f:obs['value'] for f,obs in return_observations(history).items()}
 
 
-def return_help(field):
-    field = str(field).removeprefix('price.')
-    item = next((spec for spec in RETURN_SPECS if spec[0] == field), None)
-    if item is None:
-        return None
-    _, period, sessions, months = item
-    basis = (f'The latest completed daily close divided by the close {sessions} '
-             f'completed trading session(s) earlier' if sessions else
-             f'The latest completed daily close divided by the first observed '
-             f'close on or after the date {months} calendar month(s) earlier; '
-             f'history must cover that starting date')
-    return (f'{period} cumulative return (%). {basis}, minus 1, multiplied by 100. '
-            'Uses adjusted prices. Not CAGR or revenue growth. '
-            'Insufficient history or an invalid endpoint is shown as —, not 0%.')
+def labels_for_mode(mode=RETURN_MODES[0]):
+    labels=dict(RETURN_LABELS)
+    if mode==RETURN_MODES[1]:
+        for field,label,_,months in RETURN_SPECS:
+            if months and months>12:labels[field]=label+' (Annualized %)'
+    return labels
 
 
-def return_column_config():
+def display_returns(frame,mode=RETURN_MODES[0]):
+    if mode not in RETURN_MODES:raise ValueError('Unknown return display')
+    result=frame.copy()
+    if mode==RETURN_MODES[1]:
+        for field in ('Return_3Y','Return_5Y'):
+            # Never convert a legacy/unknown calculation without its verified dates.
+            result[field]=result.apply(lambda r: (r.get('Return_Observations') or {}).get(field,{}).get('annualized')
+                if isinstance(r.get('Return_Observations'),dict) else None,axis=1)
+            result[field]=pd.to_numeric(result[field],errors='coerce')
+    result.attrs['return_mode']=mode
+    return result
+
+
+def return_help(field,mode=RETURN_MODES[0]):
+    field=str(field).removeprefix('price.')
+    spec=next((s for s in RETURN_SPECS if s[0]==field),None)
+    if spec is None:return None
+    _,label,days,months=spec
+    start=(f'the close {days} completed trading session(s) earlier' if days else
+           f'the last close ON OR BEFORE {months} calendar month(s) earlier (prior close on weekends/holidays)')
+    annualized=mode==RETURN_MODES[1] and months and months>12
+    return (f'{label}: '+ ('annualized adjusted return: ((end/start)^(12/months)-1) × 100. ' if annualized else
+            'cumulative adjusted return: (end/start-1) × 100. ')+
+            f'Start is {start}. End is Price As Of, not now. Adjusted Close is not NAV or price-only return. '
+            'No pre-inception estimates. Invalid/missing endpoints are —, never 0%.')
+
+
+def return_column_config(mode=RETURN_MODES[0]):
     import streamlit as st
-    return {field: st.column_config.NumberColumn(RETURN_LABELS[field],
-                format='%+.2f%%', help=return_help(field)) for field in RETURN_FIELDS}
+    labels=labels_for_mode(mode)
+    return {f:st.column_config.NumberColumn(labels[f],format='%+.2f%%',help=return_help(f,mode)) for f in RETURN_FIELDS}
 
 
 def export_watchlist(frame):
-    """Same eight periods and order as the visible table, for ALL filtered rows."""
-    return frame.reindex(columns=TABLE_FIELDS).rename(columns=EXPORT_LABELS)
+    mode=frame.attrs.get('return_mode',RETURN_MODES[0]);labels={**EXPORT_LABELS,**labels_for_mode(mode)}
+    result=frame.reindex(columns=TABLE_FIELDS).rename(columns=labels)
+    result['Return Basis']='Yahoo adjusted close; completed daily sessions; prior calendar-boundary close'
+    result['Return Display']=mode
+    return result

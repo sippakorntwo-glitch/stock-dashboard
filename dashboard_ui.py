@@ -26,7 +26,11 @@ def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_cha
         state = {'busy': False, 'revision': 0}
     worker = a.get_updater().state()
     chart_state = get_chart_service().state()
-    if state['revision'] != rendered_revision or worker['revision'] != rendered_worker_revision or chart_state['revision'] != rendered_chart_revision:
+    from chart_ranges import first_chart_load_finished
+    if first_chart_load_finished(st.session_state,chart_state['revision'],rendered_chart_revision):
+        st.session_state.pop('_chart_first_load_waiting',None)
+        st.rerun()
+    if state['revision'] != rendered_revision or worker['revision'] != rendered_worker_revision:
         st.rerun()
     if state['busy'] or worker['busy'] or chart_state['busy']:
         st.caption('กำลังอ่านข้อมูลที่เลือก ข้อมูลเดิมยังใช้งานได้ — แสดงผลให้อัตโนมัติเมื่อโหลดเสร็จ')
@@ -40,13 +44,8 @@ def _manual_ticker():
 
 def main():
     st.set_page_config(page_title='Stock Research Workspace',page_icon='📊',layout='wide')
-    st.markdown('''<style>.block-container{padding-top:2.5rem;max-width:1700px}
-    [data-testid="stMetric"]{border:1px solid #26384b;border-radius:12px;padding:14px;background:#101c2b}
-    [data-testid="stMetricValue"]{font-size:1.65rem}
-    .st-key-ranking_board [data-testid="stVerticalBlock"]{gap:.25rem}
-    .st-key-ranking_board [data-testid="stButton"] button{min-height:1.9rem;padding:.16rem .5rem}
-    .st-key-ranking_board [data-testid="stButton"] p{font-size:.82rem}
-    .st-key-ranking_board h3{font-size:1.15rem}</style>''',unsafe_allow_html=True)
+    from workspace_theme import apply_theme
+    apply_theme()
     reader,error=a.get_remote_reader()
     if reader: reader.refresh()
     revision=reader.status()['revision'] if reader else 0
@@ -56,6 +55,9 @@ def main():
     consume_selection(cache)
     original=original_watchlist()
     frame,outside=a.build_universe_frame(original,cache.quotes(),cache.classifications())
+    from screening import enrich_frame
+    profiles,_=cache.get('remote:screener',request_remote=False)
+    frame=enrich_frame(frame,profiles or {})
     if 'selected_ticker' not in st.session_state:
         set_selected(st.session_state,'AAPL')
     st.sidebar.title('Stock Research')
@@ -78,6 +80,8 @@ def main():
     top_left, top_right = st.columns([2.6, 1.15], gap='large')
     with top_left:
         st.title('Stock Research Workspace')
+        from workspace_theme import navigation
+        navigation()
         st.caption('หน้าเดียว: ตารางหุ้น → กราฟและแผนซื้อ → พื้นฐานและปันผล → ความเสี่ยง → เปรียบเทียบ → สถานะข้อมูล')
         st.caption('ข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด · รุ่นโปรแกรม '+a.APP_VERSION)
         counts=quality_counts(frame)
@@ -88,6 +92,10 @@ def main():
         if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
         else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
         render_family_counts(cache)
+        etfs=int(frame.Asset_Type.eq('ETF').sum())
+        st.caption(f'Catalog: {len(frame)-etfs:,} stocks + {etfs:,} ETF / ETP entries. Directory: {a.ETF_DIRECTORY_AS_OF or "legacy"}. The Nasdaq ETF flag can include ETNs; check each product name. Listing coverage is not data coverage; missing records are prepared in bounded batches.')
+        if a.ETF_DIRECTORY_CONFLICTS:
+            st.caption(f'{len(a.ETF_DIRECTORY_CONFLICTS)} symbol-type conflicts retained for review; no automatic stock reclassification.')
         with st.container(key='overview_controls'):
             work=filter_universe(frame)
     with top_right:
@@ -107,6 +115,8 @@ def main():
         row=selected.iloc[0].to_dict() if not selected.empty else {}
         st.subheader(f"{ticker} · {info.get('shortName') or row.get('Security_Name') or ''}")
         st.caption(f"วันที่ราคา Watchlist: {row.get('Price_AsOf') or 'ไม่ระบุ'} | ประวัติดึงสำเร็จ {a.thai_time(meta.get('fetched_at'))} | quote ณ {a.thai_time(info.get('regularMarketTime'))}")
+        from live_quote_ui import render_live_quote
+        render_live_quote(ticker)
         render_symbol_quality(ticker,cache,history,info)
         # Render once per selected symbol, not once per row in the catalog.
         with st.container(key='research_technical'):
@@ -114,15 +124,15 @@ def main():
             technical(ticker,history,info,row)
         st.divider()
         with st.container(key='research_fundamentals'):
-            st.header('พื้นฐานและปันผล')
+            st.header('พื้นฐานและปันผล',anchor='fundamentals')
             fundamentals(ticker,history,info,row)
         st.divider()
         with st.container(key='research_risk'):
-            st.header('ความเสี่ยง')
+            st.header('ความเสี่ยง',anchor='risk')
             risk(ticker,history)
         st.divider()
         with st.container(key='research_comparison'):
-            st.header('เปรียบเทียบหลายตัว')
+            st.header('เปรียบเทียบหลายตัว',anchor='comparison')
             compare(ticker,frame)
     st.divider()
     if work is not None:

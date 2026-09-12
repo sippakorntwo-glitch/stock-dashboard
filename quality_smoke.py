@@ -49,8 +49,11 @@ def verify_quality(page,app):
         return {'quality_status':'awaiting_first_publication_on_CI_only','no_false_completeness':True}
     assert quality.get('version')==1
     assert set(quality['symbols'])==set(summary['universe'])
-    assert len(summary['universe'])==quality['counts']['universe']==4900
-    assert all(sum(v.values())==(700 if field.startswith('etf.') else 4200 if field.startswith('stock.') else 4900)
+    total=len(summary['universe'])
+    etfs=sum(v['asset_type']=='ETF' for v in quality['symbols'].values())
+    stocks=total-etfs
+    assert total==quality['counts']['universe'] and stocks==4200 and etfs>=700
+    assert all(sum(v.values())==(etfs if field.startswith('etf.') else stocks if field.startswith('stock.') else total)
                for field,v in quality['columns'].items())
     report.update(source_verified=True,source_generation=manifest['generation'],counts=quality['counts'])
     fields_button=app.get_by_role('button',name='ดาวน์โหลดรายงานความครบทุกฟิลด์',exact=True)
@@ -58,11 +61,11 @@ def verify_quality(page,app):
     fields=read_download(page,fields_button)
     assert len(fields)==len(quality['columns']) and len(fields)>50
     for row in fields:
-        total=int(row['ทั้งหมดที่ใช้ฟิลด์นี้'])
-        assert total==sum(int(v) for k,v in row.items() if k not in ('ข้อมูล / ฟิลด์','ทั้งหมดที่ใช้ฟิลด์นี้'))
+        field_total=int(row['ทั้งหมดที่ใช้ฟิลด์นี้'])
+        assert field_total==sum(int(v) for k,v in row.items() if k not in ('ข้อมูล / ฟิลด์','ทั้งหมดที่ใช้ฟิลด์นี้'))
     report['field_report']=True
     symbols=read_download(page,app.get_by_role('button',name='ดาวน์โหลดสถานะข้อมูลครบทุกหุ้น',exact=True))
-    assert len(symbols)==4900 and {r['Ticker'] for r in symbols}==set(summary['universe'])
+    assert len(symbols)==total and {r['Ticker'] for r in symbols}==set(summary['universe'])
     assert all(r['Industry_Status'] not in ('','None','nan') for r in symbols)
     report['symbol_report']=True
     # Reuse daily prepared observations; do not spend provider calls to test metadata.

@@ -1,5 +1,5 @@
 """Half-hour whole-catalog screening plus bounded, fresh shortlist confirmation.
-Not a fresh quote scan of all 4,900 symbols. Unknown entry checks block confirmation.
+Not a fresh quote scan of every catalog member. Unknown entry checks block confirmation.
 """
 from __future__ import annotations
 import argparse

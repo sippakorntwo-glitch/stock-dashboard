@@ -108,7 +108,7 @@ class ChartHistoryService:
                     return
                 ticker,kind=self.jobs.popleft()
                 self.calls.append(time.time())
-            error='';ttl=900 if kind=='5m' else 86400
+            error='';ttl=60 if kind=='5m' else 86400
             try:self._fetch(ticker,kind)
             except Exception as exc:
                 limited=any(word in str(exc).lower() for word in ('429','rate limit','too many')) or 'RateLimit' in type(exc).__name__
@@ -147,25 +147,32 @@ def range_payload(frame,ticker,period,interval,fetched_at=''):
     return payload
 
 
+@st.fragment(run_every=60)
 def render_chart(ticker,daily_history):
+    if st.session_state.get('selected_ticker',ticker) != ticker:
+        return
     period=st.radio('ช่วงเวลาแสดงกราฟ',PERIODS,index=PERIODS.index('1 ปี'),horizontal=True,key='chart_period',
         help='ช่วงย้อนหลัง ไม่ใช่ขนาดแท่ง: 1/3/5/7 วันใช้ 5 นาทีและนับวันซื้อขายล่าสุดที่มีข้อมูล; เดือน/ปีใช้แท่งรายวัน')
     short=period.endswith('วัน');long=period in ('5 ปี','10 ปี')
     service=get_chart_service()
     history,meta=a.get_data_cache().history(ticker,'5m' if short else '1d')
     kind='5m' if short else 'long';message=''
+    st.session_state.pop('_chart_first_load_waiting',None)
     if short or long:
         extra,extra_meta=service.read(ticker,kind)
         if extra is not None and (short or not covers_years(history,int(period.split()[0]))):history,meta=extra,extra_meta
         need=short or not covers_years(history,int(period.split()[0]))
         if extra is not None and long:need=True
         if need:
-            if chart_requests_enabled():message=service.request(ticker,kind)
+            if chart_requests_enabled():
+                first_load=history is None or (long and extra is None and not covers_years(history,int(period.split()[0])))
+                if first_load:st.session_state['_chart_first_load_waiting']=ticker
+                message=service.request(ticker,kind)
             elif history is None:message='เจ้าของระบบปิดการดึงกราฟเพิ่มเติม จึงยังไม่มีข้อมูลช่วงนี้'
     if message:
         (st.warning if any(word in message for word in ('ไม่สำเร็จ','จำกัด','พัก','เต็ม','ปิด')) else st.info)(message)
     if short:
-        st.caption('1 วัน / 3 วัน = 1 / 3 วันซื้อขายล่าสุดที่มีข้อมูล ไม่ใช่ 24 / 72 ชั่วโมง · แท่ง 5 นาที เฉพาะเวลาตลาดปกติ · แคชอย่างน้อย 15 นาที ไม่ใช่ราคาสตรีมสด')
+        st.caption('1 วัน / 3 วัน = 1 / 3 วันซื้อขายล่าสุดที่มีข้อมูล ไม่ใช่ 24 / 72 ชั่วโมง · แท่ง 5 นาที เฉพาะเวลาตลาดปกติ · ตรวจใหม่ประมาณทุก 1 นาที; แท่งยังเป็น 5 นาที และผู้ให้ข้อมูลอาจล่าช้า ไม่ใช่ราคาสตรีมสด')
     elif long:
         st.caption('5 ปี / 10 ปีใช้แท่งรายวัน ดึงประวัติเฉพาะหุ้นที่เลือกเมื่อจำเป็นและเก็บแคช 24 ชั่วโมง; หุ้นเข้าตลาดใหม่อาจมีไม่ครบช่วง')
     if history is None or history.empty:
@@ -182,3 +189,10 @@ def render_chart(ticker,daily_history):
         if hasattr(st,'iframe'):st.iframe(html,height=900)
         else:components.html(html,height=900,scrolling=False)
     except (ValueError,TypeError,KeyError) as exc:st.warning(f'แสดงกราฟไม่ได้ ({type(exc).__name__}) ไม่เปลี่ยนข้อมูลให้คะแนนรายวัน')
+
+
+def first_chart_load_finished(state, current_revision, rendered_revision):
+    """Wake once for an awaited chart, never for routine minute refreshes."""
+    waiting=state.get('_chart_first_load_waiting')
+    return bool(waiting and waiting==state.get('selected_ticker')
+                and current_revision!=rendered_revision)

@@ -21,6 +21,11 @@ def no_exception(app):
 
 
 def diagnose(page):
+    try:
+        Path('work').mkdir(exist_ok=True)
+        page.screenshot(path='work/browser-failure.png',full_page=False)
+    except Exception as exc:
+        print('SCREENSHOT_DIAGNOSTIC_ERROR:',type(exc).__name__,flush=True)
     for frame in page.frames:
         try:
             u=urlsplit(frame.url)
@@ -83,7 +88,7 @@ def verify_sections(app):
 
 
 def click_filtered_stock(page,app,ticker,*,row_selector=False):
-    query=app.get_by_role('textbox',name='ค้นหา Ticker / บริษัท / อุตสาหกรรม',exact=True)
+    query=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
     query.fill(ticker);query.press('Enter')
     expect(app.get_by_text('หุ้นในผลค้นหา: '+ticker,exact=True)).to_be_visible(timeout=30000)
     page.wait_for_timeout(1000)

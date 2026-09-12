@@ -16,9 +16,9 @@ def history(values, dates=None):
 def test_requested_order_and_consistent_english_labels():
     assert list(RETURN_LABELS.values())==['1 Day (%)','3 Days (%)','7 Days (%)','1 Month (%)','6 Months (%)','1 Year (%)','3 Years (%)','5 Years (%)']
     assert 'Return_2Y' not in TABLE_FIELDS and 'Return_3M' not in TABLE_FIELDS
-    assert tuple(TABLE_FIELDS[6:14])==RETURN_FIELDS
+    assert tuple(TABLE_FIELDS[7:15])==RETURN_FIELDS
     for field in RETURN_FIELDS:
-        assert 'cumulative return (%)' in return_help(field) and return_help('price.'+field)==return_help(field)
+        assert 'cumulative adjusted return' in return_help(field) and return_help('price.'+field)==return_help(field)
 
 
 @pytest.mark.parametrize('sessions,field',[(1,'Return_1D'),(3,'Return_3D'),(7,'Return_7D')])
@@ -38,16 +38,16 @@ def test_calendar_month_uses_boundary_not_21_rows():
     f=history(np.arange(100,150))
     r=period_observation(daily_closes(f),months=1)
     cutoff=f.index[-1]-pd.DateOffset(months=1)
-    window=f.loc[f.index>=cutoff]
-    assert r['start']==str(window.index[0].date())
-    assert r['value']==pytest.approx((f.Close.iloc[-1]/window.Close.iloc[0]-1)*100)
+    window=f.loc[f.index<=cutoff]
+    assert r['start']==str(window.index[-1].date())
+    assert r['value']==pytest.approx((f.Close.iloc[-1]/window.Close.iloc[-1]-1)*100)
 
 
 def test_calendar_weekend_first_session_and_leap_date():
     f=history([100,110,120,150],['2024-02-28','2024-02-29','2024-03-01','2025-02-28'])
     assert period_observation(daily_closes(f),months=12)['value']==pytest.approx(50)
     f=history([100,105,120],['2021-09-10','2021-09-13','2026-09-12'])
-    assert period_observation(daily_closes(f),months=60)['value']==pytest.approx((120/105-1)*100)
+    assert period_observation(daily_closes(f),months=60)['value']==pytest.approx((120/100-1)*100)
 
 
 def test_full_five_year_history_required_even_if_1260_observations_present():
@@ -79,7 +79,7 @@ def test_input_unchanged_and_duplicate_dates_last_wins():
 def test_csv_matches_eight_periods_with_numeric_values():
     f=pd.DataFrame([{'Ticker':'AAPL',**dict.fromkeys(RETURN_FIELDS,12.34),'Return_2Y':999,'Return_3M':999}])
     out=export_watchlist(f)
-    assert list(out.columns[6:14])==list(RETURN_LABELS.values())
+    assert list(out.columns[7:15])==list(RETURN_LABELS.values())
     assert 'Return_2Y' not in out and 'Return_3M' not in out
     assert out['3 Days (%)'].iloc[0]==12.34
 
@@ -89,7 +89,7 @@ def test_core_snapshot_and_quality_include_new_fields():
     from data_quality import BARS_REQUIRED,MONTHS_REQUIRED
     f=history(np.linspace(100,200,1700))
     row=a.scan_snapshot_row('AAPL',f,'2026-09-11T10:00:00Z')
-    assert row['Metric_Calc_Version']==a.METRIC_VERSION==2
+    assert row['Metric_Calc_Version']==a.METRIC_VERSION==3
     assert a.HISTORY_YEARS>=6
     for field,value in table_returns(a.completed_daily_history(f)).items():assert row[field]==pytest.approx(value)
     assert BARS_REQUIRED['Return_3D']==4 and BARS_REQUIRED['Return_7D']==8

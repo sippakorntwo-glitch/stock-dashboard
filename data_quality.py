@@ -115,7 +115,9 @@ def make_quality(cache, universe, *, etfs=(), now=None):
         count('industry_or_category',istate);count('info',info_state);count('dividends',dstate)
         missing_metrics={}
         for field in QUOTE_FIELDS:
-            status=missing_metric(field,row,shape);count('price.'+field,status)
+            status=missing_metric(field,row,shape)
+            if status=='pending' and missing_state(objects,'history',t)=='failed':status='failed'
+            count('price.'+field,status)
             if status!='available':missing_metrics[field]=status
         missing_fields=[]
         for field in ETF_FIELDS if is_etf else STOCK_FIELDS:
@@ -155,6 +157,12 @@ def metadata_jobs(universe,metadata,etfs,now,mode='bootstrap'):
     for t in universe:
         for kind in ('info','dividends'):
             if metadata_due(kind,t,metadata,now,mode):groups[(kind,t in etfs)].append((kind,t))
+    # Missing work first, then oldest observations within each fair asset/kind queue.
+    # Partial-label retries must not starve stale profiles at the end of the catalog.
+    for key,queue in groups.items():
+        groups[key]=deque(sorted(queue,key=lambda job:(
+            job[0]+':'+job[1] in metadata,
+            timestamp(metadata.get(job[0]+':'+job[1],{}).get('fetched_at')))))
     result=[]
     while any(groups.values()):
         for queue in groups.values():

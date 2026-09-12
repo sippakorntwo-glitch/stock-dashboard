@@ -87,8 +87,8 @@ class PreparedDataTests(unittest.TestCase):
             self.assertEqual(len(self.store.reads), calls)
             self.assertFalse(any('checkpoint' in key for key in self.store.reads))
             frame, _ = app.build_universe_frame(pd.DataFrame(columns=['Ticker']), local.quotes(), local.classifications())
-            self.assertEqual(len(frame), 4900)
-            self.assertEqual(frame.Asset_Type.value_counts().to_dict(), {'Common Stock': 4200, 'ETF': 700})
+            self.assertEqual(len(frame), app.COMMON_STOCK_LIMIT + app.ETF_LIMIT)
+            self.assertEqual(frame.Asset_Type.value_counts().to_dict(), {'Common Stock': 4200, 'ETF': app.ETF_LIMIT})
             row = frame.set_index('Ticker').loc['AAPL']
             self.assertGreater(row.Return_3Y, 0)
     def test_worker_restart_restores_full_checkpoint_and_returns(self):

@@ -162,6 +162,7 @@ def apply_summary(cache, summary):
     cache.put("remote:watchlist", summary.get("watchlist_csv"), {"fetched_at": utc_now()})
     cache.put("remote:universe", summary.get("universe", []), {"fetched_at": utc_now()})
     cache.put("remote:quality", summary.get("quality", {}), {"fetched_at": utc_now()})
+    cache.put("remote:screener", summary.get("screener", {}), {"fetched_at": utc_now()})
     rows = summary.get("quotes", {})
     if rows:
         known_quotes = cache.quotes()
@@ -245,7 +246,7 @@ class SnapshotReader:
                 self.shards.clear()
                 self.attempted.clear()
                 self.revision += 1
-        self.message = "อ่านชุดข้อมูลที่เตรียมไว้ — ไม่ต้องสแกน 4,900 ตัวบนหน้าเว็บ"
+        self.message = "อ่านชุดข้อมูลที่เตรียมไว้ — ไม่ต้องสแกนทั้งทะเบียนบนหน้าเว็บ"
         self.error = ""
 
     def _details(self, ticker):

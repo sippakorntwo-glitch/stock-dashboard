@@ -26,11 +26,13 @@ overview(frame,selectable=True,prepared=frame)
     at=AppTest.from_string(script,default_timeout=30).run()
     assert not at.exception,str(at.exception)
     data=at.dataframe[0]
-    assert tuple(data.value.columns[6:14])==RETURN_FIELDS
+    assert tuple(data.value.columns[7:15])==RETURN_FIELDS
+    assert data.value.columns[6]=='Price_AsOf'
     config=json.loads(data.proto.columns)
+    assert config['Price_AsOf']['label']=='Price As Of'
     for field,label in RETURN_LABELS.items():
         assert config[field]['label']==label
         assert config[field]['type_config']['format']=='%+.2f%%'
-        assert 'cumulative return (%)' in config[field]['help']
-    assert any('Cumulative Return (%)' in cap.value for cap in at.caption)
+        assert 'cumulative adjusted return' in config[field]['help']
+    assert any('Adjusted-close returns' in cap.value for cap in at.caption)
     assert len(at.get('download_button'))==1

@@ -26,7 +26,7 @@ def wait_range(page,app,period,seconds=90):
 
 def verify_enhancements(page,app):
     report={'page_size':500,'tooltips':False,'ranges':[]}
-    query=app.get_by_role('textbox',name='ค้นหา Ticker / บริษัท / อุตสาหกรรม',exact=True)
+    query=app.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
     query.fill('');query.press('Enter')
     expect(app.get_by_text(re.compile(r'แสดง 500 ตัวในหน้านี้'))).to_be_visible(timeout=30000)
     item=app.locator('.st-key-research_technical .workspace-help-table abbr').filter(has_text='ราคา > EMA20 > EMA50').first
@@ -56,4 +56,6 @@ def verify_enhancements(page,app):
     report['data_quality']=verify_quality(page,app)
     from return_table_smoke import verify_return_table
     report['english_return_table']=verify_return_table(page,app)
+    from screener_smoke import verify_screener
+    report['advanced_screener_and_ui']=verify_screener(page,app)
     return report
