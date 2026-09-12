@@ -11,7 +11,7 @@ from catalog_extension import install as install_catalog
 install_catalog(core)
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-09-12.24'
+APP_VERSION = '2026-09-12.25'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row
@@ -37,7 +37,7 @@ class DashboardCache(BaseCache):
 
     def get(self, key, request_remote=True):
         remote = getattr(self, 'remote', None)
-        if request_remote and remote and key.startswith(('history:1d:', 'info:', 'dividends:')):
+        if request_remote and remote and key.startswith(('history:1d:', 'info:', 'dividends:', 'reference:')):
             remote.request(key.rsplit(':', 1)[-1])
         return super().get(key, request_remote=False) if BASE_HAS_REMOTE else super().get(key)
 

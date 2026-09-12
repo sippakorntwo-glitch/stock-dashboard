@@ -10,7 +10,7 @@ from quality_smoke import public_summary,fetch_public,REPO
 def reference_for(ticker,manifest):
     slot=str(int(hashlib.sha256(ticker.encode()).hexdigest()[:8],16)%128)
     record=manifest['details'][slot];generation=manifest['generation'].split('/')[1]
-    raw=fetch_public(f'https://github.com/{REPO}/releases/download/dashboard-data-{generation}/detail-{int(slot):03d}.jsonl.gz')
+    raw=fetch_public(f'https://github.com/{REPO}/releases/download/dashboard-data-{generation}/details--{slot}.jsonl.gz')
     assert hashlib.sha256(raw).hexdigest()==record['sha256']
     for line in gzip.decompress(raw).splitlines():
         symbol,key,value,meta=json.loads(line)

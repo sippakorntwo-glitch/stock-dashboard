@@ -58,4 +58,6 @@ def verify_enhancements(page,app):
     report['english_return_table']=verify_return_table(page,app)
     from screener_smoke import verify_screener
     report['advanced_screener_and_ui']=verify_screener(page,app)
+    from asset_reference_smoke import verify_asset_reference
+    report['asset_aware_sources']=verify_asset_reference(page,app)
     return report
