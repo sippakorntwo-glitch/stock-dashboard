@@ -1,12 +1,9 @@
 {
-  "recorded_at": "2026-09-12T11:19:20.344046+00:00",
-  "run_id": "34689750729",
-  "source_sha": "d9775fa5e38ca896ea283699a2b498a29c932f19",
-  "result": "success",
+  "recorded_at": "2026-09-12T11:47:05.153643+00:00",
+  "run_id": "34691912203",
+  "source_sha": "88a684275b8cfcb856f1c80702c45c3e607f7a45",
+  "result": "failure",
   "target": "local CI",
-  "tested_sha": "f1f346b86d342b7d9a23535a29cb71057eb6c6d6",
-  "logs": {
-    "asset-audit.log": "2026-09-12 11:04:27.036 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager\nPublished: {\"universe\": 9876, \"prices\": 9875, \"checked_today\": 9875, \"industry\": 9336, \"info\": 9876, \"dividends\": 9875, \"return_1y\": 8091, \"return_2y\": 6898, \"return_3y\": 6138} bootstrap pending: 540\n{\"started_at\": \"2026-09-12T11:05:02.329283+00:00\", \"source_generation\": \"generations/20260912T103925Z-4dee212f\", \"arithmetic\": {\"catalog_members\": 9876, \"priced_members\": 9875, \"periods_checked\": 79000, \"numeric_periods\": 67556, \"unavailable_periods\": 11444, \"max_difference_pp\": 1.3642420526593924e-11, \"errors\": [], \"unpriced_tickers\": [\"XLCU\"], \"error_count\": 0, \"result\": \"passed\"}, \"external_sources\": {\"mapping_source\": \"https://www.sec.gov/files/company_tickers.json\", \"mapping_matched\": 0, \"submissions_verified\": 0, \"financial_reports\": 0, \"industry_fallbacks\": [], \"reference_symbols\": [], \"errors\": [{\"source\": \"SEC ticker index\", \"error\": \"HTTPError\"}], \"provider_requests\": 1, \"blocked\": true, \"reference_records\": 1, \"http_evidence\": []}, \"generation\": \"generations/20260912T110544Z-0115f559\", \"coverage\": {\"universe\": 9876, \"prices\": 9875, \"checked_today\": 9875, \"industry\": 9336, \"info\": 9876, \"dividends\": 9875, \"return_1y\": 8091, \"return_2y\": 6898, \"return_3y\": 6138}, \"quality_counts\": {\"universe\": 9876, \"prices\": 9875, \"histories\": 9875, \"info\": 9876, \"industry\": 9336, \"dividends_checked\": 9875, \"dividends_with_payments\": 6074, \"dividends_no_payments\": 3801, \"unattempted_info\": 0, \"unattempted_dividends\": 0}, \"published_at\": \"2026-09-12T11:09:58.461239+00:00\", \"finished_at\": \"2026-09-12T11:10:01.560909+00:00\", \"result\": \"passed\", \"scope\": \"Every catalog member and return; primary field validation; bounded SEC reference cross-check, not external verification of every provider field\"}\n",
-    "asset-tests.log": "........................................................................ [ 23%]\n........................................................................ [ 47%]\n........................................................................ [ 71%]\n........................................................................ [ 95%]\n...............                                                          [100%]\n303 passed in 26.71s\n"
-  }
+  "tested_sha": "88a684275b8cfcb856f1c80702c45c3e607f7a45",
+  "logs": {}
 }
