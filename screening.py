@@ -47,7 +47,14 @@ def enrich_frame(frame,profiles):
         if field=='Size_Millions':continue
         values=result.Ticker.map(lambda t:(profiles.get(t) or {}).get(field))
         result[field]=pd.to_numeric(values,errors='coerce') if field in NUMERIC_FIELDS else values
-    size=result['Fund_Assets'].where(result.Asset_Type.eq('ETF'),result['Market_Cap'])
+    # Provider fund profiles sometimes contain corporate placeholders such as
+    # profitMargins=0. These are N/A, not a reported zero-profit business. Mask
+    # only the view used by filters/exports, preserving the raw stored objects.
+    funds=result.Asset_Type.eq('ETF')
+    for field in ('Market_Cap','Revenue_Growth','Profit_Margin','ROE','Free_Cash_Flow'):
+        result.loc[funds,field]=np.nan
+    result.loc[~funds,'Fund_Assets']=np.nan
+    size=result['Fund_Assets'].where(funds,result['Market_Cap'])
     result['Size_Millions']=size/1_000_000
     return result
 
