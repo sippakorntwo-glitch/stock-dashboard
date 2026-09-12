@@ -1,0 +1,102 @@
+name: Verify company financial review
+on:
+  push:
+    branches: [feat/company-financial-review-v28, main]
+    paths: [.github/workflows/verify_company_review.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: company-review-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install real application and browser
+        run: |
+          mkdir -p work
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -60 /tmp/browser-install.log; exit 1; }
+      - name: Integrate display-only changes and test all regressions
+        run: |
+          if [ -f maintenance/integrate_company_review_v28.py ]; then
+            test "$GITHUB_REF" = refs/heads/feat/company-financial-review-v28
+            python maintenance/integrate_company_review_v28.py
+            python - <<'PY'
+          from pathlib import Path
+          p=Path('company_review_smoke.py');s=p.read_text()
+          s=s.replace('        observations={}','        observations={};by_label={}')
+          old="            tooltip=row.locator('abbr[title]')"
+          new="            by_label[row.locator('td').first.inner_text().split('ⓘ')[0].strip()]=observations[key]\n"+old
+          assert s.count(old)==1;s=s.replace(old,new)
+          old="            metric=next(o for k,o in observations.items() if card.locator('tr[data-metric=\"'+k+'\"]').locator('td').first.inner_text().replace(' ⓘ','').strip()==row['Metric'])"
+          assert s.count(old)==1;s=s.replace(old,"            metric=by_label[row['Metric']]")
+          p.write_text(s)
+          PY
+          fi
+          python -m compileall -q .
+          python -m pytest -q tests > work/company-tests.log 2>&1 || { tail -130 work/company-tests.log; exit 1; }
+          if [ "$GITHUB_REF" = refs/heads/feat/company-financial-review-v28 ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -u
+            git diff --cached --quiet || git commit -m 'Integrate tested company financial review and separate technical/fund metrics'
+            git push origin HEAD:feat/company-financial-review-v28
+          fi
+          git archive --format=zip HEAD > work/tested-source.zip
+      - name: Verify actual financial data is published before browser assertions
+        run: |
+          python - <<'PY'
+          import time
+          from quality_smoke import public_summary
+          from company_review_smoke import source_objects
+          for attempt in range(30):
+            manifest,_=public_summary()
+            ref=source_objects('AAPL',manifest).get('reference:AAPL',({},{}))[0]
+            if ref.get('financial_statements',{}).get('annual'):break
+            time.sleep(30)
+          else:raise RuntimeError('Filed statement data was not published; do not claim this release complete')
+          PY
+      - name: Full real-browser system and company financial review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          if [ "$GITHUB_REF" = refs/heads/main ]; then
+            python verify_workspace.py --production
+          else
+            python verify_workspace.py
+          fi
+      - name: Record tested target and outcome
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          from verification_report import publish_report
+          p=Path('work/company-tests.log')
+          publish_report('v28-completion',{'result':os.environ['RESULT'],'target':'production' if os.environ['GITHUB_REF']=='refs/heads/main' else 'local CI','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tests':p.read_text(errors='replace')[-20000:] if p.exists() else 'Test step did not run'})
+          PY
+      - name: Preserve tested source and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: company-review-evidence
+          path: |
+            work/tested-source.zip
+            work/*-report.json
+            work/*.png
+            work/*.log
+          retention-days: 7
