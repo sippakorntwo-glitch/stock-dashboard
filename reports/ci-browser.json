@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-12T09:49:32.874413+00:00",
-  "run_id": "34686424184",
-  "source_sha": "00febc70e8901e35fb6ed45af24432efd3b71cea",
+  "recorded_at": "2026-09-12T11:19:18.942323+00:00",
+  "run_id": "34689750729",
+  "source_sha": "d9775fa5e38ca896ea283699a2b498a29c932f19",
   "url": "http://127.0.0.1:8501/",
-  "expected_version": "2026-09-12.24",
+  "expected_version": "2026-09-12.25",
   "layout": "single-page",
   "views": [
     "ภาพรวมและค้นหา",
@@ -32,7 +32,7 @@
   ],
   "chart_bars": 1506,
   "chart_last_bar": "2026-09-11",
-  "deployed_version": "2026-09-12.24",
+  "deployed_version": "2026-09-12.25",
   "enhancements": {
     "page_size": 500,
     "tooltips": true,
@@ -85,7 +85,7 @@
           "forbidden": 0
         },
         {
-          "valid": 5,
+          "valid": 6,
           "forbidden": 0
         }
       ],
@@ -104,11 +104,11 @@
         {
           "ticker": "SPY",
           "period": "10 ปี",
-          "percent": 314.7410085089438,
+          "percent": 314.7410428501781,
           "display": "+314.74%",
           "first": "2016-09-12",
           "last": "2026-09-11",
-          "start_price": 184.28126525878906,
+          "start_price": 184.28125,
           "end_price": 764.2899780273438,
           "bars": 2514
         },
@@ -212,13 +212,13 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260912T065824Z-7da3621a",
+      "source_generation": "generations/20260912T110544Z-0115f559",
       "counts": {
         "universe": 9876,
         "prices": 9875,
         "histories": 9875,
         "info": 9876,
-        "industry": 9335,
+        "industry": 9336,
         "dividends_checked": 9875,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3801,
@@ -264,7 +264,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260912T065824Z-7da3621a",
+      "source_generation": "generations/20260912T110544Z-0115f559",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -327,7 +327,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "http://127.0.0.1:8501/",
-      "verified_at": "2026-09-12T09:48:33.198871+00:00",
+      "verified_at": "2026-09-12T11:17:44.583466+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -348,7 +348,7 @@
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-12T09:49:18.772219+00:00",
+        "fetched_at": "2026-09-12T11:18:46.468066+00:00",
         "state": "stale"
       },
       "theme": {
@@ -369,14 +369,34 @@
       },
       "top_level_industry_dropdown": true,
       "result": "passed"
+    },
+    "asset_aware_sources": {
+      "AAAU_pe_not_applicable": true,
+      "AAAU_issuer_filing_link": true,
+      "diagnostics_still_absent": true,
+      "SEC_examples": [
+        {
+          "ticker": "AAPL",
+          "verified_cik": null,
+          "stored_fiscal_records": 0,
+          "submissions_checked_at": null
+        },
+        {
+          "ticker": "MSFT",
+          "verified_cik": null,
+          "stored_fiscal_records": 0,
+          "submissions_checked_at": null
+        }
+      ],
+      "result": "passed"
     }
   },
   "result": "passed",
   "server_memory": {
-    "VmHWM": "715880 kB",
-    "VmRSS": "651828 kB"
+    "VmHWM": "733996 kB",
+    "VmRSS": "620820 kB"
   },
   "target": "http://127.0.0.1:8501/",
-  "tested_sha": "d882c954c19ca0b1cef28d228533ebdbbfd863e5",
-  "server_log_tail": "2026-09-12 09:46:33.112 Uvicorn server started on 127.0.0.1:8501\n\n  You can now view your Streamlit app in your browser.\n\n  URL: http://127.0.0.1:8501\n\n  Stopping...\n"
+  "tested_sha": "f1f346b86d342b7d9a23535a29cb71057eb6c6d6",
+  "server_log_tail": "2026-09-12 11:15:45.941 Uvicorn server started on 127.0.0.1:8501\n\n  You can now view your Streamlit app in your browser.\n\n  URL: http://127.0.0.1:8501\n\n  Stopping...\n"
 }
