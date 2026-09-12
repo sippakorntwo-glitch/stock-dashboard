@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-12T12:13:56.269597+00:00",
+  "recorded_at": "2026-09-12T15:03:19.483348+00:00",
   "run_id": "34692993812",
   "source_sha": "2c00f0acdaa1546992fc3169f6af19cfe491f28b",
-  "started_at": "2026-09-12T12:13:49.063618+00:00",
-  "source_generation": "generations/20260912T115553Z-6362bf77",
+  "started_at": "2026-09-12T15:03:12.507079+00:00",
+  "source_generation": "generations/20260912T122834Z-bae0ec9a",
   "arithmetic": {
     "catalog_members": 9876,
     "priced_members": 9875,
@@ -1388,7 +1388,7 @@
       }
     }
   },
-  "generation": "generations/20260912T115553Z-6362bf77",
+  "generation": "generations/20260912T122834Z-bae0ec9a",
   "coverage": {
     "universe": 9876,
     "prices": 9875,
@@ -1412,7 +1412,7 @@
     "unattempted_info": 0,
     "unattempted_dividends": 0
   },
-  "finished_at": "2026-09-12T12:13:56.269459+00:00",
+  "finished_at": "2026-09-12T15:03:19.483206+00:00",
   "result": "passed",
   "data_complete": false,
   "scope": "Every catalog member and return; primary field validation; bounded SEC reference cross-check, not external verification of every provider field"
