@@ -38,6 +38,9 @@ jobs:
           PYTHONUNBUFFERED: '1'
         run: python deployment_seed.py
   ranking:
+    # A newly published ranking must use the completed deployment data, not
+    # race the collector and stamp an older snapshot with a newer rank time.
+    needs: [seed, bootstrap]
     if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
