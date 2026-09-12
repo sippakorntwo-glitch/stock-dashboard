@@ -1,0 +1,74 @@
+name: Refresh and audit release data
+on:
+  push:
+    branches: [feat/returns-filters-etf-v21]
+    paths: [.github/workflows/release_refresh.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: prepared-market-data
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q -r requirements.txt
+      - name: Refresh prices and retry the missing metadata within existing request limits
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          DASHBOARD_CACHE_FILE: work/release-refresh.sqlite3
+          PYTHONUNBUFFERED: '1'
+        run: |
+          mkdir -p work
+          python -m compileall -q .
+          python update_data.py --mode daily --price-minutes 40 --metadata-minutes 5 --metadata-limit 300 > work/release-refresh.log 2>&1 || { tail -100 work/release-refresh.log; exit 1; }
+      - name: Reconcile every published return against the verified checkpoint
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: python audit_all_returns.py --probe-missing > work/return-audit.log 2>&1 || { tail -100 work/return-audit.log; exit 1; }
+      - name: Record exact publication coverage and outcome
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os,json,gzip
+          from pathlib import Path
+          from data_sync import ObjectStore,read_manifest,read_checked
+          from verification_report import publish_report
+          store=ObjectStore(dict(backend='github',DASHBOARD_DATA_REPO=os.environ['GITHUB_REPOSITORY'],DASHBOARD_DATA_VISIBILITY='public',DASHBOARD_DATA_BRANCH='dashboard-data'))
+          manifest=read_manifest(store)
+          summary=json.loads(gzip.decompress(read_checked(store,manifest['summary'])))
+          quotes=summary.get('quotes',{})
+          dates={}
+          for row in quotes.values():
+              d=str(row.get('Price_AsOf') or 'unknown')
+              dates[d]=dates.get(d,0)+1
+          logs={p.name:p.read_text(errors='replace')[-14000:] for p in Path('work').glob('*.log')}
+          publish_report('release-refresh',{'result':os.environ['RESULT'],'generation':manifest['generation'],'published_at':manifest['published_at'],'coverage':manifest['coverage'],'quality_counts':manifest.get('quality_counts',{}),'price_date_counts':dates,'QQQI':quotes.get('QQQI'),'logs':logs})
+          PY
+      - name: Preserve refresh and audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-data-audit
+          path: |
+            work/*-report.json
+            work/*.log
+          retention-days: 7
