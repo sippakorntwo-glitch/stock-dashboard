@@ -1,0 +1,69 @@
+name: Verify chart commentary
+on:
+  push:
+    branches: [feat/chart-commentary-v26, main]
+    paths: [.github/workflows/verify_chart_commentary.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: chart-commentary-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual application and Chromium
+        run: |
+          mkdir -p work
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+      - name: Verify all regressions including stable automatic-refresh placement
+        run: |
+          python -m compileall -q .
+          python -m pytest -q tests > work/commentary-tests.log 2>&1 || { tail -140 work/commentary-tests.log; exit 1; }
+          git archive --format=zip HEAD > work/tested-source.zip
+      - name: Strict real-browser cold-start, commentary arithmetic and responsive layout
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            python verify_workspace.py --production
+          else
+            python verify_workspace.py
+          fi
+      - name: Record target and exact tested source
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          from verification_report import publish_report
+          p=Path('work/commentary-tests.log')
+          publish_report('v26-completion', {'result':os.environ['RESULT'],'target':'production' if os.environ['GITHUB_REF']=='refs/heads/main' else 'local CI','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tests':p.read_text(errors='replace')[-22000:] if p.exists() else 'Tests did not run'})
+          PY
+      - name: Preserve tested source and browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-commentary-evidence
+          path: |
+            work/tested-source.zip
+            work/*-report.json
+            work/*.png
+            work/*.log
+          retention-days: 7

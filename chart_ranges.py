@@ -188,6 +188,8 @@ def render_chart(ticker,daily_history):
         html=with_inspector(with_performance(a.build_chart_html(payload),payload))
         if hasattr(st,'iframe'):st.iframe(html,height=900)
         else:components.html(html,height=900,scrolling=False)
+        from chart_commentary import commentary_html
+        st.markdown(commentary_html(payload),unsafe_allow_html=True)
     except (ValueError,TypeError,KeyError) as exc:st.warning(f'แสดงกราฟไม่ได้ ({type(exc).__name__}) ไม่เปลี่ยนข้อมูลให้คะแนนรายวัน')
 
 
