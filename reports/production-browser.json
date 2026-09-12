@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-12T18:56:54.151508+00:00",
-  "run_id": "34711050930",
+  "recorded_at": "2026-09-12T19:11:14.418392+00:00",
+  "run_id": "34712708160",
   "source_sha": "7b8d066b9d07042b2029dadbb6e661e42076e2b2",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-13.27",
@@ -480,7 +480,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-12T18:52:49.459611+00:00",
+      "verified_at": "2026-09-12T19:07:34.127560+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -501,7 +501,7 @@
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-12T18:17:33.656683+00:00",
+        "fetched_at": "2026-09-12T18:54:38.772105+00:00",
         "state": "stale"
       },
       "theme": {
