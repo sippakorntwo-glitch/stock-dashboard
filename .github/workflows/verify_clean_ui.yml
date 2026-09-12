@@ -31,6 +31,13 @@ jobs:
           if [ -f maintenance/apply_ui_cleanup_v24.py ]; then
             test "$GITHUB_REF" = "refs/heads/feat/industry-dropdown-clean-ui-v24"
             python maintenance/apply_ui_cleanup_v24.py
+            python - <<'PY'
+          from pathlib import Path
+          p=Path('ranking_board.py');s=p.read_text()
+          old="            st.json({'coverage':counts,'excluded':payload.get('excluded',{})},expanded=False)"
+          assert s.count(old)==1, 'Top 10 debug output changed; do not guess'
+          p.write_text(s.replace(old,'            # Detailed coverage remains in the published backend ranking report.'))
+          PY
           fi
           python -m compileall -q .
           python -m pytest -q tests > work/clean-ui-tests.log 2>&1 || { tail -160 work/clean-ui-tests.log; exit 1; }
