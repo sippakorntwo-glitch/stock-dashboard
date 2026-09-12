@@ -33,7 +33,7 @@ def reset_controls(app):
         const s=JSON.parse(e.dataset.controls);
         return s['Reset Version']>previous && s['Asset Type']==='All'
             && s['Return Display']==='Cumulative (Adjusted Close)'
-            && s['Search Ticker / Company / Industry']===''
+            && s['Search Ticker / Company']===''
             && Object.values(s).filter(Array.isArray).every(v=>v.length===0)
             && !Object.keys(s).some(k=>k.startsWith('Minimum ')||k.startsWith('Maximum '));
     }""",arg=previous,timeout=60000)
@@ -89,7 +89,7 @@ def verify_screener(page,app):
     exp=controls.get_by_text('Advanced Filters',exact=True)
     exp.click()
     reset_controls(app)
-    search=controls.get_by_role('textbox',name='Search Ticker / Company / Industry',exact=True)
+    search=controls.get_by_role('textbox',name='Search Ticker / Company',exact=True)
     expect(search).to_have_value('',timeout=30000)
     button=app.get_by_role('button',name='ดาวน์โหลดผลกรองครบทุกแถว',exact=True)
     initial=read_download(page,button)
@@ -98,6 +98,9 @@ def verify_screener(page,app):
     report['original_stock_rows']=sum(r['Asset Type']=='Common Stock' for r in initial)
     report['etf_rows']=sum(r['Asset Type']=='ETF' for r in initial)
     assert report['original_stock_rows']==4200 and report['etf_rows']>700
+    exp.click()
+    from clean_ui_smoke import verify_industry_placement
+    verify_industry_placement(app)
     choose(app,'Asset Type','ETF')
     category=summary['classifications']['QQQI']['Industry']
     choose(app,'Industry / ETF Category',category,multi=True)
@@ -105,6 +108,7 @@ def verify_screener(page,app):
     assert selected and any(r['Ticker']=='QQQI' for r in selected)
     assert all(r['Asset Type']=='ETF' and r['Industry / ETF Category']==category for r in selected), {'selected_rows':len(selected),'bad_rows':[r['Ticker'] for r in selected if r['Asset Type']!='ETF' or r['Industry / ETF Category']!=category][:10]}
     report['category_filter']={'category':category,'rows':len(selected),'QQQI':True}
+    exp.click()
     choose(app,'Return Periods to Filter','1 Month (%)',multi=True)
     minimum=controls.get_by_role('spinbutton',name='Minimum 1 Month (%)',exact=True)
     minimum.fill('0');minimum.press('Enter')
@@ -121,7 +125,7 @@ def verify_screener(page,app):
     reset_controls(app)
     choose(app,'Return Display','Annualized (3Y / 5Y only)')
     search.fill('AAPL');search.press('Enter')
-    wait_applied(app,'Search Ticker / Company / Industry','AAPL')
+    wait_applied(app,'Search Ticker / Company','AAPL')
     expect(app.get_by_text('หุ้นในผลค้นหา: AAPL',exact=True)).to_be_visible(timeout=30000)
     annual=read_download(page,button)
     assert len(annual)==1 and annual[0]['Ticker']=='AAPL'
@@ -176,5 +180,8 @@ def verify_screener(page,app):
     page.set_viewport_size({'width':1440,'height':1000})
     exp.click()
     reset_controls(app)
+    from clean_ui_smoke import verify_clean_presentation
+    report['clean_presentation']=verify_clean_presentation(app)
+    report['top_level_industry_dropdown']=True
     report['result']='passed'
     return report

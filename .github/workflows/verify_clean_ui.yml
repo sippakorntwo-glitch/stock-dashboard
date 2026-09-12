@@ -1,0 +1,85 @@
+name: Verify clean industry UI
+on:
+  push:
+    branches: [feat/industry-dropdown-clean-ui-v24, main]
+    paths: [maintenance/apply_ui_cleanup_v24.py, .github/workflows/verify_clean_ui.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: clean-industry-ui-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual app and browser dependencies
+        run: |
+          mkdir -p work
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+      - name: Apply UI-only edits on the isolated branch and run the complete test suite
+        run: |
+          if [ -f maintenance/apply_ui_cleanup_v24.py ]; then
+            test "$GITHUB_REF" = "refs/heads/feat/industry-dropdown-clean-ui-v24"
+            python maintenance/apply_ui_cleanup_v24.py
+            python - <<'PY'
+          from pathlib import Path
+          p=Path('ranking_board.py');s=p.read_text()
+          old="            st.json({'coverage':counts,'excluded':payload.get('excluded',{})},expanded=False)"
+          assert s.count(old)==1, 'Top 10 debug output changed; do not guess'
+          p.write_text(s.replace(old,'            # Detailed coverage remains in the published backend ranking report.'))
+          PY
+          fi
+          python -m compileall -q .
+          python -m pytest -q tests > work/clean-ui-tests.log 2>&1 || { tail -160 work/clean-ui-tests.log; exit 1; }
+          if [ "$GITHUB_REF" = "refs/heads/feat/industry-dropdown-clean-ui-v24" ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -u
+            git diff --cached --quiet || git commit -m 'Promote industry dropdown and remove diagnostic/source UI without changing backend checks'
+            git push origin HEAD:feat/industry-dropdown-clean-ui-v24
+          fi
+          git archive --format=zip HEAD > work/tested-source.zip
+      - name: Full browser recheck, retaining independent backend quality verification
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            python verify_workspace.py --production
+          else
+            python verify_workspace.py
+          fi
+      - name: Record the actual target, tested code and result
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          from verification_report import publish_report
+          p=Path('work/clean-ui-tests.log')
+          publish_report('v24-completion',{'result':os.environ['RESULT'],'target':'production' if os.environ['GITHUB_REF']=='refs/heads/main' else 'local CI','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tests':p.read_text(errors='replace')[-18000:] if p.exists() else 'Tests did not start'})
+          PY
+      - name: Preserve tested source, screenshots and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clean-industry-ui-evidence
+          path: |
+            work/tested-source.zip
+            work/*-report.json
+            work/*.png
+            work/*.log
+          retention-days: 7

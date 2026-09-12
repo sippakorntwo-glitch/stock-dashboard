@@ -42,7 +42,10 @@ main()
         assert len(at.sidebar.radio)==0
         for title in ['กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว']:
             assert title in [h.value for h in at.header]
-        assert 'สถานะข้อมูลและระบบ' in [h.value for h in at.subheader]
+        assert 'สถานะข้อมูลและระบบ' not in [h.value for h in at.subheader]
+        assert 'รายงานความครบของข้อมูลทุกส่วน' not in [h.value for h in at.subheader]
+        assert not any(e.label.startswith('ตรวจข้อมูลที่ขาดของ ') for e in at.expander)
+        assert not at.json
         assert len(at.get('plotly_chart'))>=3
         at.radio(key='chart_period').set_value('3 ปี').run()
         at.session_state['_test_selection']={'tickers':['AAPL','MSFT'],'event':{'selection':{'rows':[],'cells':[(1,'Ticker')]}}}

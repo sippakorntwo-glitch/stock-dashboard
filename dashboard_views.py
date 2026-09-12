@@ -13,7 +13,7 @@ from dashboard_help import help_table, column_help
 from chart_ranges import PAGE_SIZE, page_slice, render_chart
 from return_periods import (RETURN_FIELDS, RETURN_LABELS, RETURN_CAPTION, TABLE_FIELDS,
                             return_column_config, export_watchlist)
-VIEWS = ['ภาพรวมและค้นหา','กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว','สถานะข้อมูล']
+VIEWS = ['ภาพรวมและค้นหา','กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว']
 
 
 def table(frame, **kwargs):
@@ -125,7 +125,7 @@ def technical(ticker,daily_history,info,row):
     div=a.load_dividend_history(ticker)
     a.render_decision(ticker,ctx,info,scored,plan,is_etf,div,currency)
     analysis,metrics,_=a.build_analysis(ctx.get('metrics',{}),row,info)
-    with st.expander('ตารางวิเคราะห์ 360° และแหล่งข้อมูล',expanded=True):
+    with st.expander('ตารางวิเคราะห์ 360°',expanded=True):
         table(analysis,height=450)
     a.render_position_sizer(ticker,row,metrics,currency)
     st.caption('ราคาชุดรายวันอาจไม่ผ่านเกณฑ์ quote อายุไม่เกิน 15 นาที ระบบจึงคงสถานะรอยืนยัน ไม่ลดเกณฑ์เพื่อให้เกิดสัญญาณซื้อ')
