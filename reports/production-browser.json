@@ -1,17 +1,16 @@
 {
-  "recorded_at": "2026-09-12T07:12:53.690919+00:00",
-  "run_id": "34679424039",
-  "source_sha": "6e3ca88cc27d6ec1cf52ab7614ff0de3ca23cafb",
+  "recorded_at": "2026-09-12T10:45:46.233800+00:00",
+  "run_id": "34688919337",
+  "source_sha": "48533cd53087761906a73e9350d139437b195c9b",
   "url": "https://my-stock-terminal.streamlit.app/",
-  "expected_version": "2026-09-12.23",
+  "expected_version": "2026-09-12.24",
   "layout": "single-page",
   "views": [
     "ภาพรวมและค้นหา",
     "กราฟและแผนซื้อ",
     "พื้นฐานและปันผล",
     "ความเสี่ยง",
-    "เปรียบเทียบหลายตัว",
-    "สถานะข้อมูล"
+    "เปรียบเทียบหลายตัว"
   ],
   "chart": true,
   "selections": [
@@ -33,7 +32,7 @@
   ],
   "chart_bars": 1506,
   "chart_last_bar": "2026-09-11",
-  "deployed_version": "2026-09-12.23",
+  "deployed_version": "2026-09-12.24",
   "enhancements": {
     "page_size": 500,
     "tooltips": true,
@@ -87,10 +86,6 @@
         },
         {
           "valid": 5,
-          "forbidden": 0
-        },
-        {
-          "valid": 9,
           "forbidden": 0
         }
       ],
@@ -214,8 +209,8 @@
       }
     },
     "data_quality": {
-      "field_report": true,
-      "symbol_report": true,
+      "backend_field_report": true,
+      "backend_symbol_report": true,
       "source_verified": true,
       "source_generation": "generations/20260912T065824Z-7da3621a",
       "counts": {
@@ -229,6 +224,12 @@
         "dividends_no_payments": 3801,
         "unattempted_info": 0,
         "unattempted_dividends": 0
+      },
+      "public_diagnostics_removed": {
+        "industry_dropdown_top_level": true,
+        "source_columns_removed": true,
+        "diagnostics_ui_removed": true,
+        "headers_checked": 16
       },
       "examples": [
         {
@@ -326,7 +327,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-12T07:11:22.348291+00:00",
+      "verified_at": "2026-09-12T10:42:08.990675+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -347,7 +348,7 @@
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-12T06:46:44.455669+00:00",
+        "fetched_at": "2026-09-12T10:45:20.309167+00:00",
         "state": "stale"
       },
       "theme": {
@@ -360,10 +361,17 @@
         "scroll": 390
       },
       "mobile_screenshot": "https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/verify/v22-results/reports/v22-mobile.png",
+      "clean_presentation": {
+        "industry_dropdown_top_level": true,
+        "source_columns_removed": true,
+        "diagnostics_ui_removed": true,
+        "headers_checked": 16
+      },
+      "top_level_industry_dropdown": true,
       "result": "passed"
     }
   },
   "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "6e3ca88cc27d6ec1cf52ab7614ff0de3ca23cafb"
+  "tested_sha": "48533cd53087761906a73e9350d139437b195c9b"
 }
