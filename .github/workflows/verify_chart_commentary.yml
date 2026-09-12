@@ -2,7 +2,7 @@ name: Verify chart commentary
 on:
   push:
     branches: [feat/chart-commentary-v26, main]
-    paths: [maintenance/add_chart_commentary_v26.py, .github/workflows/verify_chart_commentary.yml]
+    paths: [.github/workflows/verify_chart_commentary.yml]
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,6 +18,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -26,23 +28,12 @@ jobs:
           mkdir -p work
           python -m pip install -q -r requirements-dev.txt playwright==1.55.0
           python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
-      - name: Apply reviewed display-only integration and verify the full suite
+      - name: Verify all regressions including stable automatic-refresh placement
         run: |
-          if [ -f maintenance/add_chart_commentary_v26.py ]; then
-            test "$GITHUB_REF" = "refs/heads/feat/chart-commentary-v26"
-            python maintenance/add_chart_commentary_v26.py
-          fi
           python -m compileall -q .
           python -m pytest -q tests > work/commentary-tests.log 2>&1 || { tail -140 work/commentary-tests.log; exit 1; }
-          if [ "$GITHUB_REF" = "refs/heads/feat/chart-commentary-v26" ]; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add -u
-            git diff --cached --quiet || git commit -m 'Integrate tested chart explanation below each chart without adding data requests'
-            git push origin HEAD:feat/chart-commentary-v26
-          fi
           git archive --format=zip HEAD > work/tested-source.zip
-      - name: Strict real-browser verification including commentary values and layout
+      - name: Strict real-browser cold-start, commentary arithmetic and responsive layout
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYTHONUNBUFFERED: '1'
