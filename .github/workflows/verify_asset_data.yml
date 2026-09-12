@@ -2,7 +2,9 @@ name: Verify asset-aware data and sources
 on:
   push:
     branches: [fix/asset-aware-data-v25, main]
-    paths: [maintenance/apply_asset_data_v25.py, .github/workflows/verify_asset_data.yml]
+    paths: [maintenance/complete_v25.py, .github/workflows/verify_asset_data.yml]
+  schedule:
+    - cron: '29 2 * * 0'
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,17 +28,18 @@ jobs:
           mkdir -p work
           python -m pip install -q -r requirements-dev.txt playwright==1.55.0
           python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
-      - name: Integrate guarded source on its branch and prove all regressions
+      - name: Finish guarded integration on its branch and verify every regression
         run: |
-          if [ -f maintenance/apply_asset_data_v25.py ]; then
+          if [ -f maintenance/complete_v25.py ]; then
             test "$GITHUB_REF" = "refs/heads/fix/asset-aware-data-v25"
-            python maintenance/apply_asset_data_v25.py
+            python maintenance/complete_v25.py
             python - <<'PY'
           from pathlib import Path
-          p=Path('asset_reference_smoke.py');s=p.read_text()
-          old='detail-{int(slot):03d}.jsonl.gz'
+          p=Path('screener_smoke.py');s=p.read_text()
+          old="    wait_page_ready(app)\n    testid="
+          new="    selected=app.locator('[data-testid=\"stSidebar\"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True).input_value()\n    wait_page_ready(app,selected)\n    testid="
           assert s.count(old)==1
-          p.write_text(s.replace(old,'details--{slot}.jsonl.gz'))
+          p.write_text(s.replace(old,new))
           PY
           fi
           python -m compileall -q .
@@ -45,24 +48,25 @@ jobs:
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add -u
-            git diff --cached --quiet || git commit -m 'Integrate tested asset-specific availability and read-only official source references'
+            git diff --cached --quiet || git commit -m 'Complete asset-aware validation in all numeric consumers and polite source repair'
             git push origin HEAD:fix/asset-aware-data-v25
           fi
           git archive --format=zip HEAD > work/tested-source.zip
-      - name: Audit every catalog member and retain verified source evidence
+      - name: Audit every catalog member and preserve verified observations
         env:
           DASHBOARD_DATA_REPO: ${{ github.repository }}
           DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DASHBOARD_DATA_VISIBILITY: public
           DASHBOARD_DATA_BRANCH: dashboard-data
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT || 'StockResearchWorkspace sippakorntwo@gmail.com' }}
           PYTHONUNBUFFERED: '1'
         run: |
-          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          if [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" = "push" ]; then
             python asset_data_audit.py > work/asset-audit.log 2>&1 || { tail -100 work/asset-audit.log; exit 1; }
           else
-            python asset_data_audit.py --enrich --publish > work/asset-audit.log 2>&1 || { tail -100 work/asset-audit.log; exit 1; }
+            python asset_data_audit.py --repair --enrich --publish > work/asset-audit.log 2>&1 || { tail -100 work/asset-audit.log; exit 1; }
           fi
-      - name: Verify all research features, AAAU and absence of the old diagnostic UI
+      - name: Verify all research features, AAAU and absence of diagnostic UI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYTHONUNBUFFERED: '1'
@@ -72,7 +76,7 @@ jobs:
           else
             python verify_workspace.py
           fi
-      - name: Record actual outcome and source version
+      - name: Record actual outcome and exact tested version
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -85,7 +89,7 @@ jobs:
           logs={p.name:p.read_text(errors='replace')[-20000:] for p in Path('work').glob('asset-*.log')}
           publish_report('v25-completion',{'result':os.environ['RESULT'],'target':'production' if os.environ['GITHUB_REF']=='refs/heads/main' else 'local CI','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'logs':logs})
           PY
-      - name: Preserve full audits, exact code and browser evidence
+      - name: Preserve full audits, exact source and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
