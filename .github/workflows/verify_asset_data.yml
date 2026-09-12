@@ -32,15 +32,15 @@ jobs:
         run: |
           if [ -f maintenance/complete_v25.py ]; then
             test "$GITHUB_REF" = "refs/heads/fix/asset-aware-data-v25"
-            python maintenance/complete_v25.py
             python - <<'PY'
           from pathlib import Path
-          p=Path('screener_smoke.py');s=p.read_text()
-          old="    wait_page_ready(app)\n    testid="
-          new="    selected=app.locator('[data-testid=\"stSidebar\"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True).input_value()\n    wait_page_ready(app,selected)\n    testid="
-          assert s.count(old)==1
-          p.write_text(s.replace(old,new))
+          p=Path('maintenance/complete_v25.py');lines=p.read_text().splitlines(True)
+          obsolete=[line for line in lines if line.startswith("edit('screener_smoke.py',")]
+          assert len(obsolete)==1
+          assert 'except BrowserTimeout:' in Path('screener_smoke.py').read_text()
+          p.write_text(''.join(line for line in lines if line not in obsolete))
           PY
+            python maintenance/complete_v25.py
           fi
           python -m compileall -q .
           python -m pytest -q tests > work/asset-tests.log 2>&1 || { tail -140 work/asset-tests.log; exit 1; }
