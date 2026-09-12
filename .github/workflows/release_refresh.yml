@@ -1,7 +1,7 @@
 name: Refresh and audit release data
 on:
   push:
-    branches: [feat/returns-filters-etf-v21]
+    branches: [main]
     paths: [.github/workflows/release_refresh.yml]
   workflow_dispatch:
 permissions:
@@ -13,7 +13,7 @@ jobs:
   refresh:
     if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
     runs-on: ubuntu-latest
-    timeout-minutes: 65
+    timeout-minutes: 95
     permissions:
       contents: write
     steps:
@@ -23,8 +23,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install -q -r requirements.txt
-      - name: Refresh prices and retry the missing metadata within existing request limits
+      - name: Install and recheck the exact application and verifier
+        run: |
+          mkdir -p work
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+          python -m compileall -q .
+          python -m pytest -q tests > work/release-tests.log 2>&1 || { tail -100 work/release-tests.log; exit 1; }
+      - name: Resume remaining price work without refetching already-current securities
         env:
           DASHBOARD_DATA_REPO: ${{ github.repository }}
           DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,16 +38,26 @@ jobs:
           DASHBOARD_DATA_BRANCH: dashboard-data
           DASHBOARD_CACHE_FILE: work/release-refresh.sqlite3
           PYTHONUNBUFFERED: '1'
-        run: |
-          mkdir -p work
-          python -m compileall -q .
-          python update_data.py --mode daily --price-minutes 40 --metadata-minutes 5 --metadata-limit 300 > work/release-refresh.log 2>&1 || { tail -100 work/release-refresh.log; exit 1; }
+        run: python update_data.py --mode daily --price-minutes 40 --metadata-minutes 0 --metadata-limit 0 > work/release-refresh.log 2>&1 || { tail -100 work/release-refresh.log; exit 1; }
       - name: Reconcile every published return against the verified checkpoint
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYTHONUNBUFFERED: '1'
         run: python audit_all_returns.py --probe-missing > work/return-audit.log 2>&1 || { tail -100 work/return-audit.log; exit 1; }
-      - name: Record exact publication coverage and outcome
+      - name: Recalculate the board from the finished publication
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          PYTHONUNBUFFERED: '1'
+        run: python ranking_job.py --publish > work/final-ranking.log 2>&1 || { tail -80 work/final-ranking.log; exit 1; }
+      - name: Recheck the actual deployed dashboard after data and ranking publication
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: python verify_workspace.py --production
+      - name: Record exact publication coverage and overall outcome
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,10 +76,10 @@ jobs:
           for row in quotes.values():
               d=str(row.get('Price_AsOf') or 'unknown')
               dates[d]=dates.get(d,0)+1
-          logs={p.name:p.read_text(errors='replace')[-14000:] for p in Path('work').glob('*.log')}
+          logs={p.name:p.read_text(errors='replace')[-14000:] for p in Path('work').glob('*.log') if p.name!='browser-output.log'}
           publish_report('release-refresh',{'result':os.environ['RESULT'],'generation':manifest['generation'],'published_at':manifest['published_at'],'coverage':manifest['coverage'],'quality_counts':manifest.get('quality_counts',{}),'price_date_counts':dates,'QQQI':quotes.get('QQQI'),'logs':logs})
           PY
-      - name: Preserve refresh and audit evidence
+      - name: Preserve completed data and production browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -71,4 +87,5 @@ jobs:
           path: |
             work/*-report.json
             work/*.log
+            work/*.png
           retention-days: 7
