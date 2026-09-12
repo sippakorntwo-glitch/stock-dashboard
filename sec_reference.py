@@ -7,6 +7,7 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 import hashlib
 import json
+import os
 import re
 import time
 from urllib.parse import urlsplit
@@ -47,19 +48,25 @@ def allowed_url(url):
 
 
 class SecClient:
-    def __init__(self,session=None,max_requests=90):
+    def __init__(self,session=None,max_requests=90,user_agent=None):
         self.session=session or requests.Session()
         self.session.trust_env=False
         self.max_requests=max_requests;self.calls=0;self.last=0.;self.blocked=False
+        self.user_agent=user_agent or os.environ.get('SEC_USER_AGENT','StockResearchWorkspace contact https://github.com/sippakorntwo-glitch/stock-dashboard')
+        if '\n' in self.user_agent or '\r' in self.user_agent or len(self.user_agent)>250:
+            raise ValueError('Invalid declared SEC User-Agent')
         self.evidence=[]
     def get(self,url):
         if not allowed_url(url):raise ValueError('Only reviewed SEC JSON endpoints are allowed')
         if self.blocked or self.calls>=self.max_requests:raise RuntimeError('SEC access budget/circuit is closed')
         time.sleep(max(0.,1.05-(time.monotonic()-self.last)))
         self.last=time.monotonic();self.calls+=1
-        with self.session.get(url,headers={'User-Agent':'StockResearchWorkspace/25 contact https://github.com/sippakorntwo-glitch/stock-dashboard',
+        with self.session.get(url,headers={'User-Agent':self.user_agent,
             'Accept':'application/json'},timeout=(10,30),stream=True,allow_redirects=False) as response:
             if response.status_code in (403,429):self.blocked=True
+            if response.status_code!=200:
+                self.evidence.append({'url':url,'received_at':datetime.now(timezone.utc).isoformat(),
+                                      'http_status':response.status_code})
             response.raise_for_status()
             if response.status_code!=200:raise ValueError('Unexpected SEC redirect or response')
             chunks=[];size=0

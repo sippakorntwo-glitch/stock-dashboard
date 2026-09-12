@@ -219,6 +219,41 @@ def get_updater(version=APP_VERSION):
 
 
 get_updater.clear = _cached_updater.clear
+# Preserve original functions once; the coherent release loader replaces this
+# module together with core, so wrappers never stack across releases.
+_base_decision_context = core.decision_context
+_base_criteria_score = core.criteria_score
+_base_build_entry_plan = core.build_entry_plan
+_base_build_analysis = core.build_analysis
+
+
+def decision_context(history, info, benchmark=None, now=None):
+    from asset_semantics import safe_numeric_profile
+    safe=safe_numeric_profile(info, str(info.get('symbol') or ''), info.get('quoteType')=='ETF')
+    return _base_decision_context(history,safe,benchmark,now)
+
+
+def criteria_score(ctx, info, is_etf):
+    from asset_semantics import safe_numeric_profile
+    return _base_criteria_score(ctx,safe_numeric_profile(info,str(info.get('symbol') or ''),is_etf),is_etf)
+
+
+def build_entry_plan(ctx, info, scored, is_etf, min_rr=2.0, now=None):
+    from asset_semantics import safe_numeric_profile
+    return _base_build_entry_plan(ctx,safe_numeric_profile(info,str(info.get('symbol') or ''),is_etf),scored,is_etf,min_rr,now)
+
+
+def build_analysis(snapshot, selected_row, info):
+    from asset_semantics import safe_numeric_profile
+    ticker=str(selected_row.get('Ticker') or info.get('symbol') or '')
+    safe=safe_numeric_profile(info,ticker,core.asset_is_etf(ticker,selected_row,info))
+    return _base_build_analysis(snapshot,selected_row,safe)
+
+
+core.decision_context=decision_context
+core.criteria_score=criteria_score
+core.build_entry_plan=build_entry_plan
+core.build_analysis=build_analysis
 core.WATCHLIST_NUMERIC_COLUMNS = list(dict.fromkeys([*core.WATCHLIST_NUMERIC_COLUMNS, *EXTRA_NUMERIC]))
 core.DashboardCache = DashboardCache
 core.scan_snapshot_row = scan_snapshot_row

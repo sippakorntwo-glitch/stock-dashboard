@@ -50,6 +50,9 @@ def field_state(ticker,info,field,*,is_etf=False):
     fund=kind!='company'
     if (fund and field in CORPORATE_FIELDS) or (not fund and field in FUND_FIELDS):return 'not_applicable'
     if kind in ('physical_gold','non_equity_fund') and field in RATIO_FIELDS:return 'not_applicable'
+    if not fund and field in ('forwardPE','trailingPE'):
+        eps=number(info.get('forwardEps' if field=='forwardPE' else 'trailingEps'))
+        if eps is not None and eps<=0:return 'not_meaningful'
     raw=info.get(field)
     if raw is None or (isinstance(raw,str) and raw.strip().casefold() in ABSENT):return 'not_reported' if info else 'pending'
     if field in TEXT_FIELDS:return 'available' if isinstance(raw,str) and raw.strip() else 'invalid'

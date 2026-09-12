@@ -51,6 +51,10 @@ def enrich(cache,universe,etfs,profiles,limit=40):
     report={'mapping_source':INDEX_URL,'mapping_matched':0,'submissions_verified':0,'financial_reports':0,
             'industry_fallbacks':[],'reference_symbols':[],'errors':[],'provider_requests':0}
     raw,meta=cache.get('external:sec-ticker-map',request_remote=False)
+    circuit,_=cache.get('external:sec-circuit',request_remote=False)
+    if isinstance(circuit,dict) and timestamp(circuit.get('next_attempt_after'))>datetime.now(timezone.utc).timestamp():
+        client.blocked=True
+        report['cooldown_until']=circuit.get('next_attempt_after')
     try:
         if not raw or datetime.now(timezone.utc).timestamp()-timestamp(meta.get('fetched_at'))>INDEX_TTL:
             raw=client.get(INDEX_URL);ticker_index(raw)
@@ -58,7 +62,8 @@ def enrich(cache,universe,etfs,profiles,limit=40):
         index=ticker_index(raw)
     except Exception as exc:
         report['errors'].append({'source':'SEC ticker index','error':type(exc).__name__})
-        index={}
+        try:index=ticker_index(raw) if raw else {}
+        except (ValueError,TypeError):index={}
     references={}
     for ticker in universe:
         old,ometa=cache.get('reference:'+ticker,request_remote=False);old=old if isinstance(old,dict) else {}
@@ -109,12 +114,19 @@ def enrich(cache,universe,etfs,profiles,limit=40):
             db.execute('INSERT INTO objects VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET body=excluded.body,metadata=excluded.metadata',
                 ('reference:'+ticker,zlib.compress(json.dumps(value,ensure_ascii=False,allow_nan=False).encode()),
                  json.dumps({'fetched_at':stamp,'source':'SEC EDGAR / reviewed issuer filings'})))
+    if client.blocked and client.calls:
+        from datetime import timedelta
+        until=(datetime.now(timezone.utc)+timedelta(hours=24)).isoformat()
+        cache.put('external:sec-circuit',{'next_attempt_after':until,'reason':'access denied or rate limit'},
+                  {'fetched_at':stamp})
+        report['cooldown_until']=until
     report.update(provider_requests=client.calls,blocked=client.blocked,reference_records=len(references),http_evidence=client.evidence)
+    report['automatic_financials_status']='available' if report['financial_reports'] else 'unavailable; primary observations retained' 
     return report
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--enrich',action='store_true');parser.add_argument('--publish',action='store_true')
+    parser=argparse.ArgumentParser();parser.add_argument('--enrich',action='store_true');parser.add_argument('--publish',action='store_true');parser.add_argument('--repair',action='store_true')
     args=parser.parse_args()
     import dashboard_runtime as a
     from data_sync import ObjectStore,config_from,read_manifest,read_checked,restore_checkpoint,utc_now
@@ -134,6 +146,10 @@ def main():
     if arithmetic['error_count']:raise RuntimeError('Return consistency errors detected; no enrichment published')
     before,rows,profiles=profile_audit(cache,universe,set(a.ETF_NAMES))
     report={'started_at':utc_now(),'source_generation':previous['generation'],'arithmetic':arithmetic,'before':before}
+    if args.repair:
+        from repair_profile_validation import repair_invalid_profiles
+        report['primary_repair']=repair_invalid_profiles(cache,universe,set(a.ETF_NAMES),profiles)
+        before_references,rows,profiles=profile_audit(cache,universe,set(a.ETF_NAMES))
     if args.enrich:report['external_sources']=enrich(cache,universe,set(a.ETF_NAMES),profiles)
     # Existing primary labels can be recovered without requesting or fabricating data.
     from data_quality import prepare_cached_metadata
@@ -148,7 +164,7 @@ def main():
         manifest=publish_snapshot(store,cache,universe,{'task':'asset-aware audit','secondary_reference_count':report.get('external_sources',{}).get('reference_records',0)},previous,watchlist_csv=source.get('watchlist_csv'))
         report.update(generation=manifest['generation'],coverage=manifest['coverage'],quality_counts=manifest['quality_counts'],published_at=manifest['published_at'])
     else:report.update(generation=previous['generation'],coverage=previous['coverage'],quality_counts=previous.get('quality_counts',{}))
-    report.update(finished_at=utc_now(),result='passed',scope='Every catalog member and return; primary field validation; bounded SEC reference cross-check, not external verification of every provider field')
+    report.update(finished_at=utc_now(),result='passed',data_complete=not after['counts'].get('with_missing_applicable_fields',0) and not after['counts'].get('with_invalid_fields',0),scope='Every catalog member and return; primary field validation; bounded SEC reference cross-check, not external verification of every provider field')
     publish_report('v25-data-audit',report)
     print(json.dumps({k:v for k,v in report.items() if k not in ('before','after')},ensure_ascii=False,allow_nan=False))
 
