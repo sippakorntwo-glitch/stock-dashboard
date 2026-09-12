@@ -1,13 +1,13 @@
 {
-  "recorded_at": "2026-09-11T21:06:12.436715+00:00",
-  "run_id": "34647525509",
-  "source_sha": "c2d8714ea4a4251c6281e0dc146011ff62ea6820",
+  "recorded_at": "2026-09-12T05:56:20.104903+00:00",
+  "run_id": "34674873133",
+  "source_sha": "6d6f341e7d502629f70ae83fa607affb6455fb0b",
   "catalog_members": 9876,
   "priced_members": 9868,
   "periods_checked": 78944,
-  "numeric_periods": 67534,
-  "unavailable_periods": 11410,
-  "max_difference_pp": 9.094947017729282e-13,
+  "numeric_periods": 67540,
+  "unavailable_periods": 11404,
+  "max_difference_pp": 1.3642420526593924e-11,
   "errors": [],
   "unpriced_tickers": [
     "ACBE",
@@ -21,20 +21,20 @@
   ],
   "error_count": 0,
   "result": "passed",
-  "audited_at": "2026-09-11T21:06:02.477021+00:00",
-  "generation": "generations/20260911T204937Z-cd483091",
-  "published_at": "2026-09-11T20:53:54.216077+00:00",
+  "audited_at": "2026-09-12T05:56:10.119738+00:00",
+  "generation": "generations/20260912T055106Z-0eb2a9d8",
+  "published_at": "2026-09-12T05:55:18.373181+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9868,
     "histories": 9868,
-    "info": 4905,
-    "industry": 4868,
-    "dividends_checked": 4905,
-    "dividends_with_payments": 2483,
-    "dividends_no_payments": 2422,
-    "unattempted_info": 4971,
-    "unattempted_dividends": 4971
+    "info": 9876,
+    "industry": 9335,
+    "dividends_checked": 9873,
+    "dividends_with_payments": 6074,
+    "dividends_no_payments": 3799,
+    "unattempted_info": 0,
+    "unattempted_dividends": 0
   },
   "missing_price_diagnostic": {
     "ACBE": {
@@ -65,7 +65,7 @@
             "Low": 24.94969940185547,
             "Close": 24.94969940185547,
             "Adj Close": 24.94969940185547,
-            "Volume": 60.0
+            "Volume": 61.0
           }
         }
       ],
@@ -96,10 +96,10 @@
           "values": {
             "Open": 51.13999938964844,
             "High": 51.25,
-            "Low": 51.01279830932617,
-            "Close": 51.01279830932617,
-            "Adj Close": 51.01279830932617,
-            "Volume": 1305.0
+            "Low": 51.0099983215332,
+            "Close": 51.0099983215332,
+            "Adj Close": 51.0099983215332,
+            "Volume": 1300.0
           }
         }
       ],
@@ -109,14 +109,14 @@
       "rows": 1,
       "last_observations": [
         {
-          "date": "2026-09-10 00:00:00-04:00",
+          "date": "2026-09-11 00:00:00-04:00",
           "values": {
-            "Open": 50.09000015258789,
-            "High": 0.0,
-            "Low": 0.0,
+            "Open": 47.6343994140625,
+            "High": 47.6343994140625,
+            "Low": 47.6343994140625,
             "Close": 47.6343994140625,
             "Adj Close": 47.6343994140625,
-            "Volume": 0.0
+            "Volume": 8.0
           }
         }
       ],
@@ -143,14 +143,14 @@
       "rows": 1,
       "last_observations": [
         {
-          "date": "2026-09-10 00:00:00-04:00",
+          "date": "2026-09-11 00:00:00-04:00",
           "values": {
-            "Open": 50.08000183105469,
-            "High": 0.0,
-            "Low": 0.0,
+            "Open": 49.423301696777344,
+            "High": 49.423301696777344,
+            "Low": 49.423301696777344,
             "Close": 49.423301696777344,
             "Adj Close": 49.423301696777344,
-            "Volume": 0.0
+            "Volume": 7.0
           }
         }
       ],
@@ -160,14 +160,14 @@
       "rows": 1,
       "last_observations": [
         {
-          "date": "2026-09-10 00:00:00-04:00",
+          "date": "2026-09-11 00:00:00-04:00",
           "values": {
-            "Open": 25.059999465942383,
-            "High": 0.0,
-            "Low": 0.0,
+            "Open": 25.23710060119629,
+            "High": 25.23710060119629,
+            "Low": 25.23710060119629,
             "Close": 25.23710060119629,
             "Adj Close": 25.23710060119629,
-            "Volume": 0.0
+            "Volume": 8.0
           }
         }
       ],
