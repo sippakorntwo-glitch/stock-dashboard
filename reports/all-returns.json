@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-12T18:27:00.498648+00:00",
-  "run_id": "34711095851",
+  "recorded_at": "2026-09-12T18:59:09.077552+00:00",
+  "run_id": "34712708160",
   "source_sha": "7b8d066b9d07042b2029dadbb6e661e42076e2b2",
   "catalog_members": 9876,
   "priced_members": 9875,
@@ -14,9 +14,9 @@
   ],
   "error_count": 0,
   "result": "passed",
-  "audited_at": "2026-09-12T18:26:58.855447+00:00",
-  "generation": "generations/20260912T122834Z-bae0ec9a",
-  "published_at": "2026-09-12T12:32:49.039575+00:00",
+  "audited_at": "2026-09-12T18:59:07.420989+00:00",
+  "generation": "generations/20260912T183912Z-7dc52ff3",
+  "published_at": "2026-09-12T18:43:32.640828+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9875,
