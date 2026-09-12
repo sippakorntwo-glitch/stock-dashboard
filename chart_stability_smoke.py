@@ -1,6 +1,5 @@
 """Public browser regression for the duplicated-period card found in production."""
 from __future__ import annotations
-import json
 import re
 from pathlib import Path
 from playwright.sync_api import expect
@@ -20,7 +19,6 @@ def verify_chart_stability(page,app):
         control.get_by_text(period,exact=True).click()
         frame,payload=wait_range(page,app,period)
         result=verify_chart_commentary(page,app,payload)
-        # Count ALL cards, including a wrongly retained previous/stale period.
         expect(app.locator('.chart-reading')).to_have_count(1)
         assert result['period']==period
         report['period_switches'].append({'period':period,'summary_count':1,'values_match':True})
@@ -34,8 +32,13 @@ def verify_chart_stability(page,app):
     for iteration in range(2):
         page.reload(wait_until='domcontentloaded',timeout=60000)
         app=wait_for_release(page,version)
+        # A fresh Streamlit session initializes AAPL. The heading can render
+        # before React hydrates the input; capturing its temporary empty value
+        # and waiting for that ticker would falsely reject an already-ready app.
+        ticker='AAPL'
+        wait_page_ready(app,ticker)
         field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
-        ticker=field.input_value();wait_page_ready(app,ticker)
+        expect(field).to_have_value(ticker,timeout=30000)
         frame,payload=chart_for_symbol(page,app,ticker)
         verify_chart_commentary(page,app,payload)
         no_exception(app)
