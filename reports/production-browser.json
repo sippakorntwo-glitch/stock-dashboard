@@ -1,10 +1,369 @@
 {
-  "recorded_at": "2026-09-12T06:39:28.327869+00:00",
-  "run_id": "34676966119",
-  "source_sha": "cbde1a301db7b707cff965d491f16facfbb116c1",
-  "result": "failure",
-  "error": "Traceback (most recent call last):\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/verify_workspace.py\", line 48, in main\n    production_smoke.run()\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/production_smoke.py\", line 137, in run\n    report['enhancements']=verify_enhancements(page,app)\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/enhanced_smoke.py\", line 41, in verify_enhancements\n    frame,payload=wait_range(page,app,period);page.wait_for_timeout(500)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/enhanced_smoke.py\", line 24, in wait_range\n    raise RuntimeError(f'No complete real chart for {period}; last coverage={last and last.get(\"full_window\")}')\nRuntimeError: No complete real chart for 1 วัน; last coverage=None\n",
-  "diagnostic": "VERIFIED_INITIAL_SINGLE_PAGE: AAPL; all research sections\nVERIFIED_STOCK_SELECTION: MSFT\nVERIFIED_STOCK_SELECTION: AAPL\nBROWSER_FRAME: {\"url\": \"https://my-stock-terminal.streamlit.app/\", \"payload_count\": 0, \"canvas_count\": 0, \"text\": \"\"}\nBROWSER_FRAME: {\"url\": \"https://qjmnz4vd2y07.statuspage.io/embed/frame\", \"payload_count\": 0, \"canvas_count\": 0, \"text\": \"Status embed installed correctly\\n\\nThis will be shown if an incident or maintenance is posted on your status page.\\nView latest updates\"}\nBROWSER_FRAME: {\"url\": \"https://my-stock-terminal.streamlit.app/~/+/\", \"payload_count\": 0, \"canvas_count\": 43, \"text\": \"keyboard_arrow_right\\n\\nอัปโหลด Watchlist / CSV\\n\\nStock Research\\n\\nหน้าเดียว · คลิกหุ้นในตาราง แล้วดูกราฟและรายละเอียดด้านล่าง\\n\\nTicker สำหรับวิเคราะห์\\n\\nเพิ่ม / ลบรายการโปรด\\n\\nรายการโปรดเก็บเฉพาะเซสชัน ดาวน์โหลดเพื่อเก็บไว้ถาวร\\n\\nตรวจชุดข้อมูลใหม่\\n\\nStop\\nFork\\nStock Research Workspace\\nกราฟและราคา\\nพื้นฐานและปันผล\\nความเสี่ยง\\nเปรียบเทียบ\\nสถานะระบบ\\n\\nหน้าเดียว: ตารางหุ้น → กราฟและแผนซื้อ → พื้นฐานและปันผล → ความเสี่ยง → เปรียบเทียบ → สถานะข้อมูล\\n\\nข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด · รุ่นโปรแกรม 2026-09-12.22\\n\\nรายการทั้งหมด\\n\\n9,876\\n\\nมีราคา\\n\\n9,868\\n\\nราคาภายใน 4 วัน\\n\\n9,868\\n\\nมีราคาแต่ไม่ระบุวัน\\n\\n0\\n\\nSnapshot เผยแพร่ 12/09/2026 13:29:49 น. (ไทย)\\n\\nความครบแยกประเภท: ประวัติราคา 9,868/9,876 · พื้นฐาน 9,876/9,876 · Industry/หมวด ETF 9,335/9,876 · ตรวจปันผลแล้ว 9,873/9,876\\n\\nจำนวนข้อมูลที่โหลดสำเร็จไม่ใช่ความครบทุกฟิลด์ และไม่ใช่จำนวนหุ้นที่ควรซื้อ\\n\\nCatalog: 4,200 stocks + 5,676 ETF / ETP entries. Directory: 2026-09-11T19:41:18.906636+00:00. The Nasdaq ETF flag can include ETNs; check each product name. Listing coverage is not data coverage; missing records are prepared in bounded batches.\\n\\nAsset Type\\n\\nTrend Status\\n\\nSearch Ticker / Company / Industry\\n\\nReturn Display\\n\\nkeyboard_arrow_right\\n\\nAdvanced Filters\\n\\nSort By\\n\\nDescending\\n\\nApplied: All · 9,876 results · Cumulative (Adjusted Close)\\n\\n9,876 matching securities / 9,876 catalog members. Return basis: Cumulative (Adjusted Close).\\n\\nTop 10 · จังหวะเข้าซื้อ\\n\\nผ่านโมเดล ณ เวลาตรวจ ไม่ใช่การรับประกันกำไร\\n\\nจัดอันดับ 12/09/2026 13:35:48 น. (ไทย)\\n\\nตรวจ 9,876/9,876 รายชื่อ · คำนวณโมเดลได้ 4,923\\n\\nผ่านเงื่อนไขซื้อขณะตรวจสอบสถานะ: 0 ตัว · ไม่เติมให้ครบ 10\\n\\nยังไม่มีหุ้นผ่านเงื่อนไขซื้อครบ ณ เวลานี้ รวมกรณีตลาดปิด ราคาเก่า หรือข้อมูลไม่ครบ\\n\\nkeyboard_arrow_down\\n\\nเฝ้าดู / รอยืนยัน — ยังไม่ใช่จุดซื้อ\\n\\n01 · SCI · 90/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n02 · BRK-B · 84/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n03 · ORCL · 83/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n04 · FCF · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n05 · EPOL · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n06 · FLTW · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n07 · DCOM · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n08 · WLDR · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n09 · MAGS · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\n10 · PDLB · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nคำนวณทุก 30 นาที · หน้าเว็บตรวจสถานะทุก 1 นาที\\n\\nkeyboard_arrow_right\\n\\nเหตุผล เงื่อนไข และอายุข้อมูล\\n\\nหน้าตาราง — หน้าละ 500 ตัว\\n\\nแสดง 500 ตัวในหน้านี้ · หน้า 1 / 20\\n\\nคลิกชื่อหุ้นหรือช่องใดก็ได้ในแถว เพื่อแสดงกราฟและข้อมูลทั้งหมดด้านล่าง\\n\\nผ่านตัวกรอง 9,876 ตัว · ช่อง — คือไม่มีข้อมูล ไม่ใช่ศูนย์ · PASS เป็นสถานะแนวโน้ม ไม่ใช่คำสั่งซื้อ\\n\\nหุ้นที่เลือก: AAPL\\n\\n↓ ไปยังกราฟและรายละเอียดด้านล่าง\\n\\nAdjusted-close returns, not live quotes or revenue growth. 1 / 3 / 7 Days count completed trading-session changes, not calendar days. Month / Year baselines use the last trading close on or before the calendar start date. Cumulative return = (end adjusted close / start adjusted close - 1) × 100. Adjusted prices reflect provider dividend/split adjustments; they are not official fund NAV returns. Fund websites may show month-end, annualized or price-only results instead. See Price As Of and Return Calculation Details before comparing. Investor fees, taxes and currency conversion are excluded. — means unavailable, not zero.\\n\\nดาวน์โหลดผลกรองครบทุกแถว\\n\\nวิเคราะห์หุ้นที่เลือก\\nAAPL · Apple Inc.\\n\\nวันที่ราคา Watchlist: 2026-09-11 | ประวัติดึงสำเร็จ 12/09/2026 12:10:26 น. (ไทย) | quote ณ 10/09/2026 23:09:49 น. (ไทย)\\n\\nราคาล่าสุด · Minute Price\\n\\nAuto-refresh price\\n\\nAAPL USD\\n332.5500+1.83%\\nข้อมูลเก่า / นอกเวลาซื้อขาย · อายุแท่ง 400.2 นาที\\n\\nเวลาข้อมูลราคา 1 นาที: 12/09/2026 06:59:00 น. (ไทย) · รับข้อมูล: 12/09/2026 13:25:25 น. (ไทย)\\n\\nYahoo Finance · รวม pre/post-market เมื่อมีข้อมูล · % เทียบ previous close ที่ผู้ให้ข้อมูลรายงาน\\n\\nขอข้อมูลประมาณทุก 60 วินาทีในช่วง 04:00–20:00 นิวยอร์กวันจันทร์–ศุกร์; นอกช่วงนี้พัก 30 นาที ไม่ใช่การยืนยันว่าตลาดเปิดในวันหยุด · ผู้ให้ข้อมูลอาจล่าช้า ไม่ใช่ tick-by-tick real-time\\n\\nราคาการ์ดนี้แยกจาก Watchlist Price / ผลตอบแทนรายวัน / คะแนนซื้อ จึงไม่เอาแท่งที่ยังไม่ปิดไปแทนค่ารายวัน\\n\\nkeyboard_arrow_right\\n\\nตรวจข้อมูลที่ขาดของ AAPL\\n\\nกราฟและแผนซื้อ\\nkeyboard_arrow_right\\n\\nReturn Calculation Details — AAPL\\n\\nช่วงเวลาแสดงกราฟ\\n\\n1 วัน\\n\\n3 วัน\\n\\n5 วัน\\n\\n7 วัน\\n\\n1 เดือน\\n\\n3 เดือน\\n\\n6 เดือน\\n\\n1 ปี\\n\\n2 ปี\\n\\n3 ปี\\n\\n5 ปี\\n\\n10 ปี\\n\\n1 วัน / 3 วัน = 1 / 3 วันซื้อขายล่าสุดที่มีข้อมูล ไม่ใช่ 24 / 72 ชั่วโมง · แท่ง 5 นาที เฉพาะเวลาตลาดปกติ · ตรวจใหม่ประมาณทุก 1 นาที; แท่งยังเป็น 5 นาที และผู้ให้ข้อมูลอาจล่าช้า ไม่ใช่ราคาสตรีมสด\\n\\nผลตอบแทนสะสม = (Close ล่าสุด / Close แรกในช่วงที่เลือก − 1) × 100; ใช้ราคาปรับแล้ว ไม่บวกปันผลซ้ำ ไม่ใช่ CAGR หรือผลตอบแทนสุทธิหลังค่าธรรมเนียม/ภาษี และไม่เปลี่ยนตามการลากหรือซูมกราฟ\\n\\nช่วงข้อมูลที่แสดงจริง: 2026-09-11 ถึง 2026-09-11 · ดึงสำเร็จ 12/09/2026 13:38:40 น. (ไทย)\\n\\nReward/Risk ขั้นต่ำ\\n\\nเกณฑ์เข้าซื้อ — Trading Verdict (เต็ม 100)\\n\\nคะแนนที่ได้\\n\\n85 / 100\\n\\nความครบของข้อมูล\\n\\n100 / 100\\n\\nคะแนนต่ำสุด–สูงสุดที่เป็นไปได้\\n\\n85–85\\n\\nช่วงคะแนน\\tความหมาย\\n80–100\\tผ่านระดับคะแนนสำหรับพิจารณาเข้า ต้องผ่านเงื่อนไขราคา/ความเสี่ยงด้วย\\n60–79\\tเฝ้าดู / รอจังหวะ ยังไม่ผ่านเกณฑ์เข้า\\n40–59\\tยังไม่ควรเข้าตามโมเดลนี้\\n0–39\\tงดเข้าตามโมเดลนี้\\nⓘ อ่านคำอธิบายแต่ละแถว (สำหรับมือถือหรือแป้นพิมพ์)\\n\\nโปรไฟล์หุ้น: รวมเงื่อนไขแนวโน้ม โมเมนตัม วอลุ่ม ความผันผวน P/E และราคาเป้าหมาย · ข้อมูลที่ขาดไม่ถูกนับเป็นผ่าน และไม่มีการหารปรับให้คะแนนสูงขึ้น\\n\\nหมวด\\tเกณฑ์\\tค่าปัจจุบัน\\tช่วง / คะแนน\\tได้\\tเต็ม\\tผล\\tข้อมูลอ้างอิง\\nแนวโน้ม\\tราคา > EMA20 > EMA50 ⓘ\\t332.27 > 319.01 > 313.94\\tเรียงตามเงื่อนไข = 20; อื่น ๆ = 0\\t20\\t20\\tเต็ม\\tแท่งรายวันก่อนวันปัจจุบัน\\nแนวโน้ม\\tราคา > SMA200 ⓘ\\tราคา 332.27 / SMA200 284.54\\tราคาเหนือ SMA200 = 10; อื่น ๆ = 0\\t10\\t10\\tเต็ม\\tแท่งรายวันก่อนวันปัจจุบัน\\nโมเมนตัม\\tRSI 14 ⓘ\\t62.84\\t45–65 = 10; 35–<45 หรือ >65–70 = 5; อื่น ๆ = 0\\t10\\t10\\tเต็ม\\tแท่งรายวันก่อนวันปัจจุบัน\\nโมเมนตัม\\tMACD > Signal ⓘ\\t3.2654 / 1.9506\\tเหนือ Signal = 10; ต่ำกว่าหรือเท่ากัน = 0\\t10\\t10\\tเต็ม\\tแท่งรายวันก่อนวันปัจจุบัน\\nวอลุ่ม\\tVolume Ratio ⓘ\\t1.21x\\t>=1.20 = 15; 1.00–<1.20 = 8; 0.80–<1.00 = 4; <0.80 = 0\\t15\\t15\\tเต็ม\\tแท่งรายวันก่อนวันปัจจุบัน\\nความผันผวน\\tATR / ราคา ⓘ\\t2.42%\\t<=3% = 15; >3–6% = 8; >6–10% = 3; >10% = 0\\t15\\t15\\tเต็ม\\tแท่งรายวันก่อนวันปัจจุบัน\\nพื้นฐาน\\tForward P/E ⓘ\\t33.43x\\t>0–25 = 10; >25–40 = 5; <=0 หรือ >40 = 0\\t5\\t10\\tบางส่วน\\tYahoo Finance; ไม่ใช่มูลค่ายุติธรรมรายอุตสาหกรรม\\nพื้นฐาน\\tUpside ราคาเป้าหมาย ⓘ\\t1.16%\\t>=10% = 10; 5–<10% = 5; <5% = 0\\t0\\t10\\tไม่ผ่าน\\tราคาเป้าหมายเฉลี่ยนักวิเคราะห์\\nⓘ อ่านคำอธิบายแต่ละแถว (สำหรับมือถือหรือแป้นพิมพ์)\\n\\nเกณฑ์เทคนิคใช้แท่งรายวันก่อนวันปัจจุบันตามตลาด ล่าสุด 2026-09-11 เพื่อไม่เทียบวอลุ่มระหว่างวันกับวอลุ่มเต็มวัน\\n\\nแผนราคาเข้า — AAPL\\n\\nรอจังหวะ / รอยืนยันเงื่อนไข\\n\\nสรุปข้อมูลประกอบ: ราคา quote 320.1600 USD; แนวโน้ม เรียงตัวเป็นขาขึ้นตามเกณฑ์; RSI 62.84; MACD / Signal 3.2654 / 1.9506; Volume Ratio 1.21x; ATR14 8.0416 USD\\n\\nพื้นฐาน: Forward P/E 33.43x; เป้าหมายเฉลี่ยนักวิเคราะห์ 323.86 USD; Beta 1.08 ใช้ประกอบความเสี่ยง โดยราคาเป้าหมายเป็นประมาณการ ไม่ใช่ราคาที่จะเกิดแน่นอน\\n\\nโซนรอซื้อ (USD)\\n\\n316.9987–321.0195\\n\\nราคาเข้าอ้างอิง\\n\\n321.0195\\n\\nStop Loss\\n\\n300.9296\\n\\nเป้าทำกำไร / R:R\\n\\n323.8595 / 0.14\\n\\nที่มาของราคา: โซนซื้อ = EMA20 ± 0.25 ATR; ราคาเข้าอ้างอิง = ขอบบนของโซน; Stop = ค่าต่ำกว่าระหว่างแนวรับต่ำสุด 20 แท่งลบ 0.25 ATR กับขอบล่างโซนลบ 1.5 ATR\\n\\nเป้าหมาย: แนวต้านสูงสุด 60 แท่ง โดยจำกัดไม่เกินราคาเป้าหมายนักวิเคราะห์เมื่อมีข้อมูล; R:R = (เป้าหมาย − ราคาเข้า) ÷ (ราคาเข้า − Stop)\\n\\nตัวเลขนี้เป็นแผนรอเงื่อนไข ไม่ใช่สัญญาณให้ส่งคำสั่งซื้อทันที\\n\\nนำราคาในแผนไปคำนวณจำนวนหุ้น\\n\\nเงื่อนไขที่ยังต้องรอ:\\n\\nReward/Risk ต้อง ≥ 2.0 (ปัจจุบัน 0.14)\\nต้องยืนยันราคา quote ที่อัปเดตไม่เกิน 15 นาที\\n\\nปันผลประกอบการพิจารณา: 12 เดือนย้อนหลัง 1.0600 USD/หน่วย; Yield 0.33%; ล่าสุด 10/08/2026\\n\\nปันผลใช้ประกอบกระแสเงินสด ไม่เพิ่มคะแนนซื้ออัตโนมัติ และไม่ใช่การรับประกันการจ่ายครั้งต่อไป\\n\\nโมเดลนี้เป็นกติกาสำหรับซื้อเมื่อย่อในแนวโน้มขาขึ้น ยังไม่ผ่านการทดสอบย้อนหลัง ค่าคะแนน/ตัวคูณ ATR เป็นสมมติฐานของระบบ ไม่ใช่ความน่าจะเป็นกำไรหรือราคาที่รับประกัน\\n\\nkeyboard_arrow_right\\n\\nแหล่งอ้างอิงและขอบเขตของเกณฑ์\\n\\nkeyboard_arrow_down\\n\\nตารางวิเคราะห์ 360° และแหล่งข้อมูล\\n\\nหมวด\\tปัจจัย\\tค่าล่าสุด\\tการแปลผล\\tแหล่งข้อมูล\\nพื้นฐาน\\tForward P/E ⓘ\\t33.43x\\tอยู่ในช่วง >25–40 เท่า (เกณฑ์ 5); ควรเทียบธุรกิจกลุ่มเดียวกัน\\tYahoo Finance\\nพื้นฐาน\\tTrailing P/E ⓘ\\t36.67x\\tราคาเทียบกำไรย้อนหลัง\\tYahoo Finance\\nพื้นฐาน\\tTarget Price ⓘ\\t323.86\\tต่างจากราคาอ้างอิง +1.16%\\tนักวิเคราะห์ผ่าน Yahoo\\nพื้นฐาน\\tDividend Yield ⓘ\\t0.33%\\tอัตราปันผลย้อนหลังเทียบราคาอ้างอิง\\tYahoo Finance\\nเทคนิค\\tTrend / Screener ⓘ\\tPASS\\tสถานะของแหล่ง Watchlist; คะแนน 100 คำนวณจากข้อมูลใหม่ด้านล่าง\\tYahoo Finance / สแกนรายวัน\\nเทคนิค\\tEMA 20 / EMA 50 ⓘ\\t319.01 / 313.94\\tราคา > EMA20 > EMA50\\tกราฟรายวัน\\nเทคนิค\\tSMA 200 ⓘ\\t284.54\\tค่าเฉลี่ย 200 แท่งรายวัน\\tกราฟรายวัน\\nเทคนิค\\tMACD / Signal ⓘ\\t3.2654 / 1.9506\\tMACD อยู่เหนือ Signal\\tกราฟรายวัน\\nเทคนิค\\tRSI (14) ⓘ\\t62.84\\tอยู่ในช่วง 30–70\\tกราฟรายวัน\\nสภาพคล่อง\\tVolume Ratio ⓘ\\t1.21x\\tปริมาณล่าสุดเทียบค่าเฉลี่ย 20 แท่งก่อนหน้า\\tกราฟรายวัน\\nความเสี่ยง\\tBeta ⓘ\\t1.08\\tBeta มากกว่า 1\\tYahoo Finance\\nความเสี่ยง\\tATR (14) ⓘ\\t8.04\\tขนาด True Range เฉลี่ยรายวัน ในหน่วยราคา\\tกราฟรายวัน\\nความเสี่ยง\\tSuggested Stop ⓘ\\t316.19\\tจุด Stop จากไฟล์สแกนเดิม\\tCSV\\nⓘ อ่านคำอธิบายแต่ละแถว (สำหรับมือถือหรือแป้นพิมพ์)\\nวางแผนการซื้อ — Position Sizer\\n\\nกรอกพอร์ตและราคาเป็นสกุลเดียวกัน (USD)\\n\\nStop จาก CSV: 316.1867 — แก้ไขได้ตามแผนของคุณ\\n\\nเงินลงทุน (USD)\\n\\nความเสี่ยงต่อไม้ (% ของพอร์ต)\\n\\n1.00\\n\\n0.50\\n\\n5.00\\n\\nราคาเข้าซื้อ\\n\\nStop Loss\\n\\nจำนวนหุ้น\\n\\n25\\n\\nเงินที่ใช้ (USD)\\n\\n8,004.00\\n\\nขาดทุนตามแผน (USD)\\n\\n99.33\\n\\nคำนวณที่ราคา Stop ที่ระบุ ยังไม่รวมค่าธรรมเนียมและส่วนต่างราคาซื้อขายจริง\\n\\nราคาชุดรายวันอาจไม่ผ่านเกณฑ์ quote อายุไม่เกิน 15 นาที ระบบจึงคงสถานะรอยืนยัน ไม่ลดเกณฑ์เพื่อให้เกิดสัญญาณซื้อ\\n\\nราคาชุดรายวันอาจไม่ผ่านเกณฑ์ quote อายุไม่เกิน 15 นาที ระบบจึงคงสถานะรอยืนยัน ไม่ลดเกณฑ์เพื่อให้เกิดสัญญาณซื้อ\\n\\nพื้นฐานและปันผล\\nธุรกิจ • มูลค่า • กำไร • กระแสเงินสด\\n\\nข้อมูลพื้นฐานดึงสำเร็จ 10/09/2026 23:09:50 น. (ไทย) — ไม่ใช่วันที่ของงบการเงินทุกช่อง\\n\\nมิติ\\tค่า\\tหน่วย\\tสถานะข้อมูล\\tฟิลด์ต้นทาง\\nอุตสาหกรรม ⓘ\\tConsumer Electronics\\t—\\tมีข้อมูล\\tindustry\\nSector ⓘ\\tTechnology\\t—\\tมีข้อมูล\\tsector\\nประเทศ ⓘ\\tUnited States\\t—\\tมีข้อมูล\\tcountry\\nMarket cap ⓘ\\t4,672,473,006,080.00\\tUSD\\tมีข้อมูล\\tmarketCap\\nForward P/E ⓘ\\t33.43\\t—\\tมีข้อมูล\\tforwardPE\\nTrailing P/E ⓘ\\t36.67\\t—\\tมีข้อมูล\\ttrailingPE\\nPrice / Book ⓘ\\t43.50\\t—\\tมีข้อมูล\\tpriceToBook\\nEV / EBITDA ⓘ\\t27.53\\t—\\tมีข้อมูล\\tenterpriseToEbitda\\nRevenue growth ⓘ\\t16.40%\\t%\\tมีข้อมูล\\trevenueGrowth\\nEarnings growth ⓘ\\t28.70%\\t%\\tมีข้อมูล\\tearningsGrowth\\nProfit margin ⓘ\\t27.62%\\t%\\tมีข้อมูล\\tprofitMargins\\nOperating margin ⓘ\\t32.62%\\t%\\tมีข้อมูล\\toperatingMargins\\nReturn on equity ⓘ\\t148.75%\\t%\\tมีข้อมูล\\treturnOnEquity\\nReturn on assets ⓘ\\t27.08%\\t%\\tมีข้อมูล\\treturnOnAssets\\nOperating cash flow ⓘ\\t146,723,995,648.00\\tUSD\\tมีข้อมูล\\toperatingCashflow\\nFree cash flow ⓘ\\t107,721,875,456.00\\tUSD\\tมีข้อมูล\\tfreeCashflow\\nเงินสดรวม ⓘ\\t62,399,000,576.00\\tUSD\\tมีข้อมูล\\ttotalCash\\nหนี้รวม ⓘ\\t84,343,996,416.00\\tUSD\\tมีข้อมูล\\ttotalDebt\\nเป้าหมายเฉลี่ยนักวิเคราะห์ ⓘ\\t323.86\\tUSD\\tมีข้อมูล\\ttargetMeanPrice\\nจำนวนนักวิเคราะห์ ⓘ\\t38.00\\t—\\tมีข้อมูล\\tnumberOfAnalystOpinions\\nⓘ อ่านคำอธิบายแต่ละแถว (สำหรับมือถือหรือแป้นพิมพ์)\\n\\nอัตราการเติบโตและอัตรากำไรเป็นค่าที่แหล่งข้อมูลรายงาน ช่วงอ้างอิงอาจต่างกัน ตัวเลขมูลค่าและกระแสเงินสดใช้สกุลที่ผู้ให้ข้อมูลระบุ ไม่ใช่มูลค่ายุติธรรมอัตโนมัติ\\n\\nkeyboard_arrow_down\\n\\nธุรกิจ / กลยุทธ์กองทุน\\n\\nApple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide. The company offers iPhone, a line of smartphones; Mac, a line of personal computers; iPad, a line of multi-purpose tablets; and wearables, home, and accessories comprising AirPods, Apple Vision Pro, Apple TV, Apple Watch, Beats products, and HomePod, as well as Apple branded and third-party accessories. It also provides AppleCare support and cloud services; and operates various platforms, including the App Store that allows customers to discover and download applications and digital content, such as books, music, video, games, and podcasts, as well as advertising services include third-party licensing arrangements and its own advertising platforms. In addition, the company offers various subscription-based services, such as Apple Arcade, a game subscription service; Apple Fitness+, a personalized fitness service; Apple Music, which offers users a curated listening experience with on-demand radio st\"}\nBROWSER_FRAME: {\"url\": \"about://srcdoc\", \"payload_count\": 1, \"canvas_count\": 19, \"text\": \"AAPL\\n1 วัน · แท่ง 5 นาที · America/New_York\\n332.23\\n-0.19 (-0.06%) จากแท่งก่อน\\nผลตอบแทนสะสม · 1 วัน\\n+0.08%\\nClose 331.98 → 332.23\\n2026-09-11 09:30 EDT → 2026-09-11 15:55 EDT\\nClose แรก → ล่าสุดในช่วงที่เลือก · ราคาปรับแล้ว · ไม่ใช่ CAGR\\nYahoo Finance · ราคาปรับแล้ว\\nEMA 20\\nEMA 50\\nSMA 200\\nVolume\\nRSI\\nMACD\\nข้อมูลตามเมาส์\\nLog\\nคืนมุมมอง\\n11 Sept, 15:55\\nO332.42\\nH332.89\\nL332.07\\nC332.23\\nVol1.61M\\nEMA 20 332.75 · RSI 14 38.63 · MACD -0.2299 · Signal -0.2304 · MACD Histogram 0.0005\\nแท่งล่าสุด: 2026-09-11 15:55 EDT · นับวันซื้อขายที่มีข้อมูล · ข้อมูลตามแหล่งราคา ไม่ใช่ราคาสตรีมสด\\n\\t\\n\\t\\n\\n\\n\\n\\t\\n\\t\\n\\n\\n\\n\\t\\n\\t\\n\\n\\n\\n\\t\\n\\t\\n\\n\\t\\n\\t\\nVolume\\nRSI 14\\nMACD 12,26,9\\nชี้เพื่ออ่าน · คลิก/แตะเพื่อตรึง · Escape เลิกตรึง · ลากเลื่อน / ล้อเมาส์ซูม\\nTradingView Lightweight Charts™\"}\n",
+  "recorded_at": "2026-09-12T06:47:07.943837+00:00",
+  "run_id": "34678739669",
+  "source_sha": "ce34c9e0eaf6af20ef8d3b1d415fa6631af7dabb",
+  "url": "https://my-stock-terminal.streamlit.app/",
+  "expected_version": "2026-09-12.23",
+  "layout": "single-page",
+  "views": [
+    "ภาพรวมและค้นหา",
+    "กราฟและแผนซื้อ",
+    "พื้นฐานและปันผล",
+    "ความเสี่ยง",
+    "เปรียบเทียบหลายตัว",
+    "สถานะข้อมูล"
+  ],
+  "chart": true,
+  "selections": [
+    {
+      "ticker": "MSFT",
+      "via": "cell",
+      "bars": 1506
+    },
+    {
+      "ticker": "AAPL",
+      "via": "row",
+      "bars": 1506
+    },
+    {
+      "ticker": "SPY",
+      "via": "manual",
+      "bars": 1506
+    }
+  ],
+  "chart_bars": 1506,
+  "chart_last_bar": "2026-09-11",
+  "deployed_version": "2026-09-12.23",
+  "enhancements": {
+    "page_size": 500,
+    "tooltips": true,
+    "ranges": [
+      {
+        "period": "1 วัน",
+        "interval": "5m",
+        "bars": 1717,
+        "visible_bars": 70,
+        "first": 1789133400,
+        "last": 1789154100
+      },
+      {
+        "period": "3 วัน",
+        "interval": "5m",
+        "bars": 1716,
+        "visible_bars": 234,
+        "first": 1788960600,
+        "last": 1789156500
+      },
+      {
+        "period": "5 ปี",
+        "interval": "1d",
+        "bars": 1506,
+        "visible_bars": 1255,
+        "first": "2021-09-13",
+        "last": "2026-09-11"
+      },
+      {
+        "period": "10 ปี",
+        "interval": "1d",
+        "bars": 2765,
+        "visible_bars": 2514,
+        "first": "2016-09-12",
+        "last": "2026-09-11"
+      }
+    ],
+    "growth_and_plain_cells": {
+      "plain_value_cells": [
+        {
+          "valid": 0,
+          "forbidden": 0
+        },
+        {
+          "valid": 8,
+          "forbidden": 0
+        },
+        {
+          "valid": 13,
+          "forbidden": 0
+        },
+        {
+          "valid": 5,
+          "forbidden": 0
+        },
+        {
+          "valid": 9,
+          "forbidden": 0
+        }
+      ],
+      "period_returns": [
+        {
+          "ticker": "SPY",
+          "period": "7 วัน",
+          "percent": 0.23610112823531093,
+          "display": "+0.24%",
+          "first": 1788355800,
+          "last": 1789156500,
+          "start_price": 762.3800048828125,
+          "end_price": 764.1799926757812,
+          "bars": 546
+        },
+        {
+          "ticker": "SPY",
+          "period": "10 ปี",
+          "percent": 314.74093982649254,
+          "display": "+314.74%",
+          "first": "2016-09-12",
+          "last": "2026-09-11",
+          "start_price": 184.2812957763672,
+          "end_price": 764.2899780273438,
+          "bars": 2514
+        },
+        {
+          "ticker": "SPY",
+          "period": "1 ปี",
+          "percent": 17.506586570565364,
+          "display": "+17.51%",
+          "first": "2025-09-11",
+          "last": "2026-09-11",
+          "start_price": 650.423095703125,
+          "end_price": 764.2899780273438,
+          "bars": 252
+        }
+      ]
+    },
+    "top10": {
+      "title": "Top 10 · จังหวะเข้าซื้อ",
+      "catalog_scanned": 9876,
+      "rows": 10,
+      "entry_rows": 0,
+      "watch_rows": 10,
+      "refresh_schedule": "7,37 * * * *",
+      "first_rank": "01 · SCI · 90/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
+      "clicked": "SCI",
+      "chart_bars": 1506,
+      "filter_independent": true
+    },
+    "chart_inspector": {
+      "ticker": "ORCL",
+      "daily_values_checked": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "ema20",
+        "ema50",
+        "sma200",
+        "volume",
+        "rsi",
+        "macd",
+        "signal",
+        "hist"
+      ],
+      "panes": [
+        {
+          "series": "ema20",
+          "pane": 0,
+          "highlight": "ema20"
+        },
+        {
+          "series": "ema50",
+          "pane": 0,
+          "highlight": "ema50"
+        },
+        {
+          "series": "sma200",
+          "pane": 0,
+          "highlight": "sma200"
+        },
+        {
+          "series": "volume",
+          "pane": 1,
+          "highlight": "volume"
+        },
+        {
+          "series": "rsi",
+          "pane": 2,
+          "highlight": "rsi"
+        },
+        {
+          "series": "macd",
+          "pane": 3,
+          "highlight": "macd"
+        },
+        {
+          "series": "signal",
+          "pane": 3,
+          "highlight": "signal"
+        },
+        {
+          "series": "hist",
+          "pane": 3,
+          "highlight": "hist"
+        }
+      ],
+      "pin_and_escape": true,
+      "keyboard": true,
+      "optional_toggle": true,
+      "pan_reset": true,
+      "edge_bounds": true,
+      "latest_price_and_period_return_unchanged": true,
+      "intraday": {
+        "ticker": "SPY",
+        "interval": "5m",
+        "time": "1789143000",
+        "timezone": "America/New_York"
+      }
+    },
+    "data_quality": {
+      "field_report": true,
+      "symbol_report": true,
+      "source_verified": true,
+      "source_generation": "generations/20260912T062537Z-410fbbc8",
+      "counts": {
+        "universe": 9876,
+        "prices": 9868,
+        "histories": 9868,
+        "info": 9876,
+        "industry": 9335,
+        "dividends_checked": 9873,
+        "dividends_with_payments": 6074,
+        "dividends_no_payments": 3799,
+        "unattempted_info": 0,
+        "unattempted_dividends": 0
+      },
+      "examples": [
+        {
+          "ticker": "AEON",
+          "industry_state": "available",
+          "dividend_state": "no_payments",
+          "history_bars": 926
+        },
+        {
+          "ticker": "AESP",
+          "industry_state": "available",
+          "dividend_state": "no_payments",
+          "history_bars": 51
+        },
+        {
+          "ticker": "SPY",
+          "industry_state": "available",
+          "dividend_state": "available",
+          "history_bars": 1506
+        }
+      ]
+    },
+    "english_return_table": {
+      "headers": [
+        "1 Day (%)",
+        "3 Days (%)",
+        "7 Days (%)",
+        "1 Month (%)",
+        "6 Months (%)",
+        "1 Year (%)",
+        "3 Years (%)",
+        "5 Years (%)"
+      ],
+      "all_filtered_rows": 9876,
+      "source_generation": "generations/20260912T062537Z-410fbbc8",
+      "independent_daily_price_checks": [
+        {
+          "ticker": "AAPL",
+          "price_asof": "2026-09-11",
+          "returns": {
+            "1 Day (%)": 1.7454088133066703,
+            "3 Days (%)": 5.075576412311378,
+            "7 Days (%)": 2.196039745219114,
+            "1 Month (%)": 8.973134703012864,
+            "6 Months (%)": 27.62660359315523,
+            "1 Year (%)": 44.97994775417244,
+            "3 Years (%)": 87.75868650247804,
+            "5 Years (%)": 128.67692663127661
+          }
+        },
+        {
+          "ticker": "MSFT",
+          "price_asof": "2026-09-11",
+          "returns": {
+            "1 Day (%)": 0.6477951477521948,
+            "3 Days (%)": 0.3401139051044444,
+            "7 Days (%)": -1.0758022132949852,
+            "1 Month (%)": -1.438430045322725,
+            "6 Months (%)": 22.91013171317948,
+            "1 Year (%)": -0.25990098705874765,
+            "3 Years (%)": 50.0971886635653,
+            "5 Years (%)": 74.64007537539842
+          }
+        },
+        {
+          "ticker": "SPY",
+          "price_asof": "2026-09-11",
+          "returns": {
+            "1 Day (%)": 0.8524287494320992,
+            "3 Days (%)": -0.21803278205192456,
+            "7 Days (%)": 0.32948471132610013,
+            "1 Month (%)": -0.8136964741377262,
+            "6 Months (%)": 13.606020096321902,
+            "1 Year (%)": 17.506586570565364,
+            "3 Years (%)": 76.90417999344493,
+            "5 Years (%)": 83.58151111619345
+          }
+        },
+        {
+          "ticker": "AAC",
+          "price_asof": "2026-09-11",
+          "returns": {
+            "1 Day (%)": 0.5964161375717758,
+            "3 Days (%)": 0.5964161375717758,
+            "7 Days (%)": 0.5964161375717758,
+            "1 Month (%)": null,
+            "6 Months (%)": null,
+            "1 Year (%)": null,
+            "3 Years (%)": null,
+            "5 Years (%)": null
+          }
+        }
+      ],
+      "result": "passed"
+    },
+    "advanced_screener_and_ui": {
+      "target": "https://my-stock-terminal.streamlit.app/",
+      "verified_at": "2026-09-12T06:45:12.866991+00:00",
+      "catalog_rows": 9876,
+      "original_stock_rows": 4200,
+      "etf_rows": 5676,
+      "category_filter": {
+        "category": "Derivative Income",
+        "rows": 224,
+        "QQQI": true
+      },
+      "combined_numeric_filter": {
+        "rows": 108,
+        "minimum_1m": 0
+      },
+      "invalid_bounds_handled": true,
+      "annualized_csv_verified": true,
+      "empty_results_handled": true,
+      "QQQI_chart_bars": 657,
+      "auto_refresh_verified": "outside request window: 30-minute budget applies",
+      "minute_price": {
+        "price": 54.58,
+        "bar_time": "2026-09-11T23:55:00+00:00",
+        "fetched_at": "2026-09-12T06:46:44.455669+00:00",
+        "state": "stale"
+      },
+      "theme": {
+        "background": "radial-gradient(at 12% 0%, rgb(21, 35, 64) 0px, rgba(0, 0, 0, 0) 48%), none",
+        "metric_background": "linear-gradient(130deg, rgb(23, 40, 68), rgb(17, 28, 51))"
+      },
+      "desktop_screenshot": "https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/verify/v22-results/reports/v22-desktop.png",
+      "mobile_dimensions": {
+        "width": 390,
+        "scroll": 390
+      },
+      "mobile_screenshot": "https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/verify/v22-results/reports/v22-mobile.png",
+      "result": "passed"
+    }
+  },
+  "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "cbde1a301db7b707cff965d491f16facfbb116c1"
+  "tested_sha": "ce34c9e0eaf6af20ef8d3b1d415fa6631af7dabb"
 }
