@@ -8,10 +8,11 @@ on:
         options: [daily, bootstrap]
         default: daily
   schedule:
-    # 13:17 Thailand, Tue-Sat. New York has crossed midnight (including winter).
-    - cron: "17 6 * * 2-6"
+    # New York has crossed midnight (including winter). Second window resumes
+    # any price work that could not finish earlier; already-current rows reuse cache.
+    - cron: "17 6,12 * * 2-6"
     # Missing-data continuation, not a live quote stream.
-    - cron: "17 0,12,18 * * *"
+    - cron: "17 0,18 * * *"
 permissions:
   contents: write
 concurrency:
@@ -21,7 +22,7 @@ jobs:
   update:
     if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 110
+    timeout-minutes: 125
     env:
       DASHBOARD_DATA_REPO: ${{ github.repository }}
       DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,15 +55,16 @@ jobs:
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             mode="$REQUEST_MODE"
-          elif [ "$SCHEDULE" = "17 6 * * 2-6" ]; then
+          elif [ "$SCHEDULE" = "17 6,12 * * 2-6" ]; then
             mode="daily"
           else
             mode="bootstrap"
           fi
-          # Larger bounded work budgets support the expanded catalog. Request
-          # pacing, per-symbol cooldowns and the provider circuit breaker remain.
+          # Measured full-catalog collection needs more than the old 40-minute
+          # budget. Increase permitted time, NOT provider concurrency or request rate.
+          # Missing work and oldest observations stay first; cooldowns remain intact.
           if [ "$mode" = "daily" ]; then
-            python update_data.py --mode daily --price-minutes 40 --metadata-minutes 45 --metadata-limit 4500
+            python update_data.py --mode daily --price-minutes 85 --metadata-minutes 20 --metadata-limit 2500
           else
             python update_data.py --mode bootstrap --price-minutes 35 --metadata-minutes 28 --metadata-limit 3000
           fi
