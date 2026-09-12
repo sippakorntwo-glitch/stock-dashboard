@@ -1,0 +1,77 @@
+{
+  "recorded_at": "2026-09-12T07:02:42.118734+00:00",
+  "run_id": "34679424039",
+  "source_sha": "6e3ca88cc27d6ec1cf52ab7614ff0de3ca23cafb",
+  "started_at": "2026-09-12T06:57:43.663865+00:00",
+  "source_generation": "generations/20260912T064102Z-f051e490",
+  "candidates": [
+    "ACBE",
+    "ACBH",
+    "GEMQ",
+    "MLCC",
+    "XLCD",
+    "XLCU",
+    "XLPD",
+    "XLPU"
+  ],
+  "recovered": [
+    "ACBE",
+    "ACBH",
+    "GEMQ",
+    "MLCC",
+    "XLCD",
+    "XLPD",
+    "XLPU"
+  ],
+  "unavailable": [
+    "XLCU"
+  ],
+  "dividends": {
+    "GEMQ": "provider unavailable: ValueError",
+    "MLCC": "checked",
+    "XLCU": "checked"
+  },
+  "rate_limited": false,
+  "errors": [
+    "XLCU: ไม่พบแท่งราคาที่สมบูรณ์"
+  ],
+  "stats": {
+    "reused": 0,
+    "incremental": 0,
+    "initial": 7,
+    "failed": 1
+  },
+  "finished_at": "2026-09-12T07:02:42.118489+00:00",
+  "generation": "generations/20260912T065824Z-7da3621a",
+  "published_at": "2026-09-12T07:02:38.369138+00:00",
+  "coverage": {
+    "universe": 9876,
+    "prices": 9875,
+    "checked_today": 9875,
+    "industry": 9335,
+    "info": 9876,
+    "dividends": 9875,
+    "return_1y": 8091,
+    "return_2y": 6898,
+    "return_3y": 6138
+  },
+  "quality_counts": {
+    "universe": 9876,
+    "prices": 9875,
+    "histories": 9875,
+    "info": 9876,
+    "industry": 9335,
+    "dividends_checked": 9875,
+    "dividends_with_payments": 6074,
+    "dividends_no_payments": 3801,
+    "unattempted_info": 0,
+    "unattempted_dividends": 0
+  },
+  "price_date_counts": {
+    "2026-09-11": 9864,
+    "2026-09-10": 6,
+    "2026-09-08": 1,
+    "2026-09-09": 4,
+    "unknown": 1
+  }
+}
