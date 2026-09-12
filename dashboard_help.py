@@ -111,6 +111,11 @@ _DEFINITIONS = [
 ('40–59|0–39','ยังไม่ผ่านเกณฑ์คะแนนเข้าในโมเดล ไม่ได้หมายความว่าราคาจะลงหรือบริษัทไม่มีคุณภาพทุกมิติ'),
 ]
 HELP={alias:description for aliases,description in _DEFINITIONS for alias in aliases.split('|')}
+HELP.update({
+    'Portfolio P/E':'Reported valuation of the underlying equity holdings, not corporate earnings per fund unit. Not applicable to physical gold, bond or currency funds. Not reported is different from N/A.',
+    'Portfolio Trailing P/E':'Holdings-level trailing valuation reported by the fund data provider, not corporate earnings per ETF unit. Definitions can differ between providers.',
+    'Portfolio Forward P/E':'Forward valuation of underlying equity holdings if reported. It is not a forecast of earnings per ETF unit.',
+    'Beta (3Y, provider)':'Three-year beta reported by the fund data provider; not a guarantee of future sensitivity.'})
 LABEL_COLUMNS=('เกณฑ์','ปัจจัย','มิติ','ข้อมูล','ช่วงคะแนน')
 PRESENTATION_ONLY_HIDDEN_COLUMNS=frozenset(('ข้อมูลอ้างอิง','แหล่งข้อมูล','ฟิลด์ต้นทาง','สถานะข้อมูล'))
 

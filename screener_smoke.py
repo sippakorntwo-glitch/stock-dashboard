@@ -43,17 +43,28 @@ def reset_controls(app):
 
 
 def choose(app,label,value,multi=False):
+    from playwright.sync_api import TimeoutError as BrowserTimeout
     testid='stMultiSelect' if multi else 'stSelectbox'
     widget=app.locator('[data-testid="'+testid+'"]').filter(has=app.get_by_text(label,exact=True)).first
-    widget.scroll_into_view_if_needed()
-    control=widget.get_by_role('combobox').first
-    control.click()
-    if multi:
-        field=widget.locator('input').first
-        field.fill(value)
-    app.get_by_role('option',name=value,exact=True).click(timeout=15000)
-    if multi:control.press('Escape')
-    wait_applied(app,label,value)
+    for attempt in range(3):
+        existing=app.evaluate("""([label,value])=>{
+            const e=document.querySelector('.export-ready');if(!e)return false;
+            const actual=JSON.parse(e.dataset.controls)[label];
+            return Array.isArray(actual)?actual.includes(value):actual===value;
+        }""",[label,value])
+        if existing:return
+        widget.scroll_into_view_if_needed()
+        control=widget.get_by_role('combobox').first
+        control.click()
+        if multi:widget.locator('input').first.fill(value)
+        try:
+            app.get_by_role('option',name=value,exact=True).click(timeout=15000)
+            if multi:control.press('Escape')
+            wait_applied(app,label,value)
+            return
+        except BrowserTimeout:
+            if attempt==2:raise
+            control.press('Escape')
 
 
 def snapshot_image(page,name):

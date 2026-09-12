@@ -93,7 +93,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
             handles = {}
             with ExitStack() as stack:
                 for key, compressed, meta in db.execute("SELECT key, body, metadata FROM objects"):
-                    if not key.startswith(("history:1d:", "info:", "dividends:")):
+                    if not key.startswith(("history:1d:", "info:", "dividends:", "reference:")):
                         continue
                     ticker = key.rsplit(":", 1)[-1]
                     if ticker not in universe:

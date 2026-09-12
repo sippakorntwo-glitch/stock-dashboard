@@ -125,6 +125,8 @@ def technical(ticker,daily_history,info,row):
     div=a.load_dividend_history(ticker)
     a.render_decision(ticker,ctx,info,scored,plan,is_etf,div,currency)
     analysis,metrics,_=a.build_analysis(ctx.get('metrics',{}),row,info)
+    from asset_semantics import adapt_analysis
+    analysis=adapt_analysis(analysis,ticker,info,is_etf)
     with st.expander('ตารางวิเคราะห์ 360°',expanded=True):
         table(analysis,height=450)
     a.render_position_sizer(ticker,row,metrics,currency)
@@ -135,18 +137,23 @@ def fundamentals(ticker,history,info,row):
     st.subheader('ธุรกิจ • มูลค่า • กำไร • กระแสเงินสด')
     st.caption('ข้อมูลพื้นฐานดึงสำเร็จ '+a.thai_time(info.get('_Fetched_At_UTC'))+' — ไม่ใช่วันที่ของงบการเงินทุกช่อง')
     etf=a.asset_is_etf(ticker,row,info)
+    from reference_ui import render_references
+    from asset_semantics import field_state,display_value
+    render_references(ticker,info,etf,a.get_data_cache())
     fields=[('อุตสาหกรรม','industry',False),('Sector','sector',False),('ประเทศ','country',False),('Market cap','marketCap',False),
             ('Forward P/E','forwardPE',False),('Trailing P/E','trailingPE',False),('Price / Book','priceToBook',False),('EV / EBITDA','enterpriseToEbitda',False),
             ('Revenue growth','revenueGrowth',True),('Earnings growth','earningsGrowth',True),('Profit margin','profitMargins',True),('Operating margin','operatingMargins',True),
             ('Return on equity','returnOnEquity',True),('Return on assets','returnOnAssets',True),('Operating cash flow','operatingCashflow',False),('Free cash flow','freeCashflow',False),
             ('เงินสดรวม','totalCash',False),('หนี้รวม','totalDebt',False),('เป้าหมายเฉลี่ยนักวิเคราะห์','targetMeanPrice',False),('จำนวนนักวิเคราะห์','numberOfAnalystOpinions',False)]
-    if etf: fields=[('หมวดกองทุน','category',False),('กลุ่มกองทุน','fundFamily',False),('สินทรัพย์กองทุน','totalAssets',False),('NAV ต่อหน่วย','navPrice',False),('Beta 3Y จากแหล่งข้อมูล','beta3Year',False)]
+    if etf: fields=[('หมวดกองทุน','category',False),('กลุ่มกองทุน','fundFamily',False),('สินทรัพย์กองทุน','totalAssets',False),('NAV ต่อหน่วย','navPrice',False),('Beta 3Y จากแหล่งข้อมูล','beta3Year',False),('Portfolio P/E','trailingPE',False)]
     from quality_views import profile_value, profile_field_state, profile_unit
     records=[]
     for label,key,pct in fields:
         raw=info.get(key); n=a.number(raw)
         value=a.show_number(n*100,'%') if pct and n is not None else a.show_number(n) if n is not None else profile_value(raw,info)
-        records.append({'มิติ':label,'ค่า':value,'หน่วย': '%' if pct else profile_unit(info,key),'สถานะข้อมูล':profile_field_state(info,key),'ฟิลด์ต้นทาง':key})
+        state=field_state(ticker,info,key,is_etf=etf)
+        if state!='available':value=display_value(ticker,info,key,is_etf=etf,percent=pct)
+        records.append({'มิติ':label,'ค่า':value,'หน่วย': '%' if pct else profile_unit(info,key),'สถานะข้อมูล':state,'ฟิลด์ต้นทาง':key})
     table(pd.DataFrame(records),height=480)
     st.caption('อัตราการเติบโตและอัตรากำไรเป็นค่าที่แหล่งข้อมูลรายงาน ช่วงอ้างอิงอาจต่างกัน ตัวเลขมูลค่าและกระแสเงินสดใช้สกุลที่ผู้ให้ข้อมูลระบุ ไม่ใช่มูลค่ายุติธรรมอัตโนมัติ')
     if info.get('longBusinessSummary'):

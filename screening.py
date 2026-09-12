@@ -25,10 +25,13 @@ def number(value):
 
 def profile_rows(cache,universe):
     from data_quality import read_objects, present
+    from dashboard_runtime import ETF_NAMES
     objects=read_objects(cache,('info:',));result={}
     for ticker in universe:
         info,meta=objects.get('info:'+ticker,({},{}))
         if not isinstance(info,dict) or not info:continue
+        from asset_semantics import safe_numeric_profile
+        info=safe_numeric_profile(info,ticker,ticker in ETF_NAMES or info.get('quoteType')=='ETF')
         row={field:str(info[key]).strip() if present(info.get(key)) else None for field,key in TEXT_FIELDS.items()}
         row.update({field:number(info.get(key)) for field,key in NUMERIC_FIELDS.items()})
         for field in ('Revenue_Growth','Profit_Margin','ROE'):
@@ -44,7 +47,14 @@ def enrich_frame(frame,profiles):
         if field=='Size_Millions':continue
         values=result.Ticker.map(lambda t:(profiles.get(t) or {}).get(field))
         result[field]=pd.to_numeric(values,errors='coerce') if field in NUMERIC_FIELDS else values
-    size=result['Fund_Assets'].where(result.Asset_Type.eq('ETF'),result['Market_Cap'])
+    # Provider fund profiles sometimes contain corporate placeholders such as
+    # profitMargins=0. These are N/A, not a reported zero-profit business. Mask
+    # only the view used by filters/exports, preserving the raw stored objects.
+    funds=result.Asset_Type.eq('ETF')
+    for field in ('Market_Cap','Revenue_Growth','Profit_Margin','ROE','Free_Cash_Flow'):
+        result.loc[funds,field]=np.nan
+    result.loc[~funds,'Fund_Assets']=np.nan
+    size=result['Fund_Assets'].where(funds,result['Market_Cap'])
     result['Size_Millions']=size/1_000_000
     return result
 
