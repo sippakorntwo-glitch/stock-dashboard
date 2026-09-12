@@ -1,0 +1,103 @@
+name: Verify responsive workspace
+on:
+  push:
+    branches: [fix/final-ui-stability-v23, main]
+    paths: [maintenance/v23.patch, ui_stability.py, .github/workflows/verify_stability.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: responsive-workspace-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual application and browser dependencies
+        run: |
+          mkdir -p work
+          python -m pip install -q -r requirements-dev.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1 || { tail -80 /tmp/browser-install.log; exit 1; }
+      - name: Apply reviewed patch only on its isolated branch and run every regression
+        run: |
+          if [ -f maintenance/v23.patch ]; then
+            test "$GITHUB_REF" = "refs/heads/fix/final-ui-stability-v23"
+            git apply --check maintenance/v23.patch
+            git apply maintenance/v23.patch
+            git rm maintenance/v23.patch
+          fi
+          python -m compileall -q .
+          python -m pytest -q tests > work/responsiveness-tests.log 2>&1 || { tail -160 work/responsiveness-tests.log; exit 1; }
+          if [ "$GITHUB_REF" = "refs/heads/fix/final-ui-stability-v23" ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add app.py dashboard_runtime.py dashboard_ui.py data_sync.py workspace_boot.py production_smoke.py ui_stability.py tests/test_ui_stability.py
+            git diff --cached --quiet || git commit -m 'Reduce catalog render work and consume background refresh revisions once per session'
+            git push origin HEAD:fix/final-ui-stability-v23
+          fi
+          git archive --format=zip HEAD > work/tested-source.zip
+      - name: Compare actual catalog joins without changing their data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'PY'
+          import time,subprocess
+          from pathlib import Path
+          import pandas as pd
+          import dashboard_runtime as app
+          from quality_smoke import public_summary
+          from verification_report import publish_report
+          manifest,summary=public_summary()
+          original=app.parse_watchlist(app.WATCHLIST_FILE.read_bytes())
+          start=time.perf_counter()
+          original_frame,_=app.base_build_frame(original,summary['quotes'],summary['classifications'])
+          old_seconds=time.perf_counter()-start
+          start=time.perf_counter()
+          optimized,_=app.build_universe_frame(original,summary['quotes'],summary['classifications'])
+          new_seconds=time.perf_counter()-start
+          columns=['Ticker','Industry','Industry_Source','Industry_Time']
+          pd.testing.assert_frame_equal(original_frame[columns],optimized[columns],check_dtype=False)
+          publish_report('v23-responsiveness',{'result':'passed','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'catalog_members':len(optimized),'generation':manifest['generation'],'original_join_seconds':old_seconds,'optimized_frame_seconds':new_seconds,'classification_values_identical':True,'tests':Path('work/responsiveness-tests.log').read_text()})
+          PY
+      - name: Full browser recheck on the intended target
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            python verify_workspace.py --production
+          else
+            python verify_workspace.py
+          fi
+      - name: Record final outcome separately from old failed attempts
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          from verification_report import publish_report
+          p=Path('work/responsiveness-tests.log')
+          publish_report('v23-completion',{'result':os.environ['RESULT'],'target':'production' if os.environ['GITHUB_REF']=='refs/heads/main' else 'local CI','tested_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'tests':p.read_text(errors='replace')[-18000:] if p.exists() else 'Tests did not start'})
+          PY
+      - name: Preserve exact tested source and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-workspace-evidence
+          path: |
+            work/tested-source.zip
+            work/*-report.json
+            work/*.png
+            work/*.log
+          retention-days: 7

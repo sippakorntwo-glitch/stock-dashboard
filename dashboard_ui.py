@@ -1,6 +1,7 @@
 """One-page workspace: click a stock in the table; research appears below it."""
 from __future__ import annotations
 import re
+import time
 import pandas as pd
 import streamlit as st
 import dashboard_runtime as a
@@ -27,10 +28,12 @@ def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_cha
     worker = a.get_updater().state()
     chart_state = get_chart_service().state()
     from chart_ranges import first_chart_load_finished
-    if first_chart_load_finished(st.session_state,chart_state['revision'],rendered_chart_revision):
-        st.session_state.pop('_chart_first_load_waiting',None)
-        st.rerun()
-    if state['revision'] != rendered_revision or worker['revision'] != rendered_worker_revision:
+    from ui_stability import claim_refresh
+    first_chart = first_chart_load_finished(st.session_state,chart_state['revision'],rendered_chart_revision)
+    observed = (a.APP_VERSION,state['revision'],worker['revision'],chart_state['revision'] if first_chart else None)
+    rendered = (a.APP_VERSION,rendered_revision,rendered_worker_revision,rendered_chart_revision if first_chart else None)
+    if claim_refresh(st.session_state,observed,rendered):
+        if first_chart:st.session_state.pop('_chart_first_load_waiting',None)
         st.rerun()
     if state['busy'] or worker['busy'] or chart_state['busy']:
         st.caption('กำลังอ่านข้อมูลที่เลือก ข้อมูลเดิมยังใช้งานได้ — แสดงผลให้อัตโนมัติเมื่อโหลดเสร็จ')
@@ -43,6 +46,7 @@ def _manual_ticker():
 
 
 def main():
+    render_started = time.monotonic()
     st.set_page_config(page_title='Stock Research Workspace',page_icon='📊',layout='wide')
     from workspace_theme import apply_theme
     apply_theme()
@@ -143,3 +147,6 @@ def main():
         health(reader,frame,cache)
     _poll_data(reader,revision,worker_revision,chart_revision)
     st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')
+    from ui_stability import page_receipt
+    st.markdown(page_receipt(a.APP_VERSION,ticker,st.session_state.get('stock_search',''),
+                            time.monotonic()-render_started),unsafe_allow_html=True)

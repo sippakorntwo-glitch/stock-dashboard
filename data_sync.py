@@ -267,14 +267,17 @@ class SnapshotReader:
                 self.shards.popitem(last=False)
         else:
             self.shards.move_to_end(slot)
+        changed = False
         for key, value, meta in self.shards[slot].get(ticker, []):
             # Bypass the reader hook when comparing local data to remote data.
             with self.cache._lock:
                 old, oldmeta = self.cache.get(key, request_remote=False)
                 if old is None or stamp_seconds(meta.get("fetched_at")) > stamp_seconds(oldmeta.get("fetched_at")):
                     self.cache.put(key, value, meta)
+                    changed = True
         self.attempted[marker] = float("inf")
-        self.revision += 1
+        if changed:
+            self.revision += 1
 
     def _run(self):
         try:

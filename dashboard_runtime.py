@@ -11,7 +11,7 @@ from catalog_extension import install as install_catalog
 install_catalog(core)
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-09-12.22'
+APP_VERSION = '2026-09-12.23'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row
@@ -102,9 +102,12 @@ def summary_is_current(row, now=None):
 
 
 def build_universe_frame(csv_frame, saved=None, classifications=None):
-    frame, outside = base_build_frame(csv_frame, saved, classifications)
+    # Parse classification timestamps in two vectorized operations instead
+    # of roughly 20,000 scalar parses on every user interaction.
+    frame, outside = base_build_frame(csv_frame, saved, None)
     computed = list(dict.fromkeys([*core.WATCHLIST_NUMERIC_COLUMNS, 'Suggested_Stop', *EXTRA_NUMERIC]))
-    indexed = frame.set_index('Ticker')
+    from ui_stability import merge_classifications
+    indexed = merge_classifications(frame.set_index('Ticker'), classifications)
     rows = [r for t,r in (saved or {}).items() if t in indexed.index and r.get('Data_Status') == 'โหลดสำเร็จ']
     if rows:
         incoming = pd.DataFrame(rows).drop_duplicates('Ticker', keep='last').set_index('Ticker')
