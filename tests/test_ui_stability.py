@@ -1,6 +1,5 @@
 """Regress equivalent industry joins and duplicate automatic refresh requests."""
 from __future__ import annotations
-import threading
 import pandas as pd
 import pytest
 from ui_stability import merge_classifications, claim_refresh, page_receipt
@@ -62,18 +61,34 @@ def test_receipt_does_not_render_untrusted_query_as_markup():
     assert 'data-render-seconds="1.235"' in output
 
 
-def test_unchanged_detail_shard_does_not_refresh_every_viewer():
+def test_unchanged_detail_shard_does_not_refresh_every_viewer(tmp_path):
     from data_sync import SnapshotReader, shard_number
-    class Cache:
-        def __init__(self):
-            self._lock=threading.RLock()
-            self.rows={'info:AAPL':({'shortName':'TEST FIXTURE'}, {'fetched_at':'2026-09-10T00:00:00Z'})}
-        def get(self,key,**kwargs):return self.rows.get(key,(None,{}))
-        def put(self,key,value,meta):self.rows[key]=(value,meta)
-    cache=Cache();reader=SnapshotReader(object(),cache)
-    slot=str(shard_number('AAPL'));reader.manifest={'generation':'fixture','details':{slot:{}}}
-    reader.shards[slot]={'AAPL':[('info:AAPL',{'shortName':'TEST FIXTURE'},{'fetched_at':'2026-09-10T00:00:00Z'})]}
-    reader._details('AAPL');assert reader.revision==0
+    from dashboard_runtime import DashboardCache
+    cache=DashboardCache(tmp_path/'detail-refresh.sqlite3')
+    cache.put('info:AAPL',{'shortName':'TEST FIXTURE'},{'fetched_at':'2026-09-10T00:00:00Z'})
+    reader=SnapshotReader(object(),cache)
+    slot=str(shard_number('AAPL'));other_slot=str(shard_number('MSFT'))
+    reader.manifest={'generation':'fixture','details':{slot:{},other_slot:{}}}
+    reader.shards.setdefault(slot,{})['AAPL']=[('info:AAPL',{'shortName':'TEST FIXTURE'},{'fetched_at':'2026-09-10T00:00:00Z'})]
+    reader.shards.setdefault(other_slot,{})['MSFT']=[('info:MSFT',{'shortName':'OTHER VIEWER'},{'fetched_at':'2026-09-10T00:00:00Z'})]
+    before=reader.status('AAPL')['view_revision']
+    reader._details('AAPL')
+    ready=reader.status('AAPL')['view_revision']
+    assert ready!=before  # First readiness must wake a waiting selected page.
+    state={}
+    assert claim_refresh(state,ready,before)
+    reader._details('AAPL')
+    assert reader.status('AAPL')['view_revision']==ready
+    assert not claim_refresh(state,ready,before)
+    reader._details('MSFT')
+    assert reader.status('MSFT')['detail_generation']=='fixture'
+    assert reader.status('AAPL')['view_revision']==ready  # Another viewer cannot refresh AAPL.
+    # Published generations are immutable; fresh data belongs to a new one.
+    reader.manifest={**reader.manifest,'generation':'fixture-2'}
     reader.shards[slot]['AAPL'][0][2]['fetched_at']='2026-09-11T00:00:00Z'
-    reader._details('AAPL');assert reader.revision==1
-    reader._details('AAPL');assert reader.revision==1
+    reader._details('AAPL')
+    updated=reader.status('AAPL')['view_revision']
+    assert updated!=ready and claim_refresh(state,updated,ready)
+    reader._details('AAPL')
+    assert reader.status('AAPL')['view_revision']==updated
+    assert not claim_refresh(state,updated,ready)

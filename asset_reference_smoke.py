@@ -45,7 +45,12 @@ def verify_asset_reference(page,app):
     expect(field).to_have_value('AAAU')
     section=app.locator('.st-key-research_fundamentals')
     expect(section.get_by_text('AAAU holds physical gold',exact=False)).to_be_visible()
-    technical=app.locator('.st-key-research_technical .workspace-help-table')
+    analysis=app.locator('.st-key-research_technical [data-testid="stExpander"]').filter(
+        has=app.get_by_text('ตารางวิเคราะห์ 360°',exact=True))
+    technical=analysis.locator('.workspace-help-table')
+    if not technical.is_visible():
+        analysis.locator('summary').first.click()
+    expect(technical).to_be_visible()
     for label in ('ราคาต่อกำไรคาดการณ์ (Forward P/E)','ราคาต่อกำไรย้อนหลัง (P/E)',
                   'ราคาเป้าหมายเฉลี่ยของนักวิเคราะห์'):
         row=technical.locator('tr').filter(has=app.get_by_text(label,exact=False))

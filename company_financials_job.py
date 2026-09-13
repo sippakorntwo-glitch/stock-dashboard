@@ -106,11 +106,14 @@ def collect_batch(cache, universe, etfs, *, limit=150, minutes=12, only_missing=
 
 def audit_all(cache, universe, etfs):
     from data_quality import read_objects
-    profiles=read_objects(cache,('info:',));financials=read_objects(cache,('financials:',))
+    profiles=read_objects(cache,('info:','dividends:'));financials=read_objects(cache,('financials:',))
     attempts=read_objects(cache,('attempt:financials:',))
     counts=Counter();columns=defaultdict(Counter);rows=[];examples={}
     for ticker in universe:
-        info=profiles.get('info:'+ticker,({},{}))[0] or {}
+        raw_info,profile_meta=profiles.get('info:'+ticker,({},{}))
+        info=dict(raw_info or {})
+        info['_ProfileFetchedAt']=profile_meta.get('fetched_at') or info.get('_Fetched_At_UTC')
+        info['_DividendHistory']=profiles.get('dividends:'+ticker,(None,{}))[0]
         bundle=financials.get('financials:'+ticker,(None,{}))[0]
         etf=ticker in etfs or info.get('quoteType')=='ETF'
         states=audit_profile(ticker,info,bundle,is_etf=etf)

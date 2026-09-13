@@ -11,6 +11,11 @@ PRIORITY=('AAPL','MSFT','NVDA','AMZN','GOOGL','META','TSLA','SPY','QQQ','VOO','V
 
 
 def needs_publication(previous,report):
+    from screening import SCREENER_SCHEMA
+    # A code-only release can add reported fields to the compact screener.
+    # Rebuild that projection from the checkpoint once; unchanged schemas reuse it.
+    if (previous or {}).get('screener_schema') != SCREENER_SCHEMA:
+        return True
     # Failures change retry/checkpoint state and must also be persisted.
     return not previous or any(report.get(key,0) for key in ('price_attempted','metadata_success','metadata_failed'))
 

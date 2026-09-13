@@ -101,3 +101,40 @@ def test_new_source_ledger_and_screener_summary_round_trip(tmp_path):
     assert s['screener']['AAPL']['Sector']=='Technology' and m['catalog_fingerprint']
     local=a.DashboardCache(tmp_path/'l.sqlite3');apply_summary(local,s)
     assert local.get('remote:screener',request_remote=False)[0]['AAPL']['Currency']=='USD'
+
+
+def test_company_and_fund_filters_never_treat_not_applicable_as_missing():
+    f=fixture().assign(ROE=[15.,np.nan,99.,np.nan],Fund_Assets_Millions=[999.,np.nan,500.,np.nan])
+    assert filter_frame(f,bounds={'ROE':(10,None)},include_missing=True).Ticker.tolist()==['A','B']
+    assert filter_frame(f,bounds={'Fund_Assets_Millions':(100,None)},include_missing=True).Ticker.tolist()==['QQQI','N']
+    assert filter_frame(f,bounds={'ROE':(10,None),'Fund_Assets_Millions':(100,None)},include_missing=True).empty
+    assert filter_frame(f,categories={'Fund_Family':[UNKNOWN]}).Ticker.tolist()==['QQQI','N']
+
+
+def test_invalid_numeric_and_technical_values_are_not_missing_data():
+    f=fixture().assign(RSI_14=[55.,np.inf,'bad',np.nan],Close=[np.inf,20.,50.,np.nan])
+    assert filter_frame(f,bounds={'RSI_14':(0,60)},include_missing=True).Ticker.tolist()==['A','N']
+    assert filter_frame(f,above_sma=True).Ticker.tolist()==['QQQI']
+    with pytest.raises(ValueError,match='finite numbers'):
+        filter_frame(f,bounds={'RSI_14':(np.inf,None)})
+
+
+def test_new_profile_ratios_preserve_reported_units_currency_and_fund_scope(tmp_path):
+    import dashboard_runtime as a
+    cache=a.DashboardCache(tmp_path/'filter-ratios.sqlite3')
+    cache.put('info:A',{'quoteType':'EQUITY','currency':'USD','financialCurrency':'EUR',
+        'debtToEquity':75.,'currentRatio':1.8,'returnOnAssets':.07,'operatingMargins':.2,
+        'trailingAnnualDividendYield':.025,'dividendYield':999.,'marketCap':50_000_000.,
+        'trailingPE':15.,'forwardPE':12.},{'fetched_at':'2026-09-10T12:00:00Z'})
+    cache.put('info:QQQI',{'quoteType':'ETF','currency':'USD','totalAssets':800_000_000.,
+        'debtToEquity':0.,'returnOnAssets':0.,'forwardPE':10.},{'fetched_at':'2026-09-10T12:00:00Z'})
+    profiles=profile_rows(cache,['A','QQQI'])
+    assert profiles['A']['Debt_To_Equity']==.75
+    assert profiles['A']['Dividend_Yield']==2.5
+    assert profiles['A']['ROA']==pytest.approx(7.) and profiles['A']['Operating_Margin']==20.
+    assert profiles['A']['Financial_Currency']=='EUR' and profiles['A']['Currency']=='USD'
+    out=enrich_frame(fixture(),profiles).set_index('Ticker')
+    assert out.loc['A','Market_Cap_Millions']==50.
+    assert out.loc['QQQI','Fund_Assets_Millions']==800.
+    assert pd.isna(out.loc['QQQI','Debt_To_Equity']) and pd.isna(out.loc['QQQI','ROA'])
+    assert pd.isna(out.loc['QQQI','Forward_PE']) and pd.isna(out.loc['A','Fund_Assets_Millions'])

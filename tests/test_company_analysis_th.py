@@ -3,7 +3,7 @@ from copy import deepcopy
 import re
 
 from bs4 import BeautifulSoup
-from company_analysis_th import (METRIC_TEXT, GROUP_LABELS, TEXT, FORMULAS,
+from company_analysis_th import (METRIC_TEXT, METRIC_ALIASES, STATEMENT_ALIASES, GROUP_LABELS, TEXT, FORMULAS,
                                  build_rows_th, export_rows_th, profile_text_th)
 from company_analysis_ui import analysis_html, statement_table, history_html
 from company_metrics import METRICS, GROUPS, build_rows, evaluate, metric_observations
@@ -33,11 +33,17 @@ def statement_fixture():
 
 def test_all_metrics_and_policy_outcomes_have_complete_thai_translations():
     assert set(METRIC_TEXT) == {m.key for m in METRICS}
+    assert set(METRIC_ALIASES) == set(METRIC_TEXT)
+    assert METRIC_TEXT['grossMargins'][0] == 'อัตรากำไรขั้นต้น (GPM)'
+    assert METRIC_TEXT['grossProfit'][0] == 'กำไรขั้นต้น (GP)'
     assert set(GROUP_LABELS) == set(GROUPS)
     # Exercise each band and the specialized-company policy, including loss bases.
     for info in ({}, {'sector': 'Financial Services'}, {'industry': 'REIT - Retail'}):
         for metric in METRICS:
             assert all(has_thai(s) for s in METRIC_TEXT[metric.key])
+            label = METRIC_TEXT[metric.key][0]
+            assert label.endswith('('+METRIC_ALIASES[metric.key]+')')
+            assert label.count('(') == label.count(')') == 1, label
             for value in (-1, 0, .01, .03, .1, .5, .8, 1, 2, 3, 4, 10, 20, 30, 50):
                 for message in evaluate(metric, value, info):
                     assert message in TEXT, (metric.key, message)
@@ -92,6 +98,47 @@ def test_missing_invalid_and_currency_mismatch_stay_distinct_in_thai_csv():
     assert all(r['_state'] == 'not_applicable' and 'N/A' in r['Current Value'] for r in fund)
 
 
+def test_unreconciled_dividend_source_has_same_thai_reason_in_table_help_and_csv():
+    from company_metrics import DIVIDEND_YIELD_SOURCE_DISAGREEMENT
+    info = {'trailingAnnualDividendYield': 0., '_ProfileFetchedAt': '2026-09-11T20:00:00+00:00',
+            '_DividendHistory': {'records': [{'Ex_Date': '2026-09-01', 'Dividend_Per_Share': .5}]}}
+    original = deepcopy(info)
+    row = next(row for row in build_rows_th('TEST', info) if row['_key'] == 'dividendYield')
+    reason = TEXT[DIVIDEND_YIELD_SOURCE_DISAGREEMENT]
+    assert row['_state'] == 'invalid' and row['_value'] is None
+    assert row['Current Value'] != '0.00%'
+    assert row['Interpretation'] == reason and reason in row['_help']
+    assert 'องค์ประกอบของเงินจ่าย' in reason and 'นิยามอัตราผลตอบแทน' in reason
+    exported = export_rows_th([row])[0]
+    assert exported['ค่าปัจจุบัน'] == row['Current Value']
+    assert exported['การตีความ'] == reason and reason in exported['คำอธิบายและวิธีคำนวณ']
+    assert all(has_thai(line) for line in row['_help'].splitlines())
+    assert info == original
+
+
+def test_legacy_360_withholds_same_unreconciled_dividend_for_company_and_fund():
+    from asset_semantics import adapt_analysis
+    from company_analysis_th import localize_360_frame, LEGACY_360_LABELS
+    from company_metrics import DIVIDEND_YIELD_SOURCE_DISAGREEMENT
+    from dashboard_runtime import build_analysis
+    for ticker, asset_type, quote_type in [('AAPL', 'Common Stock', 'EQUITY'), ('SPY', 'ETF', 'ETF')]:
+        info = {'symbol': ticker, 'quoteType': quote_type, 'trailingAnnualDividendYield': 0.,
+                'trailingAnnualDividendRate': 0., 'regularMarketPrice': 100.,
+                '_ProfileFetchedAt': '2026-09-11T20:00:00+00:00',
+                '_DividendHistory': {'records': [{'Ex_Date': '2026-09-01', 'Dividend_Per_Share': .5}]}}
+        original = deepcopy(info)
+        frame, _, extra = build_analysis({}, {'Ticker': ticker, 'Asset_Type': asset_type}, info)
+        display = localize_360_frame(adapt_analysis(frame, ticker, info, asset_type == 'ETF'))
+        row = display.loc[display['ปัจจัย'].eq(LEGACY_360_LABELS['Dividend Yield'])].iloc[0]
+        assert row['ค่าล่าสุด'] == '— (ค่าต้นทางผิดปกติ)'
+        assert row['การแปลผล'] == TEXT[DIVIDEND_YIELD_SOURCE_DISAGREEMENT]
+        assert extra['dividend_pct'] is None and extra['dividend_yield_state'] == 'source_disagreement'
+        assert extra['dividend_yield_conflict_date'] == '2026-09-01'
+        if asset_type == 'Common Stock':
+            assert frame['_company_metric'].isin(METRIC_TEXT).sum() == 15
+        assert info == original
+
+
 def test_thai_tables_keep_metric_only_help_and_include_all_annual_source_fields():
     bundle = statement_fixture()
     rows = build_rows_th('TEST', {'currency': 'USD', 'financialCurrency': 'USD'}, bundle)
@@ -107,6 +154,10 @@ def test_thai_tables_keep_metric_only_help_and_include_all_annual_source_fields(
         history = BeautifulSoup(history_html(annual, 'งบการเงิน', kind=kind), 'html.parser')
         assert history.select_one(f'section[data-statement="{kind}"]')
         assert all(has_thai(n.get_text()) and has_thai(n['title']) for n in history.select('tbody abbr'))
+        for row in annual:
+            alias = STATEMENT_ALIASES[{'capitalExpenditure': 'capex', 'repurchaseOfCapitalStock': 'buybacks', 'cashDividendsPaid': 'dividendsPaid'}.get(row['_field'], row['_field'])]
+            assert row['Metric'].endswith('('+alias+')')
+            assert row['Metric'].count('(') == row['Metric'].count(')') == 1
         assert not history.select('td [title], thead [title]')
         restored.update(n['data-statement-field'] for n in history.select('tr[data-statement-field]'))
     assert {'interestExpense', 'pretaxIncome', 'taxProvision', 'receivables', 'inventory'} <= restored

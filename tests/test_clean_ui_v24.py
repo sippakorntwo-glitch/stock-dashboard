@@ -63,7 +63,7 @@ def test_public_entrypoint_keeps_refresh_and_errors_but_no_diagnostic_render_cal
     for text in ('health(reader,frame,cache)','render_family_counts(cache)',
                  'render_symbol_quality(ticker,cache,history,info)',"key='research_health'"):
         assert text not in source
-    assert '_poll_data(reader,revision,worker_revision,chart_revision)' in source
+    assert '_poll_data(reader,revision,worker_revision,chart_revision,ticker,dependencies)' in source
     assert 'if cache.error: st.warning(' in source
     assert 'def render_quality_report(' in Path('quality_views.py').read_text()
     assert 'def make_quality(' in Path('data_quality.py').read_text()
@@ -88,7 +88,7 @@ if w is not None:st.dataframe(w)
     at=AppTest.from_string(script,default_timeout=20).run()
     assert not at.exception,str(at.exception)
     dropdown=at.multiselect(key='screen_cat_Industry')
-    assert dropdown.label=='Industry / ETF Category' and dropdown.value==[]
+    assert dropdown.label=='อุตสาหกรรม / หมวด ETF' and dropdown.value==[]
     assert 'None' not in dropdown.options
     assert all(not any(w.key=='screen_cat_Industry' for w in exp.multiselect) for exp in at.expander)
     at.multiselect(key='screen_cat_Industry').set_value(['Derivative Income','Large Blend']).run()
@@ -103,5 +103,5 @@ if w is not None:st.dataframe(w)
     assert not at.exception,str(at.exception)
     assert len(at.dataframe[0].value)==4
     assert at.multiselect(key='screen_cat_Industry').value==[]
-    assert at.text_input(key='stock_search').label=='Search Ticker / Company'
+    assert at.text_input(key='stock_search').label=='ค้นหาสัญลักษณ์ / ชื่อบริษัท'
     assert at.session_state['selected_ticker']=='AAPL'

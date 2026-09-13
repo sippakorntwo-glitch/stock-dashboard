@@ -18,7 +18,17 @@ def test_single_page_selection_and_all_sections_without_provider_calls(tmp_path)
     class Reader:
         def refresh(self,force=False):pass
         def request(self,ticker):pass
-        def status(self):return {'busy':False,'revision':0,'error':'','manifest':{'generation':'test','published_at':'2026-09-10T00:00:00Z'}}
+        def select(self,ticker):
+            cache.put('remote:detail:'+ticker,{'generation':'test','retained_newer_local':{}},{})
+        def select_page(self,tickers):
+            for ticker in tickers: self.select(ticker)
+        def page_status(self,tickers):
+            return dict(self.status(),page_revision=(0,tuple((ticker,0) for ticker in tickers)))
+        def status(self,ticker=None):
+            return {'busy':False,'revision':0,'view_revision':(0,0),'error':'',
+                    'manifest':{'generation':'test','published_at':'2026-09-10T00:00:00Z'}}
+    reader=Reader();cache.remote=reader
+    cache.put('remote:manifest',reader.status()['manifest'],{})
     script='''
 import streamlit as st
 from dashboard_selection import apply_table_selection
@@ -29,7 +39,7 @@ if command:
 from dashboard_ui import main
 main()
 '''
-    with patch.object(a,'get_data_cache',return_value=cache),patch.object(a.core,'get_data_cache',return_value=cache),patch.object(a,'get_remote_reader',return_value=(Reader(),'')),patch.object(a,'get_updater',return_value=a.ReadOnlyUpdater()),patch.object(a.yf,'download',side_effect=AssertionError('Unexpected provider call')),patch.object(a.yf,'Ticker',side_effect=AssertionError('Unexpected provider call')):
+    with patch.object(a,'get_data_cache',return_value=cache),patch.object(a.core,'get_data_cache',return_value=cache),patch.object(a,'get_remote_reader',return_value=(reader,'')),patch.object(a,'get_updater',return_value=a.ReadOnlyUpdater()),patch.object(a.yf,'download',side_effect=AssertionError('Unexpected provider call')),patch.object(a.yf,'Ticker',side_effect=AssertionError('Unexpected provider call')):
         at=AppTest.from_string(script,default_timeout=40).run()
         assert not at.exception,str(at.exception)
         assert at.metric[0].value==f'{a.COMMON_STOCK_LIMIT+a.ETF_LIMIT:,}'
