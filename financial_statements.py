@@ -104,7 +104,7 @@ def observations(bundle):
 
     def put(key, value, basis, end, formula=None, state='available', reason=''):
         value = number(value)
-        if key in ('revenue','totalAssets','totalLiabilities','totalDebt','cash',
+        if key in ('totalAssets','totalLiabilities','totalDebt','cash',
                    'currentAssets','currentLiabilities','receivables','inventory') and value is not None and value < 0:
             value, state, reason = None, 'invalid', 'Unexpected negative source amount'
         result[key] = {'value': value, 'basis': basis, 'end': end,

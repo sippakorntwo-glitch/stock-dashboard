@@ -134,6 +134,15 @@ def test_specialized_financial_business_and_roic_do_not_get_generic_good_bad_sco
     assert result[1]=='WACC comparison needed' and 'not supplied' in result[0]
 
 
+@pytest.mark.parametrize('revenue,multiple',[(0,'Infinity'),(-10,-20)])
+def test_zero_or_negative_sales_are_not_a_missing_or_cheap_sales_multiple(revenue,multiple):
+    values=metric_observations('TEST',{'totalRevenue':revenue,'priceToSalesTrailing12Months':multiple})
+    assert values['revenue']['state']=='available' and values['revenue']['value']==revenue
+    assert values['priceToSales']['state']=='not_meaningful'
+    if revenue < 0:
+        assert evaluate(BY_KEY['revenue'],revenue,{})[1]=='Negative net revenue'
+
+
 def test_symbols_currencies_and_invalid_values_are_never_silently_assumed():
     b=bundle();b['ticker']='OTHER'
     assert metric_observations('TEST',{},b)['grossProfit']['value'] is None

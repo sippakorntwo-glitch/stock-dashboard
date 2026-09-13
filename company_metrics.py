@@ -88,7 +88,7 @@ AUDIT_PROVIDER_FIELDS = tuple(dict.fromkeys(metric.provider for metric in METRIC
 SPECIALIZED = frozenset(('returnOnEquity', 'returnOnAssets', 'grossMargins', 'operatingMargins', 'profitMargins',
                         'debtToEquity', 'liabilitiesToEquity', 'currentRatio', 'quickRatio', 'cashRatio',
                         'interestCoverage', 'roic', 'evEbitda', 'evRevenue', 'fcfMargin', 'cashConversion'))
-NONNEGATIVE = frozenset(('revenue', 'totalAssets', 'totalLiabilities', 'cash', 'totalDebt',
+NONNEGATIVE = frozenset(('totalAssets', 'totalLiabilities', 'cash', 'totalDebt',
                         'currentAssets', 'currentLiabilities', 'capex', 'buybacks', 'dividendsPaid'))
 REFERENCE_URLS = (
     ('SEC: Reading financial statements', 'https://www.sec.gov/investor/pubs/begfinstmtguide.htm'),
@@ -104,6 +104,9 @@ def specialized_company(info):
 
 def evaluate(metric, value, info):
     """Return a reference, an assessment and an explanation, never a buy signal."""
+    if metric.key == 'revenue' and value < 0:
+        return ('Review reported net revenue and accounting notes', 'Negative net revenue',
+                'Negative net revenue can arise from investment losses or revenue reversals. Preserve the reported sign and inspect the filing; do not replace it with zero.')
     if specialized_company(info) and (metric.key in SPECIALIZED or metric.policy == 'payout'):
         return ('Industry-specific analysis', 'Specialized comparison',
                 'Generic operating-company bands are not applied to banks, insurers, credit businesses or REITs; use sector-specific capital and cash-flow measures.')
@@ -177,6 +180,10 @@ def metric_observations(ticker, info, bundle=None, *, is_etf=False):
             item.update(value=None, state='invalid', reason='Unexpected negative source amount')
         if metric.key in ('trailingPE', 'forwardPE', 'priceToBook', 'evEbitda') and value is not None and value <= 0:
             item.update(value=None, state='not_meaningful', reason='Non-positive valuation denominator or multiple')
+        if metric.key in ('priceToSales','evRevenue'):
+            revenue=number(info.get('totalRevenue'))
+            if revenue is not None and revenue <= 0:
+                item.update(value=None,state='not_meaningful',reason='Trailing revenue is zero or negative; a sales multiple is not meaningful')
         equity = derived.get('stockholdersEquity', {}).get('value')
         book_value = number(info.get('bookValue'))
         if metric.key in ('debtToEquity', 'priceToBook', 'returnOnEquity', 'liabilitiesToEquity') and ((equity is not None and equity <= 0) or (book_value is not None and book_value <= 0)):
