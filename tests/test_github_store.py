@@ -19,8 +19,9 @@ import test_prepared_data as fixtures
 
 
 class Response:
-    def __init__(self, status, data=None, raw=b''):
+    def __init__(self, status, data=None, raw=b'', headers=None):
         self.status_code, self.data, self.content = status, data, raw
+        self.headers = headers or {}
     def json(self): return self.data
     def close(self): pass
     def iter_content(self, chunk_size):
@@ -39,6 +40,7 @@ class FakeGitHub:
         self.assets = {}
         self.serial = 0
         self.fail_name = None
+        self.failed_uploads = 0
         self.watchlist = None
         self.calls = []
     def request(self, method, url, **kwargs):
@@ -85,9 +87,12 @@ class FakeGitHub:
             return Response(200, [r.copy() for r in self.releases.values()][start:start+int(params.get('per_page',30))])
         if path.startswith('/releases/tags/'):
             tag=path.removeprefix('/releases/tags/')
-            release=next((r for r in self.releases.values() if r['tag_name']==tag), None)
+            release=next((r for r in self.releases.values() if r['tag_name']==tag and not r['draft']), None)
             return Response(404) if release is None else Response(200,release.copy())
         if path.startswith('/releases/assets/'):
+            if method == 'DELETE':
+                asset = self.assets.pop(int(path.rsplit('/',1)[-1]), None)
+                return Response(204 if asset is not None else 404)
             asset=self.assets[int(path.rsplit('/',1)[-1])]
             assert headers['Accept']=='application/octet-stream'
             return Response(200,raw=asset['raw'])
@@ -95,7 +100,9 @@ class FakeGitHub:
             rid=int(path.split('/')[2])
             if path.endswith('/assets'):
                 if method=='POST':
-                    if params['name']==self.fail_name: return Response(502)
+                    if params['name']==self.fail_name:
+                        self.failed_uploads += 1
+                        return Response(502)
                     raw=kwargs['data'].read()
                     self.serial += 1
                     asset={'id':self.serial,'name':params['name'],'size':len(raw),'state':'uploaded','release':rid,'raw':raw}
@@ -106,6 +113,8 @@ class FakeGitHub:
                 return Response(200,assets[start:start+int(params['per_page'])])
             if method=='PATCH':
                 self.releases[rid].update(data)
+                return Response(200,self.releases[rid].copy())
+            if method=='GET':
                 return Response(200,self.releases[rid].copy())
             if method=='DELETE':
                 del self.releases[rid]
@@ -120,13 +129,14 @@ class GitHubTests(unittest.TestCase):
         self.api=FakeGitHub()
         self.store=gh.GitHubReleaseStore({'DASHBOARD_DATA_REPO':self.api.repo,'DASHBOARD_GITHUB_TOKEN':'writer','DASHBOARD_DATA_VISIBILITY':'private'},session=self.api)
         self.pace=patch.object(gh.GitHubReleaseStore,'_pace_mutation');self.pace.start()
+        self.sleep=patch.object(gh.time,'sleep');self.sleeper=self.sleep.start()
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name)
         self.fixture=fixtures.PreparedDataTests(methodName='test_worker_restart_restores_full_checkpoint_and_returns')
         self.fixture.setUp()
         self.cache=self.fixture.cache
         self.assertIsNone(sync.read_manifest(self.store))
     def tearDown(self):
-        self.pace.stop();self.temp.cleanup();self.fixture.tearDown()
+        self.pace.stop();self.sleep.stop();self.temp.cleanup();self.fixture.tearDown()
     def test_private_release_publish_restore_and_reader(self):
         manifest=worker.publish_snapshot(self.store,self.cache,('AAPL','MSFT'),{})
         self.assertTrue(all(not r['draft'] for r in self.api.releases.values()))
@@ -161,6 +171,148 @@ class GitHubTests(unittest.TestCase):
         with self.assertRaises(gh.GitHubStoreError): worker.publish_snapshot(self.store,self.cache,('AAPL',),{},old)
         self.assertEqual(self.api.pointer,before)
         self.assertTrue(any(r['draft'] for r in self.api.releases.values()))
+        self.assertEqual(self.api.failed_uploads, gh.RETRY_ATTEMPTS)
+
+    def test_release_create_recovers_transient_500_and_lost_draft_response(self):
+        original = self.api.request
+        for lost_response in (False, True):
+            with self.subTest(lost_response=lost_response):
+                calls = []
+                tag = gh.TAG_PREFIX + ('20260910T000001Z-abcdef01' if lost_response else '20260910T000000Z-abcdef01')
+                def intercept(method, url, **kwargs):
+                    if method == 'POST' and url.endswith('/releases'):
+                        calls.append(url)
+                        if len(calls) == 1:
+                            if lost_response:
+                                original(method, url, **kwargs)
+                                raise gh.requests.Timeout('untrusted transport detail')
+                            return Response(500)
+                    return original(method, url, **kwargs)
+                with patch.object(self.api, 'request', side_effect=intercept):
+                    release = self.store._release(tag, create=True)
+                self.assertTrue(release['draft'])
+                self.assertEqual(len(calls), 1 if lost_response else 2)
+                self.assertEqual(sum(r['tag_name'] == tag for r in self.api.releases.values()), 1)
+
+    def test_uncertain_upload_is_verified_and_does_not_create_a_second_asset(self):
+        original = self.api.request
+        calls = []
+        def intercept(method, url, **kwargs):
+            result = original(method, url, **kwargs)
+            if method == 'POST' and url.endswith('/assets'):
+                calls.append(url)
+                raise gh.requests.ConnectionError('untrusted transport detail')
+            return result
+        raw = b'complete verified content'
+        with patch.object(self.api, 'request', side_effect=intercept):
+            self.store.write('generations/20260910T000000Z-abcdef01/summary.json.gz', raw)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(self.api.assets), 1)
+        self.assertEqual(next(iter(self.api.assets.values()))['raw'], raw)
+        self.assertTrue(any(method == 'GET' and '/releases/assets/' in path for method,path in self.api.calls))
+
+    def test_failed_upload_removes_only_empty_draft_starter_and_rewinds_body(self):
+        original = self.api.request
+        calls = []
+        raw = b'body must be sent from its beginning after retry'
+        def intercept(method, url, **kwargs):
+            if method == 'POST' and url.endswith('/assets'):
+                calls.append(url)
+                if len(calls) == 1:
+                    self.assertEqual(kwargs['data'].read(), raw)
+                    rid = int(url.rsplit('/',2)[1])
+                    self.api.assets[999] = {'id':999,'release':rid,'name':kwargs['params']['name'],
+                                            'state':'starter','size':0,'raw':b''}
+                    return Response(502)
+            return original(method, url, **kwargs)
+        with patch.object(self.api, 'request', side_effect=intercept):
+            self.store.write('generations/20260910T000000Z-abcdef01/summary.json.gz', raw)
+        self.assertEqual(len(calls), 2)
+        self.assertNotIn(999, self.api.assets)
+        self.assertEqual(next(iter(self.api.assets.values()))['raw'], raw)
+
+    def test_same_size_different_asset_is_never_replaced_or_accepted(self):
+        key = 'generations/20260910T000000Z-abcdef01/summary.json.gz'
+        self.store.write(key, b'good')
+        with self.assertRaisesRegex(gh.GitHubStoreError, 'checksum differs'):
+            self.store.write(key, b'evil')
+        self.assertEqual(next(iter(self.api.assets.values()))['raw'], b'good')
+        self.assertFalse(any(method == 'DELETE' for method,path in self.api.calls))
+
+    def test_recovery_refuses_to_change_a_generation_published_by_another_writer(self):
+        original = self.api.request
+        def intercept(method, url, **kwargs):
+            result = original(method, url, **kwargs)
+            if method == 'POST' and url.endswith('/assets'):
+                rid = int(url.rsplit('/',2)[1])
+                self.api.releases[rid]['draft'] = False
+                raise gh.requests.Timeout('response lost')
+            return result
+        with patch.object(self.api, 'request', side_effect=intercept):
+            with self.assertRaisesRegex(gh.GitHubStoreError, 'immutable'):
+                self.store.write('generations/20260910T000000Z-abcdef01/summary.json.gz', b'data')
+        self.assertEqual(len(self.api.assets), 1)
+        self.assertFalse(any(method == 'DELETE' for method,path in self.api.calls))
+
+    def test_uncertain_pointer_write_never_overwrites_another_writers_commit(self):
+        original = self.api.request
+        calls = []
+        def intercept(method, url, **kwargs):
+            if method == 'PUT' and url.endswith('/contents/dashboard/latest.json'):
+                calls.append(url)
+                self.api.pointer_branch = 'main'
+                self.api.pointer = b'{"generation":"other-writer"}'
+                self.api.sha = 'other-commit'
+                return Response(500)
+            return original(method, url, **kwargs)
+        with patch.object(self.api, 'request', side_effect=intercept):
+            with self.assertRaisesRegex(gh.GitHubStoreError, 'refusing to overwrite'):
+                worker.publish_snapshot(self.store,self.cache,('AAPL',),{})
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(self.api.pointer, b'{"generation":"other-writer"}')
+
+    def test_lost_pointer_response_recovers_exact_content_without_second_write(self):
+        original = self.api.request
+        calls = []
+        def intercept(method, url, **kwargs):
+            result = original(method, url, **kwargs)
+            if method == 'PUT' and url.endswith('/contents/dashboard/latest.json'):
+                calls.append(url)
+                raise gh.requests.Timeout('response lost after commit')
+            return result
+        with patch.object(self.api, 'request', side_effect=intercept):
+            manifest = worker.publish_snapshot(self.store,self.cache,('AAPL',),{})
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(json.loads(self.api.pointer)['generation'], manifest['generation'])
+        self.assertEqual(self.store.pointer_sha, self.api.sha)
+
+    def test_retry_honors_server_delay_and_stops_on_fatal_or_long_limits(self):
+        for status, headers, retries in (
+                (429, {'Retry-After':'17'}, True),
+                (503, {'Retry-After':'12'}, True),
+                (403, {}, False), (401, {}, False), (422, {}, False),
+                (429, {'Retry-After':'3600'}, False)):
+            with self.subTest(status=status, headers=headers):
+                self.sleeper.reset_mock()
+                with patch.object(self.api, 'request', side_effect=[Response(status, headers=headers),
+                                                                    Response(200, {'ok':True})]) as request:
+                    if retries:
+                        self.assertEqual(self.store._json('GET', '/'), {'ok':True})
+                        self.sleeper.assert_called_once_with(float(headers['Retry-After']))
+                        self.assertEqual(request.call_count, 2)
+                    else:
+                        with self.assertRaises(gh.GitHubStoreError):
+                            self.store._json('GET', '/')
+                        self.assertEqual(request.call_count, 1)
+                        self.sleeper.assert_not_called()
+
+    def test_primary_rate_limit_reset_stops_without_early_probe(self):
+        with patch.object(gh.time, 'time', return_value=1000), patch.object(self.api, 'request',
+                return_value=Response(403, headers={'X-RateLimit-Remaining':'0','X-RateLimit-Reset':'2000'})) as request:
+            with self.assertRaisesRegex(gh.GitHubStoreError, 'bounded budget'):
+                self.store._json('GET', '/')
+        self.assertEqual(request.call_count, 1)
+        self.sleeper.assert_not_called()
     def test_concurrent_pointer_update_is_rejected(self):
         old=worker.publish_snapshot(self.store,self.cache,('AAPL',),{})
         self.api.sha='changed-by-another-writer'

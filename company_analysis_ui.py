@@ -1,13 +1,21 @@
-"""English company research tables with metric-only, keyboard-accessible help."""
+"""Thai company research tables with metric-only, keyboard-accessible help."""
 from __future__ import annotations
 
-from collections import Counter
 from html import escape
-import json
 import pandas as pd
 import streamlit as st
-from company_metrics import METRICS, BY_KEY, GROUPS, REFERENCE_URLS, build_rows, format_value
-from financial_statements import INCOME_KEYS, CASHFLOW_KEYS, BALANCE_FIELDS, number, day
+from company_metrics import BY_KEY, GROUPS, REFERENCE_URLS, NONNEGATIVE, Metric
+from company_analysis_th import (METRIC_TEXT, GROUP_LABELS, CSV_HEADERS, build_rows_th,
+                                 export_rows_th, format_value_th, profile_text_th)
+from financial_statements import INCOME_KEYS, CASHFLOW_KEYS, BALANCE_FIELDS, number
+
+STATEMENT_EXTRA = {
+    'interestExpense': ('ดอกเบี้ยจ่าย', 'ดอกเบี้ยจ่ายที่รายงานสำหรับปีบัญชีที่ระบุ ใช้แยกจากกำไรก่อนดอกเบี้ยและภาษีเพื่อประเมินความสามารถชำระดอกเบี้ย'),
+    'pretaxIncome': ('กำไรก่อนภาษี', 'กำไรหรือขาดทุนก่อนภาษีเงินได้สำหรับปีบัญชีที่ระบุ'),
+    'taxProvision': ('ค่าใช้จ่ายภาษีเงินได้', 'ค่าใช้จ่ายหรือประโยชน์ทางภาษีที่รับรู้ในงบกำไรขาดทุน ไม่จำเป็นต้องเท่ากับเงินสดจ่ายภาษี'),
+    'receivables': ('ลูกหนี้', 'ยอดลูกหนี้ที่รายงาน ณ วันสิ้นปีบัญชี ใช้ข้อมูลตามขอบเขตของผู้ให้ข้อมูล ไม่สมมติให้ยอดที่ไม่รายงานเป็นศูนย์'),
+    'inventory': ('สินค้าคงเหลือ', 'มูลค่าสินค้าคงเหลือที่รับรู้ ณ วันสิ้นปีบัญชี ไม่ใช่มูลค่ายอดขาย'),
+}
 
 COLORS = {'Positive': 'good', 'Growing': 'good', 'Positive equity': 'good',
           'Positive coverage': 'good', 'At or above reference': 'good',
@@ -38,20 +46,20 @@ def analysis_html(rows, ticker, *, group=None):
         selected = [r for r in rows if r['Group'] == name]
         if not selected:
             continue
-        header = ''.join(f'<th scope="col">{escape(c)}</th>' for c in ('Metric', 'Current Value', 'Reference / Benchmark', 'Assessment', 'Interpretation', 'Period'))
+        header = ''.join(f'<th scope="col">{escape(CSV_HEADERS[c])}</th>' for c in ('Metric', 'Current Value', 'Reference / Benchmark', 'Assessment', 'Interpretation', 'Period'))
         body, glossary = [], []
         for row in selected:
             label, tip = escape(row['Metric']), escape(row['_help'], quote=True)
             cells = f'<th scope="row"><abbr tabindex="0" title="{tip}" aria-label="{escape(row["Metric"]+": "+row["_help"],quote=True)}">{label} <small>ⓘ</small></abbr></th>'
             cells += '<td>'+escape(row['Current Value'])+'</td><td>'+escape(row['Reference / Benchmark'])+'</td>'
-            css = COLORS.get(row['Assessment'], '')
+            css = COLORS.get(row.get('_assessment', row['Assessment']), '')
             cells += f'<td><span class="company-rating {css}">{escape(row["Assessment"])}</span></td>'
             cells += '<td>'+escape(row['Interpretation'])+'</td><td>'+escape(row['Period'])+'</td>'
             body.append(f'<tr data-metric="{escape(row["_key"],quote=True)}" data-state="{escape(row["_state"],quote=True)}">{cells}</tr>')
             glossary.append(f'<dt>{label}</dt><dd>{escape(row["_help"])}</dd>')
-        html.append(f'<section class="company-analysis" data-ticker="{escape(ticker,quote=True)}" data-group="{escape(name,quote=True)}"><h4>{escape(name)}</h4>'
+        html.append(f'<section class="company-analysis" data-ticker="{escape(ticker,quote=True)}" data-group="{escape(name,quote=True)}"><h4>{escape(GROUP_LABELS[name])}</h4>'
                     f'<div class="company-table-scroll"><table class="company-table"><thead><tr>{header}</tr></thead><tbody>{"".join(body)}</tbody></table></div>'
-                    '<details class="company-glossary"><summary>Metric definitions — keyboard & mobile</summary><dl>'+''.join(glossary)+'</dl></details></section>')
+                    '<details class="company-glossary"><summary>คำอธิบายตัวชี้วัด — อ่านได้ด้วยแป้นพิมพ์และมือถือ</summary><dl>'+''.join(glossary)+'</dl></details></section>')
     return ''.join(html)
 
 
@@ -63,57 +71,64 @@ def statement_table(bundle, kind):
     for raw in keys:
         key = aliases.get(raw, raw)
         metric = BY_KEY.get(key)
-        if not metric:
-            continue
-        row = {'Metric': metric.label, '_help': metric.definition}
+        if metric:
+            label, definition = METRIC_TEXT[key]
+        else:
+            label, definition = STATEMENT_EXTRA[raw]
+            metric = Metric(raw, label, '', 'money', 'context', definition)
+        row = {'Metric': label, '_help': definition, '_field': raw}
         for period in records:
             value = number(period['values'].get(raw))
+            state = 'available' if value is not None else 'not_reported'
             if raw in aliases and value is not None:
-                value = -value if value <= 0 else None
-            row[period['end']] = format_value(metric, {'state': 'available' if value is not None else 'not_reported',
+                value, state = (-value, 'available') if value <= 0 else (None, 'invalid')
+            if value is not None and (key in NONNEGATIVE or raw in ('receivables', 'inventory')) and value < 0:
+                value, state = None, 'invalid'
+            row[period['end']] = format_value_th(metric, {'state': state,
                 'value': value, 'currency': bundle.get('currency')}, {'financialCurrency': bundle.get('currency')})
         rows.append(row)
     return rows
 
 
-def history_html(rows, title):
+def history_html(rows, title, *, kind=None):
     if not rows:
         return ''
     cols = [c for c in rows[0] if not c.startswith('_')]
-    heads = ''.join('<th>'+escape(col)+'</th>' for col in cols)
+    heads = ''.join('<th scope="col">'+escape('รายการ' if col == 'Metric' else col)+'</th>' for col in cols)
     body = []
     for row in rows:
-        first = '<th scope="row"><abbr tabindex="0" title="'+escape(row['_help'],quote=True)+'">'+escape(row['Metric'])+' <small>ⓘ</small></abbr></th>'
-        body.append('<tr>'+first+''.join('<td>'+escape(str(row[c]))+'</td>' for c in cols[1:])+'</tr>')
-    return CSS+'<section class="company-analysis"><h4>'+escape(title)+'</h4><div class="company-table-scroll"><table class="company-table"><thead><tr>'+heads+'</tr></thead><tbody>'+''.join(body)+'</tbody></table></div></section>'
+        first = '<th scope="row"><abbr tabindex="0" title="'+escape(row['_help'],quote=True)+'" aria-label="'+escape(row['Metric']+': '+row['_help'],quote=True)+'">'+escape(row['Metric'])+' <small>ⓘ</small></abbr></th>'
+        body.append('<tr data-statement-field="'+escape(row.get('_field', ''), quote=True)+'">'+first+''.join('<td>'+escape(str(row[c]))+'</td>' for c in cols[1:])+'</tr>')
+    return CSS+'<section class="company-analysis" data-statement="'+escape(kind or '', quote=True)+'"><h4>'+escape(title)+'</h4><div class="company-table-scroll"><table class="company-table"><thead><tr>'+heads+'</tr></thead><tbody>'+''.join(body)+'</tbody></table></div></section>'
 
 
 def render_company_research(ticker, info, bundle=None):
-    st.subheader('Company Financial Analysis', anchor='company-financial-analysis')
-    st.caption('Illustrative reference bands support comparison. They are not industry averages, fair values or buy/sell signals. Amounts, percentages and multiples use explicit units; fiscal-year data and TTM data keep separate period labels.')
-    profile = ' · '.join(str(info.get(k)) for k in ('sector', 'industry', 'country') if info.get(k))
+    st.subheader('วิเคราะห์ข้อมูลการเงินบริษัท', anchor='company-financial-analysis')
+    st.caption('ช่วงอ้างอิงเป็นตัวอย่างเพื่อช่วยเปรียบเทียบ ไม่ใช่ค่าเฉลี่ยอุตสาหกรรม มูลค่ายุติธรรม หรือสัญญาณซื้อขาย ระบุหน่วยจำนวนเงิน ร้อยละ และเท่าอย่างชัดเจน พร้อมแยกปีบัญชี (FY) ออกจากข้อมูลย้อนหลัง 12 เดือน (TTM)')
+    st.caption('หน่วยย่อ: M = ล้าน · B = พันล้าน · T = ล้านล้าน โดยคงสกุลเงินที่ระบุ เช่น USD ไม่ได้แปลงเป็นเงินบาท วันที่ของงบแสดงเป็นปี ค.ศ.')
+    profile = profile_text_th(info)
     if profile:
         st.write(profile)
-    st.caption('Profile fetched: '+str(info.get('_Fetched_At_UTC') or 'Not reported')+' · Financial statements fetched: '+str((bundle or {}).get('fetched_at') or 'Not yet collected'))
+    st.caption('ดึงข้อมูลบริษัทเมื่อ: '+str(info.get('_Fetched_At_UTC') or 'ไม่มีข้อมูลรายงาน')+' · ดึงงบการเงินเมื่อ: '+str((bundle or {}).get('fetched_at') or 'ยังไม่ได้เก็บข้อมูล'))
     if bundle and bundle.get('errors'):
-        st.caption('Some statement requests were incomplete. Available figures retain their period; missing inputs are not estimated.')
-    rows = build_rows(ticker, info, bundle)
+        st.caption('การดึงงบบางรายการยังไม่ครบ ตัวเลขที่มีข้อมูลยังคงระบุรอบบัญชีของตนเอง และไม่ได้ประมาณค่าที่ขาดหายไป')
+    rows = build_rows_th(ticker, info, bundle)
     # One stable element holds all grouped sections; switching symbols replaces it.
     with st.container(key='company_financial_analysis'):
         st.html(analysis_html(rows, ticker))
-    export = [{k:v for k,v in row.items() if not k.startswith('_')} | {'Definition & Calculation':row['_help'], 'Availability':row['_state']} for row in rows]
-    st.download_button('Download company analysis', pd.DataFrame(export).to_csv(index=False).encode('utf-8-sig'),
+    export = export_rows_th(rows)
+    st.download_button('ดาวน์โหลดบทวิเคราะห์บริษัท', pd.DataFrame(export).to_csv(index=False).encode('utf-8-sig'),
                        f'{ticker}_company_analysis.csv', 'text/csv', key=f'company_export_{ticker}', on_click='ignore')
     if bundle and any(bundle.get('annual', {}).values()):
-        with st.expander('Financial Statements — up to 4 fiscal years', expanded=True):
-            st.caption('Annual statement dates below are fiscal year ends. Values are reported observations; they are not market-price returns.')
-            for kind, title in [('income', 'Income Statement'), ('balance', 'Balance Sheet'), ('cashflow', 'Cash Flow Statement')]:
+        with st.expander('งบการเงินย้อนหลัง — สูงสุด 4 ปีบัญชี', expanded=True):
+            st.caption('วันที่ในตารางคือวันสิ้นปีบัญชี (ค.ศ.) ตัวเลขเป็นข้อมูลในงบที่รายงาน ไม่ใช่ผลตอบแทนจากราคาตลาด คำอธิบายอยู่ที่ชื่อรายการ และเลื่อนตารางแนวนอนได้เพื่อดูทุกปี')
+            for kind, title in [('income', 'งบกำไรขาดทุน'), ('balance', 'งบฐานะการเงิน'), ('cashflow', 'งบกระแสเงินสด')]:
                 if bundle.get('annual', {}).get(kind):
-                    st.html(history_html(statement_table(bundle, kind), title))
+                    st.html(history_html(statement_table(bundle, kind), title, kind=kind))
                 else:
-                    st.caption(title+': not reported')
-    with st.expander('How to interpret these comparisons'):
-        st.write('No single ratio establishes company quality. Compare the same industry, the company’s history, accounting policies, debt maturities and recurring cash generation. Banks, insurers and REITs require specialized capital and cash-flow measures.')
-        st.write('N/A means not applicable; N/M means the ratio cannot be meaningfully interpreted. Not reported and insufficient inputs are missing observations, not zeros or negative investment ratings. Fiscal statements update when the company reports, not every price tick.')
-        for label, url in REFERENCE_URLS:
+                    st.caption(title+': ไม่มีข้อมูลรายงาน')
+    with st.expander('วิธีอ่านและตีความผลเปรียบเทียบ'):
+        st.write('ไม่มีอัตราส่วนเดียวที่ยืนยันคุณภาพบริษัทได้ ควรเปรียบเทียบกับบริษัทในอุตสาหกรรมเดียวกัน ประวัติของบริษัท นโยบายบัญชี กำหนดชำระหนี้ และความสามารถสร้างเงินสดอย่างต่อเนื่อง ธนาคาร บริษัทประกัน และ REIT ต้องใช้ตัวชี้วัดเงินทุนและกระแสเงินสดเฉพาะธุรกิจ')
+        st.write('N/A หมายถึงไม่ใช้กับหลักทรัพย์ประเภทนี้ ส่วน N/M หมายถึงตีความอัตราส่วนไม่ได้ สถานะไม่มีข้อมูลรายงานหรือข้อมูลสำหรับคำนวณไม่เพียงพอหมายถึงข้อมูลที่ขาด ไม่ใช่ศูนย์หรือคะแนนลงทุนติดลบ งบการเงินอัปเดตเมื่อบริษัทเผยแพร่รายงาน ไม่ได้เปลี่ยนทุกครั้งที่ราคาหุ้นเคลื่อนไหว')
+        for label, (_, url) in zip(('คู่มืออ่านงบการเงินจาก SEC (ภาษาอังกฤษ)', 'ข้อมูลผลตอบแทนต่อเงินลงทุนจาก NYU Stern (ภาษาอังกฤษ)'), REFERENCE_URLS):
             st.link_button(label, url)

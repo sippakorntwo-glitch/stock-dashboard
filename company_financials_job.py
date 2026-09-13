@@ -167,15 +167,30 @@ def main():
     if cache.error:raise RuntimeError('Cannot persist financial observations')
     report={'started_at':utc_now(),'source_generation':previous['generation'],
             'scope':'Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.'}
+    if args.publish:
+        from financial_recovery import recover_recent_failure
+        report['recovery']=recover_recent_failure(cache,universe,previous['generation'])
     report['before'],_=audit_all(cache,universe,etfs)
     report['collection']={} if args.audit_only else collect_batch(cache,universe,etfs,limit=max(0,args.limit),minutes=max(0,args.minutes),only_missing=args.backfill)
     report['after'],rows=audit_all(cache,universe,etfs)
     pd.DataFrame(rows).to_csv('work/company-financials-all-securities.csv',index=False,encoding='utf-8-sig')
     pd.DataFrame([{'Metric':k,**v} for k,v in report['after']['field_counts'].items()]).fillna(0).to_csv('work/company-financials-all-metrics.csv',index=False)
-    if args.publish and (not args.backfill or report['collection'].get('attempted',0)>0):
+    from financial_recovery import save_recovery
+    save_recovery(cache,previous['generation'])
+    report_path=Path('work/company-financials-report.json')
+    report.update(finished_at=utc_now(),result='audit_completed',data_complete=report['after']['data_complete'])
+    report_path.write_text(json.dumps(report,ensure_ascii=False,allow_nan=False,indent=2))
+    if args.publish and (not args.backfill or report['collection'].get('attempted',0)>0
+                         or report.get('recovery',{}).get('restored',0)>0):
         if read_manifest(store)['generation']!=previous['generation']:
             raise RuntimeError('Prepared snapshot advanced; refusing to overwrite another collector')
-        manifest=publish_snapshot(store,cache,universe,{'task':'company financial statements',**report['collection']},previous,watchlist_csv=summary.get('watchlist_csv'))
+        try:
+            manifest=publish_snapshot(store,cache,universe,{'task':'company financial statements',**report['collection']},previous,watchlist_csv=summary.get('watchlist_csv'))
+        except Exception as exc:
+            report.update(result='publication_failed',publication_error=type(exc).__name__,
+                          recovery_saved=True,finished_at=utc_now())
+            report_path.write_text(json.dumps(report,ensure_ascii=False,allow_nan=False,indent=2))
+            raise
         report.update(generation=manifest['generation'],coverage=manifest['coverage'])
     else:
         report.update(generation=previous['generation'],coverage=previous['coverage'],snapshot_unchanged=True)

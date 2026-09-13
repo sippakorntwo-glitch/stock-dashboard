@@ -55,7 +55,8 @@ def test_ttm_uses_four_consecutive_aligned_quarters_and_never_sums_eps():
     assert o['fcfMargin']['value']==.32
     assert o['revenue']['basis']=='TTM (4 reported quarters)'
     assert o['dilutedEPS']['value']==2 and o['dilutedEPS']['basis']=='FY'
-    assert 'roic' not in o, 'No balance sheet at the TTM date or tax inputs; do not mix annual inputs'
+    assert o['roic']['basis']=='FY' and o['roic']['end']=='2025-12-31'
+    assert o['roic']['value']==.2, 'Only the fully matched FY remains available; never invent TTM tax/capital'
     # One missing quarter's value must not become a three-quarter total.
     del b['quarterly']['income'][2]['values']['grossProfit']
     assert observations(b)['grossProfit']['value']==40
@@ -232,3 +233,100 @@ def test_statement_objects_survive_checked_snapshot_and_whole_catalog_audit(tmp_
     target=a.DashboardCache(tmp_path/'target.sqlite3');reader=SnapshotReader(store,target)
     reader._sync();reader._details('TEST')
     assert target.get('financials:TEST',request_remote=False)[0]==bundle()
+
+
+def test_rejected_statement_cannot_invalidate_another_symbols_profile_ratios():
+    b=bundle();b['ticker']='OTHER';b['annual']['balance'][0]['values']['stockholdersEquity']=-1
+    info={'priceToBook':2,'bookValue':10,'debtToEquity':150,'returnOnEquity':.2}
+    for rejected in (b,dict(b,ticker='TEST',currency=None)):
+        values=metric_observations('TEST',info,rejected)
+        assert values['priceToBook']['value']==2
+        assert values['debtToEquity']['value']==1.5
+        assert values['returnOnEquity']['value']==.2
+
+
+def test_partial_new_ttm_retains_matched_fiscal_year_return_ratios():
+    b=bundle();ends=['2026-06-30','2026-03-31','2025-12-31','2025-09-30']
+    b['quarterly']={'income':[{'end':d,'values':{'revenue':25}} for d in ends]}
+    o=observations(b)
+    assert o['revenue']['basis']=='TTM (4 reported quarters)'
+    for key,expected in [('returnOnEquity',10/70),('returnOnAssets',10/130),('roic',.2)]:
+        assert o[key]['value']==pytest.approx(expected)
+        assert o[key]['basis']=='FY' and o[key]['end']=='2025-12-31'
+
+
+def test_partial_quarterly_balance_does_not_erase_same_date_annual_fields():
+    b=bundle();b['quarterly']={'balance':[{'end':'2025-12-31','values':{'totalDebt':24}}]}
+    o=observations(b)
+    assert o['totalDebt']['value']==24
+    assert o['totalAssets']['value']==140 and o['stockholdersEquity']['value']==80
+    assert o['debtToEquity']['value']==.3 and o['returnOnEquity']['value']==pytest.approx(10/70)
+
+
+def test_current_profile_book_value_does_not_rewrite_dated_statement_ratios():
+    values=metric_observations('TEST',{'bookValue':-1,'priceToBook':2},bundle())
+    assert values['priceToBook']['state']=='not_meaningful'
+    assert values['debtToEquity']['value']==.25
+    assert values['returnOnEquity']['value']==pytest.approx(10/70)
+
+
+def test_complete_new_ttm_cashflow_takes_precedence_over_older_fcf_fallback():
+    b=bundle();b['annual']['cashflow'][0]['values']['freeCashflow']=20
+    ends=['2026-06-30','2026-03-31','2025-12-31','2025-09-30']
+    b['quarterly']={'income':[{'end':d,'values':{'revenue':25}} for d in ends],
+        'cashflow':[{'end':d,'values':{'operatingCashflow':10,'capitalExpenditure':-2}} for d in ends]}
+    o=observations(b)
+    assert o['freeCashflow']['value']==32 and o['fcfMargin']['value']==.32
+    assert o['freeCashflow']['basis']=='TTM (4 reported quarters)'
+    assert o['freeCashflow']['period_ends']==ends
+    b['quarterly'].pop('income')
+    o=observations(b)
+    assert o['freeCashflow']['value']==32 and o['revenue']['basis']=='FY'
+    assert 'fcfMargin' not in o, 'Replacing FY FCF must also invalidate a stale FY-derived margin'
+
+
+def test_cross_statement_ttm_ratios_require_every_quarter_date_to_match():
+    b=bundle();income=['2026-06-30','2026-03-31','2025-12-31','2025-09-30']
+    cash=['2026-06-30','2026-03-15','2025-12-01','2025-09-01']
+    b['quarterly']={'income':[{'end':d,'values':{'revenue':25,'netIncome':5}} for d in income],
+        'cashflow':[{'end':d,'values':{'operatingCashflow':10,'capitalExpenditure':-2}} for d in cash]}
+    o=observations(b)
+    assert o['operatingCashflow']['value']==40 and o['netIncome']['value']==20
+    assert o['freeCashflow']['value']==32
+    assert 'cashConversion' not in o and 'fcfMargin' not in o
+
+
+def test_profile_eps_uses_quote_currency_while_statements_keep_reporting_currency():
+    info={'currency':'USD','financialCurrency':'JPY','trailingEps':22.89,'forwardEps':15.78}
+    values=metric_observations('TEST',info)
+    assert values['dilutedEPS']['currency']=='USD'
+    assert values['forwardEps']['currency']=='USD'
+    b=bundle();b['currency']='JPY';values=metric_observations('TEST',info,b)
+    assert values['dilutedEPS']['currency']=='JPY' and values['forwardEps']['currency']=='USD'
+
+
+def test_mixed_currency_provider_valuation_is_not_presented_as_verified_multiple():
+    info={'currency':'USD','financialCurrency':'JPY','marketCap':227931619328,
+          'enterpriseValue':35169616527360,'totalRevenue':51957024686080,
+          'priceToSalesTrailing12Months':.004386926,'enterpriseToRevenue':.677,
+          'enterpriseToEbitda':6.28,'ebitda':5600540884992}
+    values=metric_observations('TEST',info)
+    for key in ('enterpriseValue','priceToSales','evRevenue','evEbitda'):
+        assert values[key]['state']=='missing_inputs' and values[key]['value'] is None
+    assert values['marketCap']['state']=='available' and values['marketCap']['currency']=='USD'
+    info['financialCurrency']='USD';values=metric_observations('TEST',info)
+    assert values['enterpriseValue']['state']=='available'
+
+
+def test_mixed_currency_source_states_and_calculation_copy_agree_with_company_analysis():
+    from asset_semantics import field_state,safe_numeric_profile
+    info={'currency':'USD','financialCurrency':'JPY','marketCap':227931619328,
+          'enterpriseValue':35169616527360,'totalRevenue':51957024686080,
+          'priceToSalesTrailing12Months':.004386926,'enterpriseToRevenue':.677,
+          'enterpriseToEbitda':6.28,'ebitda':5600540884992}
+    raw=deepcopy(info);clean=safe_numeric_profile(info,'TEST')
+    for field in ('enterpriseValue','priceToSalesTrailing12Months','enterpriseToRevenue','enterpriseToEbitda'):
+        assert field_state('TEST',info,field)=='missing_inputs'
+        assert clean[field] is None
+        assert field_state('SPY',info,field,is_etf=True)=='not_applicable'
+    assert clean['marketCap']==info['marketCap'] and info==raw

@@ -4,11 +4,13 @@ Public readers use token-free downloads. Published generations are immutable.
 """
 from __future__ import annotations
 import base64
+import hashlib
 import io
 import json
 import re
 import time
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import quote
 import requests
@@ -17,9 +19,19 @@ TAG_PREFIX = "dashboard-data-"
 POINTER_PATH = "dashboard/latest.json"
 ASSET_LIMIT = 2 * 1024**3
 PUBLIC_DATA_BRANCH = "dashboard-data"
+RETRY_ATTEMPTS = 4
+MAX_RETRY_DELAY = 60.0
+MAX_RETRY_WAIT = 180.0
+_NOT_RECOVERED = object()
 
 class GitHubStoreError(RuntimeError):
     pass
+
+class _GitHubRequestError(GitHubStoreError):
+    def __init__(self, message, *, retryable=False, retry_after=0.0):
+        super().__init__(message)
+        self.retryable = retryable
+        self.retry_after = retry_after
 
 def checked_repo(value):
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", value):
@@ -126,29 +138,94 @@ class GitHubReleaseStore:
             time.sleep(gap)
         self.last_mutation = time.monotonic()
 
+    def _retry(self, operation, recover=None):
+        """Retry bounded transient failures; reconcile writes before resending them."""
+        waited = 0.0
+        for attempt in range(RETRY_ATTEMPTS):
+            try:
+                return operation()
+            except _GitHubRequestError as exc:
+                if not exc.retryable:
+                    raise
+                if attempt == RETRY_ATTEMPTS - 1 and recover is None:
+                    raise GitHubStoreError(f"{exc}; failed after {RETRY_ATTEMPTS} attempts") from None
+                delay = max(2.0, exc.retry_after) * (2.0 ** attempt)
+                # Never shorten GitHub's requested pause to fit our job budget.
+                if delay > MAX_RETRY_DELAY or waited + delay > MAX_RETRY_WAIT:
+                    raise GitHubStoreError(
+                        f"{exc}; retry delay exceeds this publication's bounded budget") from None
+                time.sleep(delay)
+                waited += delay
+                if recover is not None:
+                    result = recover()
+                    if result is not _NOT_RECOVERED:
+                        return result
+                if attempt == RETRY_ATTEMPTS - 1:
+                    raise GitHubStoreError(f"{exc}; failed after {RETRY_ATTEMPTS} attempts") from None
+
+    @staticmethod
+    def _http_error(response, path):
+        status = response.status_code
+        headers = {key.lower(): value for key, value in getattr(response, "headers", {}).items()}
+        delay = 0.0
+        if headers.get("retry-after"):
+            try:
+                delay = max(0.0, float(headers["retry-after"]))
+            except ValueError:
+                try:
+                    delay = max(0.0, parsedate_to_datetime(headers["retry-after"]).timestamp() - time.time())
+                except (TypeError, ValueError, OverflowError):
+                    delay = 60.0
+        primary_limit = str(headers.get("x-ratelimit-remaining", "")) == "0"
+        if primary_limit:
+            try:
+                delay = max(delay, float(headers.get("x-ratelimit-reset", 0)) - time.time() + 1.0)
+            except (TypeError, ValueError):
+                delay = max(delay, 60.0)
+        secondary_limit = False
+        if status == 403:
+            try:
+                secondary_limit = "rate limit" in str(response.json().get("message", "")).lower()
+            except (ValueError, AttributeError):
+                pass
+        rate_limited = status == 429 or (status == 403 and (
+            primary_limit or "retry-after" in headers or secondary_limit))
+        if rate_limited and not delay:
+            delay = 60.0
+        return _GitHubRequestError(
+            f"GitHub HTTP {status} at {path}; check permissions and rate limits",
+            retryable=status in (408, 500, 502, 503, 504) or rate_limited,
+            retry_after=delay)
+
     def _request(self, method, path, *, missing=False, upload=False, **kwargs):
         if not path.startswith("/") or "://" in path or ".." in path:
             raise ValueError("Invalid GitHub API path")
-        if method != "GET":
-            self._pace_mutation()
         base = self.base.replace("api.github.com", "uploads.github.com") if upload else self.base
         # Repository metadata has no trailing slash; /repos/owner/repo/ returns 404.
         url = base if path == "/" else base + path
         headers = {"Authorization": "Bearer " + self.token, "Accept": "application/vnd.github+json",
                    "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "prepared-stock-dashboard"}
         headers.update(kwargs.pop("headers", {}))
-        try:
-            response = self.session.request(method, url, headers=headers, timeout=(10, 120), **kwargs)
-        except requests.RequestException:
-            raise GitHubStoreError("GitHub connection failed; saved data is unchanged") from None
-        if missing and response.status_code == 404:
-            response.close()
-            return None
-        if not 200 <= response.status_code < 300:
-            status = response.status_code
-            response.close()
-            raise GitHubStoreError(f"GitHub HTTP {status} at {path}; check permissions and rate limits")
-        return response
+        def request_once():
+            if method != "GET":
+                self._pace_mutation()
+            try:
+                response = self.session.request(method, url, headers=headers, timeout=(10, 120), **kwargs)
+            except requests.RequestException:
+                raise _GitHubRequestError("GitHub connection failed; publication needs verification",
+                                          retryable=True) from None
+            if missing and response.status_code == 404:
+                response.close()
+                return None
+            if not 200 <= response.status_code < 300:
+                error = self._http_error(response, path)
+                response.close()
+                raise error
+            return response
+        # POST and compare-and-swap PUT require operation-specific reconciliation.
+        if method in ("GET", "PATCH") or (method == "DELETE" and missing):
+            return self._retry(request_once)
+        return request_once()
 
     def _json(self, method, path, **kwargs):
         response = self._request(method, path, **kwargs)
@@ -178,21 +255,39 @@ class GitHubReleaseStore:
         path = "/git/ref/heads/" + quote(self.branch, safe="")
         if self._json("GET", path, missing=True) is None:
             source = self._json("GET", "/git/ref/heads/" + quote(self.default_branch, safe=""))
-            self._json("POST", "/git/refs", json={"ref": "refs/heads/" + self.branch,
-                                                   "sha": source["object"]["sha"]})
+            self._retry(lambda: self._json("POST", "/git/refs", json={
+                "ref": "refs/heads/" + self.branch, "sha": source["object"]["sha"]}),
+                recover=lambda: self._json("GET", path, missing=True) or _NOT_RECOVERED)
         self.branch_ready = True
+
+    def _find_release(self, tag, include_drafts=False):
+        release = self._json("GET", "/releases/tags/" + quote(tag, safe=""), missing=True)
+        if release is not None or not include_drafts:
+            return release
+        # GitHub's tag endpoint only returns published releases. Authenticated
+        # listing includes drafts, including creates whose response was lost.
+        matches, page = [], 1
+        while True:
+            batch = self._json("GET", "/releases", params={"per_page": 100, "page": page})
+            matches.extend(item for item in batch if item.get("tag_name") == tag)
+            if len(batch) < 100:
+                break
+            page += 1
+        if len(matches) > 1:
+            raise GitHubStoreError("Multiple releases use this generation; refusing ambiguous publication")
+        return matches[0] if matches else None
 
     def _release(self, tag, create=False):
         self._verify_repository()
         if tag not in self.releases:
-            release = self._json("GET", "/releases/tags/" + quote(tag, safe=""), missing=True)
+            release = self._find_release(tag, include_drafts=create)
             if release is None and create:
                 self._ensure_data_branch()
-                release = self._json("POST", "/releases", json={
+                release = self._retry(lambda: self._json("POST", "/releases", json={
                     "tag_name": tag, "target_commitish": self.branch,
                     "name": tag, "body": f"Prepared dashboard data ({self.visibility}). Prices may be delayed; see per-symbol timestamps.",
-                    "draft": True, "prerelease": False, "make_latest": "false"})
-                self.assets[tag] = {}
+                    "draft": True, "prerelease": False, "make_latest": "false"}),
+                    recover=lambda: self._find_release(tag, include_drafts=True) or _NOT_RECOVERED)
             if release is None:
                 raise GitHubStoreError("Saved data release is missing; keep the previous local data")
             self.releases[tag] = release
@@ -269,11 +364,66 @@ class GitHubReleaseStore:
         release = self._release(tag, create=True)
         if not release.get("draft"):
             raise GitHubStoreError("Published generations are immutable")
-        if name in self._index(tag):
-            raise GitHubStoreError("Duplicate asset; use a new snapshot generation")
-        asset = self._json("POST", f"/releases/{int(release['id'])}/assets", upload=True,
-                          params={"name": name}, data=body,
-                          headers={"Content-Type": "application/octet-stream", "Content-Length": str(size)})
+        start = body.tell()
+        digest = None
+
+        def local_digest():
+            nonlocal digest
+            if digest is None:
+                body.seek(start)
+                hashed = hashlib.sha256()
+                while chunk := body.read(1024 * 1024):
+                    hashed.update(chunk)
+                digest = hashed.hexdigest()
+                body.seek(start)
+            return digest
+
+        def reconcile():
+            current = self._json("GET", f"/releases/{int(release['id'])}")
+            if not current.get("draft"):
+                raise GitHubStoreError("Published generations are immutable")
+            self.releases[tag] = current
+            self.assets.pop(tag, None)
+            existing = self._index(tag).get(name)
+            if existing is None:
+                return _NOT_RECOVERED
+            if existing.get("state") == "starter" and existing.get("size") == 0:
+                # A failed GitHub upload can leave an empty starter asset. Only
+                # that unpublished placeholder may be removed before retrying.
+                response = self._request("DELETE", f"/releases/assets/{int(existing['id'])}", missing=True)
+                if response is not None:
+                    response.close()
+                self.assets[tag].pop(name, None)
+                return _NOT_RECOVERED
+            if existing.get("state") != "uploaded" or existing.get("size") != size:
+                raise GitHubStoreError("Duplicate asset has different or incomplete content; use a new generation")
+            remote_digest = existing.get("digest", "") or ""
+            if not remote_digest.startswith("sha256:"):
+                response = self._request("GET", f"/releases/assets/{int(existing['id'])}",
+                                         headers={"Accept": "application/octet-stream"}, stream=True)
+                try:
+                    hashed = hashlib.sha256()
+                    for chunk in response.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            hashed.update(chunk)
+                    remote_digest = "sha256:" + hashed.hexdigest()
+                except requests.RequestException:
+                    raise GitHubStoreError("Cannot verify an uncertain upload; retaining the previous data pointer") from None
+                finally:
+                    response.close()
+            if remote_digest != "sha256:" + local_digest():
+                raise GitHubStoreError("Duplicate asset checksum differs; use a new snapshot generation")
+            return existing
+
+        def send():
+            body.seek(start)
+            return self._json("POST", f"/releases/{int(release['id'])}/assets", upload=True,
+                              params={"name": name}, data=body,
+                              headers={"Content-Type": "application/octet-stream", "Content-Length": str(size)})
+
+        asset = reconcile() if name in self._index(tag) else _NOT_RECOVERED
+        if asset is _NOT_RECOVERED:
+            asset = self._retry(send, recover=reconcile)
         if asset.get("state") != "uploaded" or asset.get("size") != size:
             raise GitHubStoreError("GitHub did not confirm the full upload")
         self.assets[tag][name] = asset
@@ -305,7 +455,22 @@ class GitHubReleaseStore:
         payload = {"message": "Update prepared market data", "content": base64.b64encode(raw).decode(), "branch": self.branch}
         if self.pointer_sha:
             payload["sha"] = self.pointer_sha
-        result = self._json("PUT", "/contents/" + POINTER_PATH, json=payload)
+        def recover_pointer():
+            item = self._json("GET", "/contents/" + POINTER_PATH, missing=True, params={"ref": self.branch})
+            if item is None:
+                if self.pointer_sha is not None:
+                    raise GitHubStoreError("Latest data pointer changed during publication; refusing to overwrite it")
+                return _NOT_RECOVERED
+            if (item.get("type") != "file" or item.get("encoding") != "base64"):
+                raise GitHubStoreError("Invalid latest.json pointer during publication recovery")
+            if base64.b64decode(item["content"]) == raw:
+                return {"content": {"sha": item["sha"]}}
+            if item["sha"] != self.pointer_sha:
+                raise GitHubStoreError("Latest data pointer changed during publication; refusing to overwrite it")
+            return _NOT_RECOVERED
+
+        result = self._retry(lambda: self._json("PUT", "/contents/" + POINTER_PATH, json=payload),
+                             recover=recover_pointer)
         self.pointer_sha = result["content"]["sha"]
 
     def prune_generations(self, manifest, keep_days=3):

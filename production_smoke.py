@@ -87,14 +87,15 @@ def chart_for_symbol(page,app,ticker):
     raise RuntimeError('No real candlestick history rendered for '+ticker)
 
 
-def verify_fundamentals(app,ticker,*,is_fund=False):
+def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
     section=app.locator('.st-key-research_fundamentals')
-    groups=section.locator('.st-key-company_financial_analysis .company-analysis')
+    groups=section.locator('.st-key-company_financial_analysis .company-analysis[data-ticker][data-group]')
     if is_fund:
         expect(groups).to_have_count(0)
+        expect(section.locator('.company-analysis[data-statement]')).to_have_count(0)
         expect(section.locator('.workspace-help-table').first).to_be_visible()
         return {'ticker':ticker,'fund_specific_table':True}
-    expect(section.get_by_role('heading',name='Company Financial Analysis',exact=True)).to_be_visible()
+    expect(section.get_by_role('heading',name='วิเคราะห์ข้อมูลการเงินบริษัท',exact=True)).to_be_visible()
     expect(groups).to_have_count(9)
     expect(groups.filter(has=app.locator('table.company-table'))).to_have_count(9)
     assert groups.evaluate_all('(xs)=>xs.every(x=>x.dataset.ticker=== '+json.dumps(ticker)+')')
@@ -104,12 +105,62 @@ def verify_fundamentals(app,ticker,*,is_fund=False):
     expect(rows.locator('th abbr[title][tabindex="0"]')).to_have_count(54)
     expect(groups.locator('td [title], thead [title]')).to_have_count(0)
     expect(groups.locator('details.company-glossary')).to_have_count(9)
+    thai=re.compile(r'[\u0e00-\u0e7f]')
+    assert all(thai.search(label) for label in groups.locator('h4').all_text_contents())
+    assert all(thai.search(label) for label in groups.locator('thead th').all_text_contents())
+    assert all(thai.search(label) for label in groups.locator('.company-glossary summary').all_text_contents())
     for row in rows.all():
         expect(row.locator('td')).to_have_count(5)
         assert all(cell.strip() and cell.strip() not in ('None','nan','null') for cell in row.locator('td').all_text_contents())
         assert len(row.locator('abbr').get_attribute('title'))>25
-    expect(section.get_by_role('button',name='Download company analysis',exact=True)).to_be_visible()
-    return {'ticker':ticker,'groups':9,'metrics':54,'metric_only_help':True}
+        assert thai.search(row.locator('th').inner_text()), row.get_attribute('data-metric')
+        assert thai.search(row.locator('abbr').get_attribute('title')), row.get_attribute('data-metric')
+        # The benchmark, interpretation and period must explain the figures
+        # in Thai; raw values/currency codes and canonical keys stay intact.
+        cells=row.locator('td').all_text_contents()
+        assert all(thai.search(cells[i]) for i in (1,2,3,4)), (row.get_attribute('data-metric'),cells)
+    expect(section.get_by_role('button',name='ดาวน์โหลดบทวิเคราะห์บริษัท',exact=True)).to_be_visible()
+    # AAPL/MSFT regression callers retain the default mandatory three statements.
+    # Quality examples pass dates from their independently checked source bundle;
+    # a missing source statement must not be fabricated to satisfy this gate.
+    if annual_periods is not None:
+        assert set(annual_periods) <= {'income','balance','cashflow'}, annual_periods
+        expect(section.locator('.company-analysis[data-statement]')).to_have_count(sum(bool(v) for v in annual_periods.values()))
+        if not any(annual_periods.values()):
+            expect(section.get_by_text('งบการเงินย้อนหลัง — สูงสุด 4 ปีบัญชี',exact=True)).to_have_count(0)
+    annual=[]
+    for kind,title in [('income','งบกำไรขาดทุน'),('balance','งบฐานะการเงิน'),('cashflow','งบกระแสเงินสด')]:
+        table=section.locator('.company-analysis[data-statement="'+kind+'"]')
+        if annual_periods is not None and not annual_periods.get(kind):
+            expect(table).to_have_count(0)
+            if any(annual_periods.values()):
+                expect(section.get_by_text(title+': ไม่มีข้อมูลรายงาน',exact=True)).to_be_visible()
+            annual.append({'statement':kind,'state':'not_available_in_source','periods':[],'rows':0})
+            continue
+        expect(table).to_have_count(1)
+        expect(table.get_by_role('heading',name=title,exact=True)).to_be_visible()
+        columns=table.locator('thead th').all_text_contents()
+        assert 2 <= len(columns) <= 5, (kind,columns)
+        assert thai.search(columns[0]), (kind,columns)
+        assert all(re.fullmatch(r'\d{4}-\d{2}-\d{2}',date) for date in columns[1:]), (kind,columns)
+        assert columns[1:]==sorted(set(columns[1:]),reverse=True), (kind,columns)
+        if annual_periods is not None:
+            assert columns[1:]==annual_periods[kind], (kind,columns,annual_periods[kind])
+        # Every available annual statement retains its complete set of raw rows,
+        # including the five fields restored in the Thai release.
+        expected_rows={'income':10,'balance':9,'cashflow':6}[kind]
+        expect(table.locator('tbody tr')).to_have_count(expected_rows)
+        for row in table.locator('tbody tr').all():
+            expect(row.locator('td')).to_have_count(len(columns)-1)
+            assert thai.search(row.locator('th').inner_text()), row.inner_text()
+            assert thai.search(row.locator('abbr').get_attribute('title')), row.inner_text()
+        required={'income':('interestExpense','pretaxIncome','taxProvision'),
+                  'balance':('receivables','inventory'),'cashflow':()}[kind]
+        for field in required:
+            expect(table.locator('tr[data-statement-field="'+field+'"]')).to_have_count(1)
+        annual.append({'statement':kind,'periods':columns[1:],'rows':table.locator('tbody tr').count()})
+    return {'ticker':ticker,'groups':9,'metrics':54,'metric_only_help':True,
+            'thai_labels_and_explanations':True,'annual_statements':annual}
 
 
 def verify_sections(app,ticker,*,is_fund=False):
@@ -158,6 +209,8 @@ def run():
             app.locator('.workspace-ready[data-generation^="generations/"]').wait_for(state='attached',timeout=120000)
             app.get_by_text(re.compile('พร้อมใช้งาน · ตรวจชุดข้อมูลใหม่|กำลังอ่านข้อมูลที่เลือก')).first.wait_for(timeout=30000)
             chart,payload=chart_for_symbol(page,app,'AAPL')
+            from volume_split_smoke import verify_volume_split
+            report['volume_split']=verify_volume_split(page,chart,payload)
             chart.locator('#rsi').click();chart.locator('#macd').click()
             page.wait_for_timeout(1000)
             if chart.locator('#error').is_visible(): raise RuntimeError('Candlestick JavaScript error')

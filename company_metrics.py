@@ -153,14 +153,15 @@ def evaluate(metric, value, info):
 def metric_observations(ticker, info, bundle=None, *, is_etf=False):
     """Normalize source values once for both display and semantic audits."""
     info = info or {}
-    derived = observations(bundle) if bundle else {}
+    # Reject a foreign or unidentified statement before any metric or denominator
+    # check can consult it. Rejected equity must not contaminate profile fallbacks.
+    valid_bundle = (isinstance(bundle, dict) and bundle.get('schema') == SCHEMA
+                    and bundle.get('ticker') == ticker and bool(bundle.get('currency')))
+    derived = observations(bundle) if valid_bundle else {}
     fund = kind_for(ticker, info, is_etf) != 'company'
     result = {}
     for metric in METRICS:
         item = dict(derived.get(metric.key, {}))
-        # The statement collection must identify the requested symbol and currency.
-        if bundle and (bundle.get('ticker') != ticker or not bundle.get('currency')):
-            item = {}
         if not item and metric.provider:
             value = number(info.get(metric.provider))
             state = field_state(ticker, info, metric.provider, is_etf=is_etf)
@@ -168,16 +169,28 @@ def metric_observations(ticker, info, bundle=None, *, is_etf=False):
                 value /= 100.0
             item = {'value': value, 'state': state, 'source': 'Yahoo Finance profile',
                     'basis': 'Provider period', 'end': None,
-                    'currency': info.get('currency') if metric.unit in ('quote_money','quote_per_share') else info.get('financialCurrency'),
+                    # Profile EPS is per quoted share/ADR, so it follows quote currency.
+                    # Statement EPS retains its explicitly reported bundle currency.
+                    'currency': info.get('currency') if metric.unit in ('quote_money','quote_per_share','per_share') else info.get('financialCurrency'),
                     'formula': 'Provider debtToEquity percentage / 100' if metric.key == 'debtToEquity' else None}
         if not item:
-            item = {'value': None, 'state': 'missing_inputs' if metric.key in ('roic', 'interestCoverage', 'cashConversion', 'fcfMargin') and bundle else 'not_reported' if bundle else 'pending',
+            item = {'value': None, 'state': 'missing_inputs' if metric.key in ('roic', 'interestCoverage', 'cashConversion', 'fcfMargin') and valid_bundle else 'not_reported' if valid_bundle else 'pending',
                     'basis': 'Not reported', 'end': None, 'currency': info.get('financialCurrency'), 'source': 'Financial statements', 'formula': None}
         if fund:
             item.update(value=None, state='not_applicable', reason='Corporate financial statements do not apply to this ETF / ETP.')
             result[metric.key] = item
             continue
         value = item.get('value')
+        if (metric.key in ('enterpriseValue', 'priceToSales', 'evRevenue', 'evEbitda')
+                and info.get('currency') and info.get('financialCurrency')
+                and info['currency'] != info['financialCurrency'] and value is not None):
+            # Provider multiples can divide quote-currency equity by unconverted
+            # reporting-currency sales/debt (observed in ADR profiles). No FX
+            # conversion or EV currency is inferred without dated source inputs.
+            item.update(value=None, state='missing_inputs',
+                        reason='Quote and reporting currencies differ; EV units or FX conversion are not verified')
+            result[metric.key] = item
+            continue
         if value is not None and metric.key in NONNEGATIVE and value < 0:
             item.update(value=None, state='invalid', reason='Unexpected negative source amount')
         if metric.key in ('trailingPE', 'forwardPE', 'priceToBook','priceToSales') and value is not None and value <= 0:
@@ -204,7 +217,11 @@ def metric_observations(ticker, info, bundle=None, *, is_etf=False):
                 item.update(value=None,state='not_meaningful',reason='Non-positive reported revenue base; inspect statement periods before interpreting margins')
         equity = derived.get('stockholdersEquity', {}).get('value')
         book_value = number(info.get('bookValue'))
-        if metric.key in ('debtToEquity', 'priceToBook', 'returnOnEquity', 'liabilitiesToEquity') and ((equity is not None and equity <= 0) or (book_value is not None and book_value <= 0)):
+        # Statement-derived ratios already validate equity at their own dates. A
+        # newer profile/book value cannot invalidate a correctly labeled past ROE.
+        if (metric.key in ('debtToEquity', 'priceToBook', 'returnOnEquity', 'liabilitiesToEquity')
+                and item['source'] == 'Yahoo Finance profile'
+                and ((equity is not None and equity <= 0) or (book_value is not None and book_value <= 0))):
             item.update(value=None, state='not_meaningful', reason='Reported equity or book value is non-positive')
         if metric.key == 'payoutRatio':
             eps = number(info.get('trailingEps'))
@@ -226,7 +243,9 @@ def format_value(metric, item, info):
         return f'{value:,.2f}×'
     if metric.unit == 'count':
         return f'{value:,.0f}'
-    currency = item.get('currency') or (info.get('currency') if metric.unit in ('quote_money','quote_per_share') else info.get('financialCurrency')) or 'Currency not reported'
+    quote_unit = (metric.unit in ('quote_money','quote_per_share')
+                  or metric.unit == 'per_share' and item.get('source') == 'Yahoo Finance profile')
+    currency = item.get('currency') or (info.get('currency') if quote_unit else info.get('financialCurrency')) or 'Currency not reported'
     if metric.unit in ('per_share','quote_per_share'):
         return f'{value:,.2f} {currency}/share'
     for scale, label in ((1e12, 'T'), (1e9, 'B'), (1e6, 'M')):

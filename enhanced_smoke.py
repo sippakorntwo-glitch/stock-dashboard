@@ -39,6 +39,8 @@ def verify_enhancements(page,app):
     for period in ['1 วัน','3 วัน','5 ปี','10 ปี']:
         app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text(period,exact=True).click()
         frame,payload=wait_range(page,app,period);page.wait_for_timeout(500)
+        from volume_split_smoke import verify_volume_payload
+        report.setdefault('volume_split_ranges',[]).append({'period':period,**verify_volume_payload(payload)})
         from chart_commentary_smoke import verify_chart_commentary
         report.setdefault('chart_commentary',[]).append(verify_chart_commentary(page,app,payload))
         if period.endswith('วัน'):assert payload['interval']=='5m' and payload['intraday']

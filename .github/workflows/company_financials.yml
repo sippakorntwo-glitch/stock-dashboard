@@ -2,7 +2,7 @@ name: Collect and audit company financial statements
 on:
   push:
     branches: [main]
-    paths: [financial_statements.py, company_metrics.py, company_financials_job.py, .github/workflows/company_financials.yml]
+    paths: [financial_recovery.py, financial_statements.py, company_metrics.py, company_financials_job.py, .github/workflows/company_financials.yml]
   workflow_dispatch:
   schedule:
     - cron: '43 4,16 * * *'
@@ -31,6 +31,7 @@ jobs:
       cancel-in-progress: false
     permissions:
       contents: write
+      actions: read
     steps:
       - name: Skip finished or rate-limited backfill batches
         id: queue
@@ -71,7 +72,7 @@ jobs:
         if: steps.queue.outputs.run_batch == 'true'
         run: |
           python -m pip install -q -r requirements-dev.txt
-          python -m pytest -q tests/test_company_financials.py tests/test_financial_backfill.py
+          python -m pytest -q tests/test_company_financials.py tests/test_financial_backfill.py tests/test_financial_recovery.py
       - name: Collect due statements and audit every security
         if: steps.queue.outputs.run_batch == 'true'
         env:
@@ -95,4 +96,5 @@ jobs:
           path: |
             work/company-financials*.json
             work/company-financials*.csv
+            work/company-financials-recovery.json.gz
           retention-days: 14
