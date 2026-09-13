@@ -21,7 +21,7 @@ from financial_statements import collect, SCHEMA
 PRIORITY = ('AAPL','MSFT','NVDA','AMZN','GOOGL','META','TSLA','BRK-B','JPM','ORCL')
 
 
-def due_symbols(universe, profiles, statements, attempts, etfs, *, now=None):
+def due_symbols(universe, profiles, statements, attempts, etfs, *, now=None, only_missing=False):
     from data_quality import timestamp
     clock = now or datetime.now(timezone.utc).timestamp()
     priority = {ticker:index for index,ticker in enumerate(PRIORITY)}
@@ -31,6 +31,8 @@ def due_symbols(universe, profiles, statements, attempts, etfs, *, now=None):
         if ticker in etfs or info.get('quoteType') == 'ETF' or not info.get('financialCurrency'):
             continue
         value, meta = statements.get('financials:'+ticker, (None,{}))
+        if only_missing and value and value.get('schema') == SCHEMA and value.get('observations'):
+            continue
         attempt = attempts.get('attempt:financials:'+ticker, ({},{}))[1]
         if timestamp(attempt.get('retry_after')) > clock:
             continue
@@ -43,15 +45,16 @@ def due_symbols(universe, profiles, statements, attempts, etfs, *, now=None):
     return [entry[-1] for entry in sorted(result)]
 
 
-def collect_batch(cache, universe, etfs, *, limit=150, minutes=12):
+def collect_batch(cache, universe, etfs, *, limit=150, minutes=12, only_missing=False):
     from data_quality import read_objects, timestamp
     from data_sync import utc_now
     profiles = read_objects(cache, ('info:',))
     statements = read_objects(cache, ('financials:',))
     attempts = read_objects(cache, ('attempt:financials:',))
-    queue = due_symbols(universe, profiles, statements, attempts, etfs)
+    queue = due_symbols(universe, profiles, statements, attempts, etfs, only_missing=only_missing)
     report = {'due_before':len(queue), 'attempted':0, 'updated':0, 'not_reported':0,
               'failed':0, 'errors':[], 'symbols_updated':[]}
+    report['only_missing'] = only_missing
     circuit, _ = cache.get('external:financials-circuit', request_remote=False)
     if isinstance(circuit,dict) and timestamp(circuit.get('retry_after')) > time.time():
         report.update(cooldown_until=circuit['retry_after'], remaining_due=len(queue))
@@ -94,6 +97,9 @@ def collect_batch(cache, universe, etfs, *, limit=150, minutes=12):
                 report['cooldown_until'] = retry
                 break
         time.sleep(.6)
+        if report['attempted'] % 25 == 0:
+            print(json.dumps({'financials_progress':report['attempted'], 'updated':report['updated'],
+                              'failed':report['failed'], 'due_before':len(queue)}), flush=True)
     report['remaining_due'] = max(0,len(queue)-report['attempted'])
     return report
 
@@ -101,6 +107,7 @@ def collect_batch(cache, universe, etfs, *, limit=150, minutes=12):
 def audit_all(cache, universe, etfs):
     from data_quality import read_objects
     profiles=read_objects(cache,('info:',));financials=read_objects(cache,('financials:',))
+    attempts=read_objects(cache,('attempt:financials:',))
     counts=Counter();columns=defaultdict(Counter);rows=[];examples={}
     for ticker in universe:
         info=profiles.get('info:'+ticker,({},{}))[0] or {}
@@ -109,12 +116,19 @@ def audit_all(cache, universe, etfs):
         states=audit_profile(ticker,info,bundle,is_etf=etf)
         counts['securities']+=1;counts['funds' if etf else 'companies']+=1
         counts['statements_available']+=int(bool(bundle and bundle.get('observations')))
+        counts['companies_without_financial_currency']+=int(not etf and not info.get('financialCurrency'))
         missing=[key for key,state in states.items() if state in ('pending','not_reported','missing_inputs')]
         invalid=[key for key,state in states.items() if state=='invalid']
         counts['with_missing_applicable_metrics']+=bool(missing)
         counts['with_invalid_source_metrics']+=bool(invalid)
         for key,state in states.items():columns[key][state]+=1
+        attempt=attempts.get('attempt:financials:'+ticker,({},{}))[1]
+        collection_status=('Not applicable' if etf else 'Statements available' if bundle and bundle.get('observations')
+                           else 'Missing financial currency' if not info.get('financialCurrency')
+                           else 'Attempted; no usable observations' if attempt else 'Not yet attempted')
         rows.append({'Ticker':ticker,'Asset Type':'ETF / ETP' if etf else 'Company',
+                     'Financial Currency':info.get('financialCurrency'), 'Collection Status':collection_status,
+                     'Collection Retry After':attempt.get('retry_after'),
                      'Statements Fetched':(bundle or {}).get('fetched_at'),
                      'Missing Applicable Metrics':'; '.join(missing),'Invalid Source Metrics':'; '.join(invalid),
                      'Not Meaningful':'; '.join(k for k,s in states.items() if s=='not_meaningful'),
@@ -130,6 +144,7 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--publish',action='store_true')
     parser.add_argument('--audit-only',action='store_true')
+    parser.add_argument('--backfill',action='store_true',help='Only collect missing statements; do not republish a no-op batch')
     parser.add_argument('--limit',type=int,default=150)
     parser.add_argument('--minutes',type=float,default=12)
     args=parser.parse_args()
@@ -153,15 +168,17 @@ def main():
     report={'started_at':utc_now(),'source_generation':previous['generation'],
             'scope':'Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.'}
     report['before'],_=audit_all(cache,universe,etfs)
-    report['collection']={} if args.audit_only else collect_batch(cache,universe,etfs,limit=max(0,args.limit),minutes=max(0,args.minutes))
+    report['collection']={} if args.audit_only else collect_batch(cache,universe,etfs,limit=max(0,args.limit),minutes=max(0,args.minutes),only_missing=args.backfill)
     report['after'],rows=audit_all(cache,universe,etfs)
     pd.DataFrame(rows).to_csv('work/company-financials-all-securities.csv',index=False,encoding='utf-8-sig')
     pd.DataFrame([{'Metric':k,**v} for k,v in report['after']['field_counts'].items()]).fillna(0).to_csv('work/company-financials-all-metrics.csv',index=False)
-    if args.publish:
+    if args.publish and (not args.backfill or report['collection'].get('attempted',0)>0):
         if read_manifest(store)['generation']!=previous['generation']:
             raise RuntimeError('Prepared snapshot advanced; refusing to overwrite another collector')
         manifest=publish_snapshot(store,cache,universe,{'task':'company financial statements',**report['collection']},previous,watchlist_csv=summary.get('watchlist_csv'))
         report.update(generation=manifest['generation'],coverage=manifest['coverage'])
+    else:
+        report.update(generation=previous['generation'],coverage=previous['coverage'],snapshot_unchanged=True)
     report.update(finished_at=utc_now(),result='audit_completed',data_complete=report['after']['data_complete'])
     Path('work/company-financials-report.json').write_text(json.dumps(report,ensure_ascii=False,allow_nan=False,indent=2))
     if args.publish:

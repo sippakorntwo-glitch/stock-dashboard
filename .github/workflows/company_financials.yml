@@ -9,39 +9,87 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: prepared-market-data
+  group: company-financials-collection
   cancel-in-progress: false
 jobs:
   collect:
     if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && github.ref == 'refs/heads/main' && toJSON(github.event.repository.private) == 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    # A release fills missing companies in bounded sequential batches. Routine
+    # schedules keep a single refresh batch. Each batch restores the latest
+    # checkpoint, so price collectors can run between batches without lost data.
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        batch: ${{ fromJSON(github.event_name == 'push' && '[1,2,3,4,5,6,7,8,9,10,11,12]' || '[1]') }}
+    concurrency:
+      group: prepared-market-data
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
+      - name: Skip finished or rate-limited backfill batches
+        id: queue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          BATCH: ${{ matrix.batch }}
+        run: |
+          python3 - <<'PY'
+          import base64, datetime, json, os, urllib.request
+          run = True
+          if os.environ['EVENT_NAME'] == 'push' and os.environ['BATCH'] != '1':
+              try:
+                  url = 'https://api.github.com/repos/' + os.environ['GITHUB_REPOSITORY'] + '/contents/reports/company-fundamentals-v28.json?ref=verify/v22-results'
+                  request = urllib.request.Request(url, headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'], 'Accept':'application/vnd.github+json'})
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      report = json.loads(base64.b64decode(json.load(response)['content']))
+                  collection = report.get('collection', {})
+                  if report.get('source_sha') == os.environ['GITHUB_SHA'] and collection.get('only_missing'):
+                      cooldown = collection.get('cooldown_until')
+                      paused = bool(cooldown and datetime.datetime.fromisoformat(cooldown) > datetime.datetime.now(datetime.timezone.utc))
+                      run = not (paused or collection.get('remaining_due') == 0)
+              except Exception as exc:
+                  print('Queue report unavailable; collector will verify its checkpoint:', type(exc).__name__)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('run_batch=' + str(run).lower() + '\n')
+          print('Collect next bounded batch' if run else 'No further due work or provider cooldown; preserve published data')
+          PY
       - uses: actions/checkout@v4
+        if: steps.queue.outputs.run_batch == 'true'
         with:
           persist-credentials: false
       - uses: actions/setup-python@v5
+        if: steps.queue.outputs.run_batch == 'true'
         with:
           python-version: '3.12'
       - name: Install and verify financial calculations
+        if: steps.queue.outputs.run_batch == 'true'
         run: |
           python -m pip install -q -r requirements-dev.txt
-          python -m pytest -q tests/test_company_financials.py
+          python -m pytest -q tests/test_company_financials.py tests/test_financial_backfill.py
       - name: Collect due statements and audit every security
+        if: steps.queue.outputs.run_batch == 'true'
         env:
           DASHBOARD_DATA_REPO: ${{ github.repository }}
           DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DASHBOARD_DATA_VISIBILITY: public
           DASHBOARD_DATA_BRANCH: dashboard-data
           PYTHONUNBUFFERED: '1'
-        run: python company_financials_job.py --publish --limit 150 --minutes 12
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ]; then
+            python company_financials_job.py --publish --backfill --limit 1000 --minutes 15
+          else
+            python company_financials_job.py --publish --limit 150 --minutes 12
+          fi
       - name: Preserve completeness and calculation evidence
-        if: always()
+        if: always() && steps.queue.outputs.run_batch == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: company-financials-audit
+          name: company-financials-audit-${{ matrix.batch }}
           path: |
             work/company-financials*.json
             work/company-financials*.csv
