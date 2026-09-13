@@ -60,6 +60,62 @@ def _move(page, frame, fraction=.45, y=100):
     return box
 
 
+def _visible_price_drag(page, frame):
+    """Find an actionable price canvas after a toolbar click scrolls the page.
+
+The full chart can be taller than the viewport. Scrolling its wrapper does not
+guarantee that a fixed offset lies on a visible canvas, especially in nested
+production iframes. Both drag endpoints must lie inside every clipping frame.
+    """
+    canvases=frame.locator('#chart canvas')
+    rectangles=canvases.evaluate_all('''xs=>xs.map((element,index)=>{
+        const r=element.getBoundingClientRect();
+        return {index,x:r.x,y:r.y,width:r.width,height:r.height};
+    })''')
+    first=next(r for r in rectangles if r['width']>100 and r['height']>50)
+    # Lightweight Charts draws its input/crosshair canvas above its base canvas.
+    index=max(r['index'] for r in rectangles
+              if all(abs(r[key]-first[key])<1 for key in ('x','y','width','height')))
+    canvas=canvases.nth(index)
+    canvas.scroll_into_view_if_needed()
+
+    def geometry():
+        box=canvas.bounding_box()
+        viewport=page.viewport_size
+        clips=[{'x':0,'y':0,'width':viewport['width'],'height':viewport['height']}]
+        ancestor=frame
+        while ancestor.parent_frame:
+            element=ancestor.frame_element()
+            clip=element.bounding_box()
+            if clip:
+                clips.append(clip)
+            ancestor=ancestor.parent_frame
+        left=max([box['x'],*(r['x'] for r in clips)])+16
+        top=max([box['y'],*(r['y'] for r in clips)])+16
+        right=min([box['x']+box['width'],*(r['x']+r['width'] for r in clips)])-16
+        bottom=min([box['y']+box['height'],*(r['y']+r['height'] for r in clips)])-16
+        result={'canvas_index':index,'canvas':box,'clips':clips,
+                'visible':{'left':left,'top':top,'right':right,'bottom':bottom}}
+        assert right-left>=180 and bottom-top>=24, result
+        result['start']={'x':left+(right-left)*.35,'y':(top+bottom)/2}
+        result['end']={'x':left+(right-left)*.65,'y':(top+bottom)/2}
+        return result
+
+    result=geometry()
+    # Normal locator hover verifies that the point receives input, including
+    # ancestor overlays. Refresh geometry after any actionability-driven scroll.
+    canvas.hover(position={axis:result['start'][axis]-result['canvas'][axis] for axis in ('x','y')})
+    result=geometry()
+    local_points=[{axis:result[name][axis]-result['canvas'][axis] for axis in ('x','y')}
+                  for name in ('start','end')]
+    result['canvas_hits']=canvas.evaluate('''(element,points)=>{
+        const r=element.getBoundingClientRect();
+        return points.map(p=>document.elementFromPoint(r.left+p.x,r.top+p.y)===element);
+    }''',local_points)
+    assert all(result['canvas_hits']), result
+    return result
+
+
 def verify_hover(page, app):
     from production_smoke import chart_for_symbol, no_exception
     errors=[]
@@ -109,16 +165,19 @@ def verify_hover(page, app):
     assert 'EMA 50' not in frame.locator('#indicator-value').inner_text()
     _enabled(frame,'ema50',True)
     _enabled(frame,'inspect-toggle',False)
-    box=frame.locator('#chartwrap').bounding_box()
-    page.mouse.move(box['x']+150,box['y']+100)
+    drag=_visible_price_drag(page,frame)
+    page.mouse.move(**drag['start'])
     expect(frame.locator('#chart-inspector')).to_be_hidden()
     # Pan and reset remain functional with the optional overlay off.
     original=float(frame.locator('#chart').get_attribute('data-range-from'))
-    page.mouse.move(box['x']+300,box['y']+80);page.mouse.down()
-    page.mouse.move(box['x']+430,box['y']+80,steps=10);page.mouse.up()
+    page.mouse.down()
+    try:
+        page.mouse.move(**drag['end'],steps=10)
+    finally:
+        page.mouse.up()
     page.wait_for_timeout(200)
     moved=float(frame.locator('#chart').get_attribute('data-range-from'))
-    assert abs(moved-original)>1,(moved,original)
+    assert abs(moved-original)>1,{'range_before':original,'range_after':moved,'drag_geometry':drag}
     frame.locator('#reset').click()
     _enabled(frame,'inspect-toggle',True)
     _move(page,frame,.96);_verify_values(frame,payload)
@@ -130,7 +189,7 @@ def verify_hover(page, app):
     frame.locator('#inspect-clear').click()
     report={'ticker':'ORCL','daily_values_checked':FIELDS,'panes':visited,
             'pin_and_escape':True,'keyboard':True,'optional_toggle':True,
-            'pan_reset':True,'edge_bounds':True,'latest_price_and_period_return_unchanged':True}
+            'pan_reset':True,'pan_geometry':drag,'edge_bounds':True,'latest_price_and_period_return_unchanged':True}
     # Verify intraday epoch timestamps and exchange timezone with real SPY data.
     manual.fill('SPY');manual.press('Enter')
     app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 วัน',exact=True).click()
