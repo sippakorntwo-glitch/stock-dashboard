@@ -38,6 +38,8 @@ def selected_symbol(event: Mapping | None, tickers: Sequence[str], previous=None
 
 def set_selected(state: MutableMapping, ticker: str, *, reset_table: bool = False) -> None:
     changed = state.get('selected_ticker') != ticker
+    if changed:
+        state['_selection_revision'] = state.get('_selection_revision', 0) + 1
     state['selected_ticker'] = ticker
     state['ticker_input'] = ticker
     if changed or 'comparison_symbols' not in state:
@@ -45,9 +47,20 @@ def set_selected(state: MutableMapping, ticker: str, *, reset_table: bool = Fals
     if reset_table:
         state['_table_epoch'] = state.get('_table_epoch', 0) + 1
         state.pop('_last_table_event', None)
+        state.pop('_active_table_key', None)
+
+
+def manual_ticker_key(state: Mapping) -> str:
+    """A changed canonical selection retires the previous text-input widget."""
+    return 'ticker_input_' + str(state.get('_selection_revision', 0))
 
 
 def apply_table_selection(state: MutableMapping, key: str, tickers: Sequence[str]) -> None:
+    # A queued event carries the immutable row order of its original widget.
+    # Reject retired layouts and manual-reset epochs before changing any state.
+    if (key != state.get('_active_table_key')
+            or key != table_key(tickers, state.get('_table_epoch', 0))):
+        return
     event = state.get(key, {})
     last = state.get('_last_table_event', {})
     previous = last.get('event') if last.get('key') == key else None

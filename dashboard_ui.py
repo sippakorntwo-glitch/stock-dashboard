@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 import dashboard_runtime as a
 from analytics import quality_counts
-from dashboard_selection import set_selected
+from dashboard_selection import set_selected, manual_ticker_key
 from chart_ranges import get_chart_service
 from ranking_board import render_board, consume_selection
 from read_view import consistent_read, page_dependencies
@@ -50,8 +50,13 @@ def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_cha
         st.caption('พร้อมใช้งาน · ตรวจชุดข้อมูลใหม่อัตโนมัติทุก 1 นาที')
 
 
-def _manual_ticker():
-    set_selected(st.session_state, a.normalize_symbol(st.session_state['ticker_input']), reset_table=True)
+def _manual_ticker(widget_key, selection_revision):
+    # Queued browser state can belong to the input shown before a table/board
+    # selection. Its callback runs before any fragment guard, so reject it here.
+    if (selection_revision != st.session_state.get('_selection_revision', 0)
+            or widget_key != manual_ticker_key(st.session_state)):
+        return
+    set_selected(st.session_state, a.normalize_symbol(st.session_state[widget_key]), reset_table=True)
 
 
 def main():
@@ -89,7 +94,11 @@ def main():
         frame=enrich_frame(frame,profiles or {})
         st.sidebar.title('Stock Research')
         st.sidebar.caption('หน้าเดียว · คลิกหุ้นในตาราง แล้วดูกราฟและรายละเอียดด้านล่าง')
-        st.sidebar.text_input('Ticker สำหรับวิเคราะห์',key='ticker_input',on_change=_manual_ticker)
+        input_key=manual_ticker_key(st.session_state)
+        if input_key not in st.session_state:
+            st.session_state[input_key]=ticker
+        st.sidebar.text_input('Ticker สำหรับวิเคราะห์',key=input_key,on_change=_manual_ticker,
+                              args=(input_key,st.session_state.get('_selection_revision',0)))
         ticker=st.session_state['selected_ticker']
         valid=bool(re.fullmatch(r'[A-Z0-9.^=/_-]{1,30}',ticker))
         favourites=st.session_state.setdefault('favourites',[])
@@ -131,6 +140,8 @@ def main():
         with st.container(key='research_overview'):
             if work is not None:
                 overview(frame, selectable=True, prepared=work)
+            else:
+                st.session_state.pop('_active_table_key',None)
         st.divider()
         st.header('วิเคราะห์หุ้นที่เลือก',anchor='selected-stock')
         if not valid:

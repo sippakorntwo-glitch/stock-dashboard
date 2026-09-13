@@ -31,24 +31,28 @@ def test_single_page_selection_and_all_sections_without_provider_calls(tmp_path)
     cache.put('remote:manifest',reader.status()['manifest'],{})
     script='''
 import streamlit as st
-from dashboard_selection import apply_table_selection
+from dashboard_selection import apply_table_selection, table_key
 command=st.session_state.pop('_test_selection',None)
 if command:
-    st.session_state['test_table']=command['event']
-    apply_table_selection(st.session_state,'test_table',command['tickers'])
+    key=table_key(command['tickers'],st.session_state.get('_table_epoch',0))
+    st.session_state[key]=command['event']
+    st.session_state['_active_table_key']=key
+    apply_table_selection(st.session_state,key,command['tickers'])
 from dashboard_ui import main
 main()
 '''
     with patch.object(a,'get_data_cache',return_value=cache),patch.object(a.core,'get_data_cache',return_value=cache),patch.object(a,'get_remote_reader',return_value=(reader,'')),patch.object(a,'get_updater',return_value=a.ReadOnlyUpdater()),patch.object(a.yf,'download',side_effect=AssertionError('Unexpected provider call')),patch.object(a.yf,'Ticker',side_effect=AssertionError('Unexpected provider call')):
         at=AppTest.from_string(script,default_timeout=40).run()
+        def ticker_field():
+            return next(field for field in at.sidebar.text_input if field.label=='Ticker สำหรับวิเคราะห์')
         assert not at.exception,str(at.exception)
         assert at.metric[0].value==f'{a.COMMON_STOCK_LIMIT+a.ETF_LIMIT:,}'
         assert any(h.value=='Top 10 · จังหวะเข้าซื้อ' for h in at.subheader)
         assert 'เฝ้าดู ไม่ใช่จุดซื้อ' in at.button(key='ranking_pick_MSFT').label
         at.button(key='ranking_pick_MSFT').click().run()
         assert not at.exception,str(at.exception)
-        assert at.sidebar.text_input(key='ticker_input').value=='MSFT'
-        at.sidebar.text_input(key='ticker_input').set_value('AAPL').run()
+        assert ticker_field().value=='MSFT'
+        ticker_field().set_value('AAPL').run()
         assert len(at.sidebar.radio)==0
         for title in ['กราฟและแผนซื้อ','พื้นฐานและปันผล','ความเสี่ยง','เปรียบเทียบหลายตัว']:
             assert title in [h.value for h in at.header]
@@ -61,7 +65,7 @@ main()
         at.session_state['_test_selection']={'tickers':['AAPL','MSFT'],'event':{'selection':{'rows':[],'cells':[(1,'Ticker')]}}}
         at.run()
         assert not at.exception,str(at.exception)
-        assert at.sidebar.text_input(key='ticker_input').value=='MSFT'
+        assert ticker_field().value=='MSFT'
         assert at.multiselect(key='comparison_symbols').value==['MSFT','SPY']
         assert at.radio(key='chart_period').value=='3 ปี'
         assert any(h.value.startswith('MSFT ·') for h in at.subheader)
@@ -69,12 +73,12 @@ main()
         assert not at.exception,str(at.exception)
         assert at.session_state['selected_ticker']=='MSFT'
         assert at.dataframe[0].value.empty
-        at.sidebar.text_input(key='ticker_input').set_value('spy').run()
+        ticker_field().set_value('spy').run()
         assert not at.exception,str(at.exception)
         assert at.multiselect(key='comparison_symbols').value==['SPY','QQQ']
-        at.sidebar.text_input(key='ticker_input').set_value('!').run()
+        ticker_field().set_value('!').run()
         assert not at.exception,str(at.exception)
         assert any('Ticker ให้ถูกต้อง' in w.value for w in at.warning)
-        at.sidebar.text_input(key='ticker_input').set_value('UNKNOWN123').run()
+        ticker_field().set_value('UNKNOWN123').run()
         assert not at.exception,str(at.exception)
         assert any('ยังไม่มีประวัติ' in i.value for i in at.info)
