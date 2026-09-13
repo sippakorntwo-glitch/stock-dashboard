@@ -59,7 +59,7 @@ def read_download(page,button):
 
 def verify_quality(page,app):
     """Audit backend quality data; the public diagnostic panels are intentionally absent."""
-    from production_smoke import no_exception,chart_for_symbol,wait_page_ready,verify_fundamentals
+    from production_smoke import no_exception,chart_for_symbol,wait_page_ready,verify_fundamentals,select_manual_ticker
     from clean_ui_smoke import verify_clean_presentation
     manifest,summary=public_summary()
     quality=summary.get('quality',{})
@@ -79,9 +79,8 @@ def verify_quality(page,app):
             'public_diagnostics_removed':verify_clean_presentation(app)}
     app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 ปี',exact=True).click()
     inspected=[]
-    ticker_input=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
     for ticker in ('AEON','AESP','SPY'):
-        ticker_input.fill(ticker);ticker_input.press('Enter')
+        select_manual_ticker(app,ticker)
         wait_page_ready(app,ticker=ticker)
         if ticker!='AESP':chart_for_symbol(page,app,ticker)
         if ticker=='SPY':

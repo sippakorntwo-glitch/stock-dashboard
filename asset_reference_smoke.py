@@ -19,7 +19,7 @@ def reference_for(ticker,manifest):
 
 
 def verify_asset_reference(page,app):
-    from production_smoke import no_exception,wait_page_ready,chart_for_symbol
+    from production_smoke import no_exception,wait_page_ready,chart_for_symbol,select_manual_ticker
     from clean_ui_smoke import verify_clean_presentation
     manifest,_=public_summary()
     field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
@@ -31,7 +31,16 @@ def verify_asset_reference(page,app):
     current=field.input_value()
     wait_page_ready(app,current,query='')
     expect(field).to_have_value(current)
-    field.fill('AAAU');field.press('Enter')
+    # Force the responsive-layout precondition with ordinary UI controls so
+    # both CI and production exercise recovery from a collapsed sidebar.
+    sidebar=app.locator('[data-testid="stSidebar"]')
+    if sidebar.get_attribute('aria-expanded')!='true':
+        app.locator('[data-testid="stExpandSidebarButton"]').click()
+    expect(sidebar).to_have_attribute('aria-expanded','true')
+    sidebar.locator('[data-testid="stSidebarHeader"]').hover()
+    sidebar.locator('[data-testid="stSidebarCollapseButton"]').get_by_role('button').click()
+    expect(sidebar).to_have_attribute('aria-expanded','false')
+    field=select_manual_ticker(app,'AAAU')
     wait_page_ready(app,'AAAU');chart_for_symbol(page,app,'AAAU')
     expect(field).to_have_value('AAAU')
     section=app.locator('.st-key-research_fundamentals')
@@ -47,9 +56,10 @@ def verify_asset_reference(page,app):
         'https://www.sec.gov/Archives/edgar/data/1708646/000119312526067559/d56933d10k.htm')
     expect(section.get_by_text('Annual sponsor fee: 0.18%',exact=False)).to_be_visible()
     verify_clean_presentation(app);no_exception(app)
-    report={'AAAU_pe_not_applicable':True,'AAAU_issuer_filing_link':True,'diagnostics_still_absent':True,'SEC_examples':[]}
+    report={'AAAU_pe_not_applicable':True,'AAAU_issuer_filing_link':True,'diagnostics_still_absent':True,
+            'collapsed_sidebar_manual_selection':{'from':current,'to':'AAAU','single_entry':True},'SEC_examples':[]}
     for ticker in ('AAPL','MSFT'):
-        field.fill(ticker);field.press('Enter');wait_page_ready(app,ticker)
+        field=select_manual_ticker(app,ticker);wait_page_ready(app,ticker)
         expect(field).to_have_value(ticker)
         section=app.locator('.st-key-research_fundamentals')
         reference=reference_for(ticker,manifest)
