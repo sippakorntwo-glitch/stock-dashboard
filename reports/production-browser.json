@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-12T19:11:14.418392+00:00",
-  "run_id": "34712708160",
+  "recorded_at": "2026-09-13T02:52:30.661475+00:00",
+  "run_id": "34733549534",
   "source_sha": "7b8d066b9d07042b2029dadbb6e661e42076e2b2",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-13.27",
@@ -365,13 +365,13 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260912T183912Z-7dc52ff3",
+      "source_generation": "generations/20260913T024213Z-1743ce77",
       "counts": {
         "universe": 9876,
         "prices": 9875,
         "histories": 9875,
         "info": 9876,
-        "industry": 9349,
+        "industry": 9406,
         "dividends_checked": 9875,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3801,
@@ -417,7 +417,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260912T183912Z-7dc52ff3",
+      "source_generation": "generations/20260913T024213Z-1743ce77",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -480,17 +480,17 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-12T19:07:34.127560+00:00",
+      "verified_at": "2026-09-13T02:49:03.254027+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
       "category_filter": {
         "category": "Derivative Income",
-        "rows": 224,
+        "rows": 229,
         "QQQI": true
       },
       "combined_numeric_filter": {
-        "rows": 108,
+        "rows": 112,
         "minimum_1m": 0
       },
       "invalid_bounds_handled": true,
