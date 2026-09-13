@@ -10,6 +10,7 @@ permissions:
   contents: read
 concurrency:
   group: company-financials-collection
+  queue: max
   cancel-in-progress: false
 jobs:
   collect:
@@ -26,6 +27,7 @@ jobs:
         batch: ${{ fromJSON(github.event_name == 'push' && '[1,2,3,4,5,6,7,8,9,10,11,12]' || '[1]') }}
     concurrency:
       group: prepared-market-data
+      queue: max
       cancel-in-progress: false
     permissions:
       contents: write
