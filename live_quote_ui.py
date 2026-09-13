@@ -21,13 +21,15 @@ def render_live_quote(ticker):
     if st.session_state.get('selected_ticker',ticker) != ticker:
         return
     with st.container(key='minute_quote_panel', border=True):
-        left, middle, right = st.columns([2,1.4,1.2])
+        left, middle, right = st.columns([2,1.4,2])
         left.markdown('#### ราคาล่าสุดจากแท่ง 1 นาที')
         auto = middle.checkbox('อัปเดตราคาอัตโนมัติ',value=True,key='minute_price_auto',disabled=not enabled())
-        interval = right.selectbox('รอบขอราคา',options=[30,60,120],
-                                   format_func=lambda seconds:f'{seconds} วินาที',
-                                   key='minute_price_interval',disabled=not enabled(),
-                                   help='ใช้รอบนี้เมื่อช่วงเวลาซื้อขายที่แหล่งข้อมูลระบุยังเปิดอยู่ นอกช่วงนี้ลดความถี่อัตโนมัติ')
+        # Keep every cadence visible: a timed rerun cannot dismiss an open menu
+        # between the user's first click and their interval selection.
+        interval = right.radio('รอบขอราคา',options=[30,60,120], horizontal=True,
+                               format_func=lambda seconds:f'{seconds} วินาที',
+                               key='minute_price_interval',disabled=not enabled(),
+                               help='ใช้รอบนี้เมื่อช่วงเวลาซื้อขายที่แหล่งข้อมูลระบุยังเปิดอยู่ นอกช่วงนี้ลดความถี่อัตโนมัติ')
         service = quote_service(a.APP_VERSION)
         if auto and enabled():
             service.request(ticker,interval)

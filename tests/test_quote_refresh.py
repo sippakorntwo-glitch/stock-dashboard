@@ -1,5 +1,6 @@
 """Deterministic source/session/budget boundaries; no live requests."""
 from collections import deque
+import os
 from types import SimpleNamespace
 import pandas as pd
 import pytest
@@ -90,3 +91,48 @@ def test_metadata_epoch_is_normalized_without_naive_or_invalid_windows():
         'post':{'start':NOW+10,'end':NOW}}})
     assert list(result)==['regular']
     assert result['regular']['start']=='2026-09-11T14:00:00+00:00'
+
+
+@pytest.mark.skipif(os.environ.get('DASHBOARD_OFFLINE_TEST_STUBS')=='1', reason='Requires real Streamlit')
+def test_visible_cadence_controls_preserve_requested_interval_and_pause(monkeypatch):
+    from streamlit.testing.v1 import AppTest
+    import live_quote_ui
+
+    class QuoteFixture:
+        def __init__(self):
+            self.requests=[]
+        def request(self,ticker,interval):
+            self.requests.append((ticker,interval))
+        def read(self,ticker,interval):
+            return observation(ticker), {'status':'scheduled','next_due':0}, False
+
+    service=QuoteFixture()
+    monkeypatch.setattr(live_quote_ui,'quote_service',lambda _:service)
+    monkeypatch.setattr(live_quote_ui,'enabled',lambda:True)
+    app=AppTest.from_string('''
+import streamlit as st
+from live_quote_ui import render_live_quote
+st.session_state.setdefault('selected_ticker','AAPL')
+render_live_quote('AAPL')
+''').run()
+
+    def status():
+        assert not app.exception,str(app.exception)
+        return next(item.value for item in app.markdown if 'quote-refresh-status' in item.value)
+
+    interval=app.radio(key='minute_price_interval')
+    assert interval.label=='รอบขอราคา' and interval.options==['30 วินาที','60 วินาที','120 วินาที']
+    assert not app.selectbox and interval.value==30
+    assert service.requests==[('AAPL',30)]
+    app.radio(key='minute_price_interval').set_value(60).run()
+    assert 'data-requested-seconds="60"' in status() and service.requests[-1]==('AAPL',60)
+    app.checkbox(key='minute_price_auto').uncheck().run()
+    assert 'data-state="paused"' in status()
+    paused_requests=list(service.requests)
+    app.radio(key='minute_price_interval').set_value(30).run()
+    assert 'data-requested-seconds="30"' in status() and 'data-state="paused"' in status()
+    assert service.requests==paused_requests
+    app.checkbox(key='minute_price_auto').check().run()
+    assert 'data-state="scheduled"' in status() and service.requests[-1]==('AAPL',30)
+    assert len(service.requests)==len(paused_requests)+1
+    assert app.session_state['selected_ticker']=='AAPL'

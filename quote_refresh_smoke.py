@@ -27,10 +27,12 @@ def verify_quote_refresh(page,app,chart,payload,ticker):
     expect(minute).to_be_visible(timeout=90000)
     expect(status).to_be_visible()
     auto=panel.get_by_role('checkbox',name='อัปเดตราคาอัตโนมัติ',exact=True)
-    interval=panel.locator('[data-testid="stSelectbox"]').filter(
-        has=app.get_by_text('รอบขอราคา',exact=True)).get_by_role('combobox')
+    interval=panel.get_by_role('radiogroup',name='รอบขอราคา',exact=True)
+    choices={seconds:interval.get_by_role('radio',name=f'{seconds} วินาที',exact=True)
+             for seconds in (30,60,120)}
     expect(auto).to_be_checked()
-    expect(interval).to_have_value('30 วินาที')
+    for choice in choices.values():expect(choice).to_be_visible()
+    expect(choices[30]).to_be_checked()
     expect(status).to_have_attribute('data-requested-seconds','30')
     first=refresh_state(status)
     search=app.get_by_role('textbox',name='ค้นหาสัญลักษณ์ / ชื่อบริษัท',exact=True).input_value()
@@ -38,16 +40,21 @@ def verify_quote_refresh(page,app,chart,payload,ticker):
     original=chart.locator('#payload').evaluate('e=>{const p=JSON.parse(e.textContent);return {ticker:p.ticker,period:p.period,periodReturn:p.periodReturn};}')
     assert original['ticker']==ticker and original['period']==payload['period'],original
 
-    interval.click();app.get_by_role('option',name='60 วินาที',exact=True).click()
-    expect(interval).to_have_value('60 วินาที')
+    # Keep every choice visible across the five-second quote fragment cadence.
+    # Changing the interval must be one ordinary action, with no dropdown retry.
+    interval.scroll_into_view_if_needed()
+    page.wait_for_timeout(5500)
+    for choice in choices.values():expect(choice).to_be_visible()
+    choices[60].check()
+    expect(choices[60]).to_be_checked()
     expect(status).to_have_attribute('data-requested-seconds','60')
     sixty=refresh_state(status)
     auto.uncheck()
     expect(auto).not_to_be_checked()
     expect(status).to_have_attribute('data-state','paused')
     expect(status).to_contain_text('พักการอัปเดตราคา')
-    interval.click();app.get_by_role('option',name='30 วินาที',exact=True).click()
-    expect(interval).to_have_value('30 วินาที')
+    choices[30].check()
+    expect(choices[30]).to_be_checked()
     expect(status).to_have_attribute('data-requested-seconds','30')
     expect(status).to_have_attribute('data-state','paused')
     auto.check()
@@ -104,6 +111,7 @@ def verify_quote_refresh(page,app,chart,payload,ticker):
     no_exception(app)
     return {'auto_refresh_verified':automatic,'quote_controls':{'requested_seconds':[30,60,30],
         'initial':first,'sixty_seconds':sixty,'resumed':refresh_state(status),
-        'pause_resume':True,'ticker_search_and_daily_chart_preserved':True,
+        'pause_resume':True,'interval_choices_visible_across_cadence':True,
+        'single_action_interval_changes':True,'ticker_search_and_daily_chart_preserved':True,
         'generation_before':generation,'generation_after':current_generation},
         'minute_price':{'price':price,'bar_time':quote['barTime'],'fetched_at':quote['fetchedAt'],'state':quote['state']}}
