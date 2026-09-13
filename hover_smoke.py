@@ -9,7 +9,8 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from playwright.sync_api import expect
 
-FIELDS = ['open','high','low','close','ema20','ema50','sma200','volume','rsi','macd','signal','hist']
+FIELDS = ['open','high','low','close','ema20','ema50','sma200','volume',
+          'buy_volume_est','sell_volume_est','unclassified_volume','rsi','macd','signal','hist']
 
 
 def _enabled(frame, key, value=True):
@@ -68,7 +69,7 @@ def verify_hover(page, app):
     manual.fill('ORCL');manual.press('Enter')
     app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 ปี',exact=True).click()
     frame,payload=chart_for_symbol(page,app,'ORCL')
-    for key in ['ema20','ema50','sma200','volume','rsi','macd','inspect-toggle']:
+    for key in ['ema20','ema50','sma200','volume','volumeSplit','rsi','macd','inspect-toggle']:
         _enabled(frame,key)
     before_price=frame.locator('#price').inner_text()
     before_growth=frame.locator('#range-return-value').get_attribute('data-value')

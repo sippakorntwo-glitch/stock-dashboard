@@ -25,6 +25,7 @@ CORPORATE_FIELDS |= frozenset(('enterpriseValue','priceToSalesTrailing12Months',
     'grossMargins','totalRevenue','ebitda','netIncomeToCommon','debtToEquity','currentRatio','quickRatio','payoutRatio'))
 FUND_FIELDS=frozenset(('category','fundFamily','totalAssets','navPrice','beta3Year','annualReportExpenseRatio'))
 RATIO_FIELDS=frozenset(('forwardPE','trailingPE','priceToBook'))
+FX_SENSITIVE_FIELDS=frozenset(('enterpriseValue','priceToSalesTrailing12Months','enterpriseToRevenue','enterpriseToEbitda'))
 TEXT_FIELDS=frozenset(('industry','industryDisp','sector','category','fundFamily','country','currency','financialCurrency','shortName','longName','quoteType'))
 POSITIVE_FIELDS=frozenset(('marketCap','totalAssets','navPrice','regularMarketPrice','currentPrice','targetMeanPrice','regularMarketTime','earningsTimestampStart'))
 NONNEGATIVE_FIELDS=frozenset(('totalCash','totalDebt','numberOfAnalystOpinions','bid','ask','annualReportExpenseRatio'))
@@ -63,6 +64,8 @@ def field_state(ticker,info,field,*,is_etf=False):
     if field in TEXT_FIELDS:return 'available' if isinstance(raw,str) and raw.strip() else 'invalid'
     n=number(raw)
     if n is None:return 'invalid'
+    if (not fund and field in FX_SENSITIVE_FIELDS and info.get('currency') and info.get('financialCurrency')
+            and info['currency']!=info['financialCurrency']):return 'missing_inputs'
     if field in POSITIVE_FIELDS and n<=0:return 'invalid'
     if field in NONNEGATIVE_FIELDS and n<0:return 'invalid'
     if field in ('forwardPE','trailingPE'):
@@ -113,7 +116,7 @@ def adapt_analysis(frame,ticker,info,is_etf):
 def safe_numeric_profile(info,ticker='',is_etf=False):
     """A calculation copy; preserve raw provider values in persistent storage."""
     result=dict(info)
-    for field in POSITIVE_FIELDS | NONNEGATIVE_FIELDS | RATIO_FIELDS:
-        if field in result and field_state(ticker,info,field,is_etf=is_etf) in ('invalid','not_applicable','not_meaningful'):
+    for field in POSITIVE_FIELDS | NONNEGATIVE_FIELDS | RATIO_FIELDS | FX_SENSITIVE_FIELDS:
+        if field in result and field_state(ticker,info,field,is_etf=is_etf) in ('invalid','not_applicable','not_meaningful','missing_inputs'):
             result[field]=None
     return result

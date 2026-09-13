@@ -16,6 +16,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import yfinance as yf
 from dashboard_help import help_table
+from volume_split import split_volume, METHOD as VOLUME_SPLIT_METHOD
 
 PERIODS = ["1 วัน", "3 วัน", "5 วัน", "7 วัน", "1 เดือน", "3 เดือน", "6 เดือน", "1 ปี", "2 ปี", "3 ปี", "5 ปี", "10 ปี"]
 CDN = "https://unpkg.com/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"
@@ -112,13 +113,15 @@ def build_payload(frame: pd.DataFrame, ticker: str, period: str,
         for col in ["Open", "High", "Low", "Close", "Volume", "ema20", "ema50", "sma200", "macd", "signal", "hist", "rsi"]:
             value = row[col]
             entry[col.lower()] = float(value) if pd.notna(value) and math.isfinite(value) else None
+        entry.update(split_volume(entry['volume'], entry['high'], entry['low'], entry['close']))
         records.append(entry)
     precision = 2 if close.iloc[-1] >= 1 else 4 if close.iloc[-1] >= .01 else 6
     return {"ticker": ticker, "period": period, "interval": interval, "timezone": tz,
             "intraday": intraday, "precision": precision, "records": records,
             "visibleStart": visible_start, "fetchedAt": fetched_at,
             "lastBar": f.index[-1].strftime("%Y-%m-%d %H:%M %Z" if intraday else "%Y-%m-%d"),
-            "positive": bool((f.Low > 0).all()), "demo": False}
+            "positive": bool((f.Low > 0).all()), "demo": False,
+            "volumeSplitMethod": VOLUME_SPLIT_METHOD}
 
 
 def build_chart_html(payload: dict) -> str:
@@ -175,6 +178,8 @@ button:focus-visible,a:focus-visible{outline:2px solid #78a6ff;outline-offset:2p
 #chartwrap{position:relative;flex:1;min-height:200px}#chart{width:100%;height:100%}.panel-label{position:absolute;left:14px;color:#aebbd0;font-size:12px;pointer-events:none;padding:4px 8px;background:#10141de8;z-index:2;border-radius:4px}
 .footer{border-top:1px solid #293143;padding:11px 18px;color:#8d9eb8;font-size:11px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}.footer a{color:#a9bddb;text-decoration:none}.footer a:hover{text-decoration:underline}
 #error{padding:30px;color:#f2b6b9;display:none}#info{color:#8c9db6;font-size:11px;padding:4px 20px 8px}
+#volume-note{padding:0 20px 8px;font-size:11px;color:#aebbd0;line-height:1.6}#volume-note .buy{color:#26a69a}#volume-note .sell{color:#ef5350}#volume-note .unknown{color:#abb3c0}#volume-note summary{cursor:help}#volume-split-readout{font-size:12px;color:#b4c3d8}
+#volume-split-readout[hidden],#volume-note[hidden]{display:none!important}
 @media(max-width:620px){.header{gap:12px;padding:14px}.symbol{font-size:20px}.quote{font-size:21px}.tag{margin-left:0}.controls{padding:8px 12px;gap:6px}button{font-size:12px;padding:7px 9px}.ohlc{padding-left:14px;gap:9px}.footer{font-size:10px}}
 </style></head><body>
 <div id="shell">
@@ -185,13 +190,17 @@ button:focus-visible,a:focus-visible{outline:2px solid #78a6ff;outline-offset:2p
   <button id="ema50" aria-pressed="false" title="เส้นค่าเฉลี่ย EMA 50 แท่ง">EMA 50</button>
   <button id="sma200" aria-pressed="false" title="เส้นค่าเฉลี่ย SMA 200 แท่ง">SMA 200</button>
   <button id="volume" aria-pressed="true" title="ปริมาณซื้อขาย">Volume</button>
+  <button id="volumeSplit" aria-pressed="true" title="แบ่ง Volume รวมเป็นแรงซื้อ–ขายประมาณจากตำแหน่งราคาปิด ไม่ใช่รายการซื้อขายจริง">แยกซื้อ/ขาย (ประมาณ)</button>
   <button id="rsi" aria-pressed="false" title="เปิด RSI 14 ในแผงด้านล่าง">RSI</button>
   <button id="macd" aria-pressed="false" title="เปิด MACD 12,26,9 ในแผงด้านล่าง">MACD</button>
   <span class="spacer"></span><button id="log" aria-pressed="false" title="สเกลลอการิทึมช่วยดูช่วงที่ราคาต่างกันมาก">Log</button>
   <button id="reset" title="กลับสู่ช่วงเวลาที่เลือกและปรับแกนราคาอัตโนมัติ">คืนมุมมอง</button>
  </div>
  <div class="ohlc"><span id="bar-time"></span><span>O<b id="o"></b></span><span>H<b id="h"></b></span><span>L<b id="l"></b></span><span>C<b id="c"></b></span><span>Vol<b id="v"></b></span><span id="indicator-value"></span></div>
- <div id="info"></div><div id="chartwrap"><div id="chart"></div><div id="labels"></div><div id="error" role="alert"></div></div>
+ <div class="ohlc" id="volume-split-readout"></div>
+ <div id="info"></div>
+ <details id="volume-note"><summary><span class="buy">■ ซื้อประมาณ</span> + <span class="sell">■ ขายประมาณ</span> = Volume รวม · <span class="unknown">■ แยกไม่ได้</span> · เป็นค่าประมาณจากราคา ไม่ใช่ข้อมูลผู้เริ่มซื้อขายจริง</summary>เขียว = Volume × (ราคาปิด − ราคาต่ำสุด) ÷ (ราคาสูงสุด − ราคาต่ำสุด); แดง = Volume − เขียว หากราคาสูงสุดเท่าราคาต่ำสุดจะแสดงสีเทาโดยไม่เดาสัดส่วน ทุกธุรกรรมมีทั้งผู้ซื้อและผู้ขาย แหล่งข้อมูลนี้ไม่มีข้อมูลแยกฝ่ายที่เป็นผู้เริ่มรายการ</details>
+ <div id="chartwrap"><div id="chart"></div><div id="labels"></div><div id="error" role="alert"></div></div>
  <div class="footer"><span>ลากเพื่อเลื่อน · หมุนล้อเมาส์เพื่อซูม · ดับเบิลคลิกแกนราคาเพื่อ Auto</span>
  <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer" title="TradingView Lightweight Charts™. Copyright (c) 2025 TradingView, Inc.">TradingView Lightweight Charts™</a></div>
 </div>
@@ -219,7 +228,7 @@ text('symbol',p.ticker);text('meta',`${p.period} · แท่ง ${p.interval===
 text('price',fmt(last.close));text('status',p.demo?'ข้อมูลจำลองสำหรับดูหน้าตา':'Yahoo Finance · ราคาปรับแล้ว');
 if(prev && prev.close!==0){const d=last.close-prev.close;const pct=d/prev.close*100;text('change',`${d>=0?'+':''}${fmt(d)} (${pct>=0?'+':''}${pct.toFixed(2)}%) จากแท่งก่อน`);el('change').style.color=d>=0?green:red;}
 text('info',`แท่งล่าสุด: ${p.lastBar} · ${p.intraday?'นับวันซื้อขายที่มีข้อมูล · ':''}ข้อมูลตามแหล่งราคา ไม่ใช่ราคาสตรีมสด`);
-const opts={ema20:true,ema50:false,sma200:false,volume:true,rsi:false,macd:false,log:false};
+const opts={ema20:true,ema50:false,sma200:false,volume:true,volumeSplit:true,rsi:false,macd:false,log:false};
 // UI preferences persist across the parent app's five-minute refresh where storage is available.
 try{Object.assign(opts,JSON.parse(sessionStorage.getItem('chart-prefs-v1')||'{}'));}catch{}
 if(!p.positive){opts.log=false;el('log').disabled=true;el('log').title='Log ใช้ได้เมื่อราคามากกว่า 0';}
@@ -229,11 +238,14 @@ const points=field=>rows.filter(r=>Number.isFinite(r[field])).map(r=>({time:r.ti
 function readout(r){
  text('bar-time',dateFmt(r.time));for(const k of ['o','h','l','c'])text(k,fmt(r[{o:'open',h:'high',l:'low',c:'close'}[k]]));
  text('v',volFmt(r.volume));el('c').style.color=r.close>=r.open?green:red;
+ const splitVisible=opts.volume&&opts.volumeSplit;
+ el('volume-split-readout').hidden=!splitVisible;el('volume-note').hidden=!splitVisible;
+ text('volume-split-readout',!Number.isFinite(r.volume)?'ไม่มีข้อมูล Volume':r.unclassified_volume>0?'Volume '+volFmt(r.volume)+' · แยกซื้อ/ขายไม่ได้: ราคาสูงสุดเท่าราคาต่ำสุด':`ซื้อประมาณ ${volFmt(r.buy_volume_est)} · ขายประมาณ ${volFmt(r.sell_volume_est)} · รวม ${volFmt(r.volume)}`);
  const parts=[];if(opts.ema20)parts.push('EMA20 '+fmt(r.ema20));if(opts.rsi)parts.push('RSI '+(Number.isFinite(r.rsi)?r.rsi.toFixed(1):'—'));if(opts.macd)parts.push('MACD '+fmt(r.macd));text('indicator-value',parts.join(' · '));
 }
 function paneLabels(){
  el('labels').replaceChildren();if(!chart)return;let top=0;
- const names=['ราคา',...(opts.volume?['Volume']:[]),...(opts.rsi?['RSI 14']:[]),...(opts.macd?['MACD 12,26,9']:[])];
+ const names=['ราคา',...(opts.volume?[opts.volumeSplit?'Volume · ซื้อ/ขายประมาณ':'Volume รวม']:[]),...(opts.rsi?['RSI 14']:[]),...(opts.macd?['MACD 12,26,9']:[])];
  chart.panes().forEach((pane,i)=>{if(i){const e=document.createElement('div');e.className='panel-label';e.style.top=(top+5)+'px';e.textContent=names[i];el('labels').appendChild(e);}top+=pane.getHeight()+1;});
 }
 function reset(){chart.priceScale('right').applyOptions({autoScale:true,mode:opts.log?L.PriceScaleMode.Logarithmic:L.PriceScaleMode.Normal});chart.timeScale().setVisibleLogicalRange({from:p.visibleStart-.8,to:rows.length+3});}
@@ -260,7 +272,18 @@ function create(){
   series[field].setData(points(field));
  }
  let pane=1;
- if(opts.volume){const s=chart.addSeries(L.HistogramSeries,{priceFormat:{type:'volume'},priceLineVisible:false,lastValueVisible:false},pane++);s.setData(rows.filter(r=>r.volume!==null).map(r=>({time:r.time,value:r.volume,color:r.close>=r.open?'#26a69a99':'#ef535099'})));s.priceScale().applyOptions({scaleMargins:{top:.28,bottom:0}});}
+ if(opts.volume){
+  const idx=pane++,s=chart.addSeries(L.HistogramSeries,{priceFormat:{type:'volume'},priceLineVisible:false,lastValueVisible:false},idx);
+  s.setData(rows.filter(r=>Number.isFinite(r.volume)).map(r=>({time:r.time,value:r.volume,color:opts.volumeSplit?(r.unclassified_volume>0?'#8b95a5':red):(r.close>=r.open?'#26a69a99':'#ef535099')})));
+  if(opts.volumeSplit){
+   // Both series share one linear zero baseline. Opaque green covers the lower
+   // buy portion of total red; the red remainder is sell, never double volume.
+   const buy=chart.addSeries(L.HistogramSeries,{color:green,priceFormat:{type:'volume'},priceLineVisible:false,lastValueVisible:false,autoscaleInfoProvider:()=>null},idx);
+   buy.setData(rows.filter(r=>Number.isFinite(r.volume)).map(r=>Number.isFinite(r.buy_volume_est)&&r.buy_volume_est>0?{time:r.time,value:r.buy_volume_est}:{time:r.time}));
+   series.buy_volume_est=buy;
+  }
+  s.priceScale().applyOptions({mode:L.PriceScaleMode.Normal,scaleMargins:{top:.28,bottom:0}});series.volume=s;
+ }
  if(opts.rsi){const s=chart.addSeries(L.LineSeries,{color:'#b39ddb',lineWidth:2,priceLineVisible:false,lastValueVisible:true,priceFormat:{type:'price',precision:1,minMove:.1},autoscaleInfoProvider:()=>({priceRange:{minValue:0,maxValue:100}})},pane++);s.setData(points('rsi'));for(const v of [30,70])s.createPriceLine({price:v,color:'#596578',lineWidth:1,lineStyle:L.LineStyle.Dashed,axisLabelVisible:true});}
  if(opts.macd){const idx=pane++;const hist=chart.addSeries(L.HistogramSeries,{priceLineVisible:false,lastValueVisible:false},idx);hist.setData(rows.filter(r=>r.hist!==null).map(r=>({time:r.time,value:r.hist,color:r.hist>=0?'#26a69ab3':'#ef5350b3'})));for(const [f,color] of [['macd','#5b9cf6'],['signal','#f3b34c']]){const s=chart.addSeries(L.LineSeries,{color,lineWidth:2,priceLineVisible:false,lastValueVisible:false},idx);s.setData(points(f));}}
  const panes=chart.panes();
@@ -270,6 +293,7 @@ function create(){
  if(currentRange)chart.timeScale().setVisibleLogicalRange(currentRange);else reset();
  chart.subscribeCrosshairMove(param=>{const v=param.seriesData.get(candles);const r=v&&byTime.get(String(v.time));readout(r||last);});
  for(const name of Object.keys(opts))el(name).setAttribute('aria-pressed',String(opts[name]));
+ el('volumeSplit').disabled=!opts.volume;
  paneLabels();readout(last);
 }
 try{create();}catch(e){failure('แสดงกราฟไม่สำเร็จ: '+e.message);return;}

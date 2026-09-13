@@ -102,7 +102,7 @@ def observations(bundle):
     currency = bundle.get('currency') or 'Currency not reported'
     result = {}
 
-    def put(key, value, basis, end, formula=None, state='available', reason=''):
+    def put(key, value, basis, end, formula=None, state='available', reason='', period_ends=None):
         value = number(value)
         if key in ('totalAssets','totalLiabilities','totalDebt','cash',
                    'currentAssets','currentLiabilities','receivables','inventory') and value is not None and value < 0:
@@ -111,10 +111,11 @@ def observations(bundle):
                        'currency': currency, 'source': SOURCE, 'formula': formula,
                        'state': state if value is not None or state != 'available' else 'missing_inputs',
                        'reason': reason}
+        if period_ends:
+            result[key]['period_ends'] = list(period_ends)
 
     quarterly = bundle.get('quarterly', {})
     annual = bundle.get('annual', {})
-    flow_end, basis = None, 'FY'
     # Select the latest complete window for each statement independently. A
     # delayed cash-flow report must not hide a newer income statement. Derived
     # ratios below still require exactly matching period labels and end dates.
@@ -129,7 +130,8 @@ def observations(bundle):
                 values = [number(r['values'].get(key)) for r in quarters[:4]]
                 if all(v is not None for v in values):
                     put(key, sum(values), selected_basis, selected_end,
-                        'Sum of 4 consecutive reported quarters')
+                        'Sum of 4 consecutive reported quarters',
+                        period_ends=[r['end'] for r in quarters[:4]])
         else:
             selected_end, selected_basis = (years[0]['end'] if years else None), 'FY'
         # A known annual observation is not "not reported" merely because a
@@ -139,11 +141,14 @@ def observations(bundle):
                 record = next((r for r in years if number(r['values'].get(key)) is not None), None)
                 if record:
                     put(key, record['values'][key], 'FY', record['end'])
-        if kind == 'income':
-            flow_end, basis = selected_end, selected_basis
 
-    balances = {r['end']: r for r in annual.get('balance', [])}
-    balances.update({r['end']: r for r in quarterly.get('balance', [])})
+    balances = {}
+    for record in [*annual.get('balance', []), *quarterly.get('balance', [])]:
+        # The same balance date describes the same point in time; a partial
+        # quarterly copy must not erase fields reported in its annual counterpart.
+        old = balances.get(record['end'], {}).get('values', {})
+        supplied = {key:value for key,value in record['values'].items() if number(value) is not None}
+        balances[record['end']] = {'end': record['end'], 'values': {**old, **supplied}}
     latest_balance = balances[max(balances)] if balances else None
     if latest_balance:
         for key, value in latest_balance['values'].items():
@@ -156,16 +161,19 @@ def observations(bundle):
             return
         if len({r['currency'] for r in rows}) != 1 or (same_basis and len({(r['basis'], r['end']) for r in rows}) != 1):
             return
+        if same_basis and len({tuple(r.get('period_ends', [])) for r in rows}) != 1:
+            return
         values = [r['value'] for r in rows]
         if denominator is not None and values[denominator] <= 0:
             put(key, None, rows[0]['basis'], rows[0]['end'], formula,
-                'not_meaningful', 'Denominator is zero or negative')
+                'not_meaningful', 'Denominator is zero or negative', rows[0].get('period_ends'))
             return
         try:
             value = fn(*values)
         except (ZeroDivisionError, OverflowError):
             return
-        put(key, value, rows[0]['basis'], rows[0]['end'], formula)
+        put(key, value, rows[0]['basis'], rows[0]['end'], formula,
+            period_ends=rows[0].get('period_ends'))
 
     for key, numerator in [('grossMargins', 'grossProfit'), ('operatingMargins', 'operatingIncome'),
                            ('profitMargins', 'netIncome'), ('fcfMargin', 'freeCashflow')]:
@@ -194,31 +202,52 @@ def observations(bundle):
             valid = row['value'] is not None and row['value'] <= 0
             put(key, -row['value'] if valid else None, row['basis'], row['end'],
                 'Negative reported cash outflow displayed as spending',
-                'available' if valid else 'invalid', '' if valid else 'Unexpected positive cash-outflow sign')
-    if 'freeCashflow' not in result:
+                'available' if valid else 'invalid', '' if valid else 'Unexpected positive cash-outflow sign',
+                row.get('period_ends'))
+    fcf, ocf, capex = (result.get(k, {}) for k in ('freeCashflow', 'operatingCashflow', 'capex'))
+    newer_complete_fcf = (ocf.get('state') == capex.get('state') == 'available'
+                          and ocf.get('basis') == capex.get('basis') == 'TTM (4 reported quarters)'
+                          and ocf.get('end') == capex.get('end')
+                          and ocf.get('period_ends') == capex.get('period_ends')
+                          and fcf.get('basis') == 'FY'
+                          and (fcf.get('end') or '') <= (ocf.get('end') or ''))
+    if not fcf or newer_complete_fcf:
+        if newer_complete_fcf:
+            result.pop('fcfMargin', None)
         derived('freeCashflow', ['operatingCashflow', 'capex'], lambda x,y: x-y,
                 'Operating cash flow - capital expenditure spending')
         derived('fcfMargin', ['freeCashflow', 'revenue'], lambda x,y: x/y,
                 'Free cash flow / revenue', denominator=1)
 
-    # ROE / ROA / ROIC use balance dates one year apart ending at the flow date.
-    end = day(flow_end)
-    closing = balances.get(flow_end, {}).get('values', {})
-    prior_dates = sorted((d for d in balances if end and 350 <= (end-day(d)).days <= 380), reverse=True)
-    opening = balances[prior_dates[0]]['values'] if prior_dates else {}
+    # Each return ratio follows the date/basis of its own actual flow input.
+    # An incomplete newer TTM must not hide a fully matched, clearly labeled FY.
+    def capital_pair(flow):
+        flow_end = flow.get('end')
+        end = day(flow_end)
+        closing = balances.get(flow_end, {}).get('values', {})
+        prior_dates = sorted((d for d in balances if end and day(d)
+                              and 350 <= (end-day(d)).days <= 380), reverse=True)
+        opening = balances[prior_dates[0]]['values'] if prior_dates else {}
+        return opening, closing
+
+    income = result.get('netIncome', {})
+    opening, closing = capital_pair(income)
+    flow_end, basis = income.get('end'), income.get('basis')
     for key, capital in [('returnOnEquity', 'stockholdersEquity'), ('returnOnAssets', 'totalAssets')]:
-        income = result.get('netIncome', {})
         start, finish = number(opening.get(capital)), number(closing.get(capital))
         if income.get('end') == flow_end and income.get('basis') == basis and income.get('value') is not None and start is not None and finish is not None:
             good = start > 0 and finish > 0
             put(key, income['value']/((start+finish)/2) if good else None, basis, flow_end,
                 f'Net income / average opening and closing {capital}',
-                'available' if good else 'not_meaningful', '' if good else 'Opening or closing capital is non-positive')
+                'available' if good else 'not_meaningful', '' if good else 'Opening or closing capital is non-positive', income.get('period_ends'))
     capital_fields = ('stockholdersEquity', 'totalDebt', 'cash')
     operating = result.get('operatingIncome', {})
+    opening, closing = capital_pair(operating)
+    flow_end, basis = operating.get('end'), operating.get('basis')
     pretax, tax = result.get('pretaxIncome', {}), result.get('taxProvision', {})
     if (flow_end and all(number(r.get(k)) is not None for r in (opening, closing) for k in capital_fields)
-            and all(r.get('end') == flow_end and r.get('basis') == basis and r.get('value') is not None for r in (operating, pretax, tax))):
+            and all(r.get('end') == flow_end and r.get('basis') == basis and r.get('value') is not None for r in (operating, pretax, tax))
+            and len({tuple(r.get('period_ends', [])) for r in (operating, pretax, tax)}) == 1):
         first = opening['stockholdersEquity'] + opening['totalDebt'] - opening['cash']
         last = closing['stockholdersEquity'] + closing['totalDebt'] - closing['cash']
         effective_tax = tax['value']/pretax['value'] if pretax['value'] > 0 else None
@@ -227,7 +256,8 @@ def observations(bundle):
         put('roic', operating['value']*(1-effective_tax)/((first+last)/2) if good else None,
             basis, flow_end, 'Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)',
             'available' if good else 'not_meaningful',
-            '' if good else 'Non-positive invested capital or tax rate outside 0–100%; no assumed tax rate used')
+            '' if good else 'Non-positive invested capital or tax rate outside 0–100%; no assumed tax rate used',
+            operating.get('period_ends'))
 
     # Historical growth always compares two reported full fiscal years.
     ai = annual.get('income', [])
