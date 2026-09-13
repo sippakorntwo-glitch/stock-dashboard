@@ -117,7 +117,10 @@ def main():
         else:
             if reader: reader.request(ticker)
             history,meta=cache.history(ticker)
-            info,_=cache.get('info:'+ticker); info=info or {}
+            info,_=cache.get('info:'+ticker); info=dict(info or {})
+            statements,_=cache.get('financials:'+ticker)
+            if statements:
+                info['_FinancialStatements']=statements
             selected=frame.loc[frame.Ticker.eq(ticker)]
             row=selected.iloc[0].to_dict() if not selected.empty else {}
             st.subheader(f"{ticker} · {info.get('shortName') or row.get('Security_Name') or ''}")

@@ -15,6 +15,8 @@ from data_sync import ObjectStore, config_from, read_manifest, read_checked, res
 
 QUOTE_FIELDS = ['Close','Return_1D','Return_1M','Return_3M','Return_6M','Historical_Return','Return_2Y','Return_3Y','EMA20','EMA50','SMA200','RSI_14','MACD','MACD_Signal','Vol_Ratio','ATR','ATR_Pct','Dollar_Volume_20D','Volatility_20D','Drawdown_52W','Suggested_Stop']
 STOCK_FIELDS = ['currency','industry','sector','country','marketCap','forwardPE','trailingPE','priceToBook','enterpriseToEbitda','revenueGrowth','earningsGrowth','profitMargins','operatingMargins','returnOnEquity','returnOnAssets','operatingCashflow','freeCashflow','totalCash','totalDebt','targetMeanPrice','numberOfAnalystOpinions','regularMarketPrice','regularMarketTime','beta','bid','ask','earningsTimestampStart']
+from company_metrics import AUDIT_PROVIDER_FIELDS
+STOCK_FIELDS = list(dict.fromkeys([*STOCK_FIELDS, *AUDIT_PROVIDER_FIELDS]))
 ETF_FIELDS = ['currency','category','fundFamily','totalAssets','navPrice','beta3Year','regularMarketPrice','regularMarketTime']
 
 
@@ -70,6 +72,9 @@ def inspect_cache(cache, universe, manifest=None, source_summary=None):
     default=set(a.select_universe(pd.DataFrame(columns=['Ticker'])))
     registry=set(universe)
     result={'audited_at':pd.Timestamp.now(tz='UTC').isoformat(),'generation':(manifest or {}).get('generation'),'counts':dict(counts),'quote_missing':dict(q_missing),'information_missing':{k:dict(v) for k,v in info_missing.items()},'bad_history':bad_history,'ranking_universe_only':len(default-registry),'dashboard_universe_only':len(registry-default),'missing_ranking_summary':len(default-set(quotes)),'ranking_only_examples':sorted(default-registry)[:12],'samples':samples}
+    from company_financials_job import audit_all
+    company_audit,_=audit_all(cache,universe,set(a.ETF_NAMES))
+    result['company_financial_analysis']=company_audit
     if source_summary is not None:
         result['snapshot_summary_members']=len(source_summary.get('universe',[]))
         result['checkpoint_vs_summary_missing']=len(set(source_summary.get('quotes',{}))-set(quotes))

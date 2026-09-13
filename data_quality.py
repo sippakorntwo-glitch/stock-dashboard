@@ -11,12 +11,15 @@ import re
 import zlib
 import pandas as pd
 
-VERSION = 1
+VERSION = 2
 LABELS = {'available':'มีข้อมูล','pending':'รอโหลดข้อมูล','failed':'โหลดไม่สำเร็จ — รอลองใหม่',
           'not_reported':'แหล่งข้อมูลไม่รายงาน','short_history':'ประวัติไม่ยาวพอ',
           'missing_inputs':'ข้อมูลต้นทางไม่พอคำนวณ','no_payments':'ตรวจแล้ว ไม่พบรายการในช่วงข้อมูล',
-          'not_applicable':'ไม่ใช้กับสินทรัพย์นี้'}
+          'not_applicable':'ไม่ใช้กับสินทรัพย์นี้','not_meaningful':'ตีความอัตราส่วนไม่ได้',
+          'invalid':'ค่าต้นทางไม่ผ่านการตรวจสอบ'}
 STOCK_FIELDS = ['currency','industry','sector','country','marketCap','forwardPE','trailingPE','priceToBook','enterpriseToEbitda','revenueGrowth','earningsGrowth','profitMargins','operatingMargins','returnOnEquity','returnOnAssets','operatingCashflow','freeCashflow','totalCash','totalDebt','targetMeanPrice','numberOfAnalystOpinions','regularMarketPrice','regularMarketTime','beta','bid','ask','earningsTimestampStart']
+from company_metrics import AUDIT_PROVIDER_FIELDS
+STOCK_FIELDS = list(dict.fromkeys([*STOCK_FIELDS, *AUDIT_PROVIDER_FIELDS]))
 ETF_FIELDS = ['currency','category','fundFamily','totalAssets','navPrice','beta3Year','regularMarketPrice','regularMarketTime']
 BARS_REQUIRED = {'Close':1,'Return_1D':2,'Return_3D':4,'Return_7D':8,'EMA20':20,'EMA50':50,'SMA200':200,'RSI_14':15,'MACD':26,'MACD_Signal':34,'Vol_Ratio':21,'ATR':14,'ATR_Pct':14,'Dollar_Volume_20D':20,'Volatility_20D':21,'Drawdown_52W':252,'Suggested_Stop':14}
 MONTHS_REQUIRED = {'Return_1M':1,'Return_3M':3,'Return_6M':6,'Historical_Return':12,'Return_2Y':24,'Return_3Y':36,'Return_5Y':60}
@@ -54,7 +57,7 @@ def checked_universe(summary):
     return tuple(raw)
 
 
-def read_objects(cache, prefixes=('info:','dividends:','history:1d:','attempt:')):
+def read_objects(cache, prefixes=('info:','dividends:','history:1d:','attempt:','financials:')):
     result={}
     with cache.connect() as db:
         for key,body,meta in db.execute('SELECT key,body,metadata FROM objects'):
@@ -121,9 +124,16 @@ def make_quality(cache, universe, *, etfs=(), now=None):
             if status!='available':missing_metrics[field]=status
         missing_fields=[]
         for field in ETF_FIELDS if is_etf else STOCK_FIELDS:
-            state='available' if present(info.get(field)) else missing_state(objects,'info',t)
+            from asset_semantics import field_state
+            state=field_state(t,info,field,is_etf=is_etf)
+            if state=='pending':state=missing_state(objects,'info',t)
             count(('etf.' if is_etf else 'stock.')+field,state)
-            if state!='available':missing_fields.append(field)
+            if state in ('pending','failed','not_reported','invalid'):missing_fields.append(field)
+        from company_metrics import audit_profile
+        financials=objects.get('financials:'+t,(None,{}))[0]
+        company_states=audit_profile(t,info,financials,is_etf=is_etf)
+        for field,state in company_states.items():count('company.'+field,state)
+        counts['financial_statements']+=int(bool(financials))
         counts['unattempted_info']+=int(info_state=='pending')
         counts['unattempted_dividends']+=int(dstate=='pending')
         symbols[t]={'asset_type':'ETF' if is_etf else 'Common Stock','industry_state':istate,

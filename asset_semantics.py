@@ -21,6 +21,8 @@ NON_EQUITY_CATEGORY=re.compile(r'commodit|\bbonds?\b|fixed income|treasur|money 
 CORPORATE_FIELDS=frozenset(('industry','sector','marketCap','enterpriseToEbitda','revenueGrowth','earningsGrowth',
     'profitMargins','operatingMargins','returnOnEquity','returnOnAssets','operatingCashflow','freeCashflow',
     'totalCash','totalDebt','targetMeanPrice','numberOfAnalystOpinions','earningsTimestampStart','forwardEps','trailingEps'))
+CORPORATE_FIELDS |= frozenset(('enterpriseValue','priceToSalesTrailing12Months','enterpriseToRevenue',
+    'grossMargins','totalRevenue','ebitda','netIncomeToCommon','debtToEquity','currentRatio','quickRatio','payoutRatio'))
 FUND_FIELDS=frozenset(('category','fundFamily','totalAssets','navPrice','beta3Year','annualReportExpenseRatio'))
 RATIO_FIELDS=frozenset(('forwardPE','trailingPE','priceToBook'))
 TEXT_FIELDS=frozenset(('industry','industryDisp','sector','category','fundFamily','country','currency','financialCurrency','shortName','longName','quoteType'))
