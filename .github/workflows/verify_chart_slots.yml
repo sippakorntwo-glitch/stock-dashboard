@@ -2,7 +2,7 @@ name: Verify chart replacement stability
 on:
   push:
     branches: [main]
-    paths: [.github/workflows/verify_chart_slots.yml, production_smoke.py, asset_reference_smoke.py, chart_stability_smoke.py]
+    paths: [.github/workflows/verify_chart_slots.yml, production_smoke.py, ranking_smoke.py, asset_reference_smoke.py, chart_stability_smoke.py]
   workflow_dispatch:
 permissions:
   contents: read
