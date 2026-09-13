@@ -21,6 +21,8 @@ NON_EQUITY_CATEGORY=re.compile(r'commodit|\bbonds?\b|fixed income|treasur|money 
 CORPORATE_FIELDS=frozenset(('industry','sector','marketCap','enterpriseToEbitda','revenueGrowth','earningsGrowth',
     'profitMargins','operatingMargins','returnOnEquity','returnOnAssets','operatingCashflow','freeCashflow',
     'totalCash','totalDebt','targetMeanPrice','numberOfAnalystOpinions','earningsTimestampStart','forwardEps','trailingEps'))
+CORPORATE_FIELDS |= frozenset(('enterpriseValue','priceToSalesTrailing12Months','enterpriseToRevenue',
+    'grossMargins','totalRevenue','ebitda','netIncomeToCommon','debtToEquity','currentRatio','quickRatio','payoutRatio'))
 FUND_FIELDS=frozenset(('category','fundFamily','totalAssets','navPrice','beta3Year','annualReportExpenseRatio'))
 RATIO_FIELDS=frozenset(('forwardPE','trailingPE','priceToBook'))
 TEXT_FIELDS=frozenset(('industry','industryDisp','sector','category','fundFamily','country','currency','financialCurrency','shortName','longName','quoteType'))
@@ -53,6 +55,9 @@ def field_state(ticker,info,field,*,is_etf=False):
     if not fund and field in ('forwardPE','trailingPE'):
         eps=number(info.get('forwardEps' if field=='forwardPE' else 'trailingEps'))
         if eps is not None and eps<=0:return 'not_meaningful'
+    if not fund and field in ('priceToSalesTrailing12Months','enterpriseToRevenue'):
+        revenue=number(info.get('totalRevenue'))
+        if revenue is not None and revenue<=0:return 'not_meaningful'
     raw=info.get(field)
     if raw is None or (isinstance(raw,str) and raw.strip().casefold() in ABSENT):return 'not_reported' if info else 'pending'
     if field in TEXT_FIELDS:return 'available' if isinstance(raw,str) and raw.strip() else 'invalid'

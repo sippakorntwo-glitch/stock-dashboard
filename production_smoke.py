@@ -87,13 +87,38 @@ def chart_for_symbol(page,app,ticker):
     raise RuntimeError('No real candlestick history rendered for '+ticker)
 
 
-def verify_sections(app):
+def verify_fundamentals(app,ticker,*,is_fund=False):
+    section=app.locator('.st-key-research_fundamentals')
+    groups=section.locator('.st-key-company_financial_analysis .company-analysis')
+    if is_fund:
+        expect(groups).to_have_count(0)
+        expect(section.locator('.workspace-help-table').first).to_be_visible()
+        return {'ticker':ticker,'fund_specific_table':True}
+    expect(section.get_by_role('heading',name='Company Financial Analysis',exact=True)).to_be_visible()
+    expect(groups).to_have_count(9)
+    expect(groups.filter(has=app.locator('table.company-table'))).to_have_count(9)
+    assert groups.evaluate_all('(xs)=>xs.every(x=>x.dataset.ticker=== '+json.dumps(ticker)+')')
+    rows=groups.locator('tbody tr[data-metric]')
+    expect(rows).to_have_count(54)
+    assert len(set(rows.evaluate_all('(xs)=>xs.map(x=>x.dataset.metric)')))==54
+    expect(rows.locator('th abbr[title][tabindex="0"]')).to_have_count(54)
+    expect(groups.locator('td [title], thead [title]')).to_have_count(0)
+    expect(groups.locator('details.company-glossary')).to_have_count(9)
+    for row in rows.all():
+        expect(row.locator('td')).to_have_count(5)
+        assert all(cell.strip() and cell.strip() not in ('None','nan','null') for cell in row.locator('td').all_text_contents())
+        assert len(row.locator('abbr').get_attribute('title'))>25
+    expect(section.get_by_role('button',name='Download company analysis',exact=True)).to_be_visible()
+    return {'ticker':ticker,'groups':9,'metrics':54,'metric_only_help':True}
+
+
+def verify_sections(app,ticker,*,is_fund=False):
     no_exception(app)
     expect(app.locator('[data-testid="stSidebar"]').get_by_role('radiogroup')).to_have_count(0)
     for section,title in [('research_technical','กราฟและแผนซื้อ'),('research_fundamentals','พื้นฐานและปันผล'),('research_risk','ความเสี่ยง'),('research_comparison','เปรียบเทียบหลายตัว')]:
         expect(app.locator('.st-key-'+section).get_by_role('heading',name=title,exact=True)).to_be_visible(timeout=60000)
     expect(app.locator('.st-key-research_fundamentals').get_by_role('heading',name=re.compile('ประวัติปันผล'))).to_be_visible(timeout=60000)
-    expect(app.locator('.st-key-research_fundamentals .workspace-help-table').first).to_be_visible()
+    verify_fundamentals(app,ticker,is_fund=is_fund)
     expect(app.locator('.st-key-research_risk [data-testid="stPlotlyChart"]')).to_have_count(2,timeout=60000)
     expect(app.locator('.st-key-research_comparison [data-testid="stPlotlyChart"]')).to_have_count(1,timeout=120000)
     expect(app.locator('.st-key-research_comparison').get_by_role('heading',name='Correlation ของผลตอบแทนรายวัน')).to_be_visible(timeout=30000)
@@ -136,20 +161,22 @@ def run():
             chart.locator('#rsi').click();chart.locator('#macd').click()
             page.wait_for_timeout(1000)
             if chart.locator('#error').is_visible(): raise RuntimeError('Candlestick JavaScript error')
-            verify_sections(app)
+            verify_sections(app,'AAPL')
+            report['company_analysis']=[verify_fundamentals(app,'AAPL')]
             print('VERIFIED_INITIAL_SINGLE_PAGE: AAPL; all research sections',flush=True)
             from chart_commentary_smoke import verify_chart_commentary
             report['chart_commentary']=verify_chart_commentary(page,app,payload,screenshot=True)
             report.update(chart=True,chart_bars=len(payload['records']),chart_last_bar=payload.get('lastBar'),deployed_version=version,views=list(VIEWS))
             for ticker,row_selector in [('MSFT',False),('AAPL',True)]:
                 chart,payload=click_filtered_stock(page,app,ticker,row_selector=row_selector)
-                verify_sections(app)
+                verify_sections(app,ticker)
+                report['company_analysis'].append(verify_fundamentals(app,ticker))
                 report['selections'].append({'ticker':ticker,'via':'row' if row_selector else 'cell','bars':len(payload['records'])})
                 print('VERIFIED_STOCK_SELECTION:',ticker,flush=True)
             field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
             field.fill('SPY');field.press('Enter')
             chart,payload=chart_for_symbol(page,app,'SPY')
-            verify_sections(app)
+            verify_sections(app,'SPY',is_fund=True)
             expect(app.locator('.st-key-research_comparison').get_by_text('QQQ',exact=True).first).to_be_visible()
             report['selections'].append({'ticker':'SPY','via':'manual','bars':len(payload['records'])})
             from enhanced_smoke import verify_enhancements

@@ -21,14 +21,17 @@ from sec_reference import SecClient,INDEX_URL,INDEX_TTL,REFERENCE_TTL,ticker_ind
 def profile_audit(cache,universe,etfs):
     from data_quality import STOCK_FIELDS,ETF_FIELDS,read_objects,present
     profiles=read_objects(cache,('info:',));classes=cache.classifications();quotes=cache.quotes()
+    financials=read_objects(cache,('financials:',))
     fields=list(dict.fromkeys([*STOCK_FIELDS,*ETF_FIELDS,'forwardEps','trailingEps','annualReportExpenseRatio']))
     totals=Counter();by_field=defaultdict(Counter);rows=[];examples={}
     for ticker in universe:
         info,meta=profiles.get('info:'+ticker,({},{}));info=info if isinstance(info,dict) else {}
         etf=ticker in etfs;states={f:field_state(ticker,info,f,is_etf=etf) for f in fields}
+        from company_metrics import audit_profile
+        states.update({'company.'+k:v for k,v in audit_profile(ticker,info,financials.get('financials:'+ticker,(None,{}))[0],is_etf=etf).items()})
         kind=kind_for(ticker,info,etf);totals[kind]+=1
         for field,state in states.items():by_field[('fund.' if etf else 'stock.')+field][state]+=1
-        missing=[f for f,s in states.items() if s in ('pending','not_reported')]
+        missing=[f for f,s in states.items() if s in ('pending','not_reported','missing_inputs')]
         invalid=[f for f,s in states.items() if s=='invalid']
         totals['with_missing_applicable_fields']+=bool(missing);totals['with_invalid_fields']+=bool(invalid)
         rows.append({'Ticker':ticker,'Asset_Type':'ETF / ETP' if etf else 'Common Stock','Asset_Profile':kind,

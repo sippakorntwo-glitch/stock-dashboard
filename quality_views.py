@@ -12,7 +12,8 @@ def placeholder_options():
 
 def snapshot_quality(cache):
     quality,_=cache.get('remote:quality',request_remote=False)
-    return quality if isinstance(quality,dict) and quality.get('version')==1 else {}
+    # Version 2 adds company metrics; old snapshots remain readable during rollout.
+    return quality if isinstance(quality,dict) and quality.get('version') in (1,2) else {}
 
 
 def industry_display(frame,quality):

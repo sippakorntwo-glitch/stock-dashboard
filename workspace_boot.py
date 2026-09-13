@@ -16,6 +16,7 @@ from types import ModuleType
 _LOCK = threading.RLock()
 _ROOT = Path(__file__).resolve().parent
 _MODULES = ('dashboard_ui', 'dashboard_views', 'dashboard_runtime', 'dashboard_core', 'data_sync', 'github_store', 'analytics', 'dashboard_help', 'chart_ranges', 'dashboard_selection', 'chart_performance', 'ranking_board', 'ranking_engine', 'ranking_policy', 'data_quality', 'metadata_repair', 'quality_views', 'chart_inspector', 'return_periods', 'catalog_extension', 'screening', 'filters_ui', 'return_audit_ui', 'workspace_theme', 'live_quotes', 'live_quote_ui', 'ui_stability', 'asset_semantics', 'sec_reference', 'reference_ui', 'chart_commentary')
+_MODULES += ('financial_statements', 'company_metrics', 'company_analysis_ui')
 
 
 def needs_refresh(runtime: ModuleType, ui: ModuleType, expected: str) -> bool:

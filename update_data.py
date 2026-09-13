@@ -93,7 +93,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
             handles = {}
             with ExitStack() as stack:
                 for key, compressed, meta in db.execute("SELECT key, body, metadata FROM objects"):
-                    if not key.startswith(("history:1d:", "info:", "dividends:", "reference:")):
+                    if not key.startswith(("history:1d:", "info:", "dividends:", "reference:", "financials:")):
                         continue
                     ticker = key.rsplit(":", 1)[-1]
                     if ticker not in universe:
@@ -110,6 +110,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
             "checked_today": sum(app.summary_is_current(r) for r in quotes.values()),
             "industry": sum(bool(app.clean_industry(r.get("Industry"))) for r in classifications.values()),
             "info": sum(f"info:{t}" in metadata for t in universe),
+            "financial_statements": sum(f"financials:{t}" in metadata for t in universe),
             "dividends": sum(f"dividends:{t}" in metadata for t in universe),
             "return_1y": sum(app.number(r.get("Historical_Return")) is not None for r in quotes.values()),
             "return_2y": sum(app.number(r.get("Return_2Y")) is not None for r in quotes.values()),

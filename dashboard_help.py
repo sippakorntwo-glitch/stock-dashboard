@@ -125,6 +125,10 @@ def field_help(name):
     tip=return_help(name)
     if tip is not None:return tip
     name=str(name)
+    # New company metrics have English definitions shared with their calculations.
+    from company_metrics import METRICS
+    company=next((metric for metric in METRICS if metric.label == name and metric.label not in ('Forward P/E','Trailing P/E')),None)
+    if company is not None:return company.definition
     if name.startswith('ปันผลต่อหน่วย'):return HELP['Dividend_Per_Share']
     return HELP.get(name,f'{name}: ค่าจากชุดข้อมูลที่แสดง ตรวจหน่วย วันที่ และแหล่งข้อมูลประกอบ ช่องว่างไม่ใช่ศูนย์')
 

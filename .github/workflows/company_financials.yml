@@ -1,0 +1,48 @@
+name: Collect and audit company financial statements
+on:
+  push:
+    branches: [main]
+    paths: [financial_statements.py, company_metrics.py, company_financials_job.py, .github/workflows/company_financials.yml]
+  workflow_dispatch:
+  schedule:
+    - cron: '43 4,16 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: prepared-market-data
+  cancel-in-progress: false
+jobs:
+  collect:
+    if: github.repository == 'sippakorntwo-glitch/stock-dashboard' && github.ref == 'refs/heads/main' && toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install and verify financial calculations
+        run: |
+          python -m pip install -q -r requirements-dev.txt
+          python -m pytest -q tests/test_company_financials.py
+      - name: Collect due statements and audit every security
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          PYTHONUNBUFFERED: '1'
+        run: python company_financials_job.py --publish --limit 150 --minutes 12
+      - name: Preserve completeness and calculation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: company-financials-audit
+          path: |
+            work/company-financials*.json
+            work/company-financials*.csv
+          retention-days: 14

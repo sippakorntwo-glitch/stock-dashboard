@@ -37,11 +37,13 @@ def read_download(page,button):
 
 def verify_quality(page,app):
     """Audit backend quality data; the public diagnostic panels are intentionally absent."""
-    from production_smoke import no_exception,chart_for_symbol,wait_page_ready
+    from production_smoke import no_exception,chart_for_symbol,wait_page_ready,verify_fundamentals
     from clean_ui_smoke import verify_clean_presentation
     manifest,summary=public_summary()
     quality=summary.get('quality',{})
-    assert quality.get('version')==1, 'Published backend quality report must remain available'
+    assert quality.get('version') in (1,2), 'Published backend quality report must remain available'
+    if quality['version']==2:
+        assert len([key for key in quality['columns'] if key.startswith('company.')])>=50
     assert set(quality['symbols'])==set(summary['universe'])
     total=len(summary['universe'])
     etfs=sum(v['asset_type']=='ETF' for v in quality['symbols'].values())
@@ -60,8 +62,8 @@ def verify_quality(page,app):
         ticker_input.fill(ticker);ticker_input.press('Enter')
         wait_page_ready(app,ticker=ticker)
         if ticker!='AESP':chart_for_symbol(page,app,ticker)
-        assert app.locator('.st-key-research_fundamentals .workspace-help-table').count()>=1
-        values=app.locator('.st-key-research_fundamentals .workspace-help-table td').all_text_contents()
+        verify_fundamentals(app,ticker,is_fund=ticker=='SPY')
+        values=app.locator('.st-key-research_fundamentals .workspace-help-table td, .st-key-research_fundamentals .company-table td').all_text_contents()
         assert not any(v.strip() in ('None','nan','null') for v in values)
         verify_clean_presentation(app)
         no_exception(app)
