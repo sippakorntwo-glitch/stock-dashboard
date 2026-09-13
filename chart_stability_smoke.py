@@ -6,12 +6,12 @@ from playwright.sync_api import expect
 
 
 def verify_chart_stability(page,app):
-    from production_smoke import wait_page_ready,chart_for_symbol,wait_for_release,no_exception
+    from production_smoke import wait_page_ready,chart_for_symbol,wait_for_release,no_exception,select_manual_ticker
     from enhanced_smoke import wait_range
     from chart_commentary_smoke import verify_chart_commentary
     field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
     current=field.input_value();wait_page_ready(app,current)
-    field.fill('SPY');field.press('Enter')
+    field=select_manual_ticker(app,'SPY')
     wait_page_ready(app,'SPY')
     report={'period_switches':[],'reloads':[],'timer_seconds':65}
     for period in ('1 วัน','3 วัน','1 วัน','3 วัน','5 ปี','1 ปี'):

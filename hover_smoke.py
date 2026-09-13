@@ -117,12 +117,11 @@ production iframes. Both drag endpoints must lie inside every clipping frame.
 
 
 def verify_hover(page, app):
-    from production_smoke import chart_for_symbol, no_exception
+    from production_smoke import chart_for_symbol, no_exception, select_manual_ticker
     errors=[]
     page.on('pageerror', lambda e: errors.append(str(e)))
     # Verify the symbol shown in the owner's example rather than only a demo.
-    manual=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
-    manual.fill('ORCL');manual.press('Enter')
+    manual=select_manual_ticker(app,'ORCL')
     app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 ปี',exact=True).click()
     frame,payload=chart_for_symbol(page,app,'ORCL')
     for key in ['ema20','ema50','sma200','volume','volumeSplit','rsi','macd','inspect-toggle']:
@@ -191,7 +190,7 @@ def verify_hover(page, app):
             'pin_and_escape':True,'keyboard':True,'optional_toggle':True,
             'pan_reset':True,'pan_geometry':drag,'edge_bounds':True,'latest_price_and_period_return_unchanged':True}
     # Verify intraday epoch timestamps and exchange timezone with real SPY data.
-    manual.fill('SPY');manual.press('Enter')
+    manual=select_manual_ticker(app,'SPY')
     app.get_by_role('radiogroup',name='ช่วงเวลาแสดงกราฟ').get_by_text('1 วัน',exact=True).click()
     from enhanced_smoke import wait_range
     frame,payload=wait_range(page,app,'1 วัน')

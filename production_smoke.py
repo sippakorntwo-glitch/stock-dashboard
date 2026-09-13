@@ -71,6 +71,40 @@ def wait_page_ready(app,ticker,query=None):
     no_exception(app)
 
 
+def select_manual_ticker(app,ticker):
+    """Enter a ticker once through an open, focused, on-screen sidebar input.
+
+    Responsive layout can leave sidebar controls mounted but outside the view.
+    Locator.fill alone does not establish that a human can reach the control.
+    """
+    app.wait_for_function('''() => {
+        const root=document.querySelector('[data-testid="stApp"]');
+        return root?.getAttribute('data-test-script-state')==='notRunning'
+            && root.getAttribute('data-test-connection-state')==='CONNECTED';
+    }''',timeout=60000)
+    sidebar=app.locator('[data-testid="stSidebar"]')
+    if sidebar.get_attribute('aria-expanded')!='true':
+        app.locator('[data-testid="stExpandSidebarButton"]').click()
+    expect(sidebar).to_have_attribute('aria-expanded','true')
+    field=sidebar.get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
+    field.scroll_into_view_if_needed()
+    field.click()
+    expect(field).to_be_focused()
+    geometry=field.evaluate('''element=>{
+        const r=element.getBoundingClientRect();
+        return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,
+            viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,
+            sidebarExpanded:element.closest('[data-testid="stSidebar"]').getAttribute('aria-expanded')};
+    }''')
+    assert (geometry['sidebarExpanded']=='true' and geometry['left']>=0 and geometry['top']>=0
+            and geometry['right']<=geometry['viewportWidth'] and geometry['bottom']<=geometry['viewportHeight']), geometry
+    field.fill(ticker)
+    expect(field).to_have_value(ticker)
+    expect(field).to_be_focused()
+    field.press('Enter')
+    return field
+
+
 def chart_for_symbol(page,app,ticker):
     wait_page_ready(app,ticker)
     deadline=time.monotonic()+120
@@ -226,8 +260,7 @@ def run():
                 report['company_analysis'].append(verify_fundamentals(app,ticker))
                 report['selections'].append({'ticker':ticker,'via':'row' if row_selector else 'cell','bars':len(payload['records'])})
                 print('VERIFIED_STOCK_SELECTION:',ticker,flush=True)
-            field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
-            field.fill('SPY');field.press('Enter')
+            field=select_manual_ticker(app,'SPY')
             chart,payload=chart_for_symbol(page,app,'SPY')
             verify_sections(app,'SPY',is_fund=True)
             expect(app.locator('.st-key-research_comparison').get_by_text('QQQ',exact=True).first).to_be_visible()
