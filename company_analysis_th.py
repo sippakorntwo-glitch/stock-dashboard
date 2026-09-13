@@ -415,3 +415,47 @@ def export_rows_th(rows):
         translated['สถานะข้อมูล'] = STATE_VALUES.get(row['_state'], STATE_VALUES['not_reported'])
         export.append(translated)
     return export
+
+
+LEGACY_360_LABELS = {
+    'Forward P/E': METRIC_TEXT['forwardPE'][0],
+    'Trailing P/E': METRIC_TEXT['trailingPE'][0],
+    'Target Price': METRIC_TEXT['targetMeanPrice'][0],
+    'Dividend Yield': 'อัตราผลตอบแทนเงินปันผล',
+    'Portfolio P/E': 'P/E ของหลักทรัพย์ในกองทุน',
+    'Portfolio Trailing P/E': 'P/E ย้อนหลังของหลักทรัพย์ในกองทุน',
+    'Portfolio Forward P/E': 'P/E คาดการณ์ของหลักทรัพย์ในกองทุน',
+    'Beta (3Y, provider)': 'เบตา 3 ปีจากผู้ให้ข้อมูล',
+}
+LEGACY_360_TEXT = {
+    'N/A — Not applicable': STATE_VALUES['not_applicable'],
+    'N/M — Non-positive earnings': 'N/M — กำไรเป็นศูนย์หรือติดลบ',
+    '— (invalid source value)': '— (ค่าต้นทางผิดปกติ)',
+    'Not reported': STATE_VALUES['not_reported'], 'Awaiting data': 'รอข้อมูล',
+    'Gold/bond/currency exposure has no underlying corporate earnings P/E.': 'การลงทุนในทองคำ ตราสารหนี้ หรือสกุลเงินไม่มี P/E จากกำไรบริษัทที่นำมาใช้กับกองทุนได้',
+    'Corporate analyst target price does not apply to this fund; compare NAV, strategy, costs and risk.': 'ราคาเป้าหมายนักวิเคราะห์สำหรับบริษัทไม่ใช้กับกองทุนนี้ ควรเทียบมูลค่าสินทรัพย์สุทธิ (NAV) กลยุทธ์ ค่าใช้จ่าย และความเสี่ยง',
+    'P/E is not meaningful with non-positive earnings; this is not a missing-data failure.': 'ตีความ P/E ไม่ได้เมื่อกำไรเป็นศูนย์หรือติดลบ กรณีนี้ไม่ใช่ความผิดพลาดจากข้อมูลที่ขาดหาย',
+    'Source value failed validation; excluded from this displayed metric.': 'ค่าต้นทางไม่ผ่านการตรวจสอบ จึงไม่นำมาแสดงเป็นค่าที่ใช้ได้ของตัวชี้วัดนี้',
+    'Holdings-level ratio reported by the provider, not earnings per ETF unit; methodology may differ between providers.': 'อัตราส่วนของหลักทรัพย์ที่กองทุนถือครองตามผู้ให้ข้อมูล ไม่ใช่กำไรต่อหน่วย ETF วิธีคำนวณอาจต่างกันระหว่างผู้ให้ข้อมูล',
+    'Provider three-year beta; not a missing company beta or a prediction.': 'ค่าเบตา 3 ปีจากผู้ให้ข้อมูล ไม่ใช่กรณีข้อมูลเบตาของบริษัทขาดหายและไม่ใช่การคาดการณ์',
+}
+
+
+def localize_360_frame(frame):
+    """Translate the legacy financial display after asset applicability is applied.
+
+    Keep this outside asset_semantics: canonical states and numerical scoring
+    callers still receive their original contracts. No numeric value is changed.
+    """
+    result = frame.copy(deep=True)
+    if 'ปัจจัย' not in result:
+        return result
+    for label, translated in LEGACY_360_LABELS.items():
+        mask = result['ปัจจัย'].eq(label)
+        if not mask.any():
+            continue
+        result.loc[mask, 'ปัจจัย'] = translated
+        for column in ('ค่าล่าสุด', 'การแปลผล'):
+            if column in result:
+                result.loc[mask, column] = result.loc[mask, column].map(lambda value: LEGACY_360_TEXT.get(value, value))
+    return result

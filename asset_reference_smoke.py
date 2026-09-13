@@ -46,9 +46,11 @@ def verify_asset_reference(page,app):
     section=app.locator('.st-key-research_fundamentals')
     expect(section.get_by_text('AAAU holds physical gold',exact=False)).to_be_visible()
     technical=app.locator('.st-key-research_technical .workspace-help-table')
-    for label in ('Forward P/E','Trailing P/E','Target Price'):
-        row=technical.locator('tr').filter(has=app.get_by_text(label,exact=False)).first
-        expect(row).to_contain_text('N/A — Not applicable')
+    for label in ('ราคาต่อกำไรคาดการณ์ (Forward P/E)','ราคาต่อกำไรย้อนหลัง (P/E)',
+                  'ราคาเป้าหมายเฉลี่ยของนักวิเคราะห์'):
+        row=technical.locator('tr').filter(has=app.get_by_text(label,exact=False))
+        expect(row).to_have_count(1)
+        expect(row).to_contain_text('N/A — ไม่ใช้กับหลักทรัพย์ประเภทนี้')
     fundrow=section.locator('.workspace-help-table tr').filter(has=app.get_by_text('Portfolio P/E',exact=False)).first
     expect(fundrow).to_contain_text('N/A — Not applicable')
     section.get_by_text('Official sources & filed financials',exact=True).click()

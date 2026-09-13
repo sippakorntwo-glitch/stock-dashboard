@@ -11,7 +11,7 @@ from catalog_extension import install as install_catalog
 install_catalog(core)
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-09-13.29'
+APP_VERSION = '2026-09-13.30'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row
@@ -249,18 +249,19 @@ def build_analysis(snapshot, selected_row, info):
     safe=safe_numeric_profile(info,ticker,core.asset_is_etf(ticker,selected_row,info))
     frame, metrics, extra = _base_build_analysis(snapshot,selected_row,safe)
     if not core.asset_is_etf(ticker,selected_row,info):
-        from company_metrics import build_rows
+        from company_analysis_th import build_rows_th, GROUP_LABELS
         selected = {'debtToEquity','returnOnEquity','returnOnAssets','roic','grossMargins',
                     'operatingMargins','profitMargins','currentRatio','interestCoverage',
                     'revenue','grossProfit','ebit','netIncome','operatingCashflow','freeCashflow'}
-        details = build_rows(ticker,info,info.get('_FinancialStatements'))
-        additions = [{'หมวด':r['Group'],'ปัจจัย':r['Metric'],'ค่าล่าสุด':r['Current Value'],
+        details = build_rows_th(ticker,info,info.get('_FinancialStatements'))
+        additions = [{'หมวด':GROUP_LABELS[r['Group']],'ปัจจัย':r['Metric'],'ค่าล่าสุด':r['Current Value'],
                       'การแปลผล':r['Assessment']+' — '+r['Interpretation'],
-                      'ข้อมูลอ้างอิง':r['_help'],'Reference / Benchmark':r['Reference / Benchmark'],
-                      'Period':r['Period']} for r in details if r['_key'] in selected]
+                      'ข้อมูลอ้างอิง':r['_help'],'เกณฑ์อ้างอิง':r['Reference / Benchmark'],
+                      'รอบข้อมูล':r['Period'],'_company_metric':r['_key'],
+                      '_company_state':r['_state']} for r in details if r['_key'] in selected]
         frame = pd.concat([frame, pd.DataFrame(additions)], ignore_index=True).fillna('—')
         from company_metrics import GROUPS
-        order={name:index+1 for index,name in enumerate(GROUPS)}
+        order={GROUP_LABELS[name]:index+1 for index,name in enumerate(GROUPS)}
         order.update({'พื้นฐาน':0,'เทคนิค':20,'สภาพคล่อง':21,'ความเสี่ยง':22})
         frame=frame.iloc[sorted(range(len(frame)),key=lambda i:order.get(frame.iloc[i]['หมวด'],19))].reset_index(drop=True)
     return frame, metrics, extra

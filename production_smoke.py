@@ -121,12 +121,59 @@ def chart_for_symbol(page,app,ticker):
     raise RuntimeError('No real candlestick history rendered for '+ticker)
 
 
+def verify_reused_company_rows(app,canonical_rows):
+    """The 360-degree view must reuse the same Thai figures and explanations."""
+    expander=app.locator('.st-key-research_technical [data-testid="stExpander"]').filter(
+        has=app.get_by_text('ตารางวิเคราะห์ 360°',exact=True))
+    table=expander.locator('.workspace-help-table')
+    expect(table).to_have_count(1)
+    reused=table.locator('tbody tr[data-company-metric]')
+    keys={'debtToEquity','returnOnEquity','returnOnAssets','roic','grossMargins',
+          'operatingMargins','profitMargins','currentRatio','interestCoverage',
+          'revenue','grossProfit','ebit','netIncome','operatingCashflow','freeCashflow'}
+    expect(reused).to_have_count(len(keys))
+    expect(reused.locator('abbr[title][tabindex="0"]')).to_have_count(len(keys))
+    actual=table.evaluate('''table=>{
+        const headers=[...table.querySelectorAll('thead th')].map(e=>e.textContent.trim());
+        return {headers,rows:[...table.querySelectorAll('tbody tr[data-company-metric]')].map(row=>({
+            key:row.dataset.companyMetric,state:row.dataset.companyState,
+            cells:Object.fromEntries([...row.querySelectorAll('td')].map((cell,i)=>[headers[i],cell.textContent.trim()])),
+            label:[...row.querySelector('abbr').childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent).join('').trim(),
+            help:row.querySelector('abbr').getAttribute('title')
+        }))};
+    }''')
+    assert set(actual['headers'])=={'หมวด','ปัจจัย','ค่าล่าสุด','การแปลผล','เกณฑ์อ้างอิง','รอบข้อมูล'},actual['headers']
+    assert {row['key'] for row in actual['rows']}==keys
+    expected=canonical_rows.evaluate_all('''rows=>Object.fromEntries(rows.map(row=>{
+        const abbr=row.querySelector('abbr'),cells=[...row.querySelectorAll('td')].map(e=>e.textContent.trim());
+        return [row.dataset.metric,{state:row.dataset.state,
+            group:row.closest('.company-analysis').querySelector('h4').textContent.trim(),
+            label:[...abbr.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent).join('').trim(),
+            help:abbr.getAttribute('title'),cells}];
+    }))''')
+    thai=re.compile(r'[\u0e00-\u0e7f]')
+    for row in actual['rows']:
+        canonical=expected[row['key']]
+        cells=row['cells']
+        assert row['state']==canonical['state'],row
+        assert row['label']==canonical['label'] and thai.search(row['label']),row
+        assert cells['หมวด']==canonical['group'] and thai.search(cells['หมวด']),row
+        assert cells['ค่าล่าสุด']==canonical['cells'][0],row
+        assert cells['การแปลผล']==canonical['cells'][2]+' — '+canonical['cells'][3],row
+        assert cells['เกณฑ์อ้างอิง']==canonical['cells'][1],row
+        assert cells['รอบข้อมูล']==canonical['cells'][4],row
+        assert all(thai.search(cells[key]) for key in ('การแปลผล','เกณฑ์อ้างอิง','รอบข้อมูล')),row
+        assert canonical['help'] in row['help'] and thai.search(row['help']),row
+    return {'rows':len(keys),'thai_labels_and_help':True,'values_states_and_explanations_match':True}
+
+
 def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
     section=app.locator('.st-key-research_fundamentals')
     groups=section.locator('.st-key-company_financial_analysis .company-analysis[data-ticker][data-group]')
     if is_fund:
         expect(groups).to_have_count(0)
         expect(section.locator('.company-analysis[data-statement]')).to_have_count(0)
+        expect(app.locator('.st-key-research_technical tr[data-company-metric]')).to_have_count(0)
         expect(section.locator('.workspace-help-table').first).to_be_visible()
         return {'ticker':ticker,'fund_specific_table':True}
     expect(section.get_by_role('heading',name='วิเคราะห์ข้อมูลการเงินบริษัท',exact=True)).to_be_visible()
@@ -154,6 +201,7 @@ def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
         cells=row.locator('td').all_text_contents()
         assert all(thai.search(cells[i]) for i in (1,2,3,4)), (row.get_attribute('data-metric'),cells)
     expect(section.get_by_role('button',name='ดาวน์โหลดบทวิเคราะห์บริษัท',exact=True)).to_be_visible()
+    reused_360=verify_reused_company_rows(app,rows)
     # AAPL/MSFT regression callers retain the default mandatory three statements.
     # Quality examples pass dates from their independently checked source bundle;
     # a missing source statement must not be fabricated to satisfy this gate.
@@ -194,7 +242,7 @@ def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
             expect(table.locator('tr[data-statement-field="'+field+'"]')).to_have_count(1)
         annual.append({'statement':kind,'periods':columns[1:],'rows':table.locator('tbody tr').count()})
     return {'ticker':ticker,'groups':9,'metrics':54,'metric_only_help':True,
-            'thai_labels_and_explanations':True,'annual_statements':annual}
+            'thai_labels_and_explanations':True,'annual_statements':annual,'reused_360':reused_360}
 
 
 def verify_sections(app,ticker,*,is_fund=False):
