@@ -1,0 +1,2575 @@
+{
+  "recorded_at": "2026-09-13T07:13:50.684891+00:00",
+  "run_id": "34744262184",
+  "source_sha": "97a066e6f02a54e0f91458f45d9c2a92ea456640",
+  "started_at": "2026-09-13T07:03:35.937378+00:00",
+  "source_generation": "generations/20260913T024213Z-1743ce77",
+  "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
+  "before": {
+    "counts": {
+      "securities": 9876,
+      "companies": 4200,
+      "statements_available": 0,
+      "with_missing_applicable_metrics": 4200,
+      "with_invalid_source_metrics": 0,
+      "funds": 5676
+    },
+    "field_counts": {
+      "marketCap": {
+        "available": 4155,
+        "not_reported": 45,
+        "not_applicable": 5676
+      },
+      "enterpriseValue": {
+        "available": 4116,
+        "not_reported": 84,
+        "not_applicable": 5676
+      },
+      "trailingPE": {
+        "available": 2269,
+        "not_meaningful": 1758,
+        "not_reported": 173,
+        "not_applicable": 5676
+      },
+      "forwardPE": {
+        "available": 2437,
+        "not_meaningful": 867,
+        "not_reported": 896,
+        "not_applicable": 5676
+      },
+      "priceToBook": {
+        "available": 3634,
+        "not_meaningful": 503,
+        "not_reported": 63,
+        "not_applicable": 5676
+      },
+      "priceToSales": {
+        "available": 3551,
+        "not_reported": 617,
+        "not_meaningful": 32,
+        "not_applicable": 5676
+      },
+      "evRevenue": {
+        "available": 3561,
+        "not_reported": 607,
+        "not_meaningful": 32,
+        "not_applicable": 5676
+      },
+      "evEbitda": {
+        "available": 2118,
+        "not_reported": 830,
+        "not_meaningful": 1252,
+        "not_applicable": 5676
+      },
+      "grossMargins": {
+        "available": 4157,
+        "not_meaningful": 32,
+        "not_reported": 11,
+        "not_applicable": 5676
+      },
+      "operatingMargins": {
+        "available": 4157,
+        "not_meaningful": 32,
+        "not_reported": 11,
+        "not_applicable": 5676
+      },
+      "profitMargins": {
+        "available": 4157,
+        "not_meaningful": 32,
+        "not_reported": 11,
+        "not_applicable": 5676
+      },
+      "returnOnEquity": {
+        "available": 3468,
+        "not_meaningful": 503,
+        "not_reported": 229,
+        "not_applicable": 5676
+      },
+      "returnOnAssets": {
+        "available": 3827,
+        "not_reported": 373,
+        "not_applicable": 5676
+      },
+      "roic": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "revenueGrowth": {
+        "available": 3462,
+        "not_reported": 738,
+        "not_applicable": 5676
+      },
+      "earningsGrowth": {
+        "available": 1923,
+        "not_reported": 2277,
+        "not_applicable": 5676
+      },
+      "revenueGrowthFY": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "netIncomeGrowthFY": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "epsGrowthFY": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "revenue": {
+        "available": 3615,
+        "not_reported": 585,
+        "not_applicable": 5676
+      },
+      "grossProfit": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "operatingIncome": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "ebit": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "ebitda": {
+        "available": 3381,
+        "not_reported": 819,
+        "not_applicable": 5676
+      },
+      "netIncome": {
+        "available": 4121,
+        "not_reported": 79,
+        "not_applicable": 5676
+      },
+      "dilutedEPS": {
+        "available": 4024,
+        "not_reported": 176,
+        "not_applicable": 5676
+      },
+      "debtToEquity": {
+        "available": 3161,
+        "not_reported": 536,
+        "not_meaningful": 503,
+        "not_applicable": 5676
+      },
+      "liabilitiesToEquity": {
+        "pending": 3697,
+        "not_meaningful": 503,
+        "not_applicable": 5676
+      },
+      "currentRatio": {
+        "available": 3812,
+        "not_reported": 388,
+        "not_applicable": 5676
+      },
+      "quickRatio": {
+        "available": 3781,
+        "not_reported": 419,
+        "not_applicable": 5676
+      },
+      "cashRatio": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "interestCoverage": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "totalAssets": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "totalLiabilities": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "stockholdersEquity": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "cash": {
+        "available": 4122,
+        "not_reported": 78,
+        "not_applicable": 5676
+      },
+      "totalDebt": {
+        "available": 4141,
+        "not_reported": 59,
+        "not_applicable": 5676
+      },
+      "netDebt": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "currentAssets": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "currentLiabilities": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "workingCapital": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "operatingCashflow": {
+        "available": 4059,
+        "not_reported": 141,
+        "not_applicable": 5676
+      },
+      "capex": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "freeCashflow": {
+        "available": 3411,
+        "not_reported": 789,
+        "not_applicable": 5676
+      },
+      "fcfMargin": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "cashConversion": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "stockBasedCompensation": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "dividendYield": {
+        "available": 4200,
+        "not_applicable": 5676
+      },
+      "payoutRatio": {
+        "available": 2268,
+        "not_meaningful": 1758,
+        "not_reported": 174,
+        "not_applicable": 5676
+      },
+      "dividendsPaid": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "buybacks": {
+        "pending": 4200,
+        "not_applicable": 5676
+      },
+      "targetMeanPrice": {
+        "available": 3127,
+        "not_reported": 1073,
+        "not_applicable": 5676
+      },
+      "analystCount": {
+        "available": 3127,
+        "not_reported": 1073,
+        "not_applicable": 5676
+      },
+      "forwardEps": {
+        "available": 3299,
+        "not_reported": 901,
+        "not_applicable": 5676
+      }
+    },
+    "examples": {
+      "AAPL": {
+        "debtToEquity": {
+          "value": 0.78445,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 1.4875101,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 128929996800.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": 107721875456.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "MSFT": {
+        "debtToEquity": {
+          "value": 0.29118,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 0.34039003,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 133748998144.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": 16545500160.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "NVDA": {
+        "debtToEquity": {
+          "value": 0.16971,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 1.17211,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 192880001024.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": 41809874944.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "AMZN": {
+        "debtToEquity": {
+          "value": 0.45616999999999996,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 0.30558002,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 135281000448.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": 3219124992.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "GOOGL": {
+        "debtToEquity": {
+          "value": 0.18859,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 0.48676,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 244118994944.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": 22665000960.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "META": {
+        "debtToEquity": {
+          "value": 0.42997,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 0.29848,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 68097998848.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": 21553625088.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "TSLA": {
+        "debtToEquity": {
+          "value": 0.18373,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 0.046669997,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 3806000128.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": 4835999744.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "BRK-B": {
+        "debtToEquity": {
+          "value": 0.17142,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 0.121199995,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 85768003584.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": 71975247872.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "JPM": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_reported",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 0.17789,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 63634001920.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_reported",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "ORCL": {
+        "debtToEquity": {
+          "value": 3.8887,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100"
+        },
+        "returnOnEquity": {
+          "value": 0.53376,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "pending",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 16984000512.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "freeCashflow": {
+          "value": -24536750080.0,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        }
+      },
+      "SPY": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      },
+      "QQQI": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      },
+      "AAAU": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      }
+    },
+    "data_complete": false
+  },
+  "collection": {
+    "due_before": 4158,
+    "attempted": 150,
+    "updated": 150,
+    "not_reported": 0,
+    "failed": 0,
+    "errors": [],
+    "symbols_updated": [
+      "AAPL",
+      "MSFT",
+      "NVDA",
+      "AMZN",
+      "GOOGL",
+      "META",
+      "TSLA",
+      "BRK-B",
+      "JPM",
+      "ORCL",
+      "A",
+      "AA",
+      "AAC",
+      "AACI",
+      "AACO",
+      "AACP",
+      "AADX",
+      "AAL",
+      "AAME",
+      "AAMI",
+      "AAOI",
+      "AAON",
+      "AARD",
+      "AAT",
+      "AAUC",
+      "ABAT",
+      "ABBV",
+      "ABCB",
+      "ABCL",
+      "ABEO",
+      "ABG",
+      "ABLV",
+      "ABM",
+      "ABNB",
+      "ABOS",
+      "ABR",
+      "ABSI",
+      "ABT",
+      "ABTC",
+      "ABTS",
+      "ABUS",
+      "ABVC",
+      "ABX",
+      "ACA",
+      "ACAA",
+      "ACAD",
+      "ACB",
+      "ACCL",
+      "ACCO",
+      "ACCS",
+      "ACDC",
+      "ACET",
+      "ACFN",
+      "ACGC",
+      "ACGL",
+      "ACH",
+      "ACHC",
+      "ACHR",
+      "ACHV",
+      "ACI",
+      "ACIC",
+      "ACIU",
+      "ACIW",
+      "ACLS",
+      "ACM",
+      "ACMR",
+      "ACN",
+      "ACNB",
+      "ACNT",
+      "ACOG",
+      "ACON",
+      "ACR",
+      "ACRE",
+      "ACRS",
+      "ACRV",
+      "ACT",
+      "ACTG",
+      "ACTU",
+      "ACU",
+      "ACVA",
+      "ACXP",
+      "AD",
+      "ADAC",
+      "ADAG",
+      "ADAM",
+      "ADBE",
+      "ADBT",
+      "ADC",
+      "ADCT",
+      "ADEA",
+      "ADGM",
+      "ADI",
+      "ADIG",
+      "ADIL",
+      "ADM",
+      "ADMA",
+      "ADNT",
+      "ADP",
+      "ADPT",
+      "ADSE",
+      "ADSK",
+      "ADT",
+      "ADTN",
+      "ADUR",
+      "ADUS",
+      "ADV",
+      "ADVB",
+      "AEAQ",
+      "AEBI",
+      "AEC",
+      "AEE",
+      "AEHL",
+      "AEHR",
+      "AEI",
+      "AEIS",
+      "AEM",
+      "AEMD",
+      "AENT",
+      "AEO",
+      "AEON",
+      "AEP",
+      "AER",
+      "AERT",
+      "AES",
+      "AESI",
+      "AESP",
+      "AEVA",
+      "AEXA",
+      "AEYE",
+      "AFCG",
+      "AFG",
+      "AFJK",
+      "AFL",
+      "AFRI",
+      "AFRM",
+      "AFYA",
+      "AG",
+      "AGBK",
+      "AGCC",
+      "AGCO",
+      "AGEN",
+      "AGI",
+      "AGIG",
+      "AGIO",
+      "AGL",
+      "AGM",
+      "AGM-A",
+      "AGMB",
+      "AGMH",
+      "AGNC"
+    ],
+    "remaining_due": 4008
+  },
+  "after": {
+    "counts": {
+      "securities": 9876,
+      "companies": 4200,
+      "statements_available": 150,
+      "with_missing_applicable_metrics": 4177,
+      "with_invalid_source_metrics": 1,
+      "funds": 5676
+    },
+    "field_counts": {
+      "marketCap": {
+        "available": 4155,
+        "not_reported": 45,
+        "not_applicable": 5676
+      },
+      "enterpriseValue": {
+        "available": 4116,
+        "not_reported": 84,
+        "not_applicable": 5676
+      },
+      "trailingPE": {
+        "available": 2269,
+        "not_meaningful": 1758,
+        "not_reported": 173,
+        "not_applicable": 5676
+      },
+      "forwardPE": {
+        "available": 2437,
+        "not_meaningful": 867,
+        "not_reported": 896,
+        "not_applicable": 5676
+      },
+      "priceToBook": {
+        "available": 3634,
+        "not_meaningful": 503,
+        "not_reported": 63,
+        "not_applicable": 5676
+      },
+      "priceToSales": {
+        "available": 3551,
+        "not_reported": 617,
+        "not_meaningful": 32,
+        "not_applicable": 5676
+      },
+      "evRevenue": {
+        "available": 3561,
+        "not_reported": 607,
+        "not_meaningful": 32,
+        "not_applicable": 5676
+      },
+      "evEbitda": {
+        "available": 2118,
+        "not_reported": 830,
+        "not_meaningful": 1252,
+        "not_applicable": 5676
+      },
+      "grossMargins": {
+        "available": 4155,
+        "not_meaningful": 34,
+        "not_reported": 11,
+        "not_applicable": 5676
+      },
+      "operatingMargins": {
+        "available": 4139,
+        "not_meaningful": 50,
+        "not_reported": 11,
+        "not_applicable": 5676
+      },
+      "profitMargins": {
+        "available": 4139,
+        "not_meaningful": 50,
+        "not_reported": 11,
+        "not_applicable": 5676
+      },
+      "returnOnEquity": {
+        "available": 3472,
+        "not_meaningful": 505,
+        "not_reported": 223,
+        "not_applicable": 5676
+      },
+      "returnOnAssets": {
+        "available": 3831,
+        "not_reported": 369,
+        "not_applicable": 5676
+      },
+      "roic": {
+        "available": 45,
+        "missing_inputs": 65,
+        "pending": 4050,
+        "not_meaningful": 40,
+        "not_applicable": 5676
+      },
+      "revenueGrowth": {
+        "available": 3462,
+        "not_reported": 738,
+        "not_applicable": 5676
+      },
+      "earningsGrowth": {
+        "available": 1923,
+        "not_reported": 2277,
+        "not_applicable": 5676
+      },
+      "revenueGrowthFY": {
+        "available": 119,
+        "pending": 4050,
+        "not_reported": 13,
+        "not_meaningful": 18,
+        "not_applicable": 5676
+      },
+      "netIncomeGrowthFY": {
+        "available": 77,
+        "pending": 4050,
+        "not_reported": 14,
+        "not_meaningful": 59,
+        "not_applicable": 5676
+      },
+      "epsGrowthFY": {
+        "available": 74,
+        "pending": 4050,
+        "not_reported": 21,
+        "not_meaningful": 55,
+        "not_applicable": 5676
+      },
+      "revenue": {
+        "available": 3633,
+        "not_reported": 567,
+        "not_applicable": 5676
+      },
+      "grossProfit": {
+        "available": 102,
+        "pending": 4050,
+        "not_reported": 48,
+        "not_applicable": 5676
+      },
+      "operatingIncome": {
+        "available": 124,
+        "pending": 4050,
+        "not_reported": 26,
+        "not_applicable": 5676
+      },
+      "ebit": {
+        "available": 131,
+        "pending": 4050,
+        "not_reported": 19,
+        "not_applicable": 5676
+      },
+      "ebitda": {
+        "available": 3387,
+        "not_reported": 813,
+        "not_applicable": 5676
+      },
+      "netIncome": {
+        "available": 4121,
+        "not_reported": 79,
+        "not_applicable": 5676
+      },
+      "dilutedEPS": {
+        "available": 4024,
+        "not_reported": 176,
+        "not_applicable": 5676
+      },
+      "debtToEquity": {
+        "available": 3164,
+        "not_meaningful": 503,
+        "not_reported": 533,
+        "not_applicable": 5676
+      },
+      "liabilitiesToEquity": {
+        "available": 127,
+        "pending": 3570,
+        "not_meaningful": 503,
+        "not_applicable": 5676
+      },
+      "currentRatio": {
+        "available": 3815,
+        "not_reported": 385,
+        "not_applicable": 5676
+      },
+      "quickRatio": {
+        "available": 3782,
+        "not_reported": 418,
+        "not_applicable": 5676
+      },
+      "cashRatio": {
+        "available": 131,
+        "pending": 4050,
+        "not_reported": 19,
+        "not_applicable": 5676
+      },
+      "interestCoverage": {
+        "missing_inputs": 52,
+        "available": 97,
+        "pending": 4050,
+        "not_meaningful": 1,
+        "not_applicable": 5676
+      },
+      "totalAssets": {
+        "available": 150,
+        "pending": 4050,
+        "not_applicable": 5676
+      },
+      "totalLiabilities": {
+        "available": 150,
+        "pending": 4050,
+        "not_applicable": 5676
+      },
+      "stockholdersEquity": {
+        "available": 150,
+        "pending": 4050,
+        "not_applicable": 5676
+      },
+      "cash": {
+        "available": 4122,
+        "not_reported": 78,
+        "not_applicable": 5676
+      },
+      "totalDebt": {
+        "available": 4141,
+        "not_reported": 59,
+        "not_applicable": 5676
+      },
+      "netDebt": {
+        "available": 123,
+        "pending": 4050,
+        "not_reported": 27,
+        "not_applicable": 5676
+      },
+      "currentAssets": {
+        "available": 131,
+        "pending": 4050,
+        "not_reported": 19,
+        "not_applicable": 5676
+      },
+      "currentLiabilities": {
+        "available": 131,
+        "pending": 4050,
+        "not_reported": 19,
+        "not_applicable": 5676
+      },
+      "workingCapital": {
+        "available": 131,
+        "pending": 4050,
+        "not_reported": 19,
+        "not_applicable": 5676
+      },
+      "operatingCashflow": {
+        "available": 4059,
+        "not_reported": 141,
+        "not_applicable": 5676
+      },
+      "capex": {
+        "available": 127,
+        "pending": 4050,
+        "not_reported": 23,
+        "not_applicable": 5676
+      },
+      "freeCashflow": {
+        "available": 3431,
+        "not_reported": 769,
+        "not_applicable": 5676
+      },
+      "fcfMargin": {
+        "available": 117,
+        "missing_inputs": 16,
+        "pending": 4050,
+        "not_meaningful": 17,
+        "not_applicable": 5676
+      },
+      "cashConversion": {
+        "available": 78,
+        "missing_inputs": 16,
+        "pending": 4050,
+        "not_meaningful": 56,
+        "not_applicable": 5676
+      },
+      "stockBasedCompensation": {
+        "available": 124,
+        "pending": 4050,
+        "not_reported": 26,
+        "not_applicable": 5676
+      },
+      "dividendYield": {
+        "available": 4200,
+        "not_applicable": 5676
+      },
+      "payoutRatio": {
+        "available": 2268,
+        "not_meaningful": 1758,
+        "not_reported": 174,
+        "not_applicable": 5676
+      },
+      "dividendsPaid": {
+        "available": 73,
+        "not_reported": 76,
+        "pending": 4050,
+        "invalid": 1,
+        "not_applicable": 5676
+      },
+      "buybacks": {
+        "available": 92,
+        "pending": 4050,
+        "not_reported": 58,
+        "not_applicable": 5676
+      },
+      "targetMeanPrice": {
+        "available": 3127,
+        "not_reported": 1073,
+        "not_applicable": 5676
+      },
+      "analystCount": {
+        "available": 3127,
+        "not_reported": 1073,
+        "not_applicable": 5676
+      },
+      "forwardEps": {
+        "available": 3299,
+        "not_reported": 901,
+        "not_applicable": 5676
+      }
+    },
+    "examples": {
+      "AAPL": {
+        "debtToEquity": {
+          "value": 0.7844494047619047,
+          "basis": "Balance sheet",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 1.4875108162676667,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": ""
+        },
+        "roic": {
+          "value": 1.060041632323543,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": ""
+        },
+        "grossProfit": {
+          "value": 227123000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "ebit": {
+          "value": 154859000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 128930000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": 136683000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "MSFT": {
+        "debtToEquity": {
+          "value": 0.12845314170624364,
+          "basis": "Balance sheet",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 0.3403862745048138,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": ""
+        },
+        "roic": {
+          "value": 0.3418419956792468,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": ""
+        },
+        "grossProfit": {
+          "value": 225465000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "ebit": {
+          "value": 168985000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 133749000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": 66987000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "NVDA": {
+        "debtToEquity": {
+          "value": 0.16748331761171087,
+          "basis": "Balance sheet",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 1.1721070142655303,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": ""
+        },
+        "roic": {
+          "value": 1.268139896847262,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": ""
+        },
+        "grossProfit": {
+          "value": 226241000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "ebit": {
+          "value": 230207000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 192879000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": 127006000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "AMZN": {
+        "debtToEquity": {
+          "value": 0.47495214000914204,
+          "basis": "Balance sheet",
+          "end": "2026-03-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 0.30558002,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": 360510000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        },
+        "ebit": {
+          "value": 99585000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 77670000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": -2472000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-03-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "GOOGL": {
+        "debtToEquity": {
+          "value": 0.17604921309018237,
+          "basis": "Balance sheet",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 0.48675697331861,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": ""
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": 271517000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "ebit": {
+          "value": 301521000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 244205000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": 53273000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "META": {
+        "debtToEquity": {
+          "value": 0.42997308792172145,
+          "basis": "Balance sheet",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 0.29848495806404246,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": ""
+        },
+        "roic": {
+          "value": 0.2813119252023162,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": ""
+        },
+        "grossProfit": {
+          "value": 186587000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "ebit": {
+          "value": 89553000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 68098000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": 40976000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "TSLA": {
+        "debtToEquity": {
+          "value": 0.18512975200902623,
+          "basis": "Balance sheet",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 0.04634164169285871,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": ""
+        },
+        "roic": {
+          "value": 0.06251164274179424,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": ""
+        },
+        "grossProfit": {
+          "value": 19534000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "ebit": {
+          "value": 5551000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 3804000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": 5755000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "BRK-B": {
+        "debtToEquity": {
+          "value": 0.1719444852990333,
+          "basis": "Balance sheet",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 0.09799332302692372,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": ""
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_reported",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": 87528000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 66968000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": 25042000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "JPM": {
+        "debtToEquity": {
+          "value": 1.422733169958195,
+          "basis": "Balance sheet",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 0.1778948548369017,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": ""
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_reported",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_reported",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 65067000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": -162534000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-06-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "ORCL": {
+        "debtToEquity": {
+          "value": 3.674343652959443,
+          "basis": "Balance sheet",
+          "end": "2026-05-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": ""
+        },
+        "returnOnEquity": {
+          "value": 0.53376,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": 44336000000.0,
+          "basis": "FY",
+          "end": "2026-05-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        },
+        "ebit": {
+          "value": 24153000000.0,
+          "basis": "FY",
+          "end": "2026-05-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        },
+        "netIncome": {
+          "value": 17087000000.0,
+          "basis": "FY",
+          "end": "2026-05-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": ""
+        },
+        "freeCashflow": {
+          "value": -23686000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-05-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": ""
+        }
+      },
+      "SPY": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      },
+      "QQQI": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      },
+      "AAAU": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      }
+    },
+    "data_complete": false
+  },
+  "generation": "generations/20260913T070907Z-417d7dbd",
+  "coverage": {
+    "universe": 9876,
+    "prices": 9875,
+    "checked_today": 0,
+    "industry": 9406,
+    "info": 9876,
+    "financial_statements": 150,
+    "dividends": 9875,
+    "return_1y": 8091,
+    "return_2y": 6898,
+    "return_3y": 6138
+  },
+  "finished_at": "2026-09-13T07:13:50.680736+00:00",
+  "result": "audit_completed",
+  "data_complete": false
+}
