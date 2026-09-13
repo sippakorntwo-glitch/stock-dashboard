@@ -112,12 +112,12 @@ _DEFINITIONS = [
 ]
 HELP={alias:description for aliases,description in _DEFINITIONS for alias in aliases.split('|')}
 HELP.update({
-    'Portfolio P/E':'Reported valuation of the underlying equity holdings, not corporate earnings per fund unit. Not applicable to physical gold, bond or currency funds. Not reported is different from N/A.',
-    'Portfolio Trailing P/E':'Holdings-level trailing valuation reported by the fund data provider, not corporate earnings per ETF unit. Definitions can differ between providers.',
-    'Portfolio Forward P/E':'Forward valuation of underlying equity holdings if reported. It is not a forecast of earnings per ETF unit.',
-    'Beta (3Y, provider)':'Three-year beta reported by the fund data provider; not a guarantee of future sensitivity.'})
+    'Portfolio P/E':'อัตราส่วนมูลค่าของหุ้นที่กองทุนถือครอง ไม่ใช่กำไรบริษัทต่อหน่วยกองทุน ไม่ใช้กับกองทุนทองคำแท่ง ตราสารหนี้ หรือสกุลเงิน สถานะไม่มีข้อมูลรายงานต่างจาก N/A',
+    'Portfolio Trailing P/E':'อัตราส่วนมูลค่าต่อกำไรย้อนหลังของหลักทรัพย์ที่กองทุนถือครองตามผู้ให้ข้อมูล ไม่ใช่กำไรบริษัทต่อหน่วย ETF นิยามอาจต่างกันระหว่างผู้ให้ข้อมูล',
+    'Portfolio Forward P/E':'อัตราส่วนมูลค่าต่อกำไรคาดการณ์ของหุ้นที่กองทุนถือครองเมื่อมีรายงาน ไม่ใช่การคาดการณ์กำไรต่อหน่วย ETF',
+    'Beta (3Y, provider)':'ค่าเบตา 3 ปีที่ผู้ให้ข้อมูลกองทุนรายงาน ไม่รับประกันความไวต่อการเคลื่อนไหวของตลาดในอนาคต'})
 LABEL_COLUMNS=('เกณฑ์','ปัจจัย','มิติ','ข้อมูล','ช่วงคะแนน')
-PRESENTATION_ONLY_HIDDEN_COLUMNS=frozenset(('ข้อมูลอ้างอิง','แหล่งข้อมูล','ฟิลด์ต้นทาง','สถานะข้อมูล'))
+PRESENTATION_ONLY_HIDDEN_COLUMNS=frozenset(('ข้อมูลอ้างอิง','แหล่งข้อมูล','ฟิลด์ต้นทาง','สถานะข้อมูล','_company_metric','_company_state'))
 
 
 def field_help(name):
@@ -125,10 +125,15 @@ def field_help(name):
     tip=return_help(name)
     if tip is not None:return tip
     name=str(name)
-    # New company metrics have English definitions shared with their calculations.
+    # Shared financial definitions stay Thai in both the dedicated and 360 views.
+    from company_analysis_th import METRIC_TEXT, LEGACY_360_LABELS
+    translated=next((definition for label,definition in METRIC_TEXT.values() if label == name),None)
+    if translated is not None:return translated
+    original=next((label for label,translated in LEGACY_360_LABELS.items() if translated == name),None)
+    if original in HELP:return HELP[original]
     from company_metrics import METRICS
     company=next((metric for metric in METRICS if metric.label == name and metric.label not in ('Forward P/E','Trailing P/E')),None)
-    if company is not None:return company.definition
+    if company is not None:return METRIC_TEXT[company.key][1]
     if name.startswith('ปันผลต่อหน่วย'):return HELP['Dividend_Per_Share']
     return HELP.get(name,f'{name}: ค่าจากชุดข้อมูลที่แสดง ตรวจหน่วย วันที่ และแหล่งข้อมูลประกอบ ช่องว่างไม่ใช่ศูนย์')
 
@@ -153,6 +158,7 @@ def _plain(value):
 
 
 def table_html(frame,height=420):
+    from company_analysis_th import METRIC_TEXT
     label=next((c for c in LABEL_COLUMNS if c in frame),None)
     def cell(tag,value,tip=None):
         if tip is None:return f'<{tag}>{escape(_plain(value))}</{tag}>'
@@ -169,7 +175,9 @@ def table_html(frame,height=420):
         if label=='ข้อมูล' and key=='industry':tip='จำนวนรายการที่มีอุตสาหกรรมหรือหมวดกองทุนที่ระบบรู้จัก'
         for extra in ['การแปลผล','ช่วง / คะแนน','ข้อมูลอ้างอิง']:
             if extra in row:tip+='\n'+extra+': '+_plain(row[extra])
-        rows.append('<tr>'+''.join(cell('td',row[col],tip if col==label else None) for col in columns)+'</tr>')
+        company_key=row.get('_company_metric')
+        attrs=(' data-company-metric="'+escape(company_key,quote=True)+'" data-company-state="'+escape(_plain(row.get('_company_state')),quote=True)+'"') if company_key in METRIC_TEXT else ''
+        rows.append('<tr'+attrs+'>'+''.join(cell('td',row[col],tip if col==label else None) for col in columns)+'</tr>')
         if label:definitions.append(f'<dt>{escape(_plain(row[label]))}</dt><dd>{escape(tip)}</dd>')
     css='''<style>.workspace-help-scroll{overflow:auto;border:1px solid #29384c;border-radius:8px}.workspace-help-table{border-collapse:collapse;width:100%;font:14px sans-serif;color:inherit}.workspace-help-table th,.workspace-help-table td{border-bottom:1px solid #29384c;padding:10px 12px;text-align:left;vertical-align:top}.workspace-help-table th{position:sticky;top:0;background:#142135;z-index:1}.workspace-help-table abbr{border:0;text-decoration:none;cursor:help}.workspace-help-table abbr:focus{outline:2px solid #34d399;outline-offset:3px}.workspace-help-table small{color:#91b8bf}.workspace-glossary{font:14px sans-serif;margin:8px 0 16px}.workspace-glossary summary{cursor:pointer}.workspace-glossary dt{font-weight:bold;margin-top:10px}.workspace-glossary dd{margin:4px 0 10px 12px;line-height:1.6;white-space:pre-line}</style>'''
     return css+f'<div class="workspace-help-scroll" style="max-height:{int(height or 420)}px"><table class="workspace-help-table" data-tooltip-column="{tooltip_column}"><thead><tr>{headers}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'+f'<details class="workspace-glossary"><summary>ⓘ อ่านคำอธิบายแต่ละแถว (สำหรับมือถือหรือแป้นพิมพ์)</summary><dl>{"".join(definitions)}</dl></details>'

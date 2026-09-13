@@ -126,7 +126,9 @@ def technical(ticker,daily_history,info,row):
     a.render_decision(ticker,ctx,info,scored,plan,is_etf,div,currency)
     analysis,metrics,_=a.build_analysis(ctx.get('metrics',{}),row,info)
     from asset_semantics import adapt_analysis
+    from company_analysis_th import localize_360_frame
     analysis=adapt_analysis(analysis,ticker,info,is_etf)
+    analysis=localize_360_frame(analysis)
     with st.expander('ตารางวิเคราะห์ 360°',expanded=True):
         table(analysis,height=450)
     a.render_position_sizer(ticker,row,metrics,currency)
