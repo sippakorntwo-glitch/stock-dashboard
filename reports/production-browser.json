@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-13T15:11:52.270242+00:00",
-  "run_id": "34762610958",
+  "recorded_at": "2026-09-13T15:32:44.610693+00:00",
+  "run_id": "34764875481",
   "source_sha": "a8da3f757747c453da81d435a9ca1c9d3868e788",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-13.30",
@@ -622,7 +622,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260913T145123Z-4e01e941",
+      "source_generation": "generations/20260913T151140Z-8d2a4136",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -632,7 +632,7 @@
         "dividends_checked": 9875,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3801,
-        "financial_statements": 4084,
+        "financial_statements": 4158,
         "unattempted_info": 0,
         "unattempted_dividends": 0
       },
@@ -691,7 +691,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260913T145123Z-4e01e941"
+            "source_generation": "generations/20260913T151140Z-8d2a4136"
           }
         },
         {
@@ -731,7 +731,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260913T145123Z-4e01e941"
+            "source_generation": "generations/20260913T151140Z-8d2a4136"
           }
         },
         {
@@ -758,7 +758,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260913T145123Z-4e01e941",
+      "source_generation": "generations/20260913T151140Z-8d2a4136",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -821,7 +821,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-13T15:07:23.017252+00:00",
+      "verified_at": "2026-09-13T15:26:59.122381+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -842,7 +842,7 @@
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-13T14:31:59.013746+00:00",
+        "fetched_at": "2026-09-13T15:09:31.738054+00:00",
         "state": "stale"
       },
       "theme": {
