@@ -175,15 +175,33 @@ def metric_observations(ticker, info, bundle=None, *, is_etf=False):
                     'basis': 'Not reported', 'end': None, 'currency': info.get('financialCurrency'), 'source': 'Financial statements', 'formula': None}
         if fund:
             item.update(value=None, state='not_applicable', reason='Corporate financial statements do not apply to this ETF / ETP.')
+            result[metric.key] = item
+            continue
         value = item.get('value')
         if value is not None and metric.key in NONNEGATIVE and value < 0:
             item.update(value=None, state='invalid', reason='Unexpected negative source amount')
-        if metric.key in ('trailingPE', 'forwardPE', 'priceToBook', 'evEbitda') and value is not None and value <= 0:
+        if metric.key in ('trailingPE', 'forwardPE', 'priceToBook','priceToSales') and value is not None and value <= 0:
             item.update(value=None, state='not_meaningful', reason='Non-positive valuation denominator or multiple')
+        if metric.key == 'evEbitda':
+            ebitda=number(info.get('ebitda'))
+            if ebitda is not None and ebitda<=0:
+                item.update(value=None,state='not_meaningful',reason='Reported EBITDA is zero or negative')
+            elif value is not None and value<=0 and ebitda is None:
+                item.update(value=None,state='not_meaningful',reason='Negative multiple without a verified positive EBITDA denominator')
+        if metric.key == 'debtToEquity' and value is not None and value<0:
+            item.update(value=None,state='not_meaningful',reason='Negative equity-based debt multiple')
+        if metric.key in ('currentRatio','quickRatio','cashRatio') and value is not None and value<0:
+            item.update(value=None,state='invalid',reason='Unexpected negative liquidity ratio')
+        if metric.unit == 'count' and value is not None and not float(value).is_integer():
+            item.update(value=None,state='invalid',reason='A count must be a whole number')
         if metric.key in ('priceToSales','evRevenue'):
             revenue=number(info.get('totalRevenue'))
             if revenue is not None and revenue <= 0:
                 item.update(value=None,state='not_meaningful',reason='Trailing revenue is zero or negative; a sales multiple is not meaningful')
+        if metric.key in ('grossMargins','operatingMargins','profitMargins') and item['source']=='Yahoo Finance profile':
+            revenue=number(info.get('totalRevenue'))
+            if revenue is not None and revenue<=0:
+                item.update(value=None,state='not_meaningful',reason='Non-positive reported revenue base; inspect statement periods before interpreting margins')
         equity = derived.get('stockholdersEquity', {}).get('value')
         book_value = number(info.get('bookValue'))
         if metric.key in ('debtToEquity', 'priceToBook', 'returnOnEquity', 'liabilitiesToEquity') and ((equity is not None and equity <= 0) or (book_value is not None and book_value <= 0)):

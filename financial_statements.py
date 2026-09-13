@@ -114,36 +114,33 @@ def observations(bundle):
 
     quarterly = bundle.get('quarterly', {})
     annual = bundle.get('annual', {})
-    qi, qc = quarterly.get('income', []), quarterly.get('cashflow', [])
-    q_ok = (consecutive_quarters(qi) and consecutive_quarters(qc)
-            and [r['end'] for r in qi[:4]] == [r['end'] for r in qc[:4]])
-    if q_ok:
-        flow_end = qi[0]['end']
-        basis = 'TTM (4 reported quarters)'
-        groups = [(qi[:4], INCOME_KEYS), (qc[:4], CASHFLOW_KEYS)]
-        for rows, keys in groups:
+    flow_end, basis = None, 'FY'
+    # Select the latest complete window for each statement independently. A
+    # delayed cash-flow report must not hide a newer income statement. Derived
+    # ratios below still require exactly matching period labels and end dates.
+    for kind, keys in [('income', INCOME_KEYS), ('cashflow', CASHFLOW_KEYS)]:
+        quarters = quarterly.get(kind, [])
+        years = annual.get(kind, [])
+        if consecutive_quarters(quarters):
+            selected_end, selected_basis = quarters[0]['end'], 'TTM (4 reported quarters)'
             for key in keys:
-                # Annual diluted EPS cannot safely be reconstructed by adding
-                # quarterly EPS when weighted average share counts differ.
                 if key == 'dilutedEPS':
                     continue
-                values = [number(r['values'].get(key)) for r in rows]
+                values = [number(r['values'].get(key)) for r in quarters[:4]]
                 if all(v is not None for v in values):
-                    put(key, sum(values), basis, flow_end, 'Sum of 4 consecutive reported quarters')
-    else:
-        ai, ac = annual.get('income', []), annual.get('cashflow', [])
-        income_dates = {r['end'] for r in ai}
-        cash_dates = {r['end'] for r in ac}
-        common = sorted(income_dates & cash_dates, reverse=True)
-        # Still display available single statements; only combine matched bases.
-        flow_end = common[0] if common else None
-        basis = 'FY'
-        for rows, keys in [(ai, INCOME_KEYS), (ac, CASHFLOW_KEYS)]:
-            selected = next((r for r in rows if r['end'] == flow_end), None) if flow_end else (rows[0] if rows else None)
-            if selected:
-                for key in keys:
-                    if key in selected['values']:
-                        put(key, selected['values'][key], basis, selected['end'])
+                    put(key, sum(values), selected_basis, selected_end,
+                        'Sum of 4 consecutive reported quarters')
+        else:
+            selected_end, selected_basis = (years[0]['end'] if years else None), 'FY'
+        # A known annual observation is not "not reported" merely because a
+        # quarterly field is absent. Preserve its own FY label and date.
+        for key in keys:
+            if key not in result:
+                record = next((r for r in years if number(r['values'].get(key)) is not None), None)
+                if record:
+                    put(key, record['values'][key], 'FY', record['end'])
+        if kind == 'income':
+            flow_end, basis = selected_end, selected_basis
 
     balances = {r['end']: r for r in annual.get('balance', [])}
     balances.update({r['end']: r for r in quarterly.get('balance', [])})
@@ -212,7 +209,7 @@ def observations(bundle):
     for key, capital in [('returnOnEquity', 'stockholdersEquity'), ('returnOnAssets', 'totalAssets')]:
         income = result.get('netIncome', {})
         start, finish = number(opening.get(capital)), number(closing.get(capital))
-        if income.get('end') == flow_end and income.get('value') is not None and start is not None and finish is not None:
+        if income.get('end') == flow_end and income.get('basis') == basis and income.get('value') is not None and start is not None and finish is not None:
             good = start > 0 and finish > 0
             put(key, income['value']/((start+finish)/2) if good else None, basis, flow_end,
                 f'Net income / average opening and closing {capital}',
@@ -221,7 +218,7 @@ def observations(bundle):
     operating = result.get('operatingIncome', {})
     pretax, tax = result.get('pretaxIncome', {}), result.get('taxProvision', {})
     if (flow_end and all(number(r.get(k)) is not None for r in (opening, closing) for k in capital_fields)
-            and all(r.get('end') == flow_end and r.get('value') is not None for r in (operating, pretax, tax))):
+            and all(r.get('end') == flow_end and r.get('basis') == basis and r.get('value') is not None for r in (operating, pretax, tax))):
         first = opening['stockholdersEquity'] + opening['totalDebt'] - opening['cash']
         last = closing['stockholdersEquity'] + closing['totalDebt'] - closing['cash']
         effective_tax = tax['value']/pretax['value'] if pretax['value'] > 0 else None

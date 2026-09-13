@@ -54,20 +54,20 @@ def test_ttm_uses_four_consecutive_aligned_quarters_and_never_sums_eps():
     assert o['revenue']['value']==100 and o['freeCashflow']['value']==32
     assert o['fcfMargin']['value']==.32
     assert o['revenue']['basis']=='TTM (4 reported quarters)'
-    assert 'dilutedEPS' not in o
+    assert o['dilutedEPS']['value']==2 and o['dilutedEPS']['basis']=='FY'
     assert 'roic' not in o, 'No balance sheet at the TTM date or tax inputs; do not mix annual inputs'
     # One missing quarter's value must not become a three-quarter total.
     del b['quarterly']['income'][2]['values']['grossProfit']
-    assert 'grossProfit' not in observations(b)
+    assert observations(b)['grossProfit']['value']==40
+    assert observations(b)['grossProfit']['basis']=='FY'
 
 
-@pytest.mark.parametrize('change',['three_quarters','gap','mismatched_cash_dates'])
+@pytest.mark.parametrize('change',['three_quarters','gap'])
 def test_incomplete_or_misaligned_quarters_fall_back_to_labeled_fiscal_year(change):
     b=bundle();ends=['2026-06-30','2026-03-31','2025-12-31','2025-09-30']
     b['quarterly']={kind:[{'end':d,'values':{'revenue':1000,'operatingCashflow':1000}} for d in ends] for kind in ('income','cashflow')}
     if change=='three_quarters':b['quarterly']['income'].pop()
     elif change=='gap':b['quarterly']['income'][2]['end']='2024-12-31'
-    else:b['quarterly']['cashflow'][1]['end']='2026-03-30'
     o=observations(b)
     assert o['revenue']['value']==100 and o['revenue']['basis']=='FY'
 
@@ -77,7 +77,19 @@ def test_different_annual_flow_dates_never_generate_cross_period_ratios():
     o=observations(b)
     assert o['operatingCashflow']['end']=='2023-12-31'
     assert o['revenue']['end']=='2025-12-31'
-    assert 'cashConversion' not in o and 'fcfMargin' not in o and 'roic' not in o
+    assert 'cashConversion' not in o and 'fcfMargin' not in o
+    assert o['roic']['value']==.2, 'ROIC only needs the matched income and balance statements'
+
+
+def test_different_quarterly_statement_dates_remain_visible_but_never_combine():
+    b=bundle();income_dates=['2026-06-30','2026-03-31','2025-12-31','2025-09-30']
+    cash_dates=['2026-03-31','2025-12-31','2025-09-30','2025-06-30']
+    b['quarterly']={'income':[{'end':d,'values':{'revenue':25,'netIncome':5}} for d in income_dates],
+                    'cashflow':[{'end':d,'values':{'operatingCashflow':10,'capitalExpenditure':-2}} for d in cash_dates]}
+    o=observations(b)
+    assert o['revenue']['end']=='2026-06-30' and o['operatingCashflow']['end']=='2026-03-31'
+    assert o['revenue']['value']==100 and o['operatingCashflow']['value']==40
+    assert 'cashConversion' not in o and 'fcfMargin' not in o
 
 
 @pytest.mark.parametrize('field,value',[('stockholdersEquity',0),('stockholdersEquity',-20),('totalDebt',-1),('cash',-2)])
@@ -141,6 +153,18 @@ def test_zero_or_negative_sales_are_not_a_missing_or_cheap_sales_multiple(revenu
     assert values['priceToSales']['state']=='not_meaningful'
     if revenue < 0:
         assert evaluate(BY_KEY['revenue'],revenue,{})[1]=='Negative net revenue'
+
+
+def test_signs_and_denominators_do_not_make_bad_inputs_look_favorable():
+    info={'enterpriseToEbitda':4,'enterpriseValue':-100,'ebitda':-25,
+          'debtToEquity':-150,'currentRatio':-2,'totalRevenue':0,'profitMargins':0,
+          'numberOfAnalystOpinions':2.5}
+    result=metric_observations('TEST',info)
+    for key in ('evEbitda','debtToEquity','profitMargins'):
+        assert result[key]['state']=='not_meaningful'
+    assert result['currentRatio']['state']=='invalid' and result['analystCount']['state']=='invalid'
+    fund=metric_observations('AAAU',dict(info,bookValue=-1),is_etf=True)
+    assert set(r['state'] for r in fund.values())=={'not_applicable'}
 
 
 def test_symbols_currencies_and_invalid_values_are_never_silently_assumed():
