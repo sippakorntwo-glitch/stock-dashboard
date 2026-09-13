@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-13T02:52:30.661475+00:00",
-  "run_id": "34733549534",
-  "source_sha": "7b8d066b9d07042b2029dadbb6e661e42076e2b2",
+  "recorded_at": "2026-09-13T07:41:06.475366+00:00",
+  "run_id": "34744262168",
+  "source_sha": "97a066e6f02a54e0f91458f45d9c2a92ea456640",
   "url": "https://my-stock-terminal.streamlit.app/",
-  "expected_version": "2026-09-13.27",
+  "expected_version": "2026-09-13.28",
   "layout": "single-page",
   "views": [
     "ภาพรวมและค้นหา",
@@ -28,6 +28,26 @@
       "ticker": "SPY",
       "via": "manual",
       "bars": 1506
+    }
+  ],
+  "company_analysis": [
+    {
+      "ticker": "AAPL",
+      "groups": 9,
+      "metrics": 54,
+      "metric_only_help": true
+    },
+    {
+      "ticker": "MSFT",
+      "groups": 9,
+      "metrics": 54,
+      "metric_only_help": true
+    },
+    {
+      "ticker": "AAPL",
+      "groups": 9,
+      "metrics": 54,
+      "metric_only_help": true
     }
   ],
   "chart_commentary": {
@@ -65,7 +85,7 @@
   },
   "chart_bars": 1506,
   "chart_last_bar": "2026-09-11",
-  "deployed_version": "2026-09-13.27",
+  "deployed_version": "2026-09-13.28",
   "enhancements": {
     "page_size": 500,
     "tooltips": true,
@@ -200,7 +220,7 @@
         "interval": "1d",
         "trend": "mixed",
         "bar_time": "2026-09-11",
-        "return_percent": 314.74093982649254,
+        "return_percent": 314.7410085089438,
         "levels": {
           "support": 756.6400146484375,
           "resistance": 779.3699951171875,
@@ -210,14 +230,14 @@
         "volume_ratio": 1.2331337325890526,
         "metrics": {
           "ema20": 765.0098961444819,
-          "ema50": 758.2697717576019,
+          "ema50": 758.2697717573911,
           "sma200": 712.0578268432618,
-          "rsi": 50.3296102554288,
+          "rsi": 50.32961025542885,
           "macd": 1.0705042823238955,
-          "signal": 2.5090674795906147,
-          "hist": -1.4385631972667192
+          "signal": 2.5090674795906165,
+          "hist": -1.438563197266721
         },
-        "atr_pct": 0.8132994446786718,
+        "atr_pct": 0.8132994446786699,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": []
@@ -257,11 +277,11 @@
         {
           "ticker": "SPY",
           "period": "10 ปี",
-          "percent": 314.74093982649254,
+          "percent": 314.7410085089438,
           "display": "+314.74%",
           "first": "2016-09-12",
           "last": "2026-09-11",
-          "start_price": 184.2812957763672,
+          "start_price": 184.28126525878906,
           "end_price": 764.2899780273438,
           "bars": 2514
         },
@@ -365,16 +385,17 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260913T024213Z-1743ce77",
+      "source_generation": "generations/20260913T072127Z-6856588c",
       "counts": {
         "universe": 9876,
-        "prices": 9875,
-        "histories": 9875,
+        "prices": 9876,
+        "histories": 9876,
         "info": 9876,
         "industry": 9406,
         "dividends_checked": 9875,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3801,
+        "financial_statements": 150,
         "unattempted_info": 0,
         "unattempted_dividends": 0
       },
@@ -417,7 +438,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260913T024213Z-1743ce77",
+      "source_generation": "generations/20260913T072127Z-6856588c",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -480,7 +501,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-13T02:49:03.254027+00:00",
+      "verified_at": "2026-09-13T07:37:00.744899+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -501,7 +522,7 @@
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-12T18:54:38.772105+00:00",
+        "fetched_at": "2026-09-13T07:38:33.663241+00:00",
         "state": "stale"
       },
       "theme": {
@@ -597,5 +618,5 @@
   "javascript_errors": [],
   "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "7b8d066b9d07042b2029dadbb6e661e42076e2b2"
+  "tested_sha": "97a066e6f02a54e0f91458f45d9c2a92ea456640"
 }
