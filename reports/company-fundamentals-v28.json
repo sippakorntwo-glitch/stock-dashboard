@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-13T16:56:18.575924+00:00",
-  "run_id": "34769785029",
-  "source_sha": "d9c553bab6085f958acda3a283eeef3385b24a55",
-  "started_at": "2026-09-13T16:51:32.861537+00:00",
-  "source_generation": "generations/20260913T151140Z-8d2a4136",
+  "recorded_at": "2026-09-13T17:14:10.748359+00:00",
+  "run_id": "34770591177",
+  "source_sha": "b6349acc8e836182b61db682f664aba76bcf508c",
+  "started_at": "2026-09-13T17:13:49.542041+00:00",
+  "source_generation": "generations/20260913T170841Z-3ddf2397",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
@@ -16,7 +16,7 @@
       "statements_available": 4148,
       "companies_without_financial_currency": 42,
       "with_missing_applicable_metrics": 3696,
-      "with_invalid_source_metrics": 11,
+      "with_invalid_source_metrics": 98,
       "funds": 5676
     },
     "field_counts": {
@@ -304,7 +304,8 @@
         "not_applicable": 5676
       },
       "dividendYield": {
-        "available": 4200,
+        "available": 4112,
+        "invalid": 88,
         "not_applicable": 5676
       },
       "payoutRatio": {
@@ -1524,7 +1525,7 @@
     "failed": 0,
     "errors": [],
     "symbols_updated": [],
-    "only_missing": false,
+    "only_missing": true,
     "remaining_due": 0
   },
   "after": {
@@ -1534,7 +1535,7 @@
       "statements_available": 4148,
       "companies_without_financial_currency": 42,
       "with_missing_applicable_metrics": 3696,
-      "with_invalid_source_metrics": 11,
+      "with_invalid_source_metrics": 98,
       "funds": 5676
     },
     "field_counts": {
@@ -1822,7 +1823,8 @@
         "not_applicable": 5676
       },
       "dividendYield": {
-        "available": 4200,
+        "available": 4112,
+        "invalid": 88,
         "not_applicable": 5676
       },
       "payoutRatio": {
@@ -3034,10 +3036,10 @@
     },
     "data_complete": false
   },
-  "finished_at": "2026-09-13T16:56:18.573026+00:00",
+  "finished_at": "2026-09-13T17:14:10.744821+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260913T165215Z-df02b6b4",
+  "generation": "generations/20260913T170841Z-3ddf2397",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -3049,5 +3051,6 @@
     "return_1y": 8091,
     "return_2y": 6898,
     "return_3y": 6138
-  }
+  },
+  "snapshot_unchanged": true
 }
