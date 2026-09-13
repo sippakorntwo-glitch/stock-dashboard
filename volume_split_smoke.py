@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import json
 import math
+from decimal import Decimal, localcontext
 from pathlib import Path
-from playwright.sync_api import expect
 
 
 SPLIT_FIELDS = ('buy_volume_est', 'sell_volume_est', 'unclassified_volume')
@@ -34,12 +34,20 @@ def verify_volume_payload(payload):
             assert parts == [None, None, volume], record
             counts['flat_bars'] += 1
             continue
-        buy = volume * (record['close'] - record['low']) / (record['high'] - record['low'])
-        sell = volume - buy
-        assert math.isclose(parts[0], buy, rel_tol=1e-10, abs_tol=1e-8), record
-        assert math.isclose(parts[1], sell, rel_tol=1e-10, abs_tol=1e-8), record
-        assert parts[2] == 0 and parts[0] >= 0 and parts[1] >= 0, record
-        assert math.isclose(sum(parts), volume, rel_tol=1e-12, abs_tol=1e-8), record
+        # Evaluate independently at higher precision. Left-associated binary
+        # V*(C-L)/(H-L) can overshoot V by one ULP even when C == H, creating
+        # a negative expected sell amount for a correctly rendered zero.
+        with localcontext() as context:
+            context.prec = 80
+            v, high, low, close = (Decimal.from_float(float(value))
+                                   for value in (volume,record['high'],record['low'],record['close']))
+            fraction = (close-low)/(high-low)
+            buy, sell = float(v*fraction), float(v*(1-fraction))
+        tolerance = 4*math.ulp(float(volume))
+        assert math.isclose(parts[0], buy, rel_tol=0, abs_tol=tolerance), record
+        assert math.isclose(parts[1], sell, rel_tol=0, abs_tol=tolerance), record
+        assert parts[2] == 0 and 0 <= parts[0] <= volume and 0 <= parts[1] <= volume, record
+        assert math.isclose(sum(parts), volume, rel_tol=0, abs_tol=tolerance), record
         counts['mixed_bars'] += int(0 < buy < volume)
     return counts
 
@@ -105,6 +113,7 @@ def _stack_pixels(frame):
 
 
 def verify_volume_split(page, frame, payload):
+    from playwright.sync_api import expect
     from hover_smoke import _enabled
     report = verify_volume_payload(payload)
     expect(frame.locator('#volumeSplit')).to_have_attribute('aria-pressed', 'true')
