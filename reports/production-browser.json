@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-09-13T15:32:44.610693+00:00",
-  "run_id": "34764875481",
-  "source_sha": "a8da3f757747c453da81d435a9ca1c9d3868e788",
+  "recorded_at": "2026-09-13T15:38:46.521593+00:00",
+  "run_id": "34765751993",
+  "source_sha": "d9c553bab6085f958acda3a283eeef3385b24a55",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-13.30",
   "layout": "single-page",
@@ -495,7 +495,10 @@
       "first_rank": "01 · SCI · 90/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
       "clicked": "SCI",
       "chart_bars": 1506,
-      "filter_independent": true
+      "filter_independent": true,
+      "completed_search_before_selection": true,
+      "single_click": true,
+      "cleared_search_before_return": true
     },
     "chart_inspector": {
       "ticker": "ORCL",
@@ -821,7 +824,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-13T15:26:59.122381+00:00",
+      "verified_at": "2026-09-13T15:34:19.626697+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -943,5 +946,5 @@
   "javascript_errors": [],
   "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "a8da3f757747c453da81d435a9ca1c9d3868e788"
+  "tested_sha": "d9c553bab6085f958acda3a283eeef3385b24a55"
 }
