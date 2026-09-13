@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-12T15:03:19.483348+00:00",
-  "run_id": "34692993812",
-  "source_sha": "2c00f0acdaa1546992fc3169f6af19cfe491f28b",
-  "started_at": "2026-09-12T15:03:12.507079+00:00",
-  "source_generation": "generations/20260912T122834Z-bae0ec9a",
+  "recorded_at": "2026-09-13T02:46:24.177579+00:00",
+  "run_id": "34733549534",
+  "source_sha": "7b8d066b9d07042b2029dadbb6e661e42076e2b2",
+  "started_at": "2026-09-13T02:40:13.874974+00:00",
+  "source_generation": "generations/20260913T003632Z-10ab13c3",
   "arithmetic": {
     "catalog_members": 9876,
     "priced_members": 9875,
@@ -24,8 +24,8 @@
       "company": 4200,
       "with_missing_applicable_fields": 8657,
       "with_invalid_fields": 0,
-      "portfolio_fund": 4863,
-      "non_equity_fund": 812,
+      "portfolio_fund": 4853,
+      "non_equity_fund": 822,
       "physical_gold": 1
     },
     "field_counts": {
@@ -172,27 +172,27 @@
         "not_applicable": 5676
       },
       "fund.country": {
-        "not_reported": 5650,
-        "available": 26
+        "not_reported": 5664,
+        "available": 12
       },
       "fund.marketCap": {
         "not_applicable": 5676
       },
       "fund.forwardPE": {
-        "not_reported": 4838,
-        "not_applicable": 813,
-        "not_meaningful": 11,
+        "not_reported": 4829,
+        "not_applicable": 823,
+        "not_meaningful": 10,
         "available": 14
       },
       "fund.trailingPE": {
         "available": 3384,
-        "not_applicable": 813,
-        "not_reported": 1479
+        "not_applicable": 823,
+        "not_reported": 1469
       },
       "fund.priceToBook": {
         "available": 111,
-        "not_reported": 4752,
-        "not_applicable": 813
+        "not_reported": 4742,
+        "not_applicable": 823
       },
       "fund.enterpriseToEbitda": {
         "not_applicable": 5676
@@ -240,8 +240,7 @@
         "available": 5676
       },
       "fund.beta": {
-        "not_reported": 5675,
-        "available": 1
+        "not_reported": 5676
       },
       "fund.bid": {
         "available": 5610,
@@ -255,24 +254,24 @@
         "not_applicable": 5676
       },
       "fund.category": {
-        "available": 5149,
-        "not_reported": 527
+        "available": 5206,
+        "not_reported": 470
       },
       "fund.fundFamily": {
-        "available": 5150,
-        "not_reported": 526
+        "available": 5207,
+        "not_reported": 469
       },
       "fund.totalAssets": {
-        "available": 5141,
-        "not_reported": 535
+        "available": 5197,
+        "not_reported": 479
       },
       "fund.navPrice": {
-        "available": 5152,
-        "not_reported": 524
+        "available": 5209,
+        "not_reported": 467
       },
       "fund.beta3Year": {
-        "available": 5149,
-        "not_reported": 527
+        "available": 5205,
+        "not_reported": 471
       },
       "fund.forwardEps": {
         "not_applicable": 5676
@@ -646,7 +645,7 @@
           "navPrice": null,
           "beta3Year": null
         },
-        "profile_fetched_at": "2026-09-11T21:37:46.953351+00:00",
+        "profile_fetched_at": "2026-09-13T00:33:27.590295+00:00",
         "price_asof": "2026-09-11"
       },
       "XLCU": {
@@ -698,10 +697,560 @@
           "navPrice": null,
           "beta3Year": null
         },
-        "profile_fetched_at": "2026-09-11T22:24:50.981382+00:00",
+        "profile_fetched_at": "2026-09-13T00:35:53.657255+00:00",
         "price_asof": ""
       }
     }
+  },
+  "primary_repair": {
+    "eligible": 0,
+    "attempted": 0,
+    "refreshed": 0,
+    "resolved": [],
+    "still_invalid": {},
+    "failures": {},
+    "rate_limited": false,
+    "limit": 40,
+    "remaining_beyond_budget": 0
+  },
+  "external_sources": {
+    "mapping_source": "https://www.sec.gov/files/company_tickers.json",
+    "mapping_matched": 4387,
+    "submissions_verified": 40,
+    "financial_reports": 32,
+    "industry_fallbacks": [],
+    "reference_symbols": [
+      "FUNC",
+      "BBN",
+      "BAP",
+      "AUB",
+      "FCBC",
+      "AGMB",
+      "FPS",
+      "EBMT",
+      "AVLN",
+      "AEXA",
+      "AADX",
+      "CUBI",
+      "FCNCA",
+      "AMAL",
+      "CACC",
+      "ELME",
+      "FRMI",
+      "EROC",
+      "BPOP",
+      "BRR",
+      "BCS",
+      "BKE",
+      "BANC",
+      "ASB",
+      "FRME",
+      "FOA",
+      "FRBT",
+      "BXDC",
+      "FTF",
+      "BCBP",
+      "BKU",
+      "GCO",
+      "ECAT",
+      "FCAP",
+      "BOKF",
+      "COLB",
+      "AXG",
+      "ATLC",
+      "CCG",
+      "COAG"
+    ],
+    "errors": [],
+    "provider_requests": 80,
+    "due_references": 4156,
+    "blocked": false,
+    "reference_records": 4387,
+    "http_evidence": [
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000763907.json",
+        "received_at": "2026-09-13T02:40:17.651449+00:00",
+        "sha256": "d2b41134290119d729c223c1529580017a9dd3332d686f16ae4c157c6b0afbc1",
+        "bytes": 165301
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000763907.json",
+        "received_at": "2026-09-13T02:40:18.804494+00:00",
+        "sha256": "d2ee1b00beadc12e4fed1ee7923f77e9f1f1e19bba080c9e4b8b7dcd6a2cd719",
+        "bytes": 4519418
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001493683.json",
+        "received_at": "2026-09-13T02:40:19.674037+00:00",
+        "sha256": "e9944b72824610034bcccca1ade46805a7f46a3a3bbcece251d9370e48df2b61",
+        "bytes": 53275
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001493683.json",
+        "received_at": "2026-09-13T02:40:20.683208+00:00",
+        "sha256": "8d575a93f651f4236710d166a52020996e93a78e21b9b4f30c07bb470c8e394e",
+        "bytes": 8550
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001001290.json",
+        "received_at": "2026-09-13T02:40:21.657346+00:00",
+        "sha256": "80481e3fa16363f450c1200eaabb677ee75a005f464b18fc32858f76140111c0",
+        "bytes": 96626
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001001290.json",
+        "received_at": "2026-09-13T02:40:22.842955+00:00",
+        "sha256": "314aba447e50e7a8c98078b24330ef649cf7e408924d9cf9245d6b826f392d41",
+        "bytes": 878046
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000883948.json",
+        "received_at": "2026-09-13T02:40:23.883072+00:00",
+        "sha256": "f95b70949a85d9e3acc8a7a6015f6d5869d865f7b74845d79d59b57bfa754458",
+        "bytes": 162853
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000883948.json",
+        "received_at": "2026-09-13T02:40:25.184691+00:00",
+        "sha256": "71a56cba222f3cd00906e6151bb72acffad42c95f39d7904dc0e1079abf0f019",
+        "bytes": 5490431
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000859070.json",
+        "received_at": "2026-09-13T02:40:25.858383+00:00",
+        "sha256": "18092aeeb6903e8029f47494c2f26d5541cedcbe0d354199bb924eeff8b5f737",
+        "bytes": 162050
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000859070.json",
+        "received_at": "2026-09-13T02:40:27.225613+00:00",
+        "sha256": "a865bc31aa458eb23eb9f3edf3e7ba33d31dbc13e583e4f4881a5ce1bab5dfce",
+        "bytes": 5255798
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002020932.json",
+        "received_at": "2026-09-13T02:40:27.975846+00:00",
+        "sha256": "d9c139e3199a640081ed3c452fdc93df39a367ec9ac67f414a909843de94b435",
+        "bytes": 7306
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002020932.json",
+        "received_at": "2026-09-13T02:40:29.109665+00:00",
+        "sha256": "ba80f53afbc7b657c6696bc171c4a1715a04ad63338c6d1d8e07b4c5d3b95562",
+        "bytes": 790
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002080126.json",
+        "received_at": "2026-09-13T02:40:30.079865+00:00",
+        "sha256": "9bc9e1ebe84a509df518c0461a1ce28bb0bfdf8c72c4a13341988039447cdc7e",
+        "bytes": 10911
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002080126.json",
+        "received_at": "2026-09-13T02:40:31.182318+00:00",
+        "sha256": "99b7676f8c1c1dd6e1975f0fa4ff5495af86693ed3b1cabb4c3c0c64604831c0",
+        "bytes": 233704
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001478454.json",
+        "received_at": "2026-09-13T02:40:32.160733+00:00",
+        "sha256": "f50ce5d3bcf9bb4d24b6a42fa6cb49a2064993d9896f564e2f2eb4570bd53c0c",
+        "bytes": 130719
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001478454.json",
+        "received_at": "2026-09-13T02:40:33.486700+00:00",
+        "sha256": "832f72c7be73644f723981045d11e9721a0b9f3fbf8db1b888677ca0699561d0",
+        "bytes": 4181796
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001540171.json",
+        "received_at": "2026-09-13T02:40:34.321976+00:00",
+        "sha256": "de5a3e1a0eb226ab4b5b9637e2cd2410c66eb8e3d21c64df2c6373f246645204",
+        "bytes": 10664
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001540171.json",
+        "received_at": "2026-09-13T02:40:35.423697+00:00",
+        "sha256": "d4ec3024fd8747e2f1dafa4b656f71234432fcbc083886b5a0b71f4dde6becb8",
+        "bytes": 140407
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002079173.json",
+        "received_at": "2026-09-13T02:40:36.360087+00:00",
+        "sha256": "fb4f0303ffc2feb0d9309ec4f5a137148c66e3f5e3c3e7023918ef015de216dd",
+        "bytes": 7339
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002079173.json",
+        "received_at": "2026-09-13T02:40:37.538701+00:00",
+        "sha256": "05be33eb5b8aedad4e801edd78696512c81bf4cef9fe37ca241cffef17984532",
+        "bytes": 50589
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002118195.json",
+        "received_at": "2026-09-13T02:40:38.535720+00:00",
+        "sha256": "d35244b05cfd82acb74e27457281b86c1cd3e360c5eaf2fb07974b74ffc05de1",
+        "bytes": 6154
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002118195.json",
+        "received_at": "2026-09-13T02:40:39.619084+00:00",
+        "sha256": "244722486a83cba0693764527c287ed074ecaf35feb9f3695a1e8742462d1cdb",
+        "bytes": 78527
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001488813.json",
+        "received_at": "2026-09-13T02:40:40.561398+00:00",
+        "sha256": "db880668b8a8b1ef6adce90c7f41081ee0d95cb9826fc1f031347e088865db9b",
+        "bytes": 164040
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001488813.json",
+        "received_at": "2026-09-13T02:40:41.968313+00:00",
+        "sha256": "af62d86d3e19da2552ca388ca69ea118a836641a7f3a70f1cc738d9814a89227",
+        "bytes": 5753622
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000798941.json",
+        "received_at": "2026-09-13T02:40:42.660395+00:00",
+        "sha256": "b7fc5c0a15937264069c416ba244d216a03a7475dc1d9f110745c0cbee6af4d4",
+        "bytes": 161500
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000798941.json",
+        "received_at": "2026-09-13T02:40:43.999650+00:00",
+        "sha256": "62b723b2f1c23d39bce05a62d34e6649645ef1efa9955c6d11d9a3b60726d23f",
+        "bytes": 5539285
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001823608.json",
+        "received_at": "2026-09-13T02:40:44.830520+00:00",
+        "sha256": "3ecd3162080a31d6cafccc01b607973901f330f893edc31868dd4c58a2cb5b2a",
+        "bytes": 96814
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001823608.json",
+        "received_at": "2026-09-13T02:40:45.961638+00:00",
+        "sha256": "9665ebe5157e0586e64032609baf98876420d5882d19b513ab089f2081b8c22b",
+        "bytes": 2025684
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000885550.json",
+        "received_at": "2026-09-13T02:40:46.860983+00:00",
+        "sha256": "8af293479ae713ad3404ad58673f20e0b6569a81c921f7605b3f453b26a9dfa6",
+        "bytes": 164045
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000885550.json",
+        "received_at": "2026-09-13T02:40:48.156412+00:00",
+        "sha256": "981bd845fdf34e079d4341e3c2d2f747c8746311d87e420f56dbf7b5bd6f4dce",
+        "bytes": 3218897
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000104894.json",
+        "received_at": "2026-09-13T02:40:48.961880+00:00",
+        "sha256": "5da99aafa87bd01153d55eae2cc75521c1d058bc189d46a281f5a4739b2e57e9",
+        "bytes": 163964
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000104894.json",
+        "received_at": "2026-09-13T02:40:50.273989+00:00",
+        "sha256": "bcfaefd7e0c2601b7e17fa1953812dbba93c0617d9579908d441417231ee9a9f",
+        "bytes": 3058715
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002071778.json",
+        "received_at": "2026-09-13T02:40:51.061932+00:00",
+        "sha256": "f6e01cdfd7a5cf4741c9941f9ee2413c9b85b801e378a3256aca6a8e1e32ee68",
+        "bytes": 29062
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002071778.json",
+        "received_at": "2026-09-13T02:40:52.200394+00:00",
+        "sha256": "db7c788678a8b180c3d0492e72c9510131244e1dca51c5d9f968db57c7c4c477",
+        "bytes": 148183
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002110029.json",
+        "received_at": "2026-09-13T02:40:53.161487+00:00",
+        "sha256": "e9d256422504c9fcb1ef7e490cea3e90f4978b77a73564110e833691debbd071",
+        "bytes": 7515
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002110029.json",
+        "received_at": "2026-09-13T02:40:54.323773+00:00",
+        "sha256": "6581b909fdb35cbd6bda29547a61e60c7aa32c66cc432e3e7a6c45b72185f7a7",
+        "bytes": 86285
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000763901.json",
+        "received_at": "2026-09-13T02:40:55.265930+00:00",
+        "sha256": "c2922774a791c6fc3aa84826cbeff542267a9b15a0d0466fbac5d1c4f918a4db",
+        "bytes": 154219
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000763901.json",
+        "received_at": "2026-09-13T02:40:56.708194+00:00",
+        "sha256": "32d8122b28d961ae8dcdf7122ee1b354e752f8db6a634c063d7f48b6fc7438cb",
+        "bytes": 7478375
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002076163.json",
+        "received_at": "2026-09-13T02:40:57.437967+00:00",
+        "sha256": "9298e95c958509a05ed9251d437706481e5082a85b16f6fb6ab57a8f0c0d092e",
+        "bytes": 32934
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002076163.json",
+        "received_at": "2026-09-13T02:40:58.542873+00:00",
+        "sha256": "c27cb1f50d8c62d943209f4a35361d6549707f8d245a4c13d397a185fc303f3b",
+        "bytes": 145834
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000312069.json",
+        "received_at": "2026-09-13T02:40:59.482137+00:00",
+        "sha256": "13e8cd934b437d986db844c44a8921e58bcb5f0731a06c75ee46564e0e7dfcb4",
+        "bytes": 167913
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000312069.json",
+        "received_at": "2026-09-13T02:41:00.543969+00:00",
+        "sha256": "93b69089ac754fdbc62d02eb256c07ed959478347b9a6321b9564f95f966fbe8",
+        "bytes": 1426732
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000885245.json",
+        "received_at": "2026-09-13T02:41:01.677283+00:00",
+        "sha256": "18827ba481270b57667568379836407d13404f069ff9d75221080dfa742d7e2b",
+        "bytes": 158282
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000885245.json",
+        "received_at": "2026-09-13T02:41:02.770366+00:00",
+        "sha256": "581a366a1722b74a99e43d161c226ae317033585200e295d659d482676b73a2c",
+        "bytes": 2303885
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001169770.json",
+        "received_at": "2026-09-13T02:41:03.688761+00:00",
+        "sha256": "e1f10154d979089017d435f1140f4f98d2f169a25d81eb74182f1c320a36d30f",
+        "bytes": 163411
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001169770.json",
+        "received_at": "2026-09-13T02:41:05.115234+00:00",
+        "sha256": "29ef70a198f7c375d3877feac7ae9e2fc94d3d8d1135598e08e1bfad21940220",
+        "bytes": 6132842
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000007789.json",
+        "received_at": "2026-09-13T02:41:05.836756+00:00",
+        "sha256": "fc57aacca9829a23572d931f4c07e0a1e762f6f77bc2acd861965ea25433198d",
+        "bytes": 156398
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000007789.json",
+        "received_at": "2026-09-13T02:41:07.292365+00:00",
+        "sha256": "89e17c744eaf3fc9f40400163beee10a0df456f1752e29eca2cdcc17e583a121",
+        "bytes": 6263338
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000712534.json",
+        "received_at": "2026-09-13T02:41:07.987263+00:00",
+        "sha256": "2bcf0b15103eb625800508f8acffd54ead21edc4ddd0d508492be55cd18882fa",
+        "bytes": 165213
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000712534.json",
+        "received_at": "2026-09-13T02:41:08.958980+00:00",
+        "sha256": "1c1a3047e30cef5c307ff67df34d85c434282b37ad94b89aae582795a63ed7f5",
+        "bytes": 5711715
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001828937.json",
+        "received_at": "2026-09-13T02:41:10.074399+00:00",
+        "sha256": "48c5037511370eafbcc26f5cb031be018bbcbc34c806b40e24804dce8fa0c9db",
+        "bytes": 84635
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001828937.json",
+        "received_at": "2026-09-13T02:41:11.191795+00:00",
+        "sha256": "33e110adcc8de174991decd9ffb40b0930a36bc4e2d6370fb9444bcbc71988db",
+        "bytes": 1442607
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001925062.json",
+        "received_at": "2026-09-13T02:41:12.126931+00:00",
+        "sha256": "d6801defb233d93c9b44b0ae5d920f43b95793c659286955897f3169940aecfd",
+        "bytes": 8686
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001925062.json",
+        "received_at": "2026-09-13T02:41:13.263952+00:00",
+        "sha256": "5539b373bd768ee7e1ff7b38cc7ba1beee4dbd0208514aa795209225e1e8243d",
+        "bytes": 188070
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002100161.json",
+        "received_at": "2026-09-13T02:41:14.235847+00:00",
+        "sha256": "1159e4e6d898c7be75fa89e67d014a18e715320386feb5f3fe0824c281b484a9",
+        "bytes": 8490
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002100161.json",
+        "received_at": "2026-09-13T02:41:15.299676+00:00",
+        "sha256": "aa4c5496339598f6f9dc05eff95fe18a78c1a112cc395d71de1f31cf1ebce68a",
+        "bytes": 35181
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001233087.json",
+        "received_at": "2026-09-13T02:41:16.343977+00:00",
+        "sha256": "a8beda6531b7299f707f880704ac4c5f7bf47d6e1f792f0740d2d6b6e2353cea",
+        "bytes": 94241
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001233087.json",
+        "received_at": "2026-09-13T02:41:17.443375+00:00",
+        "sha256": "3eceb5a0f8cd6551fd64d0bc4c2b00cb49a4ea5ab15f09161d8ced2312724a11",
+        "bytes": 47
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001228454.json",
+        "received_at": "2026-09-13T02:41:18.455482+00:00",
+        "sha256": "f0f4499b43773bddaa68fa83956d87ee8f4146ee2719dc361966249cde74ebe5",
+        "bytes": 157592
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001228454.json",
+        "received_at": "2026-09-13T02:41:19.836143+00:00",
+        "sha256": "a7ebe67f5672dd9c1bf1537614d1e8f8264a28be8b3a02294a6286a9d64c104b",
+        "bytes": 4736121
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001504008.json",
+        "received_at": "2026-09-13T02:41:20.577865+00:00",
+        "sha256": "519750fc2f2053e39b446d5d727217a36662a3768e2b7ed20a73e071ceffbaf5",
+        "bytes": 147635
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001504008.json",
+        "received_at": "2026-09-13T02:41:21.844374+00:00",
+        "sha256": "13764c06bab52b281aef6769b75122154e855fde8f3edae90a5a4471530c1407",
+        "bytes": 5254263
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000018498.json",
+        "received_at": "2026-09-13T02:41:22.566952+00:00",
+        "sha256": "61726b76484ebf4b959b722f42668f1bcb17962f877961cf0d69fcd8672df780",
+        "bytes": 161151
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000018498.json",
+        "received_at": "2026-09-13T02:41:23.862522+00:00",
+        "sha256": "10f47c50e1a9d43c1862e2bc8e9af671c684fdcab8f9478f6370f1b18a85386f",
+        "bytes": 3943544
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001864843.json",
+        "received_at": "2026-09-13T02:41:24.793099+00:00",
+        "sha256": "5b3b78b0554e593ab4228bf9d96d08eb2fb7f4e1e862e80d3db7ca3a41d82394",
+        "bytes": 98405
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001864843.json",
+        "received_at": "2026-09-13T02:41:25.785354+00:00",
+        "sha256": "705aa1fae62e8cfe99170c645b957015c380c175b7968ce485a23de83c993f52",
+        "bytes": 47
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001070296.json",
+        "received_at": "2026-09-13T02:41:26.884956+00:00",
+        "sha256": "24f8a1b458cd534105216e1ef03de32b91c891faddbca8d59fd57582c5e29536",
+        "bytes": 119895
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001070296.json",
+        "received_at": "2026-09-13T02:41:28.154733+00:00",
+        "sha256": "9ee62fe32ded33f0db9a17bd5c32cc0d0076fb4ba30b131cfb492a74fe469a3b",
+        "bytes": 4484369
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000875357.json",
+        "received_at": "2026-09-13T02:41:28.936018+00:00",
+        "sha256": "42b244157972bfe2ede3ac53d8a404ebc7991c8d93a75bd59b17f599d14fc778",
+        "bytes": 161714
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000875357.json",
+        "received_at": "2026-09-13T02:41:30.419598+00:00",
+        "sha256": "9350825be578d18e6d8c01d0a0a2eac22f88305b4cdb60ec10e35f13505f9d14",
+        "bytes": 6009682
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0000887343.json",
+        "received_at": "2026-09-13T02:41:31.085637+00:00",
+        "sha256": "7c59d4adbbb8673fa678b742d0c55e354fc81694ea284bd3ca1079eb4f73a50a",
+        "bytes": 162903
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000887343.json",
+        "received_at": "2026-09-13T02:41:32.287670+00:00",
+        "sha256": "a43d34b107e84b141677482596b089267bbc53027b8ee1e57408c82b94e1ee98",
+        "bytes": 5122388
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001959224.json",
+        "received_at": "2026-09-13T02:41:33.065267+00:00",
+        "sha256": "b83c3a9b021c794dcfd851469134115f07d7694bb5a96a63a387a1074cc0e6b5",
+        "bytes": 21480
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001959224.json",
+        "received_at": "2026-09-13T02:41:34.219295+00:00",
+        "sha256": "dd25c7712480a880f38eb657c1d19fb52521543f1c154e897e0c22020c169f1c",
+        "bytes": 319501
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001464343.json",
+        "received_at": "2026-09-13T02:41:35.186215+00:00",
+        "sha256": "fb6c30615029fe19bacb803cea5f4e3387091458dd5451248b44b566f3615a37",
+        "bytes": 116228
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001464343.json",
+        "received_at": "2026-09-13T02:41:36.462704+00:00",
+        "sha256": "a41b77c25bf2f127c0b140efe192de1ac41cddec13769a9fa8f5404f10740513",
+        "bytes": 3339683
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0001965473.json",
+        "received_at": "2026-09-13T02:41:37.267729+00:00",
+        "sha256": "77874afd85b5736b4872189a8bd1711295f708069e3b5003bca2c463124dead0",
+        "bytes": 24074
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001965473.json",
+        "received_at": "2026-09-13T02:41:38.459794+00:00",
+        "sha256": "0160451e1147723810d40ee3447452c9d93a1fc6a9772ae8f4728e7d77eb1377",
+        "bytes": 457517
+      },
+      {
+        "url": "https://data.sec.gov/submissions/CIK0002114044.json",
+        "received_at": "2026-09-13T02:41:39.436272+00:00",
+        "sha256": "27b1770bc2842ce5bc9b1e4e773d6a1da7f51ead9fdb28b0164bba9def307105",
+        "bytes": 8705
+      },
+      {
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0002114044.json",
+        "received_at": "2026-09-13T02:41:40.542555+00:00",
+        "sha256": "e9754c266560afc7da7d0bfd4735e4433eb71ebf21078c8726a8014828b57c35",
+        "bytes": 95941
+      }
+    ],
+    "cached_financial_reports": 67,
+    "automatic_financials_status": "available",
+    "remaining_due_references": 4116
   },
   "after": {
     "catalog_members": 9876,
@@ -709,8 +1258,8 @@
       "company": 4200,
       "with_missing_applicable_fields": 8657,
       "with_invalid_fields": 0,
-      "portfolio_fund": 4863,
-      "non_equity_fund": 812,
+      "portfolio_fund": 4853,
+      "non_equity_fund": 822,
       "physical_gold": 1
     },
     "field_counts": {
@@ -857,27 +1406,27 @@
         "not_applicable": 5676
       },
       "fund.country": {
-        "not_reported": 5650,
-        "available": 26
+        "not_reported": 5664,
+        "available": 12
       },
       "fund.marketCap": {
         "not_applicable": 5676
       },
       "fund.forwardPE": {
-        "not_reported": 4838,
-        "not_applicable": 813,
-        "not_meaningful": 11,
+        "not_reported": 4829,
+        "not_applicable": 823,
+        "not_meaningful": 10,
         "available": 14
       },
       "fund.trailingPE": {
         "available": 3384,
-        "not_applicable": 813,
-        "not_reported": 1479
+        "not_applicable": 823,
+        "not_reported": 1469
       },
       "fund.priceToBook": {
         "available": 111,
-        "not_reported": 4752,
-        "not_applicable": 813
+        "not_reported": 4742,
+        "not_applicable": 823
       },
       "fund.enterpriseToEbitda": {
         "not_applicable": 5676
@@ -925,8 +1474,7 @@
         "available": 5676
       },
       "fund.beta": {
-        "not_reported": 5675,
-        "available": 1
+        "not_reported": 5676
       },
       "fund.bid": {
         "available": 5610,
@@ -940,24 +1488,24 @@
         "not_applicable": 5676
       },
       "fund.category": {
-        "available": 5149,
-        "not_reported": 527
+        "available": 5206,
+        "not_reported": 470
       },
       "fund.fundFamily": {
-        "available": 5150,
-        "not_reported": 526
+        "available": 5207,
+        "not_reported": 469
       },
       "fund.totalAssets": {
-        "available": 5141,
-        "not_reported": 535
+        "available": 5197,
+        "not_reported": 479
       },
       "fund.navPrice": {
-        "available": 5152,
-        "not_reported": 524
+        "available": 5209,
+        "not_reported": 467
       },
       "fund.beta3Year": {
-        "available": 5149,
-        "not_reported": 527
+        "available": 5205,
+        "not_reported": 471
       },
       "fund.forwardEps": {
         "not_applicable": 5676
@@ -1331,7 +1879,7 @@
           "navPrice": null,
           "beta3Year": null
         },
-        "profile_fetched_at": "2026-09-11T21:37:46.953351+00:00",
+        "profile_fetched_at": "2026-09-13T00:33:27.590295+00:00",
         "price_asof": "2026-09-11"
       },
       "XLCU": {
@@ -1383,17 +1931,17 @@
           "navPrice": null,
           "beta3Year": null
         },
-        "profile_fetched_at": "2026-09-11T22:24:50.981382+00:00",
+        "profile_fetched_at": "2026-09-13T00:35:53.657255+00:00",
         "price_asof": ""
       }
     }
   },
-  "generation": "generations/20260912T122834Z-bae0ec9a",
+  "generation": "generations/20260913T024213Z-1743ce77",
   "coverage": {
     "universe": 9876,
     "prices": 9875,
     "checked_today": 9875,
-    "industry": 9349,
+    "industry": 9406,
     "info": 9876,
     "dividends": 9875,
     "return_1y": 8091,
@@ -1405,14 +1953,15 @@
     "prices": 9875,
     "histories": 9875,
     "info": 9876,
-    "industry": 9349,
+    "industry": 9406,
     "dividends_checked": 9875,
     "dividends_with_payments": 6074,
     "dividends_no_payments": 3801,
     "unattempted_info": 0,
     "unattempted_dividends": 0
   },
-  "finished_at": "2026-09-12T15:03:19.483206+00:00",
+  "published_at": "2026-09-13T02:46:21.083305+00:00",
+  "finished_at": "2026-09-13T02:46:24.177300+00:00",
   "result": "passed",
   "data_complete": false,
   "scope": "Every catalog member and return; primary field validation; bounded SEC reference cross-check, not external verification of every provider field"
