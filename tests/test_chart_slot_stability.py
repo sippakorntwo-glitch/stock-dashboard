@@ -54,7 +54,7 @@ def test_period_changes_replace_summary_even_when_loading_notice_changes(monkeyp
     monkeypatch.setattr(charts,'get_chart_service',lambda:service)
     monkeypatch.setattr(charts.a,'get_data_cache',lambda:cache)
     monkeypatch.setattr(charts,'chart_requests_enabled',lambda:True)
-    at=AppTest.from_string("import streamlit as st\nfrom chart_ranges import render_chart\nst.session_state['selected_ticker']='SPY'\nrender_chart('SPY',None)",default_timeout=20).run()
+    at=AppTest.from_string("import streamlit as st\nfrom chart_ranges import render_chart\nimport dashboard_runtime as a\nst.session_state['selected_ticker']='SPY'\nhistory,meta=a.get_data_cache().history('SPY')\nrender_chart('SPY',history,meta)",default_timeout=20).run()
     for period in ('1 วัน','3 วัน','1 วัน','3 วัน','1 ปี'):
         at.radio(key='chart_period').set_value(period).run()
         assert not at.exception,str(at.exception)

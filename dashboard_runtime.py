@@ -11,7 +11,7 @@ from catalog_extension import install as install_catalog
 install_catalog(core)
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-09-13.30'
+APP_VERSION = '2026-09-13.31'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row
@@ -161,7 +161,8 @@ def _cached_data_cache(version, cache_path):
 
 def get_data_cache(version=APP_VERSION):
     # Always hash explicit arguments, including the release version.
-    return _cached_data_cache(version, _cache_path())
+    from read_view import scoped_cache
+    return scoped_cache(_cached_data_cache(version, _cache_path()))
 
 
 get_data_cache.clear = _cached_data_cache.clear

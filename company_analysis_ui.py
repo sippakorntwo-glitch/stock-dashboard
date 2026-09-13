@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 from company_metrics import BY_KEY, GROUPS, REFERENCE_URLS, NONNEGATIVE, Metric
 from company_analysis_th import (METRIC_TEXT, GROUP_LABELS, CSV_HEADERS, build_rows_th,
-                                 export_rows_th, format_value_th, profile_text_th)
+                                 export_rows_th, format_value_th, profile_text_th, bilingual_label)
 from financial_statements import INCOME_KEYS, CASHFLOW_KEYS, BALANCE_FIELDS, number
 
 STATEMENT_EXTRA = {
@@ -75,6 +75,7 @@ def statement_table(bundle, kind):
             label, definition = METRIC_TEXT[key]
         else:
             label, definition = STATEMENT_EXTRA[raw]
+            label = bilingual_label(raw, label)
             metric = Metric(raw, label, '', 'money', 'context', definition)
         row = {'Metric': label, '_help': definition, '_field': raw}
         for period in records:

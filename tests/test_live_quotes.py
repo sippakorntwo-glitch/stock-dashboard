@@ -12,7 +12,7 @@ def test_bad_quote_prices_are_not_displayable(value):
     assert positive(value) is None
 
 def test_quote_polling_windows_are_budgets_not_market_open_claims():
-    assert polling_interval('2026-09-11T18:00:00Z') == 60
+    assert polling_interval('2026-09-11T18:00:00Z') == 300
     assert polling_interval('2026-09-12T18:00:00Z') == 1800
     assert polling_interval('2026-09-11T05:00:00Z') == 1800
 

@@ -17,11 +17,15 @@ LAYOUT = 'single-page'
 
 
 @st.fragment(run_every=2)
-def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_chart_revision=0):
+def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_chart_revision=0, rendered_ticker=None):
     """Refresh the page only when a selected data load has actually changed."""
+    ticker=st.session_state.get('selected_ticker')
+    if rendered_ticker is not None and ticker != rendered_ticker:
+        return
     if reader:
+        reader.select(ticker)
         reader.refresh()
-        state = reader.status()
+        state = reader.status(ticker)
     else:
         state = {'busy': False, 'revision': 0}
     worker = a.get_updater().state()
@@ -29,15 +33,17 @@ def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_cha
     from chart_ranges import first_chart_load_finished
     from ui_stability import claim_refresh
     first_chart = first_chart_load_finished(st.session_state,chart_state['revision'],rendered_chart_revision)
-    observed = (a.APP_VERSION,state['revision'],worker['revision'],chart_state['revision'] if first_chart else None)
-    rendered = (a.APP_VERSION,rendered_revision,rendered_worker_revision,rendered_chart_revision if first_chart else None)
+    observed = (a.APP_VERSION,ticker,state.get('view_revision',state['revision']),worker['revision'],chart_state['revision'] if first_chart else None)
+    rendered = (a.APP_VERSION,rendered_ticker or ticker,rendered_revision,rendered_worker_revision,rendered_chart_revision if first_chart else None)
     if claim_refresh(st.session_state,observed,rendered):
         if first_chart:st.session_state.pop('_chart_first_load_waiting',None)
         st.rerun()
-    if state['busy'] or worker['busy'] or chart_state['busy']:
+    if state.get('error'):
+        st.warning(state['error'])
+    elif state['busy'] or worker['busy'] or chart_state['busy']:
         st.caption('กำลังอ่านข้อมูลที่เลือก ข้อมูลเดิมยังใช้งานได้ — แสดงผลให้อัตโนมัติเมื่อโหลดเสร็จ')
     else:
-        st.caption('พร้อมใช้งาน · ตรวจชุดข้อมูลใหม่อัตโนมัติทุก 5 นาที')
+        st.caption('พร้อมใช้งาน · ตรวจชุดข้อมูลใหม่อัตโนมัติทุก 1 นาที')
 
 
 def _manual_ticker():
@@ -52,21 +58,32 @@ def main():
     # Reserve timer/receipt positions before dynamic content or cache spinners.
     body=st.container(key='workspace_body')
     footer=st.container(key='workspace_footer')
-    with body:
-        reader,error=a.get_remote_reader()
-        if reader: reader.refresh()
-        revision=reader.status()['revision'] if reader else 0
+    reader,error=a.get_remote_reader()
+    base_cache=a.get_data_cache()
+    consume_selection(base_cache)
+    if 'selected_ticker' not in st.session_state:
+        set_selected(st.session_state,'AAPL')
+    ticker=st.session_state['selected_ticker']
+    if reader:
+        reader.select(ticker)
+        reader.refresh()
+    from read_view import consistent_read
+    with consistent_read(base_cache,ticker) as cache, body:
+        state=cache.reader_state
+        revision=state.get('view_revision',state.get('revision',0))
+        manifest,_=cache.get('remote:manifest',request_remote=False)
+        manifest=manifest or {}
+        rendered_generation=manifest.get('generation','')
+        detail_marker,_=cache.get('remote:detail:'+ticker,request_remote=False)
+        detail_marker=detail_marker or {}
+        prepared_ready=not reader or not manifest or detail_marker.get('generation')==rendered_generation
         worker_revision=a.get_updater().state()['revision']
         chart_revision=get_chart_service().state()['revision']
-        cache=a.get_data_cache()
-        consume_selection(cache)
         original=original_watchlist()
         frame,outside=a.build_universe_frame(original,cache.quotes(),cache.classifications())
         from screening import enrich_frame
         profiles,_=cache.get('remote:screener',request_remote=False)
         frame=enrich_frame(frame,profiles or {})
-        if 'selected_ticker' not in st.session_state:
-            set_selected(st.session_state,'AAPL')
         st.sidebar.title('Stock Research')
         st.sidebar.caption('หน้าเดียว · คลิกหุ้นในตาราง แล้วดูกราฟและรายละเอียดด้านล่าง')
         st.sidebar.text_input('Ticker สำหรับวิเคราะห์',key='ticker_input',on_change=_manual_ticker)
@@ -89,24 +106,25 @@ def main():
             st.title('Stock Research Workspace')
             from workspace_theme import navigation
             navigation()
-            st.caption('หน้าเดียว: ตารางหุ้น → กราฟและแผนซื้อ → พื้นฐานและปันผล → ความเสี่ยง → เปรียบเทียบ')
             st.caption('ข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด · รุ่นโปรแกรม '+a.APP_VERSION)
             counts=quality_counts(frame)
             for box,label,key in zip(st.columns(4),['รายการทั้งหมด','มีราคา','ราคาภายใน 4 วัน','มีราคาแต่ไม่ระบุวัน'],['total','priced','recent','unknown_time']): box.metric(label,f'{counts[key]:,}')
             if error: st.warning(error)
-            if cache.error: st.warning('Local cache มีข้อผิดพลาด: '+cache.error)
-            state=reader.status() if reader else {'manifest':{}}
-            if state.get('error'): st.warning(state['error'])
-            if not state.get('manifest'): st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ CSV/ข้อมูลเดิมก่อน เจ้าของระบบเริ่ม Actions → Update market data (free) → bootstrap')
-            else: st.caption('Snapshot เผยแพร่ '+a.thai_time(state['manifest'].get('published_at')))
+            if cache.error: st.warning('อ่านข้อมูลที่บันทึกไว้ไม่สำเร็จ')
+            # Reader failures/recovery are displayed by the live status fragment,
+            # so a recovered check never leaves a stale warning on this page.
+            if not manifest: st.info('ยังไม่มีชุดข้อมูลอัตโนมัติ ใช้ข้อมูลที่มีอยู่ก่อนได้ แล้วกด “ตรวจชุดข้อมูลใหม่” อีกครั้งภายหลัง')
+            else: st.caption('Snapshot เผยแพร่ '+a.thai_time(manifest.get('published_at')))
             etfs=int(frame.Asset_Type.eq('ETF').sum())
-            st.caption(f'Catalog: {len(frame)-etfs:,} stocks + {etfs:,} ETF / ETP entries. Directory: {a.ETF_DIRECTORY_AS_OF or "legacy"}. The Nasdaq ETF flag can include ETNs; check each product name. Listing coverage is not data coverage; missing records are prepared in bounded batches.')
+            st.caption(f'ทะเบียน {len(frame)-etfs:,} หุ้น + {etfs:,} ETF / ETP · รายชื่อกองทุน ณ {a.thai_time(a.ETF_DIRECTORY_AS_OF)} · ธง ETF ของ Nasdaq อาจรวม ETN ควรตรวจชื่อผลิตภัณฑ์ · จำนวนรายชื่อไม่ใช่ความครบของข้อมูล')
             if a.ETF_DIRECTORY_CONFLICTS:
                 st.caption(f'{len(a.ETF_DIRECTORY_CONFLICTS)} symbol-type conflicts retained for review; no automatic stock reclassification.')
             with st.container(key='overview_controls'):
                 work=filter_universe(frame)
         with top_right:
-            render_board(cache)
+            # The board has its own timed fragment and timestamped publication;
+            # do not retain a page's temporary read transaction in that callback.
+            render_board(base_cache)
         with st.container(key='research_overview'):
             if work is not None:
                 overview(frame, selectable=True, prepared=work)
@@ -114,6 +132,8 @@ def main():
         st.header('วิเคราะห์หุ้นที่เลือก',anchor='selected-stock')
         if not valid:
             st.warning('กรุณากรอก Ticker ให้ถูกต้อง หรือคลิกเลือกหุ้นจากตาราง')
+        elif not prepared_ready:
+            st.info('กำลังอ่านข้อมูลของหุ้นที่เลือกให้ตรงกับชุดข้อมูลนี้ จะแสดงให้อัตโนมัติเมื่อพร้อม')
         else:
             if reader: reader.request(ticker)
             history,meta=cache.history(ticker)
@@ -125,6 +145,8 @@ def main():
             row=selected.iloc[0].to_dict() if not selected.empty else {}
             st.subheader(f"{ticker} · {info.get('shortName') or row.get('Security_Name') or ''}")
             st.caption(f"วันที่ราคา Watchlist: {row.get('Price_AsOf') or 'ไม่ระบุ'} | ประวัติดึงสำเร็จ {a.thai_time(meta.get('fetched_at'))} | quote ณ {a.thai_time(info.get('regularMarketTime'))}")
+            if detail_marker.get('retained_newer_local'):
+                st.caption('บางรายการมีข้อมูลที่ตรวจได้ใหม่กว่าชุดเผยแพร่ จึงใช้ข้อมูลใหม่นั้นพร้อมเวลาแหล่งข้อมูลเดิม')
             from live_quote_ui import render_live_quote
             render_live_quote(ticker)
             # Render once per selected symbol, not once per row in the catalog.
@@ -149,9 +171,9 @@ def main():
         if not outside.empty:
             with st.expander(f'CSV นอกชุดหลัก ({len(outside):,} ตัว)'): table(outside)
     with footer:
-        _poll_data(reader,revision,worker_revision,chart_revision)
+        _poll_data(reader,revision,worker_revision,chart_revision,ticker)
         st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')
         from ui_stability import page_receipt
         st.markdown(page_receipt(a.APP_VERSION,ticker,st.session_state.get('stock_search',''),
                                 time.monotonic()-render_started,
-                                generation=(reader.status().get('manifest') or {}).get('generation','') if reader else ''),unsafe_allow_html=True)
+                                generation=rendered_generation),unsafe_allow_html=True)

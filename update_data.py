@@ -71,7 +71,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
     from data_quality import prepare_cached_metadata, make_quality
     prepare_cached_metadata(cache, universe, app.ETF_NAMES)
     quality = make_quality(cache, universe, etfs=app.ETF_NAMES)
-    from screening import profile_rows
+    from screening import SCREENER_SCHEMA, profile_rows
     from catalog_extension import fingerprint
     screener = profile_rows(cache, universe)
     generation = "generations/" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()) + "-" + uuid.uuid4().hex[:8]
@@ -116,7 +116,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
             "return_2y": sum(app.number(r.get("Return_2Y")) is not None for r in quotes.values()),
             "return_3y": sum(app.number(r.get("Return_3Y")) is not None for r in quotes.values()),
         }
-        summary = {"schema": SCHEMA, "quotes": quotes, "classifications": classifications,
+        summary = {"schema": SCHEMA, "screener_schema": SCREENER_SCHEMA, "quotes": quotes, "classifications": classifications,
                    "universe": list(universe), "watchlist_csv": watchlist_csv, "quality": quality, "screener": screener}
         raw = pack(summary)
         summary_ref = {"key": generation + "/summary.json.gz", "sha256": digest(raw)}
@@ -133,7 +133,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
                 sha.update(block)
         checkpoint_ref = {"key": generation + "/checkpoint.sqlite3", "sha256": sha.hexdigest()}
         store.upload(checkpoint_ref["key"], checkpoint)
-        manifest = {"schema": SCHEMA, "generation": generation, "published_at": utc_now(),
+        manifest = {"schema": SCHEMA, "screener_schema": SCREENER_SCHEMA, "generation": generation, "published_at": utc_now(),
                     "previous_generation": (previous or {}).get("generation"),
                     "summary": summary_ref, "details": details, "checkpoint": checkpoint_ref,
                     "coverage": coverage, "quality_counts": quality["counts"], "report": report,

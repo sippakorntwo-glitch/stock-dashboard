@@ -139,6 +139,13 @@ class GitHubTests(unittest.TestCase):
         self.pace.stop();self.sleep.stop();self.temp.cleanup();self.fixture.tearDown()
     def test_private_release_publish_restore_and_reader(self):
         manifest=worker.publish_snapshot(self.store,self.cache,('AAPL','MSFT'),{})
+        from screening import SCREENER_SCHEMA
+        import gzip
+        summary=json.loads(gzip.decompress(sync.read_checked(self.store,manifest['summary'])))
+        self.assertEqual(manifest['screener_schema'],SCREENER_SCHEMA)
+        self.assertEqual(summary['screener_schema'],SCREENER_SCHEMA)
+        self.assertIn('Dividend_Yield',summary['screener']['AAPL'])
+        self.assertIn('Financial_Currency',summary['screener']['AAPL'])
         self.assertTrue(all(not r['draft'] for r in self.api.releases.values()))
         reader_store=gh.GitHubReleaseStore({'DASHBOARD_DATA_REPO':self.api.repo,'DASHBOARD_GITHUB_TOKEN':'reader','DASHBOARD_DATA_VISIBILITY':'private'},session=self.api)
         self.assertEqual(sync.read_manifest(reader_store)['generation'],manifest['generation'])

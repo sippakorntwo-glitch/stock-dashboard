@@ -127,6 +127,9 @@ def verify_reused_company_rows(app,canonical_rows):
         has=app.get_by_text('ตารางวิเคราะห์ 360°',exact=True))
     table=expander.locator('.workspace-help-table')
     expect(table).to_have_count(1)
+    if not table.is_visible():
+        expander.locator('summary').first.click()
+    expect(table).to_be_visible()
     reused=table.locator('tbody tr[data-company-metric]')
     keys={'debtToEquity','returnOnEquity','returnOnAssets','roic','grossMargins',
           'operatingMargins','profitMargins','currentRatio','interestCoverage',
@@ -168,6 +171,7 @@ def verify_reused_company_rows(app,canonical_rows):
 
 
 def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
+    from company_analysis_th import METRIC_ALIASES,STATEMENT_ALIASES
     section=app.locator('.st-key-research_fundamentals')
     groups=section.locator('.st-key-company_financial_analysis .company-analysis[data-ticker][data-group]')
     if is_fund:
@@ -195,6 +199,9 @@ def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
         assert all(cell.strip() and cell.strip() not in ('None','nan','null') for cell in row.locator('td').all_text_contents())
         assert len(row.locator('abbr').get_attribute('title'))>25
         assert thai.search(row.locator('th').inner_text()), row.get_attribute('data-metric')
+        alias=METRIC_ALIASES[row.get_attribute('data-metric')]
+        label=row.locator('abbr').evaluate("e=>[...e.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent).join('').trim()")
+        assert re.search(r'[A-Za-z]',alias) and label.endswith(' ('+alias+')') and label.count('('+alias+')')==1, label
         assert thai.search(row.locator('abbr').get_attribute('title')), row.get_attribute('data-metric')
         # The benchmark, interpretation and period must explain the figures
         # in Thai; raw values/currency codes and canonical keys stay intact.
@@ -235,6 +242,11 @@ def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
         for row in table.locator('tbody tr').all():
             expect(row.locator('td')).to_have_count(len(columns)-1)
             assert thai.search(row.locator('th').inner_text()), row.inner_text()
+            field=row.get_attribute('data-statement-field')
+            metric={'capitalExpenditure':'capex','repurchaseOfCapitalStock':'buybacks','cashDividendsPaid':'dividendsPaid'}.get(field,field)
+            alias=STATEMENT_ALIASES[metric]
+            label=row.locator('abbr').evaluate("e=>[...e.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent).join('').trim()")
+            assert re.search(r'[A-Za-z]',alias) and label.endswith(' ('+alias+')') and label.count('('+alias+')')==1, label
             assert thai.search(row.locator('abbr').get_attribute('title')), row.inner_text()
         required={'income':('interestExpense','pretaxIncome','taxProvision'),
                   'balance':('receivables','inventory'),'cashflow':()}[kind]
@@ -242,7 +254,8 @@ def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
             expect(table.locator('tr[data-statement-field="'+field+'"]')).to_have_count(1)
         annual.append({'statement':kind,'periods':columns[1:],'rows':table.locator('tbody tr').count()})
     return {'ticker':ticker,'groups':9,'metrics':54,'metric_only_help':True,
-            'thai_labels_and_explanations':True,'annual_statements':annual,'reused_360':reused_360}
+            'thai_labels_and_explanations':True,'bilingual_metric_labels':True,
+            'annual_statements':annual,'reused_360':reused_360}
 
 
 def verify_sections(app,ticker,*,is_fund=False):
@@ -261,7 +274,7 @@ def verify_sections(app,ticker,*,is_fund=False):
 
 
 def click_filtered_stock(page,app,ticker,*,row_selector=False):
-    query=app.get_by_role('textbox',name='Search Ticker / Company',exact=True)
+    query=app.get_by_role('textbox',name='ค้นหาสัญลักษณ์ / ชื่อบริษัท',exact=True)
     query.fill(ticker);query.press('Enter')
     wait_page_ready(app,app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True).input_value(),ticker)
     expect(app.get_by_text('หุ้นในผลค้นหา: '+ticker,exact=True)).to_be_visible(timeout=30000)

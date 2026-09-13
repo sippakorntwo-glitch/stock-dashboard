@@ -148,7 +148,7 @@ def range_payload(frame,ticker,period,interval,fetched_at=''):
 
 
 @st.fragment(run_every=60)
-def render_chart(ticker,daily_history):
+def render_chart(ticker,daily_history,daily_meta=None):
     if st.session_state.get('selected_ticker',ticker) != ticker:
         return
     # Allocate every sibling before provider/cache spinners or optional messages.
@@ -165,7 +165,12 @@ def render_chart(ticker,daily_history):
         with notices:
             short=period.endswith('วัน');long=period in ('5 ปี','10 ปี')
             service=get_chart_service()
-            history,meta=a.get_data_cache().history(ticker,'5m' if short else '1d')
+            # The daily inputs belong to the completed page's read snapshot.
+            # A chart timer must not adopt a newer generation before its table.
+            if short:
+                history,meta=a.get_data_cache().history(ticker,'5m')
+            else:
+                history,meta=daily_history,dict(daily_meta or {})
             kind='5m' if short else 'long';message=''
             st.session_state.pop('_chart_first_load_waiting',None)
             if short or long:

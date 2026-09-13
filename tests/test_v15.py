@@ -139,8 +139,10 @@ def test_500_rows_and_four_ranges_without_network(tmp_path,monkeypatch):
     class Reader:
         def refresh(self,force=False):pass
         def request(self,ticker):pass
-        def status(self):return {'busy':False,'revision':0,'manifest':{}}
-    with patch.object(a,'get_data_cache',return_value=cache),patch.object(a.core,'get_data_cache',return_value=cache),patch.object(a,'get_remote_reader',return_value=(Reader(),'')),patch.object(a,'get_updater',return_value=a.ReadOnlyUpdater()),patch.object(a.yf,'Ticker',side_effect=AssertionError('no network')):
+        def select(self,ticker):pass
+        def status(self,ticker=None):return {'busy':False,'revision':0,'view_revision':(0,0),'error':'','manifest':{}}
+    reader=Reader();cache.remote=reader
+    with patch.object(a,'get_data_cache',return_value=cache),patch.object(a.core,'get_data_cache',return_value=cache),patch.object(a,'get_remote_reader',return_value=(reader,'')),patch.object(a,'get_updater',return_value=a.ReadOnlyUpdater()),patch.object(a.yf,'Ticker',side_effect=AssertionError('no network')):
         at=AppTest.from_string('from dashboard_ui import main\nmain()',default_timeout=40).run()
         assert not at.exception,str(at.exception)
         assert len(at.dataframe[0].value)==500

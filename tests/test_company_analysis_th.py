@@ -3,7 +3,7 @@ from copy import deepcopy
 import re
 
 from bs4 import BeautifulSoup
-from company_analysis_th import (METRIC_TEXT, GROUP_LABELS, TEXT, FORMULAS,
+from company_analysis_th import (METRIC_TEXT, METRIC_ALIASES, STATEMENT_ALIASES, GROUP_LABELS, TEXT, FORMULAS,
                                  build_rows_th, export_rows_th, profile_text_th)
 from company_analysis_ui import analysis_html, statement_table, history_html
 from company_metrics import METRICS, GROUPS, build_rows, evaluate, metric_observations
@@ -33,11 +33,17 @@ def statement_fixture():
 
 def test_all_metrics_and_policy_outcomes_have_complete_thai_translations():
     assert set(METRIC_TEXT) == {m.key for m in METRICS}
+    assert set(METRIC_ALIASES) == set(METRIC_TEXT)
+    assert METRIC_TEXT['grossMargins'][0] == 'อัตรากำไรขั้นต้น (GPM)'
+    assert METRIC_TEXT['grossProfit'][0] == 'กำไรขั้นต้น (GP)'
     assert set(GROUP_LABELS) == set(GROUPS)
     # Exercise each band and the specialized-company policy, including loss bases.
     for info in ({}, {'sector': 'Financial Services'}, {'industry': 'REIT - Retail'}):
         for metric in METRICS:
             assert all(has_thai(s) for s in METRIC_TEXT[metric.key])
+            label = METRIC_TEXT[metric.key][0]
+            assert label.endswith('('+METRIC_ALIASES[metric.key]+')')
+            assert label.count('(') == label.count(')') == 1, label
             for value in (-1, 0, .01, .03, .1, .5, .8, 1, 2, 3, 4, 10, 20, 30, 50):
                 for message in evaluate(metric, value, info):
                     assert message in TEXT, (metric.key, message)
@@ -107,6 +113,10 @@ def test_thai_tables_keep_metric_only_help_and_include_all_annual_source_fields(
         history = BeautifulSoup(history_html(annual, 'งบการเงิน', kind=kind), 'html.parser')
         assert history.select_one(f'section[data-statement="{kind}"]')
         assert all(has_thai(n.get_text()) and has_thai(n['title']) for n in history.select('tbody abbr'))
+        for row in annual:
+            alias = STATEMENT_ALIASES[{'capitalExpenditure': 'capex', 'repurchaseOfCapitalStock': 'buybacks', 'cashDividendsPaid': 'dividendsPaid'}.get(row['_field'], row['_field'])]
+            assert row['Metric'].endswith('('+alias+')')
+            assert row['Metric'].count('(') == row['Metric'].count(')') == 1
         assert not history.select('td [title], thead [title]')
         restored.update(n['data-statement-field'] for n in history.select('tr[data-statement-field]'))
     assert {'interestExpense', 'pretaxIncome', 'taxProvision', 'receivables', 'inventory'} <= restored

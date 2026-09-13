@@ -6,11 +6,11 @@ HIDDEN_HEADERS={'ข้อมูลอ้างอิง','แหล่งข้
 
 def verify_industry_placement(app):
     control=app.locator('.st-key-overview_controls [data-testid="stMultiSelect"]').filter(
-        has=app.get_by_text('Industry / ETF Category',exact=True))
+        has=app.get_by_text('อุตสาหกรรม / หมวด ETF',exact=True))
     expect(control).to_have_count(1)
     expect(control).to_be_visible()
     assert control.evaluate('(e)=>e.closest("[data-testid=stExpander]")===null'), 'Industry still inside Advanced Filters'
-    expect(app.get_by_role('textbox',name='Search Ticker / Company',exact=True)).to_have_count(1)
+    expect(app.get_by_role('textbox',name='ค้นหาสัญลักษณ์ / ชื่อบริษัท',exact=True)).to_have_count(1)
     return True
 
 

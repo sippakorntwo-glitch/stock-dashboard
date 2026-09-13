@@ -8,11 +8,21 @@ import math
 import pandas as pd
 import numpy as np
 
-TEXT_FIELDS={'Sector':'sector','Country':'country','Currency':'currency','Exchange':'fullExchangeName','Fund_Family':'fundFamily'}
+SCREENER_SCHEMA=2
+TEXT_FIELDS={'Sector':'sector','Country':'country','Currency':'currency','Financial_Currency':'financialCurrency',
+             'Exchange':'fullExchangeName','Fund_Family':'fundFamily'}
 NUMERIC_FIELDS={'Market_Cap':'marketCap','Fund_Assets':'totalAssets','Forward_PE':'forwardPE',
                 'Price_To_Book':'priceToBook','Revenue_Growth':'revenueGrowth','Profit_Margin':'profitMargins',
-                'ROE':'returnOnEquity','Free_Cash_Flow':'freeCashflow','Beta':'beta'}
-PROFILE_FIELDS=tuple([*TEXT_FIELDS,*NUMERIC_FIELDS,'Profile_AsOf','Size_Millions'])
+                'ROE':'returnOnEquity','Free_Cash_Flow':'freeCashflow','Beta':'beta',
+                'Trailing_PE':'trailingPE','Operating_Margin':'operatingMargins','ROA':'returnOnAssets',
+                'Debt_To_Equity':'debtToEquity','Current_Ratio':'currentRatio',
+                'Dividend_Yield':'trailingAnnualDividendYield'}
+COMPANY_ONLY_FIELDS=frozenset(('Market_Cap','Market_Cap_Millions','Forward_PE','Trailing_PE','Price_To_Book',
+    'Revenue_Growth','Profit_Margin','Operating_Margin','ROE','ROA','Free_Cash_Flow','Debt_To_Equity','Current_Ratio'))
+FUND_ONLY_FIELDS=frozenset(('Fund_Assets','Fund_Assets_Millions'))
+COMPANY_ONLY_CATEGORIES=frozenset(('Sector','Financial_Currency'))
+FUND_ONLY_CATEGORIES=frozenset(('Fund_Family',))
+PROFILE_FIELDS=tuple([*TEXT_FIELDS,*NUMERIC_FIELDS,'Profile_AsOf','Size_Millions','Market_Cap_Millions','Fund_Assets_Millions'])
 UNKNOWN='(Not reported)'
 
 
@@ -34,8 +44,11 @@ def profile_rows(cache,universe):
         info=safe_numeric_profile(info,ticker,ticker in ETF_NAMES or info.get('quoteType')=='ETF')
         row={field:str(info[key]).strip() if present(info.get(key)) else None for field,key in TEXT_FIELDS.items()}
         row.update({field:number(info.get(key)) for field,key in NUMERIC_FIELDS.items()})
-        for field in ('Revenue_Growth','Profit_Margin','ROE'):
+        for field in ('Revenue_Growth','Profit_Margin','Operating_Margin','ROE','ROA','Dividend_Yield'):
             if row[field] is not None:row[field]*=100
+        if row['Debt_To_Equity'] is not None:row['Debt_To_Equity']/=100
+        for field in ('Debt_To_Equity','Current_Ratio','Dividend_Yield'):
+            if row[field] is not None and row[field]<0:row[field]=None
         row['Profile_AsOf']=meta.get('fetched_at') or info.get('_Fetched_At_UTC')
         result[ticker]=row
     return result
@@ -44,18 +57,21 @@ def profile_rows(cache,universe):
 def enrich_frame(frame,profiles):
     result=frame.copy()
     for field in PROFILE_FIELDS:
-        if field=='Size_Millions':continue
+        if field in ('Size_Millions','Market_Cap_Millions','Fund_Assets_Millions'):continue
         values=result.Ticker.map(lambda t:(profiles.get(t) or {}).get(field))
         result[field]=pd.to_numeric(values,errors='coerce') if field in NUMERIC_FIELDS else values
     # Provider fund profiles sometimes contain corporate placeholders such as
     # profitMargins=0. These are N/A, not a reported zero-profit business. Mask
     # only the view used by filters/exports, preserving the raw stored objects.
     funds=result.Asset_Type.eq('ETF')
-    for field in ('Market_Cap','Revenue_Growth','Profit_Margin','ROE','Free_Cash_Flow'):
+    for field in COMPANY_ONLY_FIELDS:
+        if field not in result:continue
         result.loc[funds,field]=np.nan
     result.loc[~funds,'Fund_Assets']=np.nan
     size=result['Fund_Assets'].where(funds,result['Market_Cap'])
     result['Size_Millions']=size/1_000_000
+    result['Market_Cap_Millions']=result['Market_Cap']/1_000_000
+    result['Fund_Assets_Millions']=result['Fund_Assets']/1_000_000
     return result
 
 
@@ -75,16 +91,28 @@ def filter_frame(frame,*,categories=None,bounds=None,max_price_age=None,max_prof
         values=result.get(field,pd.Series(index=result.index,dtype=object))
         missing=values.isna() | values.astype(str).isin(['','None','nan','null'])
         mask &= values.isin([s for s in selected if s!=UNKNOWN]) | (missing if UNKNOWN in selected else False)
+        assets=result.get('Asset_Type',pd.Series(index=result.index,dtype=object))
+        if field in COMPANY_ONLY_CATEGORIES:mask &= assets.eq('Common Stock')
+        if field in FUND_ONLY_CATEGORIES:mask &= assets.eq('ETF')
     for field,pair in (bounds or {}).items():
         low,high=pair
         if low is None and high is None:continue
+        if any(value is not None and number(value) is None for value in (low,high)):
+            raise ValueError(field+': limits must be finite numbers')
+        low=number(low) if low is not None else None
+        high=number(high) if high is not None else None
         if low is not None and high is not None and high<low:raise ValueError(field+': maximum is below minimum')
-        values=pd.to_numeric(result.get(field,pd.Series(index=result.index,dtype=float)),errors='coerce')
+        raw=result.get(field,pd.Series(index=result.index,dtype=float))
+        values=pd.to_numeric(raw,errors='coerce')
         known=pd.Series(np.isfinite(values.to_numpy(dtype=float,na_value=np.nan)),index=result.index)
         keep=known.copy()
         if low is not None:keep &= values.ge(low)
         if high is not None:keep &= values.le(high)
-        mask &= keep | (~known if include_missing else False)
+        missing=raw.isna() | raw.astype(str).str.strip().str.casefold().isin(('','none','nan','null','n/a','—'))
+        mask &= keep | (missing if include_missing else False)
+        assets=result.get('Asset_Type',pd.Series(index=result.index,dtype=object))
+        if field in COMPANY_ONLY_FIELDS:mask &= assets.eq('Common Stock')
+        if field in FUND_ONLY_FIELDS:mask &= assets.eq('ETF')
     stamp=pd.Timestamp(now if now is not None else pd.Timestamp.now(tz='America/New_York'))
     if stamp.tzinfo is None:stamp=stamp.tz_localize('America/New_York')
     for field,maximum in [('Price_AsOf',max_price_age),('Profile_AsOf',max_profile_age)]:
@@ -98,8 +126,12 @@ def filter_frame(frame,*,categories=None,bounds=None,max_price_age=None,max_prof
         values=pd.to_numeric(result.get(field,pd.Series(index=result.index,dtype=float)),errors='coerce')
         mask &= np.isfinite(values)
     def numeric(field):return pd.to_numeric(result.get(field,pd.Series(index=result.index,dtype=float)),errors='coerce')
-    if above_sma:mask &= numeric('Close').gt(numeric('SMA200'))
-    if bullish_ema:mask &= numeric('Close').gt(numeric('EMA20')) & numeric('EMA20').gt(numeric('EMA50'))
+    if above_sma:
+        close,sma=numeric('Close'),numeric('SMA200')
+        mask &= np.isfinite(close) & np.isfinite(sma) & close.gt(sma)
+    if bullish_ema:
+        close,ema20,ema50=numeric('Close'),numeric('EMA20'),numeric('EMA50')
+        mask &= np.isfinite(close) & np.isfinite(ema20) & np.isfinite(ema50) & close.gt(ema20) & ema20.gt(ema50)
     if favourites is not None:mask &= result.Ticker.isin(favourites)
     return result.loc[mask].copy()
 

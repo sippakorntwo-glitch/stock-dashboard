@@ -113,7 +113,7 @@ def industry_summary(work):
 def technical(ticker,daily_history,info,row):
     from return_audit_ui import render_return_audit
     render_return_audit(ticker,daily_history,row)
-    render_chart(ticker,daily_history)
+    render_chart(ticker,daily_history,a.get_data_cache().history(ticker)[1])
     # Daily criteria must NEVER be calculated from the selected intraday chart.
     is_etf=a.asset_is_etf(ticker,row,info)
     benchmark,_=a.get_data_cache().history('SPY') if is_etf else (None,{})
@@ -129,7 +129,7 @@ def technical(ticker,daily_history,info,row):
     from company_analysis_th import localize_360_frame
     analysis=adapt_analysis(analysis,ticker,info,is_etf)
     analysis=localize_360_frame(analysis)
-    with st.expander('ตารางวิเคราะห์ 360°',expanded=True):
+    with st.expander('ตารางวิเคราะห์ 360°',expanded=False):
         table(analysis,height=450)
     a.render_position_sizer(ticker,row,metrics,currency)
     st.caption('ราคาชุดรายวันอาจไม่ผ่านเกณฑ์ quote อายุไม่เกิน 15 นาที ระบบจึงคงสถานะรอยืนยัน ไม่ลดเกณฑ์เพื่อให้เกิดสัญญาณซื้อ')
@@ -158,7 +158,7 @@ def fundamentals(ticker,history,info,row):
         table(pd.DataFrame(records),height=480)
         st.caption('อัตราการเติบโตและอัตรากำไรเป็นค่าที่แหล่งข้อมูลรายงาน ช่วงอ้างอิงอาจต่างกัน ตัวเลขมูลค่าและกระแสเงินสดใช้สกุลที่ผู้ให้ข้อมูลระบุ ไม่ใช่มูลค่ายุติธรรมอัตโนมัติ')
     if info.get('longBusinessSummary'):
-        with st.expander('ธุรกิจ / กลยุทธ์กองทุน',expanded=True): st.write(info['longBusinessSummary'])
+        with st.expander('ธุรกิจ / กลยุทธ์กองทุน',expanded=False): st.write(info['longBusinessSummary'])
     result=a.load_dividend_history(ticker)
     # Prefer a dated daily price over a potentially week-old info quote for yield.
     price=a.number(row.get('Close'))

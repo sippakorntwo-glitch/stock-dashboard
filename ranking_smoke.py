@@ -21,7 +21,7 @@ def verify_board(page,app):
     if not labels:
         expect(board.get_by_text(re.compile('ยังไม่มีหุ้นผ่านเงื่อนไขซื้อครบ'))).to_be_visible()
         report['empty_is_honest']=True;return report
-    query=app.get_by_role('textbox',name='Search Ticker / Company',exact=True)
+    query=app.get_by_role('textbox',name='ค้นหาสัญลักษณ์ / ชื่อบริษัท',exact=True)
     field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
     previous_ticker=field.input_value()
     sentinel='NO-MATCH-FOR-RANK-TEST'
