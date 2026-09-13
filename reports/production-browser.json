@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-13T14:00:23.693180+00:00",
-  "run_id": "34760941194",
-  "source_sha": "95dde68a66a2b323dc6e121a69c0b6724ef02336",
+  "recorded_at": "2026-09-13T14:34:39.786349+00:00",
+  "run_id": "34762611040",
+  "source_sha": "a8da3f757747c453da81d435a9ca1c9d3868e788",
   "url": "https://my-stock-terminal.streamlit.app/",
-  "expected_version": "2026-09-13.29",
+  "expected_version": "2026-09-13.30",
   "layout": "single-page",
   "views": [
     "ภาพรวมและค้นหา",
@@ -111,7 +111,12 @@
           ],
           "rows": 6
         }
-      ]
+      ],
+      "reused_360": {
+        "rows": 15,
+        "thai_labels_and_help": true,
+        "values_states_and_explanations_match": true
+      }
     },
     {
       "ticker": "MSFT",
@@ -150,7 +155,12 @@
           ],
           "rows": 6
         }
-      ]
+      ],
+      "reused_360": {
+        "rows": 15,
+        "thai_labels_and_help": true,
+        "values_states_and_explanations_match": true
+      }
     },
     {
       "ticker": "AAPL",
@@ -189,7 +199,12 @@
           ],
           "rows": 6
         }
-      ]
+      ],
+      "reused_360": {
+        "rows": 15,
+        "thai_labels_and_help": true,
+        "values_states_and_explanations_match": true
+      }
     }
   ],
   "chart_commentary": {
@@ -227,7 +242,7 @@
   },
   "chart_bars": 1506,
   "chart_last_bar": "2026-09-11",
-  "deployed_version": "2026-09-13.29",
+  "deployed_version": "2026-09-13.30",
   "enhancements": {
     "page_size": 500,
     "tooltips": true,
@@ -551,7 +566,7 @@
         "canvas_index": 1,
         "canvas": {
           "x": 381,
-          "y": 402.90625,
+          "y": 402.53125,
           "width": 902,
           "height": 194
         },
@@ -564,7 +579,7 @@
           },
           {
             "x": 380,
-            "y": 10.921875,
+            "y": 10.546875,
             "width": 980,
             "height": 900
           },
@@ -577,17 +592,17 @@
         ],
         "visible": {
           "left": 397,
-          "top": 418.90625,
+          "top": 418.53125,
           "right": 1267,
-          "bottom": 580.90625
+          "bottom": 580.53125
         },
         "start": {
           "x": 701.5,
-          "y": 499.90625
+          "y": 499.53125
         },
         "end": {
           "x": 962.5,
-          "y": 499.90625
+          "y": 499.53125
         },
         "canvas_hits": [
           true,
@@ -607,7 +622,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260913T132641Z-287678a8",
+      "source_generation": "generations/20260913T140531Z-bd9b8170",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -617,7 +632,7 @@
         "dividends_checked": 9875,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3801,
-        "financial_statements": 2377,
+        "financial_statements": 2948,
         "unattempted_info": 0,
         "unattempted_dividends": 0
       },
@@ -671,7 +686,12 @@
                 "rows": 6
               }
             ],
-            "source_generation": "generations/20260913T132641Z-287678a8"
+            "reused_360": {
+              "rows": 15,
+              "thai_labels_and_help": true,
+              "values_states_and_explanations_match": true
+            },
+            "source_generation": "generations/20260913T140531Z-bd9b8170"
           }
         },
         {
@@ -706,7 +726,12 @@
                 "rows": 0
               }
             ],
-            "source_generation": "generations/20260913T132641Z-287678a8"
+            "reused_360": {
+              "rows": 15,
+              "thai_labels_and_help": true,
+              "values_states_and_explanations_match": true
+            },
+            "source_generation": "generations/20260913T140531Z-bd9b8170"
           }
         },
         {
@@ -733,7 +758,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260913T132641Z-287678a8",
+      "source_generation": "generations/20260913T140531Z-bd9b8170",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -796,7 +821,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-13T13:54:41.459915+00:00",
+      "verified_at": "2026-09-13T14:30:14.410314+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -817,7 +842,7 @@
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-13T13:22:21.679404+00:00",
+        "fetched_at": "2026-09-13T14:31:59.013746+00:00",
         "state": "stale"
       },
       "theme": {
@@ -918,5 +943,5 @@
   "javascript_errors": [],
   "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "95dde68a66a2b323dc6e121a69c0b6724ef02336"
+  "tested_sha": "a8da3f757747c453da81d435a9ca1c9d3868e788"
 }
