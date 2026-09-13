@@ -9,6 +9,7 @@ from analytics import quality_counts
 from dashboard_selection import set_selected
 from chart_ranges import get_chart_service
 from ranking_board import render_board, consume_selection
+from read_view import consistent_read, page_dependencies
 from dashboard_views import (VIEWS, table, plot, original_watchlist, overview, filter_universe,
                              industry_summary, technical, fundamentals, risk, compare)
 
@@ -17,15 +18,18 @@ LAYOUT = 'single-page'
 
 
 @st.fragment(run_every=2)
-def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_chart_revision=0, rendered_ticker=None):
-    """Refresh the page only when a selected data load has actually changed."""
+def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_chart_revision=0, rendered_ticker=None, rendered_dependencies=None):
+    """Refresh only for data used by this page, including pending comparisons."""
     ticker=st.session_state.get('selected_ticker')
+    dependencies=page_dependencies(ticker,st.session_state.get('comparison_symbols'))
     if rendered_ticker is not None and ticker != rendered_ticker:
         return
+    if rendered_dependencies is not None and dependencies != rendered_dependencies:
+        return
     if reader:
-        reader.select(ticker)
+        reader.select_page(dependencies)
         reader.refresh()
-        state = reader.status(ticker)
+        state = reader.page_status(dependencies)
     else:
         state = {'busy': False, 'revision': 0}
     worker = a.get_updater().state()
@@ -33,7 +37,7 @@ def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_cha
     from chart_ranges import first_chart_load_finished
     from ui_stability import claim_refresh
     first_chart = first_chart_load_finished(st.session_state,chart_state['revision'],rendered_chart_revision)
-    observed = (a.APP_VERSION,ticker,state.get('view_revision',state['revision']),worker['revision'],chart_state['revision'] if first_chart else None)
+    observed = (a.APP_VERSION,ticker,state.get('page_revision',state.get('view_revision',state['revision'])),worker['revision'],chart_state['revision'] if first_chart else None)
     rendered = (a.APP_VERSION,rendered_ticker or ticker,rendered_revision,rendered_worker_revision,rendered_chart_revision if first_chart else None)
     if claim_refresh(st.session_state,observed,rendered):
         if first_chart:st.session_state.pop('_chart_first_load_waiting',None)
@@ -64,13 +68,12 @@ def main():
     if 'selected_ticker' not in st.session_state:
         set_selected(st.session_state,'AAPL')
     ticker=st.session_state['selected_ticker']
+    dependencies=page_dependencies(ticker,st.session_state.get('comparison_symbols'))
     if reader:
-        reader.select(ticker)
+        reader.select_page(dependencies)
         reader.refresh()
-    from read_view import consistent_read
-    with consistent_read(base_cache,ticker) as cache, body:
+    with consistent_read(base_cache,ticker,dependencies) as cache, body:
         state=cache.reader_state
-        revision=state.get('view_revision',state.get('revision',0))
         manifest,_=cache.get('remote:manifest',request_remote=False)
         manifest=manifest or {}
         rendered_generation=manifest.get('generation','')
@@ -137,7 +140,10 @@ def main():
         else:
             if reader: reader.request(ticker)
             history,meta=cache.history(ticker)
-            info,_=cache.get('info:'+ticker); info=dict(info or {})
+            info,profile_meta=cache.get('info:'+ticker); info=dict(info or {})
+            dividend_history,_=cache.get('dividends:'+ticker)
+            info['_ProfileFetchedAt']=profile_meta.get('fetched_at') or info.get('_Fetched_At_UTC')
+            info['_DividendHistory']=dividend_history
             statements,_=cache.get('financials:'+ticker)
             if statements:
                 info['_FinancialStatements']=statements
@@ -170,8 +176,12 @@ def main():
             industry_summary(work)
         if not outside.empty:
             with st.expander(f'CSV นอกชุดหลัก ({len(outside):,} ตัว)'): table(outside)
+        # compare() can prune a symbol removed from the catalog. Keep exactly
+        # the displayed dependencies, using counters from this same WAL view.
+        dependencies=page_dependencies(ticker,st.session_state.get('comparison_symbols'))
+        revision=cache.page_revision(dependencies)
     with footer:
-        _poll_data(reader,revision,worker_revision,chart_revision,ticker)
+        _poll_data(reader,revision,worker_revision,chart_revision,ticker,dependencies)
         st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')
         from ui_stability import page_receipt
         st.markdown(page_receipt(a.APP_VERSION,ticker,st.session_state.get('stock_search',''),

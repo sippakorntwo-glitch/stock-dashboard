@@ -63,7 +63,7 @@ def test_public_entrypoint_keeps_refresh_and_errors_but_no_diagnostic_render_cal
     for text in ('health(reader,frame,cache)','render_family_counts(cache)',
                  'render_symbol_quality(ticker,cache,history,info)',"key='research_health'"):
         assert text not in source
-    assert '_poll_data(reader,revision,worker_revision,chart_revision,ticker)' in source
+    assert '_poll_data(reader,revision,worker_revision,chart_revision,ticker,dependencies)' in source
     assert 'if cache.error: st.warning(' in source
     assert 'def render_quality_report(' in Path('quality_views.py').read_text()
     assert 'def make_quality(' in Path('data_quality.py').read_text()

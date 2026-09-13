@@ -22,7 +22,8 @@ COMPANY_ONLY_FIELDS=frozenset(('Market_Cap','Market_Cap_Millions','Forward_PE','
 FUND_ONLY_FIELDS=frozenset(('Fund_Assets','Fund_Assets_Millions'))
 COMPANY_ONLY_CATEGORIES=frozenset(('Sector','Financial_Currency'))
 FUND_ONLY_CATEGORIES=frozenset(('Fund_Family',))
-PROFILE_FIELDS=tuple([*TEXT_FIELDS,*NUMERIC_FIELDS,'Profile_AsOf','Size_Millions','Market_Cap_Millions','Fund_Assets_Millions'])
+PROFILE_FIELDS=tuple([*TEXT_FIELDS,*NUMERIC_FIELDS,'Profile_AsOf','Dividend_Yield_State','Dividend_Yield_Conflict_Date',
+                     'Size_Millions','Market_Cap_Millions','Fund_Assets_Millions'])
 UNKNOWN='(Not reported)'
 
 
@@ -33,10 +34,51 @@ def number(value):
     except (ValueError,TypeError,OverflowError):return None
 
 
+def dividend_yield_observation(info,profile_at,dividends=None):
+    """Quarantine an unreconciled reported zero against overlapping cash events.
+
+    A cash distribution can contain ordinary dividends, return of capital,
+    gains or other components. It does not establish a replacement dividend
+    yield or prove the provider's definition wrong. A positive dated payment
+    alongside a reported zero leaves those source definitions unconfirmed, so
+    exclude that yield from screening. Undated profiles and future events do
+    not establish this overlap. Keep the original source records untouched.
+    """
+    raw=info.get('trailingAnnualDividendYield')
+    missing=raw is None or (isinstance(raw,str) and raw.strip().casefold() in ('','none','null','nan','n/a','—'))
+    value=number(raw)
+    state='not_reported' if missing else 'invalid_source' if value is None or value<0 else 'available'
+    result={'value':value*100 if state=='available' else None,'state':state,'conflict_date':None}
+    if state!='available' or value!=0 or not profile_at or not isinstance(dividends,dict):return result
+    if dividends.get('error') or not isinstance(dividends.get('records'),list):return result
+    try:
+        stamp=pd.Timestamp(profile_at)
+        if pd.isna(stamp) or stamp.tzinfo is None:return result
+        # Ex_Date is an exchange calendar date. UTC midnight can still be the
+        # preceding day in the US; do not count that next day's future event.
+        end=stamp.tz_convert('America/New_York').tz_localize(None).normalize()
+        start=end-pd.DateOffset(years=1)
+    except (TypeError,ValueError,OverflowError):return result
+    for event in dividends['records']:
+        if not isinstance(event,dict):continue
+        cash=number(event.get('Dividend_Per_Share'))
+        if cash is None or cash<=0:continue
+        try:
+            date=pd.Timestamp(event.get('Ex_Date'))
+            if pd.isna(date):continue
+            if date.tzinfo is not None:
+                date=date.tz_convert('America/New_York').tz_localize(None)
+            date=date.normalize()
+        except (TypeError,ValueError,OverflowError):continue
+        if start<date<=end:
+            return {'value':None,'state':'source_disagreement','conflict_date':date.strftime('%Y-%m-%d')}
+    return result
+
+
 def profile_rows(cache,universe):
     from data_quality import read_objects, present
     from dashboard_runtime import ETF_NAMES
-    objects=read_objects(cache,('info:',));result={}
+    objects=read_objects(cache,('info:','dividends:'));result={}
     for ticker in universe:
         info,meta=objects.get('info:'+ticker,({},{}))
         if not isinstance(info,dict) or not info:continue
@@ -50,6 +92,10 @@ def profile_rows(cache,universe):
         for field in ('Debt_To_Equity','Current_Ratio','Dividend_Yield'):
             if row[field] is not None and row[field]<0:row[field]=None
         row['Profile_AsOf']=meta.get('fetched_at') or info.get('_Fetched_At_UTC')
+        dividend=dividend_yield_observation(info,row['Profile_AsOf'],objects.get('dividends:'+ticker,({},{}))[0])
+        row['Dividend_Yield']=dividend['value']
+        row['Dividend_Yield_State']=dividend['state']
+        row['Dividend_Yield_Conflict_Date']=dividend['conflict_date']
         result[ticker]=row
     return result
 
@@ -110,6 +156,9 @@ def filter_frame(frame,*,categories=None,bounds=None,max_price_age=None,max_prof
         if high is not None:keep &= values.le(high)
         missing=raw.isna() | raw.astype(str).str.strip().str.casefold().isin(('','none','nan','null','n/a','—'))
         mask &= keep | (missing if include_missing else False)
+        if field=='Dividend_Yield':
+            states=result.get('Dividend_Yield_State',pd.Series(index=result.index,dtype=object))
+            mask &= ~states.isin(('source_disagreement','invalid_source','not_applicable'))
         assets=result.get('Asset_Type',pd.Series(index=result.index,dtype=object))
         if field in COMPANY_ONLY_FIELDS:mask &= assets.eq('Common Stock')
         if field in FUND_ONLY_FIELDS:mask &= assets.eq('ETF')

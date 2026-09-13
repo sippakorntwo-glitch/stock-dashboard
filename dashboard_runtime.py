@@ -249,6 +249,17 @@ def build_analysis(snapshot, selected_row, info):
     ticker=str(selected_row.get('Ticker') or info.get('symbol') or '')
     safe=safe_numeric_profile(info,ticker,core.asset_is_etf(ticker,selected_row,info))
     frame, metrics, extra = _base_build_analysis(snapshot,selected_row,safe)
+    if '_DividendHistory' in info:
+        from screening import dividend_yield_observation
+        dividend=dividend_yield_observation(info,info.get('_ProfileFetchedAt') or info.get('_Fetched_At_UTC'),info['_DividendHistory'])
+        if dividend['state']=='source_disagreement':
+            from company_metrics import DIVIDEND_YIELD_SOURCE_DISAGREEMENT
+            mask=frame['ปัจจัย'].eq('Dividend Yield')
+            frame.loc[mask,'ค่าล่าสุด']='— (invalid source value)'
+            frame.loc[mask,'การแปลผล']=DIVIDEND_YIELD_SOURCE_DISAGREEMENT
+            frame.loc[mask,'แหล่งข้อมูล']='Yahoo Finance · เทียบประวัติเงินจ่าย'
+            extra={**extra,'dividend_pct':None,'dividend_yield_state':'source_disagreement',
+                   'dividend_yield_conflict_date':dividend['conflict_date']}
     if not core.asset_is_etf(ticker,selected_row,info):
         from company_analysis_th import build_rows_th, GROUP_LABELS
         selected = {'debtToEquity','returnOnEquity','returnOnAssets','roic','grossMargins',

@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import pytest
 import dashboard_runtime as a
-from read_view import consistent_read, scoped_cache
+from read_view import consistent_read, scoped_cache, page_dependencies
 
 def cache_with_data(tmp_path):
     cache=a.DashboardCache(tmp_path/'view.sqlite3')
@@ -64,3 +64,51 @@ def test_fallback_view_copies_values_without_holding_shared_lock(tmp_path):
         cache._fallback['info:AAPL'][0]['name']='new'
         value,_=view.get('info:AAPL');value['name']='mutated read'
         assert view.get('info:AAPL')[0]['name']=='old'
+
+
+def test_page_dependencies_cover_comparisons_and_benchmark_with_fixed_bound():
+    assert page_dependencies('AAPL', ['AAPL', 'QQQ', 'MSFT']) == ('AAPL', 'QQQ', 'MSFT', 'SPY')
+    assert page_dependencies('SPY') == ('SPY', 'QQQ')
+    assert page_dependencies('AAPL', []) == ('AAPL', 'SPY')
+    assert len(page_dependencies('AAPL', [f'T{i}' for i in range(100)])) == 8
+    assert page_dependencies('!', ['MSFT', None, 'invalid space']) == ('MSFT', 'SPY')
+
+
+def test_comparison_completion_is_frozen_with_its_data_and_old_generation_is_hidden(tmp_path, monkeypatch):
+    from data_sync import SnapshotReader, shard_number
+    cache = cache_with_data(tmp_path)
+    reader = SnapshotReader(object(), cache)
+    cache.remote = reader
+    monkeypatch.setattr(reader, '_start', lambda: None)
+    reader.manifest = {'generation': 'g1', 'details': {}}
+    cache.put('info:SPY', {'name': 'prior generation'},
+              {'snapshot_generation': 'g0', 'snapshot_source': reader.source_id,
+               'fetched_at': '2026-09-09T00:00:00Z'})
+    cache.put('remote:detail:SPY', {'generation': 'g0'}, {})
+    for symbol in ('AAPL', 'SPY'):
+        reader.shards.setdefault(str(shard_number(symbol)), {})[symbol] = [
+            ('info:' + symbol, {'name': symbol + ' current'},
+             {'fetched_at': '2026-09-10T00:00:00Z'})]
+    reader._details('AAPL')
+    dependencies = page_dependencies('AAPL', ['AAPL', 'SPY'])
+    with consistent_read(cache, 'AAPL', dependencies) as view:
+        before = view.page_revision(dependencies)
+        assert view.get('info:SPY')[0] is None
+        done = threading.Event()
+        def complete():
+            reader._details('SPY')
+            done.set()
+        writer = threading.Thread(target=complete)
+        writer.start()
+        assert done.wait(3), 'a pinned page blocked comparison completion'
+        writer.join()
+        assert reader.page_status(dependencies)['page_revision'] != before
+        assert view.page_revision(dependencies) == before
+        assert view.get('info:SPY')[0] is None
+        assert view.get('info:AAPL')[0]['name'] == 'AAPL current'
+        # A widget can remove a no-longer-listed choice after the view starts;
+        # the remaining revision still comes from this view, never live counters.
+        assert view.page_revision(('SPY',)) == (before[0], (('SPY', 0),))
+    with consistent_read(cache, 'AAPL', dependencies) as view:
+        assert view.get('info:SPY')[0]['name'] == 'SPY current'
+        assert view.page_revision(dependencies) == reader.page_status(dependencies)['page_revision']

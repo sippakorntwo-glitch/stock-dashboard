@@ -8,11 +8,22 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from copy import deepcopy
 import json
+import re
 import sqlite3
 import threading
 import zlib
 
 _ACTIVE = ContextVar('dashboard_read_view', default=None)
+
+
+def page_dependencies(ticker, comparisons=None):
+    """Only the selected research, visible comparisons and fixed benchmark."""
+    if comparisons is None:
+        comparisons = (ticker, 'SPY' if ticker != 'SPY' else 'QQQ')
+    symbols = (ticker, *tuple(comparisons)[:6], 'SPY')
+    return tuple(dict.fromkeys(symbol for symbol in symbols
+                               if isinstance(symbol, str)
+                               and re.fullmatch(r'[A-Z0-9.^=/_-]{1,30}', symbol)))
 
 
 def scoped_cache(cache):
@@ -32,13 +43,15 @@ class _BorrowedConnection:
 
 
 class CacheReadView:
-    def __init__(self, cache, ticker=None):
+    def __init__(self, cache, ticker=None, dependencies=None):
         self.base = cache
         self.owner = threading.get_ident()
         self.closed = False
         self.connection = None
         self.error = cache.error
         self._lock = threading.RLock()
+        self.dependencies = tuple(dependencies) if dependencies is not None else None
+        self._detail_ready = {}
         # Only opening/pinning the read transaction uses the shared lock. SQLite
         # WAL retains that read version without blocking later writer commits.
         with cache._lock:
@@ -56,7 +69,23 @@ class CacheReadView:
                 self._quotes = deepcopy(cache._fallback_quotes)
                 self._classifications = deepcopy(cache._fallback_classifications)
             reader = getattr(cache,'remote',None)
-            self.reader_state = deepcopy(reader.status(ticker)) if reader else {}
+            self.reader_state = deepcopy(reader.page_status(self.dependencies)
+                                         if self.dependencies is not None else reader.status(ticker)) if reader else {}
+            manifest, _ = self.get('remote:manifest', request_remote=False)
+            generation = (manifest or {}).get('generation')
+            if reader and generation and self.dependencies is not None:
+                for symbol in self.dependencies:
+                    marker, _ = self.get('remote:detail:' + symbol, request_remote=False)
+                    self._detail_ready[symbol] = (marker or {}).get('generation') == generation
+
+    def page_revision(self, dependencies):
+        """Project the frozen vector if the comparison widget pruned a choice."""
+        revision = self.reader_state.get('page_revision')
+        if revision is None:
+            return self.reader_state.get('view_revision', self.reader_state.get('revision', 0))
+        summary, details = revision
+        frozen = dict(details)
+        return summary, tuple((symbol, frozen[symbol]) for symbol in dependencies)
 
     @property
     def active(self):
@@ -74,8 +103,14 @@ class CacheReadView:
         if not self.active:
             return self.base.get(key,request_remote=request_remote)
         remote = getattr(self.base,'remote',None)
-        if request_remote and remote and key.startswith(('history:1d:','info:','dividends:','reference:','financials:')):
-            remote.request(key.rsplit(':',1)[-1])
+        if remote and key.startswith(('history:1d:','info:','dividends:','reference:','financials:')):
+            symbol = key.rsplit(':',1)[-1]
+            if request_remote:
+                remote.request(symbol)
+            # A new comparison can still have records from a previous prepared
+            # generation. Wait for its matching shard, just like selected data.
+            if self._detail_ready.get(symbol) is False:
+                return None, {}
         if self.connection is None:
             return deepcopy(self._objects.get(key,(None,{})))
         row = self.connection.execute('SELECT body,metadata FROM objects WHERE key=?',(key,)).fetchone()
@@ -106,8 +141,8 @@ class CacheReadView:
 
 
 @contextmanager
-def consistent_read(cache, ticker=None):
-    view = CacheReadView(cache,ticker)
+def consistent_read(cache, ticker=None, dependencies=None):
+    view = CacheReadView(cache,ticker,dependencies)
     token = _ACTIVE.set(view)
     try:
         yield view

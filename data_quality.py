@@ -131,7 +131,9 @@ def make_quality(cache, universe, *, etfs=(), now=None):
             if state in ('pending','failed','not_reported','invalid'):missing_fields.append(field)
         from company_metrics import audit_profile
         financials=objects.get('financials:'+t,(None,{}))[0]
-        company_states=audit_profile(t,info,financials,is_etf=is_etf)
+        audit_info={**info,'_ProfileFetchedAt':imeta.get('fetched_at') or info.get('_Fetched_At_UTC'),
+                    '_DividendHistory':div}
+        company_states=audit_profile(t,audit_info,financials,is_etf=is_etf)
         for field,state in company_states.items():count('company.'+field,state)
         counts['financial_statements']+=int(bool(financials))
         counts['unattempted_info']+=int(info_state=='pending')

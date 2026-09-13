@@ -330,3 +330,50 @@ def test_mixed_currency_source_states_and_calculation_copy_agree_with_company_an
         assert clean[field] is None
         assert field_state('SPY',info,field,is_etf=True)=='not_applicable'
     assert clean['marketCap']==info['marketCap'] and info==raw
+
+
+def test_unreconciled_zero_dividend_yield_is_withheld_without_replacing_source():
+    from company_metrics import DIVIDEND_YIELD_SOURCE_DISAGREEMENT
+    info = {'quoteType': 'EQUITY', 'currency': 'USD', 'trailingAnnualDividendYield': 0.,
+            '_ProfileFetchedAt': '2026-09-11T20:00:00+00:00',
+            '_DividendHistory': {'records': [{'Ex_Date': '2026-09-01', 'Dividend_Per_Share': .5}]}}
+    original = deepcopy(info)
+    baseline = metric_observations('TEST', {k: v for k, v in info.items() if not k.startswith('_')})
+    values = metric_observations('TEST', info)
+    item = values['dividendYield']
+    assert item['state'] == 'invalid' and item['value'] is None
+    assert item['reason'] == DIVIDEND_YIELD_SOURCE_DISAGREEMENT
+    assert item['conflict_date'] == '2026-09-01'
+    assert {k: v for k, v in values.items() if k != 'dividendYield'} == {
+        k: v for k, v in baseline.items() if k != 'dividendYield'}
+    row = next(row for row in build_rows('TEST', info) if row['_key'] == 'dividendYield')
+    assert row['Current Value'] == 'Invalid source value'
+    assert row['Interpretation'] == item['reason'] and item['reason'] in row['_help']
+    assert info == original and info['trailingAnnualDividendYield'] == 0.
+    fund = metric_observations('SPY', info, is_etf=True)['dividendYield']
+    assert fund['state'] == 'not_applicable' and fund['value'] is None
+
+
+@pytest.mark.parametrize('timestamp,history', [
+    ('2026-09-11T20:00:00+00:00', None),
+    ('2026-09-11T20:00:00+00:00', {'records': []}),
+    ('2026-09-11T20:00:00+00:00', {'records': [{'Ex_Date': '2025-09-11', 'Dividend_Per_Share': .5}]}),
+    ('2026-09-11T20:00:00+00:00', {'records': [{'Ex_Date': '2026-09-12', 'Dividend_Per_Share': .5}]}),
+    ('2026-09-11T20:00:00+00:00', {'records': [{'Ex_Date': '2026-09-01', 'Dividend_Per_Share': 0.}]}),
+    (None, {'records': [{'Ex_Date': '2026-09-01', 'Dividend_Per_Share': .5}]}),
+])
+def test_zero_dividend_yield_remains_available_without_overlapping_positive_cash(timestamp, history):
+    info = {'trailingAnnualDividendYield': 0., '_ProfileFetchedAt': timestamp, '_DividendHistory': history}
+    original = deepcopy(info)
+    item = metric_observations('TEST', info)['dividendYield']
+    assert item['state'] == 'available' and item['value'] == 0.
+    assert info == original
+
+
+def test_positive_reported_dividend_yield_keeps_fraction_units_with_cached_history():
+    info = {'trailingAnnualDividendYield': .025, '_ProfileFetchedAt': '2026-09-11T20:00:00+00:00',
+            '_DividendHistory': {'records': [{'Ex_Date': '2026-09-01', 'Dividend_Per_Share': .5}]}}
+    original = deepcopy(info)
+    row = next(row for row in build_rows('TEST', info) if row['_key'] == 'dividendYield')
+    assert row['_state'] == 'available' and row['_value'] == .025
+    assert row['Current Value'] == '2.50%' and info == original

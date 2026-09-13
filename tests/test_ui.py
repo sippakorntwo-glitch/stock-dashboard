@@ -20,6 +20,10 @@ def test_single_page_selection_and_all_sections_without_provider_calls(tmp_path)
         def request(self,ticker):pass
         def select(self,ticker):
             cache.put('remote:detail:'+ticker,{'generation':'test','retained_newer_local':{}},{})
+        def select_page(self,tickers):
+            for ticker in tickers: self.select(ticker)
+        def page_status(self,tickers):
+            return dict(self.status(),page_revision=(0,tuple((ticker,0) for ticker in tickers)))
         def status(self,ticker=None):
             return {'busy':False,'revision':0,'view_revision':(0,0),'error':'',
                     'manifest':{'generation':'test','published_at':'2026-09-10T00:00:00Z'}}

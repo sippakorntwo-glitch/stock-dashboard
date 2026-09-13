@@ -5,7 +5,7 @@ Translations use those keys and complete messages, never partial replacements.
 """
 from __future__ import annotations
 
-from company_metrics import METRICS, evaluate, metric_observations
+from company_metrics import METRICS, evaluate, metric_observations, DIVIDEND_YIELD_SOURCE_DISAGREEMENT
 
 
 GROUP_LABELS = {
@@ -266,6 +266,7 @@ def profile_text_th(info):
     return ' · '.join(parts)
 
 TEXT = {
+    DIVIDEND_YIELD_SOURCE_DISAGREEMENT: 'ผู้ให้ข้อมูลรายงานอัตราผลตอบแทนเงินปันผลย้อนหลังเป็นศูนย์ แต่ประวัติมีการจ่ายเงินสดเป็นบวกในช่วงหนึ่งปีย้อนหลังจากวันที่ข้อมูลบริษัท ยังยืนยันองค์ประกอบของเงินจ่ายและนิยามอัตราผลตอบแทนให้ตรงกันไม่ได้ จึงงดแสดงค่านี้',
     'Quote and reporting currencies differ; EV units or FX conversion are not verified': 'สกุลเงินราคาหุ้นต่างจากสกุลเงินรายงานงบ โดยยังไม่ได้ยืนยันหน่วยมูลค่ากิจการ (EV) หรือการแปลงอัตราแลกเปลี่ยน',
     'Review reported net revenue and accounting notes': 'ตรวจรายได้สุทธิและหมายเหตุประกอบงบ',
     'Negative net revenue': 'รายได้สุทธิติดลบ',
@@ -420,6 +421,8 @@ def build_rows_th(ticker, info, bundle=None, *, is_etf=False):
         if item.get('end'):
             period += ' · ' + item['end']
         label, tooltip = METRIC_TEXT[metric.key]
+        if item.get('reason') == DIVIDEND_YIELD_SOURCE_DISAGREEMENT:
+            tooltip += '\nการตรวจสอบแหล่งข้อมูล: ' + TEXT[item['reason']]
         formula = item.get('formula')
         if formula:
             tooltip += '\nวิธีคำนวณ: ' + FORMULAS.get(formula, formula)
@@ -456,6 +459,7 @@ LEGACY_360_LABELS = {
     'Beta (3Y, provider)': 'เบตา 3 ปีจากผู้ให้ข้อมูล',
 }
 LEGACY_360_TEXT = {
+    DIVIDEND_YIELD_SOURCE_DISAGREEMENT: TEXT[DIVIDEND_YIELD_SOURCE_DISAGREEMENT],
     'N/A — Not applicable': STATE_VALUES['not_applicable'],
     'N/M — Non-positive earnings': 'N/M — กำไรเป็นศูนย์หรือติดลบ',
     '— (invalid source value)': '— (ค่าต้นทางผิดปกติ)',

@@ -138,6 +138,9 @@ def test_500_rows_and_four_ranges_without_network(tmp_path,monkeypatch):
     monkeypatch.setenv('DASHBOARD_ALLOW_CHART_REQUESTS','false')
     class Reader:
         def refresh(self,force=False):pass
+        def select_page(self,tickers):pass
+        def page_status(self,tickers):
+            return dict(self.status(),page_revision=(0,tuple((ticker,0) for ticker in tickers)))
         def request(self,ticker):pass
         def select(self,ticker):pass
         def status(self,ticker=None):return {'busy':False,'revision':0,'view_revision':(0,0),'error':'','manifest':{}}

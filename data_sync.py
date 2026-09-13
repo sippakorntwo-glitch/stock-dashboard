@@ -313,13 +313,48 @@ class SnapshotReader:
 
     def status(self, ticker=None):
         with self.lock:
-            error = self.error if ticker is None else self.summary_error or self.detail_errors.get(ticker, "")
-            return {"busy": bool(self.thread and self.thread.is_alive()), "revision": self.revision,
-                    "manifest": self.manifest or {}, "message": self.message, "error": error,
-                    "detail_generation": self.detail_generations.get(ticker),
-                    "view_revision": (self.summary_revision, self.detail_revisions.get(ticker, 0)),
-                    "active_tickers": list(self.active_tickers),
-                    "checked_at": self.checked_at, "next_check": self.next_check}
+            return self._status(ticker)
+
+    def _status(self, ticker=None):
+        """Copy status while the caller holds the reader lock."""
+        error = self.error if ticker is None else self.summary_error or self.detail_errors.get(ticker, "")
+        return {"busy": bool(self.thread and self.thread.is_alive()), "revision": self.revision,
+                "manifest": self.manifest or {}, "message": self.message, "error": error,
+                "detail_generation": self.detail_generations.get(ticker),
+                "view_revision": (self.summary_revision, self.detail_revisions.get(ticker, 0)),
+                "active_tickers": list(self.active_tickers),
+                "checked_at": self.checked_at, "next_check": self.next_check}
+
+    @staticmethod
+    def _page_dependencies(tickers):
+        if not isinstance(tickers, (tuple, list)) or len(tickers) > 8:
+            raise ValueError("Page status needs at most eight ticker dependencies")
+        if any(not isinstance(ticker, str) or not ticker for ticker in tickers):
+            raise ValueError("Page dependencies must be non-empty ticker strings")
+        return tuple(dict.fromkeys(tickers))
+
+    def page_status(self, tickers):
+        """One coherent status for at most eight normalized page dependencies.
+
+        The first ticker is the selected company. Keep first-occurrence order so
+        a changed comparison set changes the revision identity even when all its
+        detail counters are zero. Reading status never requests or leases data.
+        """
+        dependencies = self._page_dependencies(tickers)
+        with self.lock:
+            state = self._status(dependencies[0] if dependencies else None)
+            state["page_revision"] = (self.summary_revision,
+                                      tuple((ticker, self.detail_revisions.get(ticker, 0)) for ticker in dependencies))
+            state["error"] = self.summary_error or next(
+                (self.detail_errors[ticker] for ticker in dependencies if self.detail_errors.get(ticker)), "")
+            return state
+
+    def select_page(self, tickers):
+        """Register a page's leases together before a worker can capture them."""
+        dependencies = self._page_dependencies(tickers)
+        with self.lock:
+            for ticker in dependencies:
+                self.select(ticker)
 
     def _update_error(self):
         self.error = self.summary_error or next(iter(self.detail_errors.values()), "")

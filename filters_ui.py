@@ -119,8 +119,17 @@ def _ranges(frame,fields,labels,bounds):
         bounds[field]=(left.number_input('ต่ำสุด '+labels[field],value=None,key='screen_min_'+field,placeholder='ไม่จำกัด'),
                        right.number_input('สูงสุด '+labels[field],value=None,key='screen_max_'+field,placeholder='ไม่จำกัด'))
         values=pd.to_numeric(frame.get(field,pd.Series(index=frame.index,dtype=float)),errors='coerce')
-        count=int(np.isfinite(values).sum())
-        st.caption(f'{labels[field]}: มีค่าตัวเลข {count:,} / {len(frame):,} รายการในขอบเขตที่เลือก · เว้นว่างทั้งคู่ = ยังไม่ใช้เกณฑ์นี้')
+        usable=np.isfinite(values)
+        if field=='Dividend_Yield':
+            states=frame.get('Dividend_Yield_State',pd.Series(index=frame.index,dtype=object))
+            invalid=states.isin(('source_disagreement','invalid_source','not_applicable'))
+            usable &= ~invalid
+            conflicts=int(states.eq('source_disagreement').sum())
+            if conflicts:
+                st.warning(f'พบอัตราปันผลจากโปรไฟล์ 0% พร้อมประวัติการจ่ายเงินบวกในช่วงเดียวกัน {conflicts:,} รายการ ยังยืนยันนิยามให้ตรงกันไม่ได้ จึงไม่นำค่านี้มาใช้หรือคำนวณค่าแทน รายการเหล่านี้ไม่ผ่านเกณฑ์อัตราปันผลแม้เลือกให้รวมข้อมูลที่ขาด')
+        count=int(usable.sum())
+        description='มีค่าที่ใช้กรองได้' if field=='Dividend_Yield' else 'มีค่าตัวเลข'
+        st.caption(f'{labels[field]}: {description} {count:,} / {len(frame):,} รายการในขอบเขตที่เลือก · เว้นว่างทั้งคู่ = ยังไม่ใช้เกณฑ์นี้')
 
 
 def _metric_group(frame,key,bounds):
@@ -166,7 +175,8 @@ def filter_universe(frame):
             st.caption('1 / 3 / 7 Days นับการเปลี่ยนแปลงระหว่างวันซื้อขาย ส่วน Month / Year ใช้วันซื้อขายก่อนหรือเท่ากับวันเริ่มช่วง ไม่ใช้จำนวนแท่งมาทดแทนประวัติหลายปี')
         with price:
             _metric_group(scope,'screen_metrics_price',bounds)
-            st.caption('ราคาปรับแล้วจากชุดรายวัน ไม่ใช่ราคาเรียลไทม์ · ราคา × ปริมาณเป็นค่าประมาณสภาพคล่อง · อัตราปันผลใช้ trailingAnnualDividendYield ไม่ใช่อัตราปันผลคาดการณ์')
+            st.caption('ราคาปรับแล้วจากชุดรายวัน ไม่ใช่ราคาเรียลไทม์ · ราคา × ปริมาณเป็นค่าประมาณสภาพคล่อง · อัตราปันผลใช้ trailingAnnualDividendYield จากโปรไฟล์ ไม่ใช่ Distribution Rate หรือ 30-Day SEC Yield ของกองทุน')
+            st.caption('เงินที่กองทุนจ่ายอาจรวมการคืนทุน กำไร หรือส่วนประกอบอื่น หากโปรไฟล์แสดง 0% แต่มีเงินจ่ายในช่วงเดียวกันและยังยืนยันนิยามไม่ได้ ระบบจะไม่นำค่านั้นมากรอง')
         with risk:
             _metric_group(scope,'screen_metrics_risk',bounds)
             lo,hi=st.columns(2)
@@ -191,7 +201,7 @@ def filter_universe(frame):
             favourites=st.checkbox('เฉพาะรายการโปรดในเซสชันนี้',key='screen_favourites')
             st.caption('อายุข้อมูลนับวันปฏิทิน รวมเสาร์–อาทิตย์และวันหยุด ตัวกรองวันที่ต้องมีวันที่จริงที่ไม่ใช่อนาคต')
         include_missing=st.checkbox('รวมรายการที่ไม่ได้รายงานค่าตัวเลขที่กำลังกรอง',value=False,key='screen_missing',
-            help='ปกติรายการที่ขาดตัวเลขจะไม่ผ่าน หากเปิด รายการนั้นอาจผ่านโดยไม่ได้ยืนยันเกณฑ์ตัวเลขนั้น แต่ยังต้องผ่านประเภทสินทรัพย์ หมวดหมู่ วันที่ และข้อมูลที่กำหนดให้ต้องมี')
+            help='ปกติรายการที่ขาดตัวเลขจะไม่ผ่าน หากเปิด รายการนั้นอาจผ่านโดยไม่ได้ยืนยันเกณฑ์ตัวเลขนั้น แต่ยังต้องผ่านประเภทสินทรัพย์ หมวดหมู่ วันที่ และข้อมูลที่กำหนดให้ต้องมี ค่าอัตราปันผลที่แหล่งข้อมูลขัดแย้งหรือผิดรูปแบบยังถูกตัดออกเสมอ')
     active_bounds={field:pair for field,pair in bounds.items() if any(v is not None for v in pair)}
     company_active=bool(COMPANY_ONLY_FIELDS.intersection(active_bounds)) or any(categories.get(f) for f in COMPANY_ONLY_CATEGORIES)
     fund_active=bool(FUND_ONLY_FIELDS.intersection(active_bounds)) or any(categories.get(f) for f in FUND_ONLY_CATEGORIES)
@@ -234,6 +244,7 @@ def filter_universe(frame):
     if company_active:conditions.append('เกณฑ์บริษัท: รับเฉพาะหุ้นบริษัท')
     if fund_active:conditions.append('เกณฑ์กองทุน: รับเฉพาะ ETF')
     if active_bounds:conditions.append('ค่าตัวเลขที่ขาด: '+('รวมไว้โดยยังไม่ยืนยันเกณฑ์นั้น' if include_missing else 'ไม่ผ่านตัวกรอง'))
+    if 'Dividend_Yield' in active_bounds:conditions.append('อัตราปันผลที่แหล่งข้อมูลขัดแย้ง / ไม่ถูกต้อง: ไม่ผ่านเสมอ')
     summary=' · '.join(conditions) if conditions else 'ยังไม่จำกัดผลลัพธ์ แสดงทุกรายการ'
     st.markdown('<div class="screener-summary"><strong>ตัวกรองที่ใช้จริง</strong><br>'+html.escape(summary)+'</div>',unsafe_allow_html=True)
     try:

@@ -9,6 +9,13 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from financial_statements import number, observations, SCHEMA, day
 from asset_semantics import kind_for, field_state
+from screening import dividend_yield_observation
+
+
+DIVIDEND_YIELD_SOURCE_DISAGREEMENT = (
+    'Provider reports zero trailing dividend yield while dated history contains positive cash payments '
+    'in the same trailing year; payment components and yield definitions are unverified, so this yield is withheld.'
+)
 
 
 @dataclass(frozen=True)
@@ -180,6 +187,14 @@ def metric_observations(ticker, info, bundle=None, *, is_etf=False):
             item.update(value=None, state='not_applicable', reason='Corporate financial statements do not apply to this ETF / ETP.')
             result[metric.key] = item
             continue
+        if metric.key == 'dividendYield' and '_DividendHistory' in info:
+            dividend = dividend_yield_observation(
+                info, info.get('_ProfileFetchedAt') or info.get('_Fetched_At_UTC'), info['_DividendHistory'])
+            if dividend['state'] == 'source_disagreement':
+                # Cash payments need not all be ordinary dividends. Withhold the
+                # unreconciled source value; never derive a replacement yield.
+                item.update(value=None, state='invalid', reason=DIVIDEND_YIELD_SOURCE_DISAGREEMENT,
+                            conflict_date=dividend['conflict_date'])
         value = item.get('value')
         if (metric.key in ('enterpriseValue', 'priceToSales', 'evRevenue', 'evEbitda')
                 and info.get('currency') and info.get('financialCurrency')
@@ -272,6 +287,8 @@ def build_rows(ticker, info, bundle=None, *, is_etf=False):
         if item.get('end'):
             period += ' · ' + item['end']
         tooltip = metric.definition
+        if item.get('reason') == DIVIDEND_YIELD_SOURCE_DISAGREEMENT:
+            tooltip += '\nSource validation: ' + item['reason']
         if item.get('formula'):
             tooltip += '\nCalculation: ' + item['formula']
         tooltip += '\nSource: ' + item['source'] + '\nPeriod: ' + period

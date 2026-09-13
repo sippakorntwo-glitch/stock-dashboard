@@ -98,6 +98,47 @@ def test_missing_invalid_and_currency_mismatch_stay_distinct_in_thai_csv():
     assert all(r['_state'] == 'not_applicable' and 'N/A' in r['Current Value'] for r in fund)
 
 
+def test_unreconciled_dividend_source_has_same_thai_reason_in_table_help_and_csv():
+    from company_metrics import DIVIDEND_YIELD_SOURCE_DISAGREEMENT
+    info = {'trailingAnnualDividendYield': 0., '_ProfileFetchedAt': '2026-09-11T20:00:00+00:00',
+            '_DividendHistory': {'records': [{'Ex_Date': '2026-09-01', 'Dividend_Per_Share': .5}]}}
+    original = deepcopy(info)
+    row = next(row for row in build_rows_th('TEST', info) if row['_key'] == 'dividendYield')
+    reason = TEXT[DIVIDEND_YIELD_SOURCE_DISAGREEMENT]
+    assert row['_state'] == 'invalid' and row['_value'] is None
+    assert row['Current Value'] != '0.00%'
+    assert row['Interpretation'] == reason and reason in row['_help']
+    assert 'องค์ประกอบของเงินจ่าย' in reason and 'นิยามอัตราผลตอบแทน' in reason
+    exported = export_rows_th([row])[0]
+    assert exported['ค่าปัจจุบัน'] == row['Current Value']
+    assert exported['การตีความ'] == reason and reason in exported['คำอธิบายและวิธีคำนวณ']
+    assert all(has_thai(line) for line in row['_help'].splitlines())
+    assert info == original
+
+
+def test_legacy_360_withholds_same_unreconciled_dividend_for_company_and_fund():
+    from asset_semantics import adapt_analysis
+    from company_analysis_th import localize_360_frame, LEGACY_360_LABELS
+    from company_metrics import DIVIDEND_YIELD_SOURCE_DISAGREEMENT
+    from dashboard_runtime import build_analysis
+    for ticker, asset_type, quote_type in [('AAPL', 'Common Stock', 'EQUITY'), ('SPY', 'ETF', 'ETF')]:
+        info = {'symbol': ticker, 'quoteType': quote_type, 'trailingAnnualDividendYield': 0.,
+                'trailingAnnualDividendRate': 0., 'regularMarketPrice': 100.,
+                '_ProfileFetchedAt': '2026-09-11T20:00:00+00:00',
+                '_DividendHistory': {'records': [{'Ex_Date': '2026-09-01', 'Dividend_Per_Share': .5}]}}
+        original = deepcopy(info)
+        frame, _, extra = build_analysis({}, {'Ticker': ticker, 'Asset_Type': asset_type}, info)
+        display = localize_360_frame(adapt_analysis(frame, ticker, info, asset_type == 'ETF'))
+        row = display.loc[display['ปัจจัย'].eq(LEGACY_360_LABELS['Dividend Yield'])].iloc[0]
+        assert row['ค่าล่าสุด'] == '— (ค่าต้นทางผิดปกติ)'
+        assert row['การแปลผล'] == TEXT[DIVIDEND_YIELD_SOURCE_DISAGREEMENT]
+        assert extra['dividend_pct'] is None and extra['dividend_yield_state'] == 'source_disagreement'
+        assert extra['dividend_yield_conflict_date'] == '2026-09-01'
+        if asset_type == 'Common Stock':
+            assert frame['_company_metric'].isin(METRIC_TEXT).sum() == 15
+        assert info == original
+
+
 def test_thai_tables_keep_metric_only_help_and_include_all_annual_source_fields():
     bundle = statement_fixture()
     rows = build_rows_th('TEST', {'currency': 'USD', 'financialCurrency': 'USD'}, bundle)
