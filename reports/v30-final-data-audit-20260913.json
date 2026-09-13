@@ -1,0 +1,1690 @@
+{
+  "all_dependent_metrics_safe": true,
+  "all_empty_retries_valid": true,
+  "all_invalid_values_excluded": true,
+  "audited_at": "2026-09-13T15:20:50.910472+00:00",
+  "checkpoint_bytes": 404938752,
+  "checkpoint_sha256": "10326193d05f82b72f69a58b85f386c3240832a325f775dd89a41d16f5fd9f8d",
+  "checksum_verified": true,
+  "collector_source_sha": "41eda2b40936e225b79c5ecf8d2f958f48510803",
+  "counts": {
+    "companies": 4200,
+    "companies_without_financial_currency": 42,
+    "funds": 5676,
+    "remaining_due": 0,
+    "securities": 9876,
+    "statements_available": 4148,
+    "stored_financial_bundles": 4158,
+    "with_invalid_source_metrics": 11,
+    "with_missing_applicable_metrics": 3696
+  },
+  "due_symbols": [],
+  "expected_checks": {
+    "companies": true,
+    "companies_without_financial_currency": true,
+    "funds": true,
+    "remaining_due": true,
+    "securities": true,
+    "statements_available": true,
+    "stored_financial_bundles": true,
+    "with_invalid_source_metrics": true,
+    "with_missing_applicable_metrics": true
+  },
+  "expected_counts": {
+    "companies": 4200,
+    "companies_without_financial_currency": 42,
+    "funds": 5676,
+    "remaining_due": 0,
+    "securities": 9876,
+    "statements_available": 4148,
+    "stored_financial_bundles": 4158,
+    "with_invalid_source_metrics": 11,
+    "with_missing_applicable_metrics": 3696
+  },
+  "generation": "generations/20260913T151140Z-8d2a4136",
+  "missing_financial_currency": [
+    "AIIR",
+    "ATCX",
+    "BBN",
+    "BCAT",
+    "BCX",
+    "BIOT",
+    "BIT",
+    "BMEZ",
+    "BMN",
+    "BOT",
+    "BPAC",
+    "BST",
+    "BSTZ",
+    "BTX",
+    "DXYZ",
+    "ECAT",
+    "ETX",
+    "FACT",
+    "FISV",
+    "FSCO",
+    "GBAB",
+    "GGZ",
+    "IGI",
+    "IMC",
+    "KBDC",
+    "KRSA",
+    "LION",
+    "NCDL",
+    "NHIC",
+    "NIQ",
+    "PDCC",
+    "PLCI",
+    "RGT",
+    "RMSG",
+    "ROC",
+    "SEV",
+    "SI",
+    "TCGX",
+    "VRXA",
+    "WATR",
+    "XFLT",
+    "XTER"
+  ],
+  "no_observations": [
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T08:00:47.172511+00:00",
+        "retry_after": "2026-09-14T08:00:47.964446+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T08:00:47.172696+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0002,
+      "retry_in_future": true,
+      "ticker": "ARTC"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T08:16:23.264877+00:00",
+        "retry_after": "2026-09-14T08:16:23.906818+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T08:16:23.265086+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0002,
+      "retry_in_future": true,
+      "ticker": "BREZ"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T12:45:14.637738+00:00",
+        "retry_after": "2026-09-14T12:45:15.655611+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T12:45:14.637950+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0003,
+      "retry_in_future": true,
+      "ticker": "DPU"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T13:12:29.126013+00:00",
+        "retry_after": "2026-09-14T13:12:29.909175+00:00",
+        "success": false
+      },
+      "currency": "ILS",
+      "errors": [],
+      "fetched_at": "2026-09-13T13:12:29.126229+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0002,
+      "retry_in_future": true,
+      "ticker": "GIXI"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T13:24:13.646706+00:00",
+        "retry_after": "2026-09-14T13:24:14.500729+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T13:24:13.646893+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0002,
+      "retry_in_future": true,
+      "ticker": "JTTT"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T13:56:09.881596+00:00",
+        "retry_after": "2026-09-14T13:56:10.910333+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T13:56:09.881771+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0003,
+      "retry_in_future": true,
+      "ticker": "MBAI"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T13:58:30.284515+00:00",
+        "retry_after": "2026-09-14T13:58:31.166491+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T13:58:30.284721+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0002,
+      "retry_in_future": true,
+      "ticker": "MIAC"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T14:02:53.597873+00:00",
+        "retry_after": "2026-09-14T14:02:54.172766+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T14:02:53.598071+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0002,
+      "retry_in_future": true,
+      "ticker": "NSAI"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T14:14:09.009130+00:00",
+        "retry_after": "2026-09-14T14:14:09.797042+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T14:14:09.009351+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0002,
+      "retry_in_future": true,
+      "ticker": "OSPR"
+    },
+    {
+      "attempt": {
+        "fetched_at": "2026-09-13T14:20:09.766434+00:00",
+        "retry_after": "2026-09-14T14:20:10.623807+00:00",
+        "success": false
+      },
+      "currency": "USD",
+      "errors": [],
+      "fetched_at": "2026-09-13T14:20:09.766639+00:00",
+      "raw_record_counts": {
+        "annual": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        },
+        "quarterly": {
+          "balance": 0,
+          "cashflow": 0,
+          "income": 0
+        }
+      },
+      "retry_after_attempt": true,
+      "retry_delay_hours": 24.0002,
+      "retry_in_future": true,
+      "ticker": "RACD"
+    }
+  ],
+  "postmerge_collection": {
+    "attempted": 2896,
+    "baseline_usable": 1260,
+    "failed": 0,
+    "final_usable": 4148,
+    "new_empty": 8,
+    "new_usable": 2888,
+    "only_missing": true,
+    "provider_cooldown": false,
+    "remaining_due": 0,
+    "successful_batches": 6,
+    "updated": 2896
+  },
+  "published_checkpoint_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/releases/download/dashboard-data-20260913T151140Z-8d2a4136/checkpoint.sqlite3",
+  "published_metric_state_totals": {
+    "each_metric_funds_not_applicable": 5676,
+    "each_metric_securities": 9876,
+    "errors": [],
+    "metric_count": 54
+  },
+  "reconciles_4200": true,
+  "scope": "Read-only reconciliation of the checksum-verified published checkpoint, financial coverage, source-value guards, retry eligibility, and XYL values. This does not externally verify every company filing and does not assert that every applicable metric is supplied by the provider.",
+  "source_anomalies": [
+    {
+      "currency": "BRL",
+      "fetched_at": "2026-09-13T07:07:35.253672+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดจ่ายปันผล",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "dividendsPaid",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "BRL",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "cashDividendsPaid",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 151487000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": -47606000
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -2864000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -179794000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            }
+          ],
+          "source_aggregate_before_validation": 103881000
+        }
+      ],
+      "name": "AGI Inc",
+      "ticker": "AGBK"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T08:04:31.808843+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดซื้อหุ้นคืน",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "buybacks",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "repurchaseOfCapitalStock",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 9000
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -4000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -335000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -23000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -13000
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -49000
+            }
+          ],
+          "source_aggregate_before_validation": 9000
+        }
+      ],
+      "name": "BayFirst Financial Corp.",
+      "ticker": "BAFN"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T08:27:50.814021+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดซื้อหุ้นคืน",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "buybacks",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "repurchaseOfCapitalStock",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 34000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 29000
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -4510000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -15074000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -21611000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -44151000
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            }
+          ],
+          "source_aggregate_before_validation": 63000
+        }
+      ],
+      "name": "Cytek Biosciences, Inc.",
+      "ticker": "CTKB"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T12:48:27.206772+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดจ่ายปันผล",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "dividendsPaid",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "cashDividendsPaid",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 3000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 5106000
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -5044000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -1724000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -3706000
+            }
+          ],
+          "source_aggregate_before_validation": 5109000
+        }
+      ],
+      "name": "The Elmet Group Co.",
+      "ticker": "ELMT"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T12:52:30.040922+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {
+            "debtToEquity": {
+              "basis": "Provider period",
+              "currency": "USD",
+              "end": null,
+              "formula": "Provider debtToEquity percentage / 100",
+              "source": "Yahoo Finance profile",
+              "state": "not_reported",
+              "value": null
+            },
+            "netDebt": {
+              "basis": "Not reported",
+              "currency": "USD",
+              "end": null,
+              "formula": null,
+              "source": "Financial statements",
+              "state": "not_reported",
+              "value": null
+            },
+            "roic": {
+              "basis": "Not reported",
+              "currency": "USD",
+              "end": null,
+              "formula": null,
+              "source": "Financial statements",
+              "state": "missing_inputs",
+              "value": null
+            }
+          },
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "หนี้ที่มีดอกเบี้ยรวม",
+            "Period": "งบฐานะการเงิน ณ วันที่ · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "totalDebt",
+          "normalized": {
+            "basis": "Balance sheet",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": null,
+            "reason": "Unexpected negative source amount",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "totalDebt",
+          "profile_value": 88985000,
+          "raw_field": "totalDebt",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "balance",
+              "used_in_display_period": true,
+              "value": -2607000
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "balance",
+              "used_in_display_period": false,
+              "value": -2681000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "balance",
+              "used_in_display_period": false,
+              "value": -2755000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "balance",
+              "used_in_display_period": false,
+              "value": 15097000
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "balance",
+              "used_in_display_period": false,
+              "value": 14913000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "balance",
+              "used_in_display_period": false,
+              "value": -2755000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "balance",
+              "used_in_display_period": false,
+              "value": 14552000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "balance",
+              "used_in_display_period": false,
+              "value": 303834000
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "balance",
+              "used_in_display_period": false,
+              "value": 237822000
+            }
+          ],
+          "source_aggregate_before_validation": -2607000
+        }
+      ],
+      "name": "First Bancorp",
+      "ticker": "FBNC"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T13:19:17.665045+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดซื้อหุ้นคืน",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "buybacks",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "repurchaseOfCapitalStock",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 250000000
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -250000000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -750000000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -499998000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -99983000
+            }
+          ],
+          "source_aggregate_before_validation": 250000000
+        }
+      ],
+      "name": "ICON Public Limited Company",
+      "ticker": "ICLR"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T13:24:58.231602+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดซื้อหุ้นคืน",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "buybacks",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "repurchaseOfCapitalStock",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 394000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -9606000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -10715000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -28130000
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            }
+          ],
+          "source_aggregate_before_validation": 394000
+        }
+      ],
+      "name": "Kenon Holdings Ltd.",
+      "ticker": "KEN"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T13:54:21.086624+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดซื้อหุ้นคืน",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "buybacks",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "repurchaseOfCapitalStock",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 1000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -68000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -1842000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -20554000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -59216000
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            }
+          ],
+          "source_aggregate_before_validation": 1000
+        }
+      ],
+      "name": "El Pollo Loco Holdings, Inc.",
+      "ticker": "LOCO"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T14:18:04.358906+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดซื้อหุ้นคืน",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "buybacks",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "repurchaseOfCapitalStock",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 71000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -4316000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -8798000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -775000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -14616000
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            }
+          ],
+          "source_aggregate_before_validation": 71000
+        }
+      ],
+      "name": "Alpine Income Property Trust, Inc.",
+      "ticker": "PINE"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T14:36:38.901821+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดซื้อหุ้นคืน",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "buybacks",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "repurchaseOfCapitalStock",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 1000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -18099000
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -27782000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -18600000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -111959000
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -30967000
+            }
+          ],
+          "source_aggregate_before_validation": 1000
+        }
+      ],
+      "name": "TaskUs, Inc.",
+      "ticker": "TASK"
+    },
+    {
+      "currency": "USD",
+      "fetched_at": "2026-09-13T14:45:34.185624+00:00",
+      "fields": [
+        {
+          "dependent_metrics": {},
+          "dependent_values_excluded_or_independent_sources": true,
+          "display": {
+            "Assessment": "ต้องตรวจสอบแหล่งข้อมูล",
+            "Current Value": "ค่าต้นทางผิดปกติ",
+            "Metric": "เงินสดซื้อหุ้นคืน",
+            "Period": "ย้อนหลัง 12 เดือน (TTM: 4 ไตรมาสที่รายงาน) · 2026-06-30",
+            "_state": "invalid"
+          },
+          "field": "buybacks",
+          "normalized": {
+            "basis": "TTM (4 reported quarters)",
+            "currency": "USD",
+            "end": "2026-06-30",
+            "formula": "Negative reported cash outflow displayed as spending",
+            "period_ends": [
+              "2026-06-30",
+              "2026-03-31",
+              "2025-12-31",
+              "2025-09-30"
+            ],
+            "reason": "Unexpected positive cash-outflow sign",
+            "source": "Yahoo Finance financial statements",
+            "state": "invalid",
+            "value": null
+          },
+          "numeric_value_excluded": true,
+          "profile_field": "",
+          "profile_value": null,
+          "raw_field": "repurchaseOfCapitalStock",
+          "raw_statements": [
+            {
+              "end": "2026-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2026-03-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 10000
+            },
+            {
+              "end": "2025-09-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": true,
+              "value": 0
+            },
+            {
+              "end": "2025-06-30",
+              "period": "quarterly",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": 0
+            },
+            {
+              "end": "2025-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -12528000
+            },
+            {
+              "end": "2024-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -50406000
+            },
+            {
+              "end": "2023-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -78684000
+            },
+            {
+              "end": "2022-12-31",
+              "period": "annual",
+              "statement": "cashflow",
+              "used_in_display_period": false,
+              "value": -82972000
+            }
+          ],
+          "source_aggregate_before_validation": 10000
+        }
+      ],
+      "name": "Vishay Intertechnology, Inc.",
+      "ticker": "VSH"
+    }
+  ],
+  "source_run_id": "34757779552",
+  "summary_sha256": "c7c156f4d73b8ca2028e3c595d6a90b6f71aeca4d1dca2185e38afff62237816",
+  "xyl": {
+    "currency": "USD",
+    "fetched_at": "2026-09-13T15:09:06.281174+00:00",
+    "latest_annual": {
+      "balance": {
+        "end": "2025-12-31",
+        "values": {
+          "cash": 1479000000,
+          "currentAssets": 4641000000,
+          "currentLiabilities": 2856000000,
+          "inventory": 983000000,
+          "receivables": 1759000000,
+          "stockholdersEquity": 11480000000,
+          "totalAssets": 17634000000,
+          "totalDebt": 2063000000,
+          "totalLiabilities": 5885000000
+        }
+      },
+      "cashflow": {
+        "end": "2025-12-31",
+        "values": {
+          "capitalExpenditure": -331000000,
+          "cashDividendsPaid": -391000000,
+          "freeCashflow": 910000000,
+          "operatingCashflow": 1241000000,
+          "repurchaseOfCapitalStock": -15000000,
+          "stockBasedCompensation": 53000000
+        }
+      },
+      "income": {
+        "end": "2025-12-31",
+        "values": {
+          "dilutedEPS": 3.92,
+          "ebit": 1210000000,
+          "ebitda": 1785000000,
+          "grossProfit": 3475000000,
+          "interestExpense": 29000000,
+          "netIncome": 957000000,
+          "operatingIncome": 1326000000,
+          "pretaxIncome": 1181000000,
+          "revenue": 9035000000,
+          "taxProvision": 231000000
+        }
+      }
+    },
+    "observations": {
+      "freeCashflow": {
+        "basis": "TTM (4 reported quarters)",
+        "currency": "USD",
+        "end": "2026-06-30",
+        "formula": "Sum of 4 consecutive reported quarters",
+        "period_ends": [
+          "2026-06-30",
+          "2026-03-31",
+          "2025-12-31",
+          "2025-09-30"
+        ],
+        "reason": "",
+        "source": "Yahoo Finance financial statements",
+        "state": "available",
+        "value": 960000000
+      },
+      "netIncome": {
+        "basis": "TTM (4 reported quarters)",
+        "currency": "USD",
+        "end": "2026-06-30",
+        "formula": "Sum of 4 consecutive reported quarters",
+        "period_ends": [
+          "2026-06-30",
+          "2026-03-31",
+          "2025-12-31",
+          "2025-09-30"
+        ],
+        "reason": "",
+        "source": "Yahoo Finance financial statements",
+        "state": "available",
+        "value": 1018000000
+      },
+      "operatingCashflow": {
+        "basis": "TTM (4 reported quarters)",
+        "currency": "USD",
+        "end": "2026-06-30",
+        "formula": "Sum of 4 consecutive reported quarters",
+        "period_ends": [
+          "2026-06-30",
+          "2026-03-31",
+          "2025-12-31",
+          "2025-09-30"
+        ],
+        "reason": "",
+        "source": "Yahoo Finance financial statements",
+        "state": "available",
+        "value": 1301000000
+      },
+      "revenue": {
+        "basis": "TTM (4 reported quarters)",
+        "currency": "USD",
+        "end": "2026-06-30",
+        "formula": "Sum of 4 consecutive reported quarters",
+        "period_ends": [
+          "2026-06-30",
+          "2026-03-31",
+          "2025-12-31",
+          "2025-09-30"
+        ],
+        "reason": "",
+        "source": "Yahoo Finance financial statements",
+        "state": "available",
+        "value": 9126000000
+      }
+    }
+  },
+  "result": "passed",
+  "collection_complete_for_current_due_queue": true,
+  "all_provider_fields_available": false,
+  "application_version": "2026-09-13.30",
+  "reviewed_application_sha": "a8da3f757747c453da81d435a9ca1c9d3868e788",
+  "live_XYL_verification": {
+    "allThreeAnnualTables": true,
+    "annualDisplayedFCF": "910.00M USD",
+    "annualDisplayedNetIncome": "957.00M USD",
+    "annualDisplayedOCF": "1.24B USD",
+    "annualDisplayedRevenue": "9.04B USD",
+    "annual_dates": [
+      "2025-12-31",
+      "2024-12-31",
+      "2023-12-31",
+      "2022-12-31"
+    ],
+    "fcfUnrounded": 960000000,
+    "generation": "generations/20260913T151140Z-8d2a4136",
+    "netIncomeUnrounded": 1018000000,
+    "ocfUnrounded": 1301000000,
+    "publishedThai": "13/09/2026 22:16:04",
+    "revenueUnrounded": 9126000000,
+    "ticker": "XYL",
+    "ttm_end": "2026-06-30",
+    "version": "2026-09-13.30"
+  }
+}
