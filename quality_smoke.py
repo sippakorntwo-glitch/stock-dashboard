@@ -5,9 +5,9 @@ import gzip
 import hashlib
 import io
 import json
+import re
 from urllib.request import Request,urlopen
 from urllib.parse import urlsplit
-from playwright.sync_api import expect
 
 REPO='sippakorntwo-glitch/stock-dashboard'
 
@@ -24,6 +24,28 @@ def public_summary():
     assert len(raw)<=20_000_000
     assert hashlib.sha256(raw).hexdigest()==manifest['summary']['sha256']
     return manifest,json.loads(gzip.decompress(raw))
+
+
+def financials_for_generation(generation,ticker):
+    """Read the immutable generation actually shown by the completed UI page."""
+    assert re.fullmatch(r'generations/\d{8}T\d{6}Z-[a-f0-9]{8}',generation), generation
+    base=f'https://github.com/{REPO}/releases/download/dashboard-data-{generation.split("/")[1]}'
+    manifest=json.loads(fetch_public(base+'/manifest.json'))
+    assert manifest['generation']==generation
+    slot=str(int(hashlib.sha256(ticker.encode()).hexdigest()[:8],16)%128)
+    item=manifest['details'].get(slot)
+    if item is None:
+        return None
+    assert item['key']==generation+f'/details/{slot}.jsonl.gz', item
+    raw=fetch_public(base+f'/details--{slot}.jsonl.gz')
+    assert len(raw)<=20_000_000 and hashlib.sha256(raw).hexdigest()==item['sha256']
+    found=[]
+    for line in gzip.decompress(raw).splitlines():
+        symbol,key,value,meta=json.loads(line)
+        if symbol==ticker and key=='financials:'+ticker:
+            found.append(value)
+    assert len(found)<=1, (ticker,'Duplicate statement objects in checked shard')
+    return found[0] if found else None
 
 
 def read_download(page,button):
@@ -62,13 +84,29 @@ def verify_quality(page,app):
         ticker_input.fill(ticker);ticker_input.press('Enter')
         wait_page_ready(app,ticker=ticker)
         if ticker!='AESP':chart_for_symbol(page,app,ticker)
-        verify_fundamentals(app,ticker,is_fund=ticker=='SPY')
+        if ticker=='SPY':
+            financial_check=verify_fundamentals(app,ticker,is_fund=True)
+        else:
+            generation=app.locator('.workspace-ready').last.get_attribute('data-generation')
+            bundle=financials_for_generation(generation,ticker)
+            periods={kind:[row['end'] for row in (bundle or {}).get('annual',{}).get(kind,[])[:4]]
+                     for kind in ('income','balance','cashflow')}
+            financial_check=verify_fundamentals(app,ticker,annual_periods=periods)
+            financial_check['source_generation']=generation
+            if not any((bundle or {}).get(period,{}).get(kind) for period in ('annual','quarterly')
+                       for kind in ('income','balance','cashflow')):
+                # These rows have no profile substitute: absent source records
+                # must remain missing observations, never numeric zero values.
+                for field in ('grossProfit','operatingIncome','totalAssets','stockholdersEquity','dividendsPaid'):
+                    row=app.locator('.st-key-company_financial_analysis tr[data-metric="'+field+'"]')
+                    assert row.get_attribute('data-state') in ('pending','not_reported','missing_inputs'), (ticker,field,row.inner_text())
         values=app.locator('.st-key-research_fundamentals .workspace-help-table td, .st-key-research_fundamentals .company-table td').all_text_contents()
         assert not any(v.strip() in ('None','nan','null') for v in values)
         verify_clean_presentation(app)
         no_exception(app)
         inspected.append({'ticker':ticker,'industry_state':quality['symbols'][ticker]['industry_state'],
                           'dividend_state':quality['symbols'][ticker]['dividend_state'],
-                          'history_bars':quality['symbols'][ticker]['history']['bars']})
+                          'history_bars':quality['symbols'][ticker]['history']['bars'],
+                          'company_analysis':financial_check})
     report['examples']=inspected
     return report

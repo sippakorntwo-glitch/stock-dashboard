@@ -1,7 +1,8 @@
 """Data-only recovery for this repository's interrupted statement publications.
 
 Only finance records from a failed or cancelled main-branch run of our own collection workflow
-can be restored, and only over the exact snapshot from which they were collected.
+can be restored, and observations only over the exact snapshot from which they were collected.
+Active provider cooldowns can survive a price-only snapshot change.
 No artifact is extracted or executed; the checksum and every record are checked
 before the local cache is changed. Existing newer records and retry dates win.
 """
@@ -13,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import re
+import time
 import zipfile
 
 REPOSITORY = 'sippakorntwo-glitch/stock-dashboard'
@@ -38,12 +40,13 @@ def save_recovery(cache, generation, directory='work'):
     return manifest
 
 
-def restore_records(cache, universe, generation, manifest, raw, *, run_id, source_sha):
+def restore_records(cache, universe, generation, manifest, raw, *, run_id, source_sha, now=None):
     from data_quality import timestamp
     from financial_statements import SCHEMA
     if (manifest.get('schema')!=1 or manifest.get('repository')!=REPOSITORY
             or str(manifest.get('run_id'))!=str(run_id) or manifest.get('source_sha')!=source_sha
-            or manifest.get('payload')!=PAYLOAD or manifest.get('source_generation')!=generation):
+            or manifest.get('payload')!=PAYLOAD
+            or not re.fullmatch(r'generations/\d{8}T\d{6}Z-[0-9a-f]{8}',str(manifest.get('source_generation','')))):
         return {'restored':0,'reason':'Recovery does not match the failed run and current snapshot'}
     if len(raw)>MAX_BYTES or hashlib.sha256(raw).hexdigest()!=manifest.get('sha256'):
         raise ValueError('Financial recovery checksum or size is invalid')
@@ -69,15 +72,27 @@ def restore_records(cache, universe, generation, manifest, raw, *, run_id, sourc
                 raise ValueError('Financial recovery identity is invalid')
         else:raise ValueError('Non-financial recovery record rejected')
         if not timestamp(meta.get('fetched_at')):raise ValueError('Financial recovery timestamp is invalid')
+    same_generation=manifest.get('source_generation')==generation
+    clock=time.time() if now is None else now
     restored=0
     for key,value,meta in records:
+        if not same_generation:
+            # A newer price snapshot cannot erase an unpublished provider pause.
+            # Successful-attempt refresh dates are not failure guards: restoring
+            # them without their observations would postpone still-missing data.
+            active_circuit=(key=='external:financials-circuit'
+                            and timestamp(value.get('retry_after'))>clock)
+            active_failure=(key.startswith('attempt:financials:') and meta.get('success') is False
+                            and timestamp(meta.get('retry_after'))>clock)
+            if not (active_circuit or active_failure):continue
         old,oldmeta=cache.get(key,request_remote=False)
         if timestamp(oldmeta.get('fetched_at'))>=timestamp(meta.get('fetched_at')):continue
         if key=='external:financials-circuit' and isinstance(old,dict) and timestamp(old.get('retry_after'))>=timestamp(value.get('retry_after')):continue
         if key.startswith('attempt:') and timestamp(oldmeta.get('retry_after'))>timestamp(meta.get('retry_after')):continue
         if key.startswith('financials:') and isinstance(old,dict) and old.get('observations') and not value.get('observations'):continue
         cache.put(key,value,meta);restored+=1
-    return {'restored':restored,'run_id':str(run_id),'source_generation':generation}
+    return {'restored':restored,'run_id':str(run_id),'source_generation':manifest.get('source_generation'),
+            'guards_only':not same_generation}
 
 
 def recover_recent_failure(cache, universe, generation, *, session=None):

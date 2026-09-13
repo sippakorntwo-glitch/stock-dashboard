@@ -19,7 +19,7 @@ def prepared(tmp_path,monkeypatch):
     source=DashboardCache(tmp_path/'source.sqlite3')
     value={'schema':1,'ticker':'TEST','currency':'USD','observations':{'revenue':{'value':100}},'annual':{},'quarterly':{}}
     source.put('financials:TEST',value,{'fetched_at':STAMP})
-    source.put('attempt:financials:TEST',{}, {'fetched_at':STAMP,'retry_after':'2026-09-20T10:00:00Z'})
+    source.put('attempt:financials:TEST',{}, {'fetched_at':STAMP,'retry_after':'2026-09-20T10:00:00Z','success':False})
     source.put('external:financials-circuit',{'retry_after':'2026-09-14T10:00:00Z'},{'fetched_at':STAMP})
     source.put('info:TEST',{'must_not_be_copied':True},{'fetched_at':STAMP})
     manifest=save_recovery(source,GENERATION,tmp_path)
@@ -28,7 +28,7 @@ def prepared(tmp_path,monkeypatch):
 
 
 def restore(cache,manifest,raw,generation=GENERATION):
-    return restore_records(cache,('TEST',),generation,manifest,raw,run_id=123,source_sha=SHA)
+    return restore_records(cache,('TEST',),generation,manifest,raw,run_id=123,source_sha=SHA,now=1789293600)
 
 
 def test_failed_publication_recovery_restores_financials_and_provider_cooldown(tmp_path,monkeypatch):
@@ -40,7 +40,7 @@ def test_failed_publication_recovery_restores_financials_and_provider_cooldown(t
     assert restore(cache,manifest,raw)['restored']==0,'Recovery must be idempotent'
 
 
-@pytest.mark.parametrize('change',[{'source_generation':'different'}, {'repository':'other/repo'}, {'run_id':'124'}, {'source_sha':'b'*40}])
+@pytest.mark.parametrize('change',[{'source_generation':'unverified'}, {'repository':'other/repo'}, {'run_id':'124'}, {'source_sha':'b'*40}])
 def test_recovery_requires_exact_snapshot_repository_run_and_source(tmp_path,monkeypatch,change):
     manifest,raw=prepared(tmp_path,monkeypatch);manifest.update(change)
     cache=DashboardCache(tmp_path/'target.sqlite3')
@@ -110,3 +110,34 @@ def test_inaccessible_recovery_stops_before_provider_collection(tmp_path,monkeyp
         def get(self,*args,**kwargs):raise requests.ConnectionError('unavailable')
     with pytest.raises(RuntimeError,match='provider collection was not started'):
         recover_recent_failure(DashboardCache(tmp_path/'target.sqlite3'),('TEST',),GENERATION,session=Session())
+
+
+def test_changed_snapshot_recovers_only_active_provider_guards(tmp_path,monkeypatch):
+    manifest,raw=prepared(tmp_path,monkeypatch);cache=DashboardCache(tmp_path/'target.sqlite3')
+    result=restore(cache,manifest,raw,generation='generations/new-price-snapshot')
+    assert result['guards_only'] is True and result['restored']==2
+    assert cache.get('financials:TEST',request_remote=False)[0] is None
+    assert cache.get('external:financials-circuit',request_remote=False)[0]['retry_after']=='2026-09-14T10:00:00Z'
+    assert cache.get('attempt:financials:TEST',request_remote=False)[1]['retry_after']=='2026-09-20T10:00:00Z'
+
+
+def test_changed_snapshot_does_not_restore_expired_or_successful_refresh_guards(tmp_path,monkeypatch):
+    manifest,raw=prepared(tmp_path,monkeypatch);cache=DashboardCache(tmp_path/'target.sqlite3')
+    records=json.loads(gzip.decompress(raw))
+    for key,value,meta in records:
+        if key=='external:financials-circuit':value['retry_after']='2026-09-12T10:00:00Z'
+        if key.startswith('attempt:'):meta['success']=True
+    raw=gzip.compress(json.dumps(records).encode());manifest['sha256']=hashlib.sha256(raw).hexdigest()
+    assert restore(cache,manifest,raw,generation='generations/new-price-snapshot')['restored']==0
+    assert cache.get('financials:TEST',request_remote=False)[0] is None
+    assert cache.get('attempt:financials:TEST',request_remote=False)[0] is None
+    assert cache.get('external:financials-circuit',request_remote=False)[0] is None
+
+
+def test_changed_snapshot_preserves_later_existing_provider_retry(tmp_path,monkeypatch):
+    manifest,raw=prepared(tmp_path,monkeypatch);cache=DashboardCache(tmp_path/'target.sqlite3')
+    cache.put('attempt:financials:TEST',{}, {'fetched_at':'2026-09-13T09:00:00Z','retry_after':'2026-10-01T00:00:00Z','success':False})
+    cache.put('external:financials-circuit',{'retry_after':'2026-09-15T00:00:00Z'},{'fetched_at':'2026-09-13T09:00:00Z'})
+    assert restore(cache,manifest,raw,generation='generations/new-price-snapshot')['restored']==0
+    assert cache.get('attempt:financials:TEST',request_remote=False)[1]['retry_after']=='2026-10-01T00:00:00Z'
+    assert cache.get('external:financials-circuit',request_remote=False)[0]['retry_after']=='2026-09-15T00:00:00Z'

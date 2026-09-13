@@ -87,11 +87,12 @@ def chart_for_symbol(page,app,ticker):
     raise RuntimeError('No real candlestick history rendered for '+ticker)
 
 
-def verify_fundamentals(app,ticker,*,is_fund=False):
+def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
     section=app.locator('.st-key-research_fundamentals')
     groups=section.locator('.st-key-company_financial_analysis .company-analysis[data-ticker][data-group]')
     if is_fund:
         expect(groups).to_have_count(0)
+        expect(section.locator('.company-analysis[data-statement]')).to_have_count(0)
         expect(section.locator('.workspace-help-table').first).to_be_visible()
         return {'ticker':ticker,'fund_specific_table':True}
     expect(section.get_by_role('heading',name='วิเคราะห์ข้อมูลการเงินบริษัท',exact=True)).to_be_visible()
@@ -119,9 +120,23 @@ def verify_fundamentals(app,ticker,*,is_fund=False):
         cells=row.locator('td').all_text_contents()
         assert all(thai.search(cells[i]) for i in (1,2,3,4)), (row.get_attribute('data-metric'),cells)
     expect(section.get_by_role('button',name='ดาวน์โหลดบทวิเคราะห์บริษัท',exact=True)).to_be_visible()
+    # AAPL/MSFT regression callers retain the default mandatory three statements.
+    # Quality examples pass dates from their independently checked source bundle;
+    # a missing source statement must not be fabricated to satisfy this gate.
+    if annual_periods is not None:
+        assert set(annual_periods) <= {'income','balance','cashflow'}, annual_periods
+        expect(section.locator('.company-analysis[data-statement]')).to_have_count(sum(bool(v) for v in annual_periods.values()))
+        if not any(annual_periods.values()):
+            expect(section.get_by_text('งบการเงินย้อนหลัง — สูงสุด 4 ปีบัญชี',exact=True)).to_have_count(0)
     annual=[]
     for kind,title in [('income','งบกำไรขาดทุน'),('balance','งบฐานะการเงิน'),('cashflow','งบกระแสเงินสด')]:
         table=section.locator('.company-analysis[data-statement="'+kind+'"]')
+        if annual_periods is not None and not annual_periods.get(kind):
+            expect(table).to_have_count(0)
+            if any(annual_periods.values()):
+                expect(section.get_by_text(title+': ไม่มีข้อมูลรายงาน',exact=True)).to_be_visible()
+            annual.append({'statement':kind,'state':'not_available_in_source','periods':[],'rows':0})
+            continue
         expect(table).to_have_count(1)
         expect(table.get_by_role('heading',name=title,exact=True)).to_be_visible()
         columns=table.locator('thead th').all_text_contents()
@@ -129,6 +144,12 @@ def verify_fundamentals(app,ticker,*,is_fund=False):
         assert thai.search(columns[0]), (kind,columns)
         assert all(re.fullmatch(r'\d{4}-\d{2}-\d{2}',date) for date in columns[1:]), (kind,columns)
         assert columns[1:]==sorted(set(columns[1:]),reverse=True), (kind,columns)
+        if annual_periods is not None:
+            assert columns[1:]==annual_periods[kind], (kind,columns,annual_periods[kind])
+        # Every available annual statement retains its complete set of raw rows,
+        # including the five fields restored in the Thai release.
+        expected_rows={'income':10,'balance':9,'cashflow':6}[kind]
+        expect(table.locator('tbody tr')).to_have_count(expected_rows)
         for row in table.locator('tbody tr').all():
             expect(row.locator('td')).to_have_count(len(columns)-1)
             assert thai.search(row.locator('th').inner_text()), row.inner_text()
