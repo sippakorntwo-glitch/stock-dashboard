@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-09-13T13:33:51.283821+00:00",
-  "run_id": "34759777357",
-  "source_sha": "41eda2b40936e225b79c5ecf8d2f958f48510803",
+  "recorded_at": "2026-09-13T14:58:44.741798+00:00",
+  "run_id": "34763455330",
+  "source_sha": "a8da3f757747c453da81d435a9ca1c9d3868e788",
   "catalog_members": 9876,
   "priced_members": 9876,
   "periods_checked": 79008,
@@ -12,9 +12,9 @@
   "unpriced_tickers": [],
   "error_count": 0,
   "result": "passed",
-  "audited_at": "2026-09-13T13:33:50.806749+00:00",
-  "generation": "generations/20260913T132641Z-287678a8",
-  "published_at": "2026-09-13T13:31:29.270780+00:00",
+  "audited_at": "2026-09-13T14:58:44.261883+00:00",
+  "generation": "generations/20260913T145123Z-4e01e941",
+  "published_at": "2026-09-13T14:56:01.823299+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9876,
@@ -24,7 +24,7 @@
     "dividends_checked": 9875,
     "dividends_with_payments": 6074,
     "dividends_no_payments": 3801,
-    "financial_statements": 2377,
+    "financial_statements": 4084,
     "unattempted_info": 0,
     "unattempted_dividends": 0
   },
