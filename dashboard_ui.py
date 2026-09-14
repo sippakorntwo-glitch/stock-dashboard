@@ -17,11 +17,22 @@ from dashboard_views import (VIEWS, table, plot, original_watchlist, overview, f
 LAYOUT = 'single-page'
 
 
+def _page_dependencies(ticker):
+    is_etf = ticker in a.ETF_NAMES or st.session_state.get('_research_asset_kind') == (ticker, 'ETF')
+    research = [] if is_etf else list(st.session_state.get('peer_selection_'+ticker, []))
+    if is_etf:
+        research.extend(st.session_state.get('etf_compare_symbols', [])[:3])
+        benchmark = st.session_state.get('etf_benchmark_symbol')
+        if benchmark:
+            research.append(benchmark)
+    return page_dependencies(ticker, st.session_state.get('comparison_symbols'), research)
+
+
 @st.fragment(run_every=2)
 def _poll_data(reader, rendered_revision, rendered_worker_revision, rendered_chart_revision=0, rendered_ticker=None, rendered_dependencies=None):
     """Refresh only for data used by this page, including pending comparisons."""
     ticker=st.session_state.get('selected_ticker')
-    dependencies=page_dependencies(ticker,st.session_state.get('comparison_symbols'))
+    dependencies=_page_dependencies(ticker)
     if rendered_ticker is not None and ticker != rendered_ticker:
         return
     if rendered_dependencies is not None and dependencies != rendered_dependencies:
@@ -64,6 +75,8 @@ def main():
     st.set_page_config(page_title='Stock Research Workspace',page_icon='📊',layout='wide')
     from workspace_theme import apply_theme
     apply_theme()
+    from research_workspace_ui import startup_before_widgets, render_sidebar
+    startup_before_widgets()
     # Reserve timer/receipt positions before dynamic content or cache spinners.
     body=st.container(key='workspace_body')
     footer=st.container(key='workspace_footer')
@@ -73,7 +86,7 @@ def main():
     if 'selected_ticker' not in st.session_state:
         set_selected(st.session_state,'AAPL')
     ticker=st.session_state['selected_ticker']
-    dependencies=page_dependencies(ticker,st.session_state.get('comparison_symbols'))
+    dependencies=_page_dependencies(ticker)
     if reader:
         reader.select_page(dependencies)
         reader.refresh()
@@ -108,7 +121,7 @@ def main():
         if favourites:
             st.sidebar.caption('รายการโปรด: '+', '.join(favourites))
             st.sidebar.download_button('บันทึกรายการโปรด',pd.DataFrame({'Ticker':favourites}).to_csv(index=False).encode('utf-8-sig'),'my_watchlist.csv','text/csv')
-        st.sidebar.caption('รายการโปรดเก็บเฉพาะเซสชัน ดาวน์โหลดเพื่อเก็บไว้ถาวร')
+        st.sidebar.caption('บันทึกชุดวิเคราะห์เพื่อเก็บรายการโปรดไว้ใช้ครั้งหน้า หรือดาวน์โหลด CSV')
         if st.sidebar.button('ตรวจชุดข้อมูลใหม่',disabled=reader is None) and reader: reader.refresh(force=True)
         if a.live_enabled() and valid:
             if st.sidebar.button('ดึงหุ้นนี้จาก Yahoo'):
@@ -161,27 +174,55 @@ def main():
             selected=frame.loc[frame.Ticker.eq(ticker)]
             row=selected.iloc[0].to_dict() if not selected.empty else {}
             st.subheader(f"{ticker} · {info.get('shortName') or row.get('Security_Name') or ''}")
+            from workspace_theme import selected_context
+            selected_context(ticker, row.get('Price_AsOf'), (statements or {}).get('fetched_at'))
             st.caption(f"วันที่ราคา Watchlist: {row.get('Price_AsOf') or 'ไม่ระบุ'} | ประวัติดึงสำเร็จ {a.thai_time(meta.get('fetched_at'))} | quote ณ {a.thai_time(info.get('regularMarketTime'))}")
             if detail_marker.get('retained_newer_local'):
                 st.caption('บางรายการมีข้อมูลที่ตรวจได้ใหม่กว่าชุดเผยแพร่ จึงใช้ข้อมูลใหม่นั้นพร้อมเวลาแหล่งข้อมูลเดิม')
             from live_quote_ui import render_live_quote
             render_live_quote(ticker)
-            # Render once per selected symbol, not once per row in the catalog.
-            with st.container(key='research_technical'):
-                st.header('กราฟและแผนซื้อ')
-                technical(ticker,history,info,row)
-            st.divider()
-            with st.container(key='research_fundamentals'):
-                st.header('พื้นฐานและปันผล',anchor='fundamentals')
-                fundamentals(ticker,history,info,row)
-            st.divider()
-            with st.container(key='research_risk'):
-                st.header('ความเสี่ยง',anchor='risk')
-                risk(ticker,history)
-            st.divider()
-            with st.container(key='research_comparison'):
-                st.header('เปรียบเทียบหลายตัว',anchor='comparison')
-                compare(ticker,frame)
+            mode = st.radio('มุมมองการวิเคราะห์', ['ภาพรวม','ลงทุนระยะยาว','จังหวะซื้อขาย'],
+                            horizontal=True, key='research_mode',
+                            help='ปรับลำดับและการเปิดรายละเอียด ทุกหัวข้อยังอยู่ในหน้าเดียว')
+            is_etf = a.asset_is_etf(ticker,row,info)
+            st.session_state['_research_asset_kind'] = (ticker, 'ETF' if is_etf else 'company')
+            from research_summary import render_research_summary
+            from research_updates import render_research_updates
+            from research_workspace_ui import render_stock_notes
+            render_research_summary(ticker,info,row,statements,is_etf=is_etf)
+            render_research_updates(ticker,info,row,statements,cache)
+            render_stock_notes(ticker, metrics=row)
+            # Stable section identities keep chart state through mode/quote changes.
+            sections = (['fundamentals','comparison','risk','technical'] if mode=='ลงทุนระยะยาว'
+                        else ['technical','risk','fundamentals','comparison'] if mode=='จังหวะซื้อขาย'
+                        else ['technical','fundamentals','comparison','risk'])
+            for section in sections:
+                with st.container(key='research_'+section):
+                    if section=='technical':
+                        st.header('กราฟและแผนซื้อ',anchor='technicals')
+                        with st.expander('เปิดกราฟและแผนซื้อขาย', expanded=mode!='ลงทุนระยะยาว'):
+                            technical(ticker,history,info,row)
+                    elif section=='fundamentals':
+                        st.header('พื้นฐานและปันผล',anchor='fundamentals')
+                        with st.expander('เปิดรายละเอียดพื้นฐานและปันผล', expanded=mode=='ลงทุนระยะยาว'):
+                            fundamentals(ticker,history,info,row,frame=frame)
+                        if not is_etf:
+                            st.subheader('จำลองราคาและสมมติฐาน',anchor='valuation')
+                            with st.expander('เปิดสถานการณ์ราคา', expanded=False):
+                                from valuation_ui import render_valuation
+                                render_valuation(ticker,info,row,bundle=statements)
+                    elif section=='risk':
+                        st.header('ความเสี่ยง',anchor='risk')
+                        with st.expander('เปิดรายละเอียดความเสี่ยง', expanded=mode=='จังหวะซื้อขาย'):
+                            risk(ticker,history)
+                    else:
+                        st.header('เปรียบเทียบหลายตัว',anchor='comparison')
+                        if not is_etf:
+                            with st.expander('เปิดตารางคู่แข่ง', expanded=mode=='ลงทุนระยะยาว'):
+                                from peer_analysis_ui import render_peer_analysis
+                                render_peer_analysis(ticker,frame,cache,info=info)
+                        with st.expander('เปิดผลตอบแทนและความสัมพันธ์', expanded=False):
+                            compare(ticker,frame)
         st.divider()
         if work is not None:
             industry_summary(work)
@@ -189,8 +230,10 @@ def main():
             with st.expander(f'CSV นอกชุดหลัก ({len(outside):,} ตัว)'): table(outside)
         # compare() can prune a symbol removed from the catalog. Keep exactly
         # the displayed dependencies, using counters from this same WAL view.
-        dependencies=page_dependencies(ticker,st.session_state.get('comparison_symbols'))
+        dependencies=_page_dependencies(ticker)
         revision=cache.page_revision(dependencies)
+        with st.sidebar:
+            render_sidebar()
     with footer:
         _poll_data(reader,revision,worker_revision,chart_revision,ticker,dependencies)
         st.caption('เพื่อการศึกษาวิจัย ไม่ใช่คำแนะนำลงทุนเฉพาะบุคคล คะแนนเป็นกติกาของระบบ ไม่ใช่โอกาสกำไรหรือผลทดสอบย้อนหลัง')

@@ -20,6 +20,14 @@ def no_exception(app):
     if errors.count(): raise RuntimeError('Streamlit exception: '+errors.first.inner_text()[:1600])
 
 
+def open_research_expander(app, label):
+    text = app.get_by_text(label, exact=True)
+    if text.count():
+        details = text.locator('xpath=ancestor::details[1]')
+        if details.get_attribute('open') is None:
+            text.click()
+
+
 def diagnose(page):
     try:
         Path('work').mkdir(exist_ok=True)
@@ -123,8 +131,8 @@ def chart_for_symbol(page,app,ticker):
 
 def verify_reused_company_rows(app,canonical_rows):
     """The 360-degree view must reuse the same Thai figures and explanations."""
-    expander=app.locator('.st-key-research_technical [data-testid="stExpander"]').filter(
-        has=app.get_by_text('ตารางวิเคราะห์ 360°',exact=True))
+    open_research_expander(app, 'เปิดกราฟและแผนซื้อขาย')
+    expander=app.get_by_text('ตารางวิเคราะห์ 360°',exact=True).locator('xpath=ancestor::details[1]')
     table=expander.locator('.workspace-help-table')
     expect(table).to_have_count(1)
     if not table.is_visible():
@@ -171,6 +179,7 @@ def verify_reused_company_rows(app,canonical_rows):
 
 
 def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
+    open_research_expander(app, 'เปิดรายละเอียดพื้นฐานและปันผล')
     from company_analysis_th import METRIC_ALIASES,STATEMENT_ALIASES
     section=app.locator('.st-key-research_fundamentals')
     groups=section.locator('.st-key-company_financial_analysis .company-analysis[data-ticker][data-group]')
@@ -260,6 +269,9 @@ def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
 
 def verify_sections(app,ticker,*,is_fund=False):
     no_exception(app)
+    for label in ('เปิดกราฟและแผนซื้อขาย','เปิดรายละเอียดพื้นฐานและปันผล',
+                  'เปิดรายละเอียดความเสี่ยง','เปิดผลตอบแทนและความสัมพันธ์'):
+        open_research_expander(app, label)
     expect(app.locator('[data-testid="stSidebar"]').get_by_role('radiogroup')).to_have_count(0)
     for section,title in [('research_technical','กราฟและแผนซื้อ'),('research_fundamentals','พื้นฐานและปันผล'),('research_risk','ความเสี่ยง'),('research_comparison','เปรียบเทียบหลายตัว')]:
         expect(app.locator('.st-key-'+section).get_by_role('heading',name=title,exact=True)).to_be_visible(timeout=60000)
@@ -321,6 +333,8 @@ def run():
                 report['company_analysis'].append(verify_fundamentals(app,ticker))
                 report['selections'].append({'ticker':ticker,'via':'row' if row_selector else 'cell','bars':len(payload['records'])})
                 print('VERIFIED_STOCK_SELECTION:',ticker,flush=True)
+            from research_workspace_smoke import verify_research_features
+            report['research_improvements']=verify_research_features(page,app,'AAPL')
             field=select_manual_ticker(app,'SPY')
             chart,payload=chart_for_symbol(page,app,'SPY')
             verify_sections(app,'SPY',is_fund=True)

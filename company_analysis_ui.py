@@ -113,6 +113,8 @@ def render_company_research(ticker, info, bundle=None):
     st.caption('ดึงข้อมูลบริษัทเมื่อ: '+str(info.get('_Fetched_At_UTC') or 'ไม่มีข้อมูลรายงาน')+' · ดึงงบการเงินเมื่อ: '+str((bundle or {}).get('fetched_at') or 'ยังไม่ได้เก็บข้อมูล'))
     if bundle and bundle.get('errors'):
         st.caption('การดึงงบบางรายการยังไม่ครบ ตัวเลขที่มีข้อมูลยังคงระบุรอบบัญชีของตนเอง และไม่ได้ประมาณค่าที่ขาดหายไป')
+    from financial_trends_ui import render_financial_trends
+    render_financial_trends(ticker, info, bundle)
     rows = build_rows_th(ticker, info, bundle)
     # One stable element holds all grouped sections; switching symbols replaces it.
     with st.container(key='company_financial_analysis'):

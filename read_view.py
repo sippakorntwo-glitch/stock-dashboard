@@ -16,11 +16,11 @@ import zlib
 _ACTIVE = ContextVar('dashboard_read_view', default=None)
 
 
-def page_dependencies(ticker, comparisons=None):
+def page_dependencies(ticker, comparisons=None, research=None):
     """Only the selected research, visible comparisons and fixed benchmark."""
     if comparisons is None:
         comparisons = (ticker, 'SPY' if ticker != 'SPY' else 'QQQ')
-    symbols = (ticker, *tuple(comparisons)[:6], 'SPY')
+    symbols = (ticker, *tuple(comparisons)[:6], *tuple(research or ())[:5], 'SPY')
     return tuple(dict.fromkeys(symbol for symbol in symbols
                                if isinstance(symbol, str)
                                and re.fullmatch(r'[A-Z0-9.^=/_-]{1,30}', symbol)))
@@ -103,7 +103,7 @@ class CacheReadView:
         if not self.active:
             return self.base.get(key,request_remote=request_remote)
         remote = getattr(self.base,'remote',None)
-        if remote and key.startswith(('history:1d:','info:','dividends:','reference:','financials:')):
+        if remote and key.startswith(('history:1d:','info:','dividends:','reference:','financials:','etf_research:')):
             symbol = key.rsplit(':',1)[-1]
             if request_remote:
                 remote.request(symbol)

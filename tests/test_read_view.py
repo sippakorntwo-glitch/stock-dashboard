@@ -74,6 +74,25 @@ def test_page_dependencies_cover_comparisons_and_benchmark_with_fixed_bound():
     assert page_dependencies('!', ['MSFT', None, 'invalid space']) == ('MSFT', 'SPY')
 
 
+def test_maximum_peer_and_performance_selection_fits_real_reader():
+    from data_sync import SnapshotReader
+    dependencies=page_dependencies('AAPL',[f'T{i}' for i in range(6)],[f'P{i}' for i in range(100)])
+    assert len(dependencies)==13
+    assert SnapshotReader._page_dependencies(dependencies)==dependencies
+
+
+def test_custom_etf_uses_holdings_dependencies_without_corporate_peers(monkeypatch):
+    from types import SimpleNamespace
+    import dashboard_ui
+    state={'_research_asset_kind':('CUSTOMETF','ETF'),
+           'comparison_symbols':['CUSTOMETF','QQQ'],
+           'etf_compare_symbols':['VTI','SCHD','JEPI'], 'etf_benchmark_symbol':'SPY',
+           'peer_selection_CUSTOMETF':['IBM','ORCL']}
+    monkeypatch.setattr(dashboard_ui,'st',SimpleNamespace(session_state=state))
+    assert dashboard_ui._page_dependencies('CUSTOMETF')==('CUSTOMETF','QQQ','VTI','SCHD','JEPI','SPY')
+    assert 'JEPI' not in dashboard_ui._page_dependencies('AAPL')
+
+
 def test_comparison_completion_is_frozen_with_its_data_and_old_generation_is_hidden(tmp_path, monkeypatch):
     from data_sync import SnapshotReader, shard_number
     cache = cache_with_data(tmp_path)

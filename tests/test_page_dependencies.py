@@ -74,13 +74,13 @@ class PageDependencyTests(unittest.TestCase):
         self.assertFalse(self.reader.queue)
 
     def test_dependency_input_is_bounded(self):
-        dependencies = ('AAPL', 'SPY', 'MSFT', 'AMD', 'NVDA', 'META', 'GOOGL', 'AMZN')
-        self.assertEqual(len(self.reader.page_status(dependencies)['page_revision'][1]), 8)
-        with self.assertRaisesRegex(ValueError, 'eight'):
+        dependencies = ('AAPL', 'SPY', 'MSFT', 'AMD', 'NVDA', 'META', 'GOOGL', 'AMZN', 'ORCL', 'IBM', 'ADBE', 'CRM', 'NOW')
+        self.assertEqual(len(self.reader.page_status(dependencies)['page_revision'][1]), 13)
+        with self.assertRaisesRegex(ValueError, 'thirteen'):
             self.reader.page_status((*dependencies, 'TSLA'))
         with self.assertRaises(ValueError):
             self.reader.page_status('AAPL')
-        with self.assertRaisesRegex(ValueError, 'eight'):
+        with self.assertRaisesRegex(ValueError, 'thirteen'):
             self.reader.select_page((*dependencies, 'TSLA'))
 
     def test_select_page_registers_all_leases_before_worker_captures_active_symbols(self):

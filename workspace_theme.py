@@ -40,6 +40,12 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #ff
 .workspace-nav { display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0 1rem; }
 .workspace-nav a { color:#d6eeff; background:#152541; border:1px solid #3e567a; border-radius:20px; padding:.38rem .85rem; text-decoration:none; font-size:.86rem; }
 .workspace-nav a:hover { color:#fff; border-color:#9f9cf2; background:#273157; }
+.st-key-selected_context { position:sticky; top:3.65rem; z-index:99; border:1px solid #3e567a; border-radius:10px; padding:.45rem .8rem; background:rgba(12,25,45,.97); box-shadow:0 4px 16px #0004; }
+.selected-context { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem 1rem; font-size:.84rem; }
+.selected-context strong { color:#a6eaff; font-size:1rem; }
+.selected-context a { color:#cde9ff; text-decoration:none; padding:.25rem; }
+.selected-context .context-date { color:#b4c5dc; }
+.st-key-research_summary { background:linear-gradient(115deg,#122a3a,#15213b); border-color:#436b81; }
 .workspace-help-table { border-radius:10px; }
 .workspace-help-table th { background:#1e3150 !important; color:#d8efff !important; }
 .workspace-help-table tr:nth-child(even) td { background:#101c2e; }
@@ -53,4 +59,15 @@ def apply_theme():
     st.markdown(CSS,unsafe_allow_html=True)
 
 def navigation():
-    st.markdown('''<nav class="workspace-nav" aria-label="Research sections"><a href="#selected-stock">กราฟและราคา</a><a href="#fundamentals">พื้นฐานและปันผล</a><a href="#risk">ความเสี่ยง</a><a href="#comparison">เปรียบเทียบ</a></nav>''',unsafe_allow_html=True)
+    st.markdown('''<nav class="workspace-nav" aria-label="Research sections"><a href="#selected-stock">สรุปหุ้นที่เลือก</a><a href="#technicals">กราฟและราคา</a><a href="#fundamentals">พื้นฐานและปันผล</a><a href="#risk">ความเสี่ยง</a><a href="#comparison">เปรียบเทียบ</a></nav>''',unsafe_allow_html=True)
+
+
+def selected_context(ticker, price_asof=None, financial_fetched=None):
+    from html import escape
+    with st.container(key='selected_context'):
+        date = str(price_asof or 'ไม่ระบุวัน')
+        st.markdown('<nav class="selected-context" aria-label="หุ้นและหัวข้อที่กำลังอ่าน">'
+                    '<strong>'+escape(str(ticker))+'</strong><span class="context-date">ราคารายวัน '+escape(date)+'</span>'
+                    '<a href="#research-summary">สรุป</a><a href="#technicals">กราฟ</a>'
+                    '<a href="#fundamentals">พื้นฐาน</a><a href="#risk">ความเสี่ยง</a>'
+                    '<a href="#comparison">เปรียบเทียบ</a></nav>', unsafe_allow_html=True)

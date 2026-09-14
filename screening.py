@@ -211,3 +211,46 @@ def search_frame(frame, query):
         values = frame.get(field, pd.Series(index=frame.index, dtype=object))
         mask |= values.fillna('').astype(str).str.contains(text, case=False, regex=False)
     return frame.loc[mask].copy()
+
+
+def filter_removal_effects(frame, *, query='', categories=None, bounds=None,
+                          max_price_age=None, max_profile_age=None,
+                          include_missing=False, require_returns=(), above_sma=False,
+                          bullish_ema=False, favourites=None, now=None):
+    """Exact result counts after removing one active condition, without mutation.
+
+    Every condition uses the canonical filter, including its implicit asset
+    applicability and invalid-source exclusions. Prefix/suffix masks avoid
+    repeatedly evaluating all other conditions. Category selections form one
+    OR condition; required return periods are individually removable ANDs.
+    Search operates on the original universe, just as in filter_universe.
+    """
+    source=frame.reset_index(drop=True)
+    stamp=now if now is not None else pd.Timestamp.now(tz='America/New_York')
+    conditions=[]
+    if str(query or '').strip():conditions.append(('search','query',{'query':query}))
+    conditions.extend(('category',field,{'categories':{field:list(selected)}})
+                      for field,selected in (categories or {}).items() if selected)
+    conditions.extend(('bound',field,{'bounds':{field:pair}})
+                      for field,pair in (bounds or {}).items() if any(v is not None for v in pair))
+    conditions.extend(('required',field,{'require_returns':[field]}) for field in dict.fromkeys(require_returns))
+    for name,value in (('max_price_age',max_price_age),('max_profile_age',max_profile_age)):
+        if value is not None:conditions.append(('option',name,{name:value}))
+    for name,value in (('above_sma',above_sma),('bullish_ema',bullish_ema)):
+        if value:conditions.append(('option',name,{name:True}))
+    if favourites is not None:conditions.append(('option','favourites',{'favourites':favourites}))
+    masks=[]
+    for kind,field,options in conditions:
+        selected=(search_frame(source,options['query']) if kind=='search' else
+                  filter_frame(source,include_missing=include_missing,now=stamp,**options))
+        masks.append(np.asarray(source.index.isin(selected.index),dtype=bool))
+    prefix=[np.ones(len(source),dtype=bool)]
+    for mask in masks:prefix.append(prefix[-1] & mask)
+    current=int(prefix[-1].sum());suffix=np.ones(len(source),dtype=bool);effects=[]
+    for i in range(len(conditions)-1,-1,-1):
+        kind,field,_=conditions[i];without=int((prefix[i] & suffix).sum())
+        effects.append({'id':kind+':'+field,'kind':kind,'field':field,
+                        'current_count':current,'without_count':without,
+                        'restored_count':without-current})
+        suffix &= masks[i]
+    return list(reversed(effects))
