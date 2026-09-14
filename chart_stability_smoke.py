@@ -22,12 +22,20 @@ def verify_chart_stability(page,app):
         expect(app.locator('.chart-reading')).to_have_count(1)
         assert result['period']==period
         report['period_switches'].append({'period':period,'summary_count':1,'values_match':True})
+    frame,payload=chart_for_symbol(page,app,'SPY')
     for _ in range(13):
         page.wait_for_timeout(5000)
         no_exception(app)
         expect(field).to_have_value('SPY')
         expect(app.locator('.chart-reading')).to_have_count(1)
         expect(app.locator('.chart-reading')).to_have_attribute('data-period','1 ปี')
+    current_frame,current_payload=chart_for_symbol(page,app,'SPY')
+    if current_payload == payload:
+        assert not frame.is_detached(), 'Unchanged chart was detached by its refresh timer'
+        assert current_frame == frame, 'Unchanged chart document was replaced'
+        report['unchanged_chart_frame_preserved']=True
+    else:
+        report['unchanged_chart_frame_preserved']='Source payload changed during observation'
     version=re.search(r"APP_VERSION\s*=\s*['\"]([^'\"]+)",Path('dashboard_runtime.py').read_text()).group(1)
     for iteration in range(2):
         page.reload(wait_until='domcontentloaded',timeout=60000)

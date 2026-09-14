@@ -152,12 +152,13 @@ def render_chart(ticker,daily_history,daily_meta=None):
     if st.session_state.get('selected_ticker',ticker) != ticker:
         return
     # Allocate every sibling before provider/cache spinners or optional messages.
-    # Fixed empty slots replace their old payload instead of leaving a previous
-    # period's iframe/commentary behind when a fragment child count changes.
+    # Stable keyed containers do not emit an empty delta before the iframe.
+    # Clearing an st.empty placeholder every timer tick detaches a live chart,
+    # even when its source document is unchanged.
     controls=st.container(key='chart_controls')
     notices=st.container(key='chart_notices')
-    chart_slot=st.empty()
-    commentary_slot=st.empty()
+    chart_slot=st.container(key='chart_display')
+    commentary_slot=st.container(key='chart_commentary_display')
     with controls:
         period=st.radio('ช่วงเวลาแสดงกราฟ',PERIODS,index=PERIODS.index('1 ปี'),horizontal=True,key='chart_period',
             help='ช่วงย้อนหลัง ไม่ใช่ขนาดแท่ง: 1/3/5/7 วันใช้ 5 นาทีและนับวันซื้อขายล่าสุดที่มีข้อมูล; เดือน/ปีใช้แท่งรายวัน')
@@ -200,7 +201,7 @@ def render_chart(ticker,daily_history,daily_meta=None):
             st.caption(f'ช่วงข้อมูลที่แสดงจริง: {first:%Y-%m-%d} ถึง {last:%Y-%m-%d} · ดึงสำเร็จ {a.thai_time(meta.get("fetched_at"))}')
             if short and (pd.Timestamp.now(tz=last.tz).date()-last.date()).days>4:st.warning('แท่งระหว่างวันล่าสุดเกิน 4 วันปฏิทิน อาจเป็นวันหยุดหรือข้อมูลเก่า ไม่ใช่ราคา ณ ขณะนี้')
             html=with_inspector(with_performance(a.build_chart_html(payload),payload))
-        with chart_slot.container():
+        with chart_slot:
             if hasattr(st,'iframe'):st.iframe(html,height=900)
             else:components.html(html,height=900,scrolling=False)
         from chart_commentary import commentary_html
