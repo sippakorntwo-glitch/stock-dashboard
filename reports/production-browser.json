@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-14T04:08:07.939438+00:00",
-  "run_id": "34804230579",
+  "recorded_at": "2026-09-14T04:20:32.807881+00:00",
+  "run_id": "34804230580",
   "source_sha": "a95311b22ded598b6facb46cb07aa49b08e3b91e",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-13.32",
@@ -572,7 +572,7 @@
         "canvas_index": 1,
         "canvas": {
           "x": 381,
-          "y": 546.125,
+          "y": 545.5,
           "width": 902,
           "height": 194
         },
@@ -585,7 +585,7 @@
           },
           {
             "x": 380,
-            "y": 154.140625,
+            "y": 153.515625,
             "width": 980,
             "height": 900
           },
@@ -598,17 +598,17 @@
         ],
         "visible": {
           "left": 397,
-          "top": 562.125,
+          "top": 561.5,
           "right": 1267,
-          "bottom": 724.125
+          "bottom": 723.5
         },
         "start": {
           "x": 701.5,
-          "y": 643.125
+          "y": 642.5
         },
         "end": {
           "x": 962.5,
-          "y": 643.125
+          "y": 642.5
         },
         "canvas_hits": [
           true,
@@ -628,13 +628,13 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260914T003345Z-04b058d9",
+      "source_generation": "generations/20260914T035946Z-2be25d9f",
       "counts": {
         "universe": 9876,
         "prices": 9876,
         "histories": 9876,
         "info": 9876,
-        "industry": 9407,
+        "industry": 9410,
         "dividends_checked": 9875,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3801,
@@ -698,7 +698,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260914T003345Z-04b058d9"
+            "source_generation": "generations/20260914T035946Z-2be25d9f"
           }
         },
         {
@@ -739,7 +739,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260914T003345Z-04b058d9"
+            "source_generation": "generations/20260914T035946Z-2be25d9f"
           }
         },
         {
@@ -766,7 +766,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260914T003345Z-04b058d9",
+      "source_generation": "generations/20260914T035946Z-2be25d9f",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -829,7 +829,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-14T04:00:53.483501+00:00",
+      "verified_at": "2026-09-14T04:13:38.020608+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -931,8 +931,8 @@
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260914T003345Z-04b058d9",
-        "generation_after": "generations/20260914T003345Z-04b058d9"
+        "generation_before": "generations/20260914T035946Z-2be25d9f",
+        "generation_after": "generations/20260914T035946Z-2be25d9f"
       },
       "minute_price": {
         "price": 54.58,
