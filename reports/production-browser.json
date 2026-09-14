@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-14T04:20:32.807881+00:00",
-  "run_id": "34804230580",
+  "recorded_at": "2026-09-14T04:45:22.496908+00:00",
+  "run_id": "34805691554",
   "source_sha": "a95311b22ded598b6facb46cb07aa49b08e3b91e",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-13.32",
@@ -628,7 +628,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260914T035946Z-2be25d9f",
+      "source_generation": "generations/20260914T042314Z-fb39c544",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -698,7 +698,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260914T035946Z-2be25d9f"
+            "source_generation": "generations/20260914T042314Z-fb39c544"
           }
         },
         {
@@ -739,7 +739,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260914T035946Z-2be25d9f"
+            "source_generation": "generations/20260914T042314Z-fb39c544"
           }
         },
         {
@@ -766,7 +766,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260914T035946Z-2be25d9f",
+      "source_generation": "generations/20260914T042314Z-fb39c544",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -829,7 +829,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-14T04:13:38.020608+00:00",
+      "verified_at": "2026-09-14T04:38:11.921053+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -893,7 +893,7 @@
         "session": "closed",
         "state": "scheduled",
         "effective_seconds": 1800.0,
-        "next_due": 1789360486.481632,
+        "next_due": 1789362731.7541263,
         "second_observation": false,
         "reason": "provider session or request budget requires a conservative wait"
       },
@@ -904,18 +904,18 @@
           30
         ],
         "initial": {
-          "state": "scheduled",
+          "state": "updating",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
           "nextDue": "1789360486.481632",
-          "busy": "false",
+          "busy": "true",
           "session": "closed"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "1800",
-          "nextDue": "1789360486.481632",
+          "nextDue": "1789362731.7541263",
           "busy": "false",
           "session": "closed"
         },
@@ -923,7 +923,7 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1789360486.481632",
+          "nextDue": "1789362731.7541263",
           "busy": "false",
           "session": "closed"
         },
@@ -931,13 +931,13 @@
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260914T035946Z-2be25d9f",
-        "generation_after": "generations/20260914T035946Z-2be25d9f"
+        "generation_before": "generations/20260914T042314Z-fb39c544",
+        "generation_after": "generations/20260914T042314Z-fb39c544"
       },
       "minute_price": {
         "price": 54.58,
         "bar_time": "2026-09-11T23:55:00+00:00",
-        "fetched_at": "2026-09-14T04:04:46.476206+00:00",
+        "fetched_at": "2026-09-14T04:42:11.753573+00:00",
         "state": "stale"
       },
       "theme": {
@@ -963,8 +963,8 @@
             "box": {
               "left": 135.390625,
               "right": 215.390625,
-              "top": 535.296875,
-              "bottom": 575.296875,
+              "top": 804.296875,
+              "bottom": 844.296875,
               "width": 390,
               "height": 844
             }
@@ -972,10 +972,10 @@
           {
             "tab": "ความเสี่ยง / แนวโน้ม",
             "box": {
-              "left": 213.390625,
-              "right": 341.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "left": 131.390625,
+              "right": 259.390625,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -983,10 +983,10 @@
           {
             "tab": "บริษัท / กองทุน",
             "box": {
-              "left": 151.390625,
-              "right": 239.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "left": 253.390625,
+              "right": 341.390625,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -996,8 +996,8 @@
             "box": {
               "left": 193.390625,
               "right": 341.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1006,8 +1006,8 @@
         "numeric_input_box": {
           "left": 49.390625,
           "right": 276.609375,
-          "top": 711.5,
-          "bottom": 747.09375,
+          "top": 572.5,
+          "bottom": 608.09375,
           "width": 390,
           "height": 844
         },
