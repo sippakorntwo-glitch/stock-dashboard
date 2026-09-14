@@ -17,6 +17,7 @@ import time
 import pandas as pd
 from company_metrics import audit_profile, metric_observations
 from financial_statements import collect, SCHEMA
+from financial_completeness import COLLECTION_REVISION, preserve_refresh, statement_gaps
 
 PRIORITY = ('AAPL','MSFT','NVDA','AMZN','GOOGL','META','TSLA','BRK-B','JPM','ORCL')
 
@@ -31,15 +32,16 @@ def due_symbols(universe, profiles, statements, attempts, etfs, *, now=None, onl
         if ticker in etfs or info.get('quoteType') == 'ETF' or not info.get('financialCurrency'):
             continue
         value, meta = statements.get('financials:'+ticker, (None,{}))
-        if only_missing and value and value.get('schema') == SCHEMA and value.get('observations'):
+        needs_revision = not value or value.get('collection_revision', 0) < COLLECTION_REVISION
+        if only_missing and not needs_revision and value and value.get('schema') == SCHEMA and value.get('observations') and not value.get('errors') and not statement_gaps(value):
             continue
         attempt = attempts.get('attempt:financials:'+ticker, ({},{}))[1]
-        if timestamp(attempt.get('retry_after')) > clock:
+        if timestamp(attempt.get('retry_after')) > clock and (not needs_revision or attempt.get('success') is not True):
             continue
         stamp = timestamp(meta.get('fetched_at'))
         # Successful observations refresh weekly, independently of price updates.
         refresh_days = 7 if value and meta.get('available') and not value.get('errors') else 1
-        if value and value.get('schema') == SCHEMA and clock-stamp < refresh_days*86400:
+        if not needs_revision and value and value.get('schema') == SCHEMA and clock-stamp < refresh_days*86400:
             continue
         result.append((stamp > 0, priority.get(ticker, 999), stamp, ticker))
     return [entry[-1] for entry in sorted(result)]
@@ -74,14 +76,24 @@ def collect_batch(cache, universe, etfs, *, limit=150, minutes=12, only_missing=
             value = collect(ticker, info)
             has_records = any(value.get(period, {}).get(kind) for period in ('annual','quarterly') for kind in ('income','balance','cashflow'))
             previous = statements.get('financials:'+ticker,(None,{}))[0]
-            # A failed/empty refresh never replaces an already populated statement.
-            if (has_records and not value['errors']) or not previous:
-                cache.put('financials:'+ticker, value, {'fetched_at':stamp, 'schema':SCHEMA,
+            # Preserve old dated fields even when an apparently successful
+            # endpoint silently omits a statement or individual observation.
+            if has_records or not previous:
+                merged = preserve_refresh(previous, value)
+                merged['collection_revision'] = COLLECTION_REVISION
+                changed = not previous or any(
+                    [(r['end'], r['values']) for r in merged.get(period, {}).get(kind, [])] !=
+                    [(r['end'], r['values']) for r in previous.get(period, {}).get(kind, [])]
+                    for period in ('annual','quarterly') for kind in ('income','balance','cashflow'))
+                if value.get('errors') and previous and has_records:
+                    report.setdefault('partial_preserved',[]).append(ticker)
+                cache.put('financials:'+ticker, merged, {'fetched_at':stamp, 'schema':SCHEMA,
                           'available':has_records, 'source':'Yahoo Finance financial statements'})
-                report['updated'] += 1
-                report['symbols_updated'].append(ticker)
-            elif has_records:
-                report.setdefault('partial_preserved',[]).append(ticker)
+                if changed:
+                    report['updated'] += 1
+                    report['symbols_updated'].append(ticker)
+                report.setdefault('retained_fields', 0)
+                report['retained_fields'] += len(merged.get('retained_observations', []))
             if not has_records:
                 report['not_reported'] += 1
             retry = (datetime.now(timezone.utc)+timedelta(days=7 if has_records and not value['errors'] else 1)).isoformat()
@@ -119,6 +131,8 @@ def audit_all(cache, universe, etfs):
         states=audit_profile(ticker,info,bundle,is_etf=etf)
         counts['securities']+=1;counts['funds' if etf else 'companies']+=1
         counts['statements_available']+=int(bool(bundle and bundle.get('observations')))
+        counts['companies_rechecked_revision']+=int(not etf and bool(bundle) and bundle.get('collection_revision', 0) >= COLLECTION_REVISION)
+        counts['companies_with_statement_gaps']+=int(not etf and bool(statement_gaps(bundle)))
         counts['companies_without_financial_currency']+=int(not etf and not info.get('financialCurrency'))
         missing=[key for key,state in states.items() if state in ('pending','not_reported','missing_inputs')]
         invalid=[key for key,state in states.items() if state=='invalid']
@@ -133,13 +147,18 @@ def audit_all(cache, universe, etfs):
                      'Financial Currency':info.get('financialCurrency'), 'Collection Status':collection_status,
                      'Collection Retry After':attempt.get('retry_after'),
                      'Statements Fetched':(bundle or {}).get('fetched_at'),
+                     'Collection Revision':(bundle or {}).get('collection_revision', 0),
+                     'Missing Statement Cells':json.dumps(statement_gaps(bundle), ensure_ascii=False) if not etf else '',
                      'Missing Applicable Metrics':'; '.join(missing),'Invalid Source Metrics':'; '.join(invalid),
                      'Not Meaningful':'; '.join(k for k,s in states.items() if s=='not_meaningful'),
                      'Not Applicable':'; '.join(k for k,s in states.items() if s=='not_applicable')})
-        if ticker in (*PRIORITY,'AAAU','SPY','QQQI'):
+        if ticker in (*PRIORITY,'AARD','AAAU','SPY','QQQI'):
             values=metric_observations(ticker,info,bundle,is_etf=etf)
             examples[ticker]={k:values[k] for k in ('debtToEquity','returnOnEquity','roic','grossProfit','ebit','netIncome','freeCashflow')}
     return {'counts':dict(counts),'field_counts':{k:dict(v) for k,v in columns.items()},
+            'collection_revision':COLLECTION_REVISION,
+            'recheck_pending_symbols':[r['Ticker'] for r in rows if r['Asset Type']=='Company' and r['Collection Revision'] < COLLECTION_REVISION],
+            'missing_currency_symbols':[r['Ticker'] for r in rows if r['Asset Type']=='Company' and not r['Financial Currency']],
             'examples':examples,'data_complete':not counts['with_missing_applicable_metrics'] and not counts['with_invalid_source_metrics']},rows
 
 
