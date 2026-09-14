@@ -4,6 +4,8 @@ on:
     branches: [fix/dashboard-data-completeness-v19]
     paths: ['audit_dashboard.py', '.github/workflows/audit_dashboard.yml']
   workflow_dispatch:
+  schedule:
+    - cron: '41 3 * * *'
 permissions:
   contents: read
 jobs:

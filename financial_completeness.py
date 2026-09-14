@@ -40,6 +40,11 @@ def preserve_refresh(previous, incoming):
             or previous.get('currency') != incoming.get('currency')):
         raise ValueError('Incompatible financial identity, schema or currency')
     merged = deepcopy(incoming)
+    # A Yahoo refresh cannot erase an independently checked filing comparison.
+    # Consumers match its exact date/currency/original value, so a subsequently
+    # revised provider value is not quarantined by an obsolete comparison.
+    if 'sec_reconciliation' not in merged and previous.get('sec_reconciliation'):
+        merged['sec_reconciliation'] = deepcopy(previous['sec_reconciliation'])
     partial = bool(incoming.get('errors'))
     retained = []
     for period in ('annual', 'quarterly'):
@@ -51,20 +56,31 @@ def preserve_refresh(previous, incoming):
             for end in sorted(old_rows.keys() | new_rows.keys(), reverse=True)[:6]:
                 old, new = old_rows.get(end, {}), new_rows.get(end, {})
                 row = deepcopy(new or old)
-                values, dates = {}, {}
+                values, dates, provenance = {}, {}, {}
                 for key in old.get('values', {}).keys() | new.get('values', {}).keys():
                     before, after = number(old.get('values', {}).get(key)), number(new.get('values', {}).get(key))
                     keep = before is not None and (after is None or partial)
                     if keep:
                         values[key] = before
                         dates[key] = old.get('field_fetched_at', {}).get(key, previous.get('fetched_at'))
+                        if key in old.get('field_provenance', {}):
+                            provenance[key] = deepcopy(old['field_provenance'][key])
+                            dates[key] = provenance[key].get('fetched_at') or dates[key]
                         if after is None or after != before:
                             retained.append({'period': period, 'statement': kind, 'end': end,
                                              'field': key, 'fetched_at': dates[key]})
                     elif after is not None:
                         values[key] = after
                         dates[key] = new.get('field_fetched_at', {}).get(key, incoming.get('fetched_at'))
+                        if key in new.get('field_provenance', {}):
+                            provenance[key] = deepcopy(new['field_provenance'][key])
+                            dates[key] = provenance[key].get('fetched_at') or dates[key]
                 row['values'], row['field_fetched_at'] = values, dates
+                # A newly reported Yahoo value replaces both the value and its
+                # source. Never leave an old SEC filing attached to that cell.
+                row.pop('field_provenance', None)
+                if provenance:
+                    row['field_provenance'] = provenance
                 records.append(row)
             merged[period][kind] = records
     merged['retained_observations'] = retained

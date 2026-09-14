@@ -6,7 +6,10 @@ EPS/share counts, or inferred issuance. Each chart and export uses these rows.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from financial_statements import SCHEMA, SOURCE, day, number, consecutive_quarters
+import json
+from financial_statements import (SCHEMA, SOURCE, day, number, consecutive_quarters,
+                                  field_provenance, combine_provenance, provenance_source, compatible_provenance,
+                                  unresolved_sec_provenance)
 
 LABELS = {
     'revenue': 'รายได้ (Revenue)',
@@ -54,9 +57,10 @@ BALANCE = ('totalDebt', 'cash', 'ordinarySharesNumber')
 
 
 def _item(value=None, state='not_reported', reason='', *, end=None, basis=None,
-          currency=None, source=SOURCE, formula='', period_ends=()):
+          currency=None, source=SOURCE, formula='', period_ends=(), provenance=()):
     return {'value': value, 'state': state, 'reason': reason, 'end': end,
-            'basis': basis, 'currency': currency, 'source': source,
+            'basis': basis, 'currency': currency, 'source': provenance_source(provenance, source),
+            'provenance': combine_provenance(provenance),
             'formula': formula, 'period_ends': list(period_ends)}
 
 
@@ -94,11 +98,14 @@ def _records(bundle, period, kind, today, issues):
 def _raw(record, key, bundle, basis, *, end):
     currency = bundle.get('currency')
     common = dict(end=end, basis=basis, currency=currency,
-                  source=bundle.get('source') or SOURCE, period_ends=(end,))
+                  source=bundle.get('source') or SOURCE, period_ends=(end,),
+                  provenance=field_provenance(record, key, bundle))
     if record is None:
         return _item(reason='ไม่มีงบประเภทนี้สำหรับวันสิ้นงวดเดียวกัน', **common)
     if record.get('_blocked'):
         return _item(state='invalid', reason=record['_blocked'], **common)
+    if unresolved_sec_provenance(bundle, common.get('provenance', [])):
+        return _item(state='invalid', reason='ข้อมูล SEC ของงวดนี้ขัดแย้งกัน จึงพักใช้จนกว่าจะตรวจสอบได้', **common)
     explicit_currency = record.get('currency')
     if explicit_currency and explicit_currency != currency:
         return _item(state='currency_mismatch', reason='สกุลเงินของรายการต่างจากสกุลเงินงบ', **common)
@@ -123,6 +130,7 @@ def _derived(items, keys, fn, formula, *, denominator=None, match_period=True, p
     rows = [items.get(k, _item()) for k in keys]
     lead = rows[0]
     common = {k: lead[k] for k in ('end', 'basis', 'currency', 'source', 'period_ends')}
+    common['provenance'] = combine_provenance(*(r.get('provenance', []) for r in rows))
     if any(r['state'] != 'available' for r in rows):
         failures = [r for r in rows if r['state'] != 'available']
         state = next((r['state'] for r in failures if r['state'] in ('invalid', 'currency_mismatch', 'period_mismatch')), 'missing_inputs')
@@ -131,6 +139,8 @@ def _derived(items, keys, fn, formula, *, denominator=None, match_period=True, p
         return _item(state='currency_mismatch', reason='ไม่รวมรายการต่างสกุลเงิน', formula=formula, **common)
     if match_period and len({(r['basis'], r['end'], tuple(r['period_ends'])) for r in rows}) != 1:
         return _item(state='period_mismatch', reason='ต้องใช้รายการของงวดและชุดไตรมาสเดียวกัน', formula=formula, **common)
+    if not compatible_provenance(common['provenance']):
+        return _item(state='period_mismatch', reason='แหล่งข้อมูลระบุวันเริ่มงวดต่างกัน แม้วันสิ้นงวดตรงกัน', formula=formula, **common)
     values = [r['value'] for r in rows]
     if denominator is not None and values[denominator] <= 0:
         return _item(state='not_meaningful', reason='ฐานเปรียบเทียบเป็นศูนย์หรือติดลบ ไม่แสดงเป็นอัตราส่วนปกติ', formula=formula, **common)
@@ -156,7 +166,9 @@ def _finish(items):
                         abs(items['operatingCashflow']['value']) * 1e-6,
                         abs(items['capex']['value']) * 1e-6)
         if abs(source_fcf['value'] - calculated_fcf['value']) > tolerance:
+            provenance = combine_provenance(source_fcf.get('provenance', []), calculated_fcf.get('provenance', []))
             items['freeCashflow'] = {**source_fcf, 'value': None, 'state': 'invalid',
+                'provenance': provenance, 'source': provenance_source(provenance),
                 'reason': 'FCF ที่รายงานไม่สอดคล้องกับ OCF − CapEx ของงวดเดียวกัน จึงพักใช้'}
     for key, top in (('grossMargins', 'grossProfit'), ('operatingMargins', 'operatingIncome'),
                      ('profitMargins', 'netIncome'), ('fcfMargin', 'freeCashflow'),
@@ -250,7 +262,8 @@ def build_financial_trends(ticker, info, bundle, *, today=None):
                         state = 'invalid'
                     items[key] = _item(total, state,
                         failure['reason'] if failure else '' if total is not None else 'ผลรวมไม่ใช่จำนวนจำกัด',
-                        formula='ผลรวม 4 ไตรมาสที่รายงานต่อเนื่อง', period_ends=[r['end'] for r in available], **base)
+                        formula='ผลรวม 4 ไตรมาสที่รายงานต่อเนื่อง', period_ends=[r['end'] for r in available],
+                        provenance=combine_provenance(*(p.get('provenance', []) for p in parts)), **base)
         if not any_window:
             continue
         # Use the same-end quarterly balance, or its annual copy if missing.
@@ -262,10 +275,14 @@ def build_financial_trends(ticker, info, bundle, *, today=None):
             q = _raw(quarterly_balance, key, bundle, 'Q', end=end)
             chosen = q if q['state'] != 'not_reported' else a
             if a['state'] == q['state'] == 'available' and a['value'] != q['value']:
-                chosen = {**q, 'value': None, 'state': 'invalid', 'reason': 'งบรายปีและรายไตรมาสวันเดียวกันรายงานยอดต่างกัน'}
+                provenance = combine_provenance(a.get('provenance', []), q.get('provenance', []))
+                chosen = {**q, 'value': None, 'state': 'invalid', 'reason': 'งบรายปีและรายไตรมาสวันเดียวกันรายงานยอดต่างกัน',
+                          'provenance': provenance, 'source': provenance_source(provenance)}
             items[key] = {**chosen, 'basis': 'Balance sheet'}
         result['periods']['TTM'].append({'end': end, 'basis': 'TTM', 'metrics': _finish(items)})
     _growth(result['periods']['TTM'])
+    result['source'] = provenance_source(p for periods in result['periods'].values()
+        for row in periods for item in row['metrics'].values() for p in item.get('provenance', []))
     if not any(result['periods'].values()):
         result.update(state='missing_inputs', reason='ยังไม่มีรายการงบที่มีวันสิ้นงวดถูกต้อง')
     return result
@@ -280,11 +297,14 @@ def export_trends(result, basis=None):
                 item = period['metrics'][key]
                 unit = '%' if key in PERCENT_KEYS else 'เท่า' if key == 'cashConversion' else 'หุ้น' if key in ('dilutedAverageShares', 'ordinarySharesNumber') else f'{result["currency"]}/หุ้น' if key == 'dilutedEPS' else result['currency']
                 value = item['value']
+                provenance = item.get('provenance', [])
+                dates = sorted({p['fetched_at'] for p in provenance if p.get('fetched_at')})
                 rows.append({'รอบบัญชี': selected, 'วันสิ้นงวด': period['end'], 'รายการ': label,
                     'รหัสรายการ': key, 'ค่า': value * 100 if value is not None and key in PERCENT_KEYS else value,
                     'หน่วย': unit, 'สถานะ': STATE_LABELS.get(item['state'], item['state']),
                     'เหตุผล': item['reason'], 'สูตร': item['formula'], 'สกุลเงินงบ': result['currency'],
                     'ประเภทข้อมูล': item['basis'], 'วันสิ้นงวดที่ใช้คำนวณ': ', '.join(item['period_ends']),
                     'วันสิ้นงวดเทียบปีก่อน': item.get('comparison_end'),
-                    'แหล่งข้อมูล': item['source'], 'ดึงข้อมูลเมื่อ': result['fetched_at']})
+                    'แหล่งข้อมูล': item['source'], 'ดึงข้อมูลเมื่อ': ', '.join(dates) or result['fetched_at'],
+                    'ที่มารายการที่ใช้คำนวณ': json.dumps(provenance, ensure_ascii=False, sort_keys=True)})
     return rows

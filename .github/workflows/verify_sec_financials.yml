@@ -1,0 +1,38 @@
+name: Verify authentic SEC financial reconciliation
+on:
+  pull_request:
+    branches: [main]
+    paths: [sec_financials.py, sec_financials_smoke.py, sec_reference.py, .github/workflows/verify_sec_financials.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-sec-financials-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install and test reconciliation safety
+        run: |
+          python -m pip install -q -r requirements-dev.txt
+          python -m pytest -q tests/test_sec_financials.py tests/test_sec_financials_smoke.py tests/test_financial_provenance.py
+      - name: Verify actual AARD filings against the prepared statement source
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python sec_financials_smoke.py
+      - name: Preserve actual source checks including any provider unavailability
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-financials-authentic-source-check
+          path: work/sec-financials-live-smoke.json
+          retention-days: 14

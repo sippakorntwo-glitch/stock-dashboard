@@ -72,6 +72,15 @@ class PublicDataTests(unittest.TestCase):
     def publish(self, previous=None):
         return worker.publish_snapshot(self.writer, self.cache, ('AAPL', 'MSFT'), {}, previous)
 
+    def test_public_sec_pause_is_from_checkpoint_and_excludes_internal_details(self):
+        self.cache.put('external:sec-circuit', {'next_attempt_after':'2026-09-15T08:00:00Z',
+                       'reason':'private diagnostic', 'token':'must not be published'}, {})
+        manifest=self.publish()
+        self.assertEqual(manifest['provider_circuits'], {'sec':{
+            'next_attempt_after':'2026-09-15T08:00:00Z','reason':'access denied or rate limit'}})
+        self.assertNotIn('private diagnostic',json.dumps(manifest))
+        self.assertNotIn('must not be published',json.dumps(manifest))
+
     def test_end_to_end_anonymous_reader_preserves_features_without_yahoo(self):
         manifest = self.publish()
         self.assertEqual(self.api.pointer_branch, 'dashboard-data')

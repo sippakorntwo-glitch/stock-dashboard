@@ -89,6 +89,12 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
             quotes = {t: all_quotes[t] for t in universe if t in all_quotes}
             classifications = {t: json.loads(body) for t, body in db.execute("SELECT ticker, body FROM classifications") if t in universe}
             metadata = {k: json.loads(m) for k, m in db.execute("SELECT key, metadata FROM objects")}
+            circuit_row = db.execute("SELECT body FROM objects WHERE key='external:sec-circuit'").fetchone()
+            sec_circuit = json.loads(zlib.decompress(circuit_row[0])) if circuit_row else None
+            # Publish only the shared provider pause, from this exact checkpoint.
+            # Public verification can honor it without downloading the entire DB.
+            provider_circuits = {'sec': ({'next_attempt_after': sec_circuit.get('next_attempt_after'),
+                'reason': 'access denied or rate limit'} if isinstance(sec_circuit, dict) else None)}
             # Stream each record into one of 128 bounded shards; never hold all histories in RAM.
             handles = {}
             with ExitStack() as stack:
@@ -137,6 +143,7 @@ def publish_snapshot(store, cache, universe, report, previous=None, watchlist_cs
                     "previous_generation": (previous or {}).get("generation"),
                     "summary": summary_ref, "details": details, "checkpoint": checkpoint_ref,
                     "coverage": coverage, "quality_counts": quality["counts"], "report": report,
+                    "provider_circuits": provider_circuits,
                     "bootstrap_pending": pending, "bootstrap_next_due": next_due,
                     "catalog_as_of": app.CATALOG_AS_OF, "app_version": app.APP_VERSION,
                     "catalog_fingerprint": fingerprint(universe), "etf_directory_as_of": app.ETF_DIRECTORY_AS_OF}

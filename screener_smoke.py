@@ -83,6 +83,7 @@ def reset_controls(app):
 
 def choose(app,label,value,multi=False,*,receipt_label=None,receipt_value=...):
     # Visible translations are distinct from the canonical receipt/export keys.
+    wait_frontend_ready(app)
     testid='stMultiSelect' if multi else 'stSelectbox'
     widget=app.locator('.st-key-overview_controls [data-testid="'+testid+'"]').filter(
         has=app.get_by_text(CONTROL_LABELS.get(label,label),exact=True)).first
@@ -92,7 +93,13 @@ def choose(app,label,value,multi=False,*,receipt_label=None,receipt_value=...):
     control.click()
     if multi:widget.locator('input').first.fill(visible)
     app.get_by_role('option',name=visible,exact=True).click(timeout=15000)
-    if multi:control.press('Escape')
+    if multi:
+        # Streamlit 1.63 renders selected values as [data-tag] elements. Wait
+        # for the user's actual selection before closing the menu; a lost click
+        # fails here rather than being retried or concealed by another click.
+        tag=widget.locator('[data-tag]').filter(has_text=re.compile('^'+re.escape(visible)+'$'))
+        expect(tag).to_be_visible(timeout=15000)
+        control.press('Escape')
     wait_applied(app,receipt_label or label,value if receipt_value is ... else receipt_value)
 
 

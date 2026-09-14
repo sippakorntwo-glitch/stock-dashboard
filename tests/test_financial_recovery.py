@@ -67,8 +67,9 @@ def test_recovery_preserves_newer_observations_and_longer_retry_dates(tmp_path,m
     assert cache.get('financials:TEST',request_remote=False)[0]==newer
 
 
+@pytest.mark.parametrize('workflow',['company_financials.yml','sec_financials.yml'])
 @pytest.mark.parametrize('conclusion',['failure','cancelled'])
-def test_automatic_recovery_only_reads_own_failed_workflow_data(tmp_path,monkeypatch,conclusion):
+def test_automatic_recovery_only_reads_own_failed_workflow_data(tmp_path,monkeypatch,conclusion,workflow):
     import io,zipfile
     from financial_recovery import recover_recent_failure
     manifest,raw=prepared(tmp_path,monkeypatch)
@@ -91,14 +92,18 @@ def test_automatic_recovery_only_reads_own_failed_workflow_data(tmp_path,monkeyp
             if url.endswith('/runs'):
                 return Response({'workflow_runs':[
                     {'id':122,'head_branch':'main','conclusion':'failure','head_repository':{'full_name':'other/repo'},'path':'.github/workflows/company_financials.yml','head_sha':SHA},
-                    {'id':123,'head_branch':'main','conclusion':conclusion,'head_repository':{'full_name':'sippakorntwo-glitch/stock-dashboard'},'path':'.github/workflows/company_financials.yml','head_sha':SHA}]})
+                    {'id':124,'head_branch':'main','conclusion':'failure','head_repository':{'full_name':'sippakorntwo-glitch/stock-dashboard'},'path':'.github/workflows/unreviewed.yml','head_sha':SHA},
+                    {'id':123,'head_branch':'main','conclusion':conclusion,'head_repository':{'full_name':'sippakorntwo-glitch/stock-dashboard'},'path':'.github/workflows/'+workflow,'head_sha':SHA}]})
             if url.endswith('/123/artifacts'):
-                return Response({'artifacts':[{'id':456,'name':'company-financials-audit-4','expired':False,'size_in_bytes':len(archive.getvalue())}]})
+                prefix='sec-financials' if workflow=='sec_financials.yml' else 'company-financials'
+                return Response({'artifacts':[{'id':457,'name':'unreviewed-audit-4','expired':False,'size_in_bytes':len(archive.getvalue())},
+                    {'id':456,'name':prefix+'-audit-4','expired':False,'size_in_bytes':len(archive.getvalue())}]})
             if url.endswith('/456/zip'):return Response(binary=archive.getvalue())
             raise AssertionError(url)
     session=Session();cache=DashboardCache(tmp_path/'target.sqlite3')
-    result=recover_recent_failure(cache,('TEST',),GENERATION,session=session)
+    result=recover_recent_failure(cache,('TEST',),GENERATION,workflow_name=workflow,session=session)
     assert result['restored']==3 and len(session.calls)==3
+    assert session.calls[0].endswith('/actions/workflows/'+workflow+'/runs')
     assert not (tmp_path/'never_execute.py').exists()
 
 
@@ -141,3 +146,110 @@ def test_changed_snapshot_preserves_later_existing_provider_retry(tmp_path,monke
     assert restore(cache,manifest,raw,generation='generations/new-price-snapshot')['restored']==0
     assert cache.get('attempt:financials:TEST',request_remote=False)[1]['retry_after']=='2026-10-01T00:00:00Z'
     assert cache.get('external:financials-circuit',request_remote=False)[0]['retry_after']=='2026-09-15T00:00:00Z'
+
+
+def sec_prepared(tmp_path,monkeypatch):
+    prepared(tmp_path,monkeypatch)
+    source=DashboardCache(tmp_path/'source.sqlite3')
+    source.put('attempt:sec-financials:TEST',{},
+               {'fetched_at':STAMP,'success':False,'retry_after':'2026-09-14T12:00:00Z'})
+    source.put('external:sec-circuit',{'next_attempt_after':'2026-09-14T12:00:00Z'},
+               {'fetched_at':STAMP})
+    source.put('external:sec-circuit-unreviewed',{'next_attempt_after':'2026-09-14T12:00:00Z'},
+               {'fetched_at':STAMP})
+    manifest=save_recovery(source,GENERATION,tmp_path)
+    return manifest,(tmp_path/PAYLOAD).read_bytes()
+
+
+def repack(manifest,records):
+    raw=gzip.compress(json.dumps(records).encode())
+    manifest.update(sha256=hashlib.sha256(raw).hexdigest(),records=len(records))
+    return raw
+
+
+def test_sec_attempts_and_shared_circuit_saved_without_unknown_prefixes(tmp_path,monkeypatch):
+    manifest,raw=sec_prepared(tmp_path,monkeypatch)
+    keys={r[0] for r in json.loads(gzip.decompress(raw))}
+    assert {'attempt:sec-financials:TEST','external:sec-circuit'}<=keys
+    assert 'external:sec-circuit-unreviewed' not in keys
+    cache=DashboardCache(tmp_path/'target.sqlite3')
+    assert restore(cache,manifest,raw)['restored']==5
+    assert cache.get('external:sec-circuit',request_remote=False)[0]['next_attempt_after']=='2026-09-14T12:00:00Z'
+    assert cache.get('attempt:sec-financials:TEST',request_remote=False)[1]['success'] is False
+
+
+def test_sec_guards_survive_price_generation_change_without_restoring_observations(tmp_path,monkeypatch):
+    manifest,raw=sec_prepared(tmp_path,monkeypatch);cache=DashboardCache(tmp_path/'target.sqlite3')
+    result=restore(cache,manifest,raw,generation='generations/20260914T083117Z-285cede3')
+    assert result['guards_only'] and result['restored']==4
+    assert cache.get('financials:TEST',request_remote=False)[0] is None
+    assert cache.get('external:sec-circuit',request_remote=False)[0]['next_attempt_after']=='2026-09-14T12:00:00Z'
+    assert cache.get('attempt:sec-financials:TEST',request_remote=False)[1]['retry_after']=='2026-09-14T12:00:00Z'
+
+
+@pytest.mark.parametrize('deadline',[None,True,1789293600,'invalid','NaT','2026-09-14T12:00:00'])
+@pytest.mark.parametrize('key',['external:sec-circuit','attempt:sec-financials:TEST'])
+def test_invalid_sec_deadline_rejects_whole_artifact_before_writes(tmp_path,monkeypatch,deadline,key):
+    manifest,raw=sec_prepared(tmp_path,monkeypatch)
+    records=json.loads(gzip.decompress(raw))
+    for record_key,value,meta in records:
+        if record_key==key:
+            if key=='external:sec-circuit':value['next_attempt_after']=deadline
+            else:meta['retry_after']=deadline
+    cache=DashboardCache(tmp_path/'target.sqlite3')
+    with pytest.raises(ValueError,match='deadline'):
+        restore(cache,manifest,repack(manifest,records))
+    assert cache.get('financials:TEST',request_remote=False)[0] is None
+    assert cache.get('external:sec-circuit',request_remote=False)[0] is None
+
+
+def test_sec_success_and_expired_circuit_do_not_postpone_missing_data_after_generation_change(tmp_path,monkeypatch):
+    manifest,raw=sec_prepared(tmp_path,monkeypatch)
+    records=json.loads(gzip.decompress(raw))
+    for key,value,meta in records:
+        if key=='external:sec-circuit':value['next_attempt_after']='2026-09-12T10:00:00Z'
+        if key=='attempt:sec-financials:TEST':meta['success']=True
+    cache=DashboardCache(tmp_path/'target.sqlite3')
+    result=restore(cache,manifest,repack(manifest,records),generation='generations/20260914T083117Z-285cede3')
+    assert result['restored']==2
+    assert cache.get('external:sec-circuit',request_remote=False)[0] is None
+    assert cache.get('attempt:sec-financials:TEST',request_remote=False)[0] is None
+
+
+def test_sec_existing_longer_cooldown_wins_across_generations(tmp_path,monkeypatch):
+    manifest,raw=sec_prepared(tmp_path,monkeypatch);cache=DashboardCache(tmp_path/'target.sqlite3')
+    longer='2026-10-01T00:00:00Z'
+    cache.put('attempt:sec-financials:TEST',{},
+               {'fetched_at':'2026-09-13T09:00:00Z','retry_after':longer,'success':False})
+    cache.put('external:sec-circuit',{'next_attempt_after':longer},{'fetched_at':'2026-09-13T09:00:00Z'})
+    assert restore(cache,manifest,raw,generation='generations/20260914T083117Z-285cede3')['restored']==2
+    assert cache.get('external:sec-circuit',request_remote=False)[0]['next_attempt_after']==longer
+    assert cache.get('attempt:sec-financials:TEST',request_remote=False)[1]['retry_after']==longer
+
+
+@pytest.mark.parametrize('key',['external:sec-circuit-extra','attempt:sec-profile:TEST','attempt:sec-financials:OUTSIDE'])
+def test_unknown_sec_record_or_catalog_symbol_rejects_artifact(tmp_path,monkeypatch,key):
+    manifest,raw=sec_prepared(tmp_path,monkeypatch)
+    records=json.loads(gzip.decompress(raw));records.append([key,{}, {'fetched_at':STAMP}])
+    cache=DashboardCache(tmp_path/'target.sqlite3')
+    with pytest.raises(ValueError):restore(cache,manifest,repack(manifest,records))
+    assert cache.get('financials:TEST',request_remote=False)[0] is None
+
+
+@pytest.mark.parametrize('change',[{'repository':'other/repo'},{'source_sha':'b'*40},{'run_id':'124'}])
+def test_sec_cross_generation_guards_still_require_failed_run_provenance(tmp_path,monkeypatch,change):
+    manifest,raw=sec_prepared(tmp_path,monkeypatch);manifest.update(change)
+    cache=DashboardCache(tmp_path/'target.sqlite3')
+    assert restore(cache,manifest,raw,generation='generations/20260914T083117Z-285cede3')['restored']==0
+    assert cache.get('external:sec-circuit',request_remote=False)[0] is None
+
+
+@pytest.mark.parametrize('workflow',['unreviewed.yml','../company_financials.yml','https://example.com/workflow.yml'])
+def test_unapproved_workflow_cannot_be_requested(tmp_path,monkeypatch,workflow):
+    from financial_recovery import recover_recent_failure
+    prepared(tmp_path,monkeypatch);monkeypatch.setenv('DASHBOARD_GITHUB_TOKEN','fixture-token')
+    class Session:
+        def get(self,*args,**kwargs):pytest.fail('Unreviewed workflow must not be requested')
+    with pytest.raises(ValueError,match='not approved'):
+        recover_recent_failure(DashboardCache(tmp_path/'target.sqlite3'),('TEST',),GENERATION,
+                               workflow_name=workflow,session=Session())

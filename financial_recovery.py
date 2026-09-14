@@ -7,6 +7,7 @@ No artifact is extracted or executed; the checksum and every record are checked
 before the local cache is changed. Existing newer records and retry dates win.
 """
 from __future__ import annotations
+from datetime import datetime
 import gzip
 import hashlib
 import io
@@ -22,13 +23,28 @@ PAYLOAD = 'company-financials-recovery.json.gz'
 MANIFEST = 'company-financials-recovery.manifest.json'
 MAX_BYTES = 64 * 1024 * 1024
 MAX_DECODED_BYTES = 256 * 1024 * 1024
-PREFIXES = ('financials:', 'attempt:financials:', 'external:financials-circuit')
+ATTEMPT_PREFIXES = ('attempt:financials:', 'attempt:sec-financials:')
+CIRCUIT_FIELDS = {'external:financials-circuit':'retry_after',
+                  'external:sec-circuit':'next_attempt_after'}
+PREFIXES = ('financials:', *ATTEMPT_PREFIXES, *CIRCUIT_FIELDS)
+WORKFLOWS = {'company_financials.yml':r'company-financials-audit-\d+',
+             'sec_financials.yml':r'sec-financials-audit-\d+'}
+
+
+def _valid_deadline(value):
+    """Provider deadlines must have an explicit time zone, not guessed units."""
+    if not isinstance(value,str):return False
+    try:
+        stamp=datetime.fromisoformat(value.replace('Z','+00:00'))
+        return stamp.tzinfo is not None and stamp.timestamp()>0
+    except (ValueError,OverflowError):return False
 
 
 def save_recovery(cache, generation, directory='work'):
     from data_quality import read_objects
     from data_sync import utc_now
-    records = [[key, value, meta] for key,(value,meta) in read_objects(cache,PREFIXES).items()]
+    records = [[key, value, meta] for key,(value,meta) in read_objects(cache,PREFIXES).items()
+               if key in CIRCUIT_FIELDS or key.startswith(('financials:',*ATTEMPT_PREFIXES))]
     raw = gzip.compress(json.dumps(records,ensure_ascii=False,allow_nan=False).encode())
     manifest = {'schema':1, 'repository':os.environ.get('GITHUB_REPOSITORY'),
         'run_id':os.environ.get('GITHUB_RUN_ID'), 'source_sha':os.environ.get('GITHUB_SHA'),
@@ -63,13 +79,16 @@ def restore_records(cache, universe, generation, manifest, raw, *, run_id, sourc
         if not isinstance(key,str) or key in keys or not isinstance(value,dict) or not isinstance(meta,dict):
             raise ValueError('Invalid or duplicate financial recovery record')
         keys.add(key)
-        if key=='external:financials-circuit':
-            if not timestamp(value.get('retry_after')):raise ValueError('Invalid financial circuit')
-        elif key.startswith(('financials:','attempt:financials:')):
+        if key in CIRCUIT_FIELDS:
+            if not _valid_deadline(value.get(CIRCUIT_FIELDS[key])):raise ValueError('Invalid financial circuit deadline')
+        elif key.startswith(('financials:',*ATTEMPT_PREFIXES)):
             ticker=key.rsplit(':',1)[-1]
             if ticker not in names:raise ValueError('Financial recovery ticker is outside this catalog')
             if key.startswith('financials:') and (value.get('schema')!=SCHEMA or value.get('ticker')!=ticker or not value.get('currency')):
                 raise ValueError('Financial recovery identity is invalid')
+            if key.startswith(ATTEMPT_PREFIXES) and (not isinstance(meta.get('success'),bool)
+                    or not _valid_deadline(meta.get('retry_after'))):
+                raise ValueError('Invalid financial attempt deadline or status')
         else:raise ValueError('Non-financial recovery record rejected')
         if not timestamp(meta.get('fetched_at')):raise ValueError('Financial recovery timestamp is invalid')
     same_generation=manifest.get('source_generation')==generation
@@ -80,14 +99,14 @@ def restore_records(cache, universe, generation, manifest, raw, *, run_id, sourc
             # A newer price snapshot cannot erase an unpublished provider pause.
             # Successful-attempt refresh dates are not failure guards: restoring
             # them without their observations would postpone still-missing data.
-            active_circuit=(key=='external:financials-circuit'
-                            and timestamp(value.get('retry_after'))>clock)
-            active_failure=(key.startswith('attempt:financials:') and meta.get('success') is False
+            active_circuit=(key in CIRCUIT_FIELDS
+                            and timestamp(value.get(CIRCUIT_FIELDS[key]))>clock)
+            active_failure=(key.startswith(ATTEMPT_PREFIXES) and meta.get('success') is False
                             and timestamp(meta.get('retry_after'))>clock)
             if not (active_circuit or active_failure):continue
         old,oldmeta=cache.get(key,request_remote=False)
         if timestamp(oldmeta.get('fetched_at'))>=timestamp(meta.get('fetched_at')):continue
-        if key=='external:financials-circuit' and isinstance(old,dict) and timestamp(old.get('retry_after'))>=timestamp(value.get('retry_after')):continue
+        if key in CIRCUIT_FIELDS and isinstance(old,dict) and timestamp(old.get(CIRCUIT_FIELDS[key]))>=timestamp(value.get(CIRCUIT_FIELDS[key])):continue
         if key.startswith('attempt:') and timestamp(oldmeta.get('retry_after'))>timestamp(meta.get('retry_after')):continue
         if key.startswith('financials:') and isinstance(old,dict) and old.get('observations') and not value.get('observations'):continue
         cache.put(key,value,meta);restored+=1
@@ -95,8 +114,10 @@ def restore_records(cache, universe, generation, manifest, raw, *, run_id, sourc
             'guards_only':not same_generation}
 
 
-def recover_recent_failure(cache, universe, generation, *, session=None):
+def recover_recent_failure(cache, universe, generation, *, workflow_name='company_financials.yml',session=None):
     """Inspect at most five own failed or cancelled runs; restore one compatible artifact."""
+    if not isinstance(workflow_name,str) or workflow_name not in WORKFLOWS:
+        raise ValueError('Financial recovery workflow is not approved')
     token=os.environ.get('DASHBOARD_GITHUB_TOKEN')
     if os.environ.get('GITHUB_REPOSITORY')!=REPOSITORY or not token:
         return {'restored':0,'reason':'Recovery only runs in the repository collector'}
@@ -110,19 +131,19 @@ def recover_recent_failure(cache, universe, generation, *, session=None):
         response.raise_for_status()
         return response
     try:
-        with get('/actions/workflows/company_financials.yml/runs',params={'branch':'main','status':'completed','per_page':20}) as response:
+        with get('/actions/workflows/'+workflow_name+'/runs',params={'branch':'main','status':'completed','per_page':20}) as response:
             runs=response.json().get('workflow_runs',[])
         candidates=[r for r in runs if r.get('conclusion') in ('failure','cancelled')][:5]
         for run in candidates:
             if (run.get('head_branch')!='main' or run.get('conclusion') not in ('failure','cancelled')
                     or run.get('head_repository',{}).get('full_name')!=REPOSITORY
-                    or run.get('path')!='.github/workflows/company_financials.yml'
+                    or run.get('path')!='.github/workflows/'+workflow_name
                     or not re.fullmatch(r'[0-9a-f]{40}',run.get('head_sha',''))):continue
             rid=int(run['id'])
             with get(f'/actions/runs/{rid}/artifacts',params={'per_page':100}) as response:
                 artifacts=response.json().get('artifacts',[])
             for artifact in sorted(artifacts,key=lambda a:a['id'],reverse=True):
-                if (artifact.get('expired') or not re.fullmatch(r'company-financials-audit-\d+',artifact.get('name',''))
+                if (artifact.get('expired') or not re.fullmatch(WORKFLOWS[workflow_name],artifact.get('name',''))
                         or not 0<artifact.get('size_in_bytes',0)<=MAX_BYTES):continue
                 with get(f"/actions/artifacts/{int(artifact['id'])}/zip",stream=True) as response:
                     archive=bytearray()
