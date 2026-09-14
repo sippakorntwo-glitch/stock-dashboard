@@ -23,11 +23,13 @@ def verify_research_features(page, app, ticker):
     if basis.count():
         labels = basis.locator('label').all_text_contents()
         # Every offered source period is exercised. Missing periods are not invented.
-        for radio in basis.get_by_role('radio').all():
-            radio.check()
+        for label in labels:
+            basis.get_by_text(label,exact=True).click()
             wait_page_ready(app,ticker)
-        basis.get_by_role('radio').first.check()
+            expect(basis.get_by_role('radio',name=label,exact=True)).to_be_checked()
+        basis.get_by_text(labels[0],exact=True).click()
         wait_page_ready(app,ticker)
+        expect(basis.get_by_role('radio',name=labels[0],exact=True)).to_be_checked()
         report['financial_periods'] = labels
     else:
         report['financial_periods'] = 'source unavailable, explicit state displayed'
