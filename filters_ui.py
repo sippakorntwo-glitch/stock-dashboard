@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 from return_periods import RETURN_FIELDS, RETURN_LABELS, RETURN_MODES, display_returns, labels_for_mode
 from screening import (categorical_values, filter_frame, COMPANY_ONLY_FIELDS, FUND_ONLY_FIELDS,
-                       COMPANY_ONLY_CATEGORIES, FUND_ONLY_CATEGORIES)
+                       COMPANY_ONLY_CATEGORIES, FUND_ONLY_CATEGORIES, filter_removal_effects)
 
 METRICS = {
     'Close':'Watchlist Price','Dollar_Volume_20D':'20-Day Average Price × Volume','Vol_Ratio':'Volume Ratio',
@@ -140,6 +140,58 @@ def _metric_group(frame,key,bounds):
     return selected
 
 
+def remove_filter_condition(kind,field):
+    """Widget callback: remove just this condition before widgets render again."""
+    state=st.session_state
+    if kind=='search':state['stock_search']=''
+    elif kind=='category':
+        key={'Asset_Type':'screen_asset','Status':'screen_status'}.get(field,'screen_cat_'+field)
+        state[key]='All' if field in ('Asset_Type','Status') else []
+    elif kind=='bound':
+        state['screen_min_'+field]=state['screen_max_'+field]=None
+        keys=('screen_periods',) if field in RETURN_FIELDS else tuple(METRIC_GROUPS)
+        for key in keys:state[key]=[v for v in state.get(key,[]) if v!=field]
+    elif kind=='required':state['screen_required']=[v for v in state.get('screen_required',[]) if v!=field]
+    elif kind=='option':
+        key={'max_price_age':'screen_fresh','max_profile_age':'screen_profile_fresh',
+             'above_sma':'screen_above_sma','bullish_ema':'screen_bullish','favourites':'screen_favourites'}[field]
+        state[key]=False
+    state['screen_preset']='custom';state['table_page']=1
+    state['_filter_reset_version']=state.get('_filter_reset_version',0)+1
+
+
+def _removal_label(effect,mode,categories,bounds,query):
+    kind,field=effect['kind'],effect['field']
+    if kind=='search':return 'ค้นหา: '+query
+    if kind=='category':
+        label={'Asset_Type':'ประเภทสินทรัพย์','Status':'แนวโน้ม'}.get(field,CATEGORY_THAI.get(field,field))
+        values=categories[field]
+        translated=ASSET_THAI if field=='Asset_Type' else STATUS_THAI if field=='Status' else {}
+        return label+': '+', '.join(translated.get(v,v) for v in values)
+    if kind=='bound':
+        lower,upper=bounds[field];limits=[]
+        if lower is not None:limits.append('≥ '+f'{lower:g}')
+        if upper is not None:limits.append('≤ '+f'{upper:g}')
+        return labels_for_mode(mode).get(field,METRIC_THAI.get(field,field))+' '+' และ '.join(limits)
+    if kind=='required':return 'ต้องมีผลตอบแทน: '+RETURN_LABELS[field]
+    return {'max_price_age':'จำกัดอายุข้อมูลราคา','max_profile_age':'จำกัดอายุข้อมูลพื้นฐาน',
+            'above_sma':'ราคา > SMA200','bullish_ema':'ราคา > EMA20 > EMA50','favourites':'เฉพาะรายการโปรด'}[field]
+
+
+def _render_removal_controls(effects,mode,categories,bounds,query,current_count):
+    if not effects:return
+    with st.expander(f'ปรับเงื่อนไขทีละรายการ ({len(effects)})',expanded=current_count==0):
+        st.caption('จำนวนเพิ่มคำนวณเมื่อเอาเงื่อนไขแถวนั้นออกเพียงข้อเดียว โดยคงข้ออื่นและกติกาข้อมูลที่ขาดไว้ จึงนำจำนวนแต่ละแถวมาบวกกันไม่ได้')
+        for effect in effects:
+            label=_removal_label(effect,mode,categories,bounds,query)
+            left,right=st.columns([4,2])
+            left.write(label)
+            right.button(f"นำออก · เพิ่ม {effect['restored_count']:,} รายการ",
+                key='remove_screen_'+effect['id'],on_click=remove_filter_condition,
+                args=(effect['kind'],effect['field']),
+                help=f"เมื่อเอาข้อนี้ออก เหลือ {effect['without_count']:,} รายการที่ผ่านเกณฑ์ทั้งหมด")
+
+
 def filter_universe(frame):
     _migrate_controls()
     for field in RETURN_FIELDS:
@@ -159,6 +211,7 @@ def filter_universe(frame):
     mode=return_box.selectbox('รูปแบบผลตอบแทน',RETURN_MODES,key='screen_return_mode',
         help='ค่าเริ่มต้นเป็นผลตอบแทนสะสมจากราคาปรับแล้ว โหมด Annualized เปลี่ยนเฉพาะ 3 ปี / 5 ปี ทั้งการแสดงและการกรอง ไม่เปลี่ยนคะแนนซื้อขาย')
     work=display_returns(frame,mode)
+    removal_source=work
     categories={'Industry':industry};bounds={}
     if asset!='All':categories['Asset_Type']=[asset]
     if status!='All':categories['Status']=['ไม่มีข้อมูล','ข้อมูลไม่พอ','INSUFFICIENT'] if status=='Insufficient Data' else [status]
@@ -195,9 +248,11 @@ def filter_universe(frame):
                 categories[field]=_category(frame,field,cols[i%2])
             lo,hi=st.columns(2)
             fresh=lo.checkbox('จำกัดอายุข้อมูลราคา',key='screen_fresh')
-            max_price_age=lo.number_input('อายุข้อมูลราคาสูงสุด (วันปฏิทิน)',min_value=0,max_value=3650,value=4,key='screen_price_age') if fresh else None
+            price_default={} if 'screen_price_age' in st.session_state else {'value':4}
+            max_price_age=lo.number_input('อายุข้อมูลราคาสูงสุด (วันปฏิทิน)',min_value=0,max_value=3650,key='screen_price_age',**price_default) if fresh else None
             profiles_fresh=hi.checkbox('จำกัดอายุข้อมูลพื้นฐาน',key='screen_profile_fresh')
-            max_profile_age=hi.number_input('อายุข้อมูลพื้นฐานสูงสุด (วัน)',min_value=0,max_value=3650,value=14,key='screen_profile_age') if profiles_fresh else None
+            profile_default={} if 'screen_profile_age' in st.session_state else {'value':14}
+            max_profile_age=hi.number_input('อายุข้อมูลพื้นฐานสูงสุด (วัน)',min_value=0,max_value=3650,key='screen_profile_age',**profile_default) if profiles_fresh else None
             favourites=st.checkbox('เฉพาะรายการโปรดในเซสชันนี้',key='screen_favourites')
             st.caption('อายุข้อมูลนับวันปฏิทิน รวมเสาร์–อาทิตย์และวันหยุด ตัวกรองวันที่ต้องมีวันที่จริงที่ไม่ใช่อนาคต')
         include_missing=st.checkbox('รวมรายการที่ไม่ได้รายงานค่าตัวเลขที่กำลังกรอง',value=False,key='screen_missing',
@@ -247,16 +302,20 @@ def filter_universe(frame):
     if 'Dividend_Yield' in active_bounds:conditions.append('อัตราปันผลที่แหล่งข้อมูลขัดแย้ง / ไม่ถูกต้อง: ไม่ผ่านเสมอ')
     summary=' · '.join(conditions) if conditions else 'ยังไม่จำกัดผลลัพธ์ แสดงทุกรายการ'
     st.markdown('<div class="screener-summary"><strong>ตัวกรองที่ใช้จริง</strong><br>'+html.escape(summary)+'</div>',unsafe_allow_html=True)
-    try:
-        work=filter_frame(work,categories=categories,bounds=bounds,max_price_age=max_price_age,
+    filter_options=dict(categories=categories,bounds=bounds,max_price_age=max_price_age,
             max_profile_age=max_profile_age,include_missing=include_missing,require_returns=required,
-            above_sma=above,bullish_ema=bullish,favourites=st.session_state.get('favourites',[]) if favourites else None)
+            above_sma=above,bullish_ema=bullish,favourites=st.session_state.get('favourites',[]) if favourites else None,
+            now=pd.Timestamp.now(tz='America/New_York'))
+    try:
+        work=filter_frame(work,**filter_options)
     except ValueError as exc:
         message=str(exc)
         if ': maximum is below minimum' in message:
             field=message.split(':',1)[0];message='ค่าต่ำสุดต้องไม่มากกว่าค่าสูงสุด: '+labels_for_mode(mode).get(field,METRIC_THAI.get(field,field))
         st.warning(message)
         return None
+    effects=filter_removal_effects(removal_source,query=query,**filter_options)
+    _render_removal_controls(effects,mode,categories,bounds,query,len(work))
     labels={**labels_for_mode(mode),**METRIC_THAI,'Ticker':'สัญลักษณ์','Industry':'อุตสาหกรรม / หมวด ETF'}
     x,y=st.columns([3,1])
     sort=x.selectbox('เรียงตาม',['Ticker','Industry',*RETURN_FIELDS,*METRICS],format_func=lambda field:labels.get(field,field),key='screen_sort')
@@ -264,6 +323,13 @@ def filter_universe(frame):
     if sort not in work:work[sort]=np.nan
     work=work.sort_values([sort,'Ticker'] if sort!='Ticker' else ['Ticker'],ascending=not descending,na_position='last',kind='stable')
     work.attrs['return_mode']=mode
+    active_fields=[*active_bounds,*required,*(field for field,values in categories.items() if values)]
+    if above:active_fields.extend(('Close','SMA200'))
+    if bullish:active_fields.extend(('Close','EMA20','EMA50'))
+    if max_price_age is not None:active_fields.append('Price_AsOf')
+    if max_profile_age is not None:active_fields.append('Profile_AsOf')
+    work.attrs['active_filter_fields']=list(dict.fromkeys(active_fields))
+    work.attrs['filter_removal_effects']=effects
     applied['Sort By']=sort;applied['Descending']=descending
     work.attrs['applied_filters']=applied
     encoded=html.escape(json.dumps(applied,ensure_ascii=False),quote=True)

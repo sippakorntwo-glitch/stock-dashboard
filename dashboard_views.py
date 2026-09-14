@@ -57,11 +57,15 @@ def overview(frame, selectable=False, prepared=None):
     pages = max(1,math.ceil(len(work)/PAGE_SIZE))
     if st.session_state.get('table_page',1)>pages: st.session_state.table_page=1
     page = st.number_input('หน้าตาราง — หน้าละ 500 ตัว',min_value=1,max_value=pages,step=1,key='table_page')
-    fields = list(TABLE_FIELDS)
+    from screener_view import render_result_columns, result_column_config
+    fields = render_result_columns(work)
     shown = page_slice(work,page).reindex(columns=fields)
     from quality_views import industry_display, snapshot_quality, placeholder_options
     shown = industry_display(shown, snapshot_quality(a.get_data_cache()))
-    styled = shown.style.format(precision=2,na_rep='—').map(a.return_cell_style,subset=list(RETURN_FIELDS))
+    styled = shown.style.format(precision=2,na_rep='—')
+    return_fields = [field for field in RETURN_FIELDS if field in shown]
+    if return_fields:
+        styled = styled.map(a.return_cell_style, subset=return_fields)
     config = a.watchlist_column_config()
     for field,label in {'ATR_Pct':'ATR / ราคา (%)','Volatility_20D':'Volatility 20D ต่อปี (%)'}.items():
         config[field]=st.column_config.NumberColumn(label,format='%.2f')
@@ -74,6 +78,7 @@ def overview(frame, selectable=False, prepared=None):
         elif field in fields:
             config[field] = st.column_config.Column(label)
     config.update(return_column_config(mode))
+    config.update(result_column_config(fields, mode))
     config = column_help(fields,config)
     st.caption(f'แสดง {len(shown):,} ตัวในหน้านี้ · หน้า {page:,} / {pages:,}')
     options = {}
@@ -136,7 +141,7 @@ def technical(ticker,daily_history,info,row):
     st.caption('ราคาชุดรายวันอาจไม่ผ่านเกณฑ์ quote อายุไม่เกิน 15 นาที ระบบจึงคงสถานะรอยืนยัน ไม่ลดเกณฑ์เพื่อให้เกิดสัญญาณซื้อ')
 
 
-def fundamentals(ticker,history,info,row):
+def fundamentals(ticker,history,info,row,frame=None):
     st.subheader('ธุรกิจ • มูลค่า • กำไร • กระแสเงินสด')
     st.caption('ข้อมูลพื้นฐานดึงสำเร็จ '+a.thai_time(info.get('_Fetched_At_UTC'))+' — ไม่ใช่วันที่ของงบการเงินทุกช่อง')
     etf=a.asset_is_etf(ticker,row,info)
@@ -147,6 +152,8 @@ def fundamentals(ticker,history,info,row):
         from company_analysis_ui import render_company_research
         render_company_research(ticker,info,info.get('_FinancialStatements'))
     else:
+        from etf_research_ui import render_etf_research
+        render_etf_research(ticker,info,history,a.get_data_cache(),frame=frame)
         fields=[('หมวดกองทุน','category',False),('กลุ่มกองทุน','fundFamily',False),('สินทรัพย์กองทุน','totalAssets',False),('NAV ต่อหน่วย','navPrice',False),('Beta 3Y จากแหล่งข้อมูล','beta3Year',False),('Portfolio P/E','trailingPE',False)]
         from quality_views import profile_value, profile_field_state, profile_unit
         records=[]

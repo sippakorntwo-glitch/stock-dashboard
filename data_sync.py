@@ -327,14 +327,14 @@ class SnapshotReader:
 
     @staticmethod
     def _page_dependencies(tickers):
-        if not isinstance(tickers, (tuple, list)) or len(tickers) > 8:
-            raise ValueError("Page status needs at most eight ticker dependencies")
+        if not isinstance(tickers, (tuple, list)) or len(tickers) > 13:
+            raise ValueError("Page status needs at most thirteen ticker dependencies")
         if any(not isinstance(ticker, str) or not ticker for ticker in tickers):
             raise ValueError("Page dependencies must be non-empty ticker strings")
         return tuple(dict.fromkeys(tickers))
 
     def page_status(self, tickers):
-        """One coherent status for at most eight normalized page dependencies.
+        """One coherent status for at most thirteen normalized page dependencies.
 
         The first ticker is the selected company. Keep first-occurrence order so
         a changed comparison set changes the revision identity even when all its
@@ -473,7 +473,7 @@ class SnapshotReader:
             t, key, value, meta = json.loads(line)
             if (not isinstance(t, str) or not isinstance(key, str) or not isinstance(meta, dict)
                     or str(shard_number(t)) != slot
-                    or key not in {prefix + t for prefix in ("history:1d:", "info:", "dividends:", "reference:", "financials:")}
+                    or key not in {prefix + t for prefix in ("history:1d:", "info:", "dividends:", "reference:", "financials:", "etf_research:")}
                     or key in seen):
                 raise ValueError("Invalid or mismatched snapshot detail record")
             _json(value), _json(meta)

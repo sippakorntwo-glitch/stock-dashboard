@@ -42,6 +42,12 @@ BALANCE_FIELDS = {
 }
 INCOME_KEYS = tuple(FLOW_FIELDS)[:10]
 CASHFLOW_KEYS = tuple(FLOW_FIELDS)[10:]
+# Research-only observations are kept out of the canonical ratio inputs: EPS
+# and weighted-average shares must never be added across quarters. Older
+# snapshots legitimately lack these fields until their next statement refresh.
+RESEARCH_INCOME_FIELDS = {'dilutedAverageShares': ('Diluted Average Shares',)}
+RESEARCH_CASHFLOW_FIELDS = {'issuanceOfCapitalStock': ('Issuance Of Capital Stock',)}
+RESEARCH_BALANCE_FIELDS = {'ordinarySharesNumber': ('Ordinary Shares Number',)}
 
 
 def number(value):
@@ -281,9 +287,9 @@ def collect(ticker, info, provider=None, *, now=None):
     bundle = {'schema': SCHEMA, 'ticker': ticker, 'currency': info.get('financialCurrency'),
               'fetched_at': stamp, 'source': SOURCE, 'annual': {}, 'quarterly': {}, 'errors': []}
     for period, frequency in [('annual', 'yearly'), ('quarterly', 'quarterly')]:
-        for kind, method, fields in [('income', 'get_income_stmt', {k: FLOW_FIELDS[k] for k in INCOME_KEYS}),
-                                     ('balance', 'get_balance_sheet', BALANCE_FIELDS),
-                                     ('cashflow', 'get_cash_flow', {k: FLOW_FIELDS[k] for k in CASHFLOW_KEYS})]:
+        for kind, method, fields in [('income', 'get_income_stmt', {**{k: FLOW_FIELDS[k] for k in INCOME_KEYS}, **RESEARCH_INCOME_FIELDS}),
+                                     ('balance', 'get_balance_sheet', {**BALANCE_FIELDS, **RESEARCH_BALANCE_FIELDS}),
+                                     ('cashflow', 'get_cash_flow', {**{k: FLOW_FIELDS[k] for k in CASHFLOW_KEYS}, **RESEARCH_CASHFLOW_FIELDS})]:
             try:
                 frame = getattr(provider, method)(pretty=True, freq=frequency)
                 bundle[period][kind] = statement_records(frame, fields, today=day(stamp))

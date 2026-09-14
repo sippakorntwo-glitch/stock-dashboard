@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{color-scheme:dark light;font:14px system-ui,sans-serif;color:var(--text,#e4eaf4);background:transparent}*{box-sizing:border-box}
+body{margin:0;padding:1px 0 7px}label{display:block;font-size:13px;margin:0 0 5px}input,select,button{font:inherit;border:1px solid #506179;border-radius:7px;min-height:38px;color:inherit;background:var(--surface,#182435);padding:7px 9px;width:100%}
+button{cursor:pointer}button:disabled{opacity:.5;cursor:default}button:hover:not(:disabled){border-color:#60a5fa}input:focus,select:focus,button:focus-visible{outline:2px solid #60a5fa;outline-offset:1px}
+.row{display:flex;gap:6px;margin:7px 0 13px}.row>*{flex:1}.status{font-size:12px;line-height:1.6;margin:7px 0 0;overflow-wrap:anywhere;color:var(--muted,#aab8ce)}
+</style></head><body>
+<label for="workspace-name">ชื่อชุดวิเคราะห์</label><input id="workspace-name" maxlength="80" placeholder="เช่น หุ้นเติบโตที่ติดตาม" disabled>
+<div class="row"><button id="save" disabled>บันทึกชุดปัจจุบัน</button></div>
+<label for="workspace-list">ชุดวิเคราะห์ในเบราว์เซอร์นี้</label><select id="workspace-list" disabled aria-label="ชุดวิเคราะห์ที่บันทึก"></select>
+<div class="row"><button id="load" disabled>เปิดชุดที่เลือก</button><button id="delete" disabled>ลบชุดที่เลือก</button></div>
+<p id="status" role="status" aria-live="polite" class="status">กำลังเชื่อมต่อบันทึกส่วนตัว…</p>
+<script>
+/* Official Streamlit v1 component-lib protocol: componentReady, render,
+   setComponentValue (JSON), and setFrameHeight. No third-party script needed. */
+(() => {
+ 'use strict';
+ const STORE='stock-research-workspace:private:v1', LIMIT=300000, MAX_SAVES=20;
+ const $=id=>document.getElementById(id);
+ let args=null, initialized=false, hydrationToken=null, storageOK=true, draftRevision='', store={schema:1,workspaces:[],draft:null};
+ function post(type, payload={}) { window.parent.postMessage({isStreamlitMessage:true,type,...payload},'*'); }
+ function resize(){post('streamlit:setFrameHeight',{height:document.body.scrollHeight+6});}
+ function status(text){$('status').textContent=text;resize();}
+ function event(action, payload={}) {
+   post('streamlit:setComponentValue',{value:{id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),action,...payload},dataType:'json'});
+ }
+ function readStore(){
+   try {
+     const raw=window.localStorage.getItem(STORE);
+     if(!raw)return;
+     if(new TextEncoder().encode(raw).length>6500000)throw new Error('large');
+     const parsed=JSON.parse(raw);
+     if(parsed?.schema!==1 || !Array.isArray(parsed.workspaces) || parsed.workspaces.length>MAX_SAVES)throw new Error('schema');
+     store={schema:1,workspaces:parsed.workspaces.filter(x=>x&&typeof x.name==='string'&&x.name.length<=80&&x.schema===1),draft:parsed.draft||null};
+   }catch(error){storageOK=false;status('อ่านพื้นที่บันทึกไม่ได้ ใช้ส่งออก / นำเข้า JSON ด้านล่างได้');}
+ }
+ function writeStore(){
+   if(!storageOK)return false;
+   try{window.localStorage.setItem(STORE,JSON.stringify(store));return true;}
+   catch(error){storageOK=false;status('เบราว์เซอร์ไม่อนุญาตให้บันทึกหรือพื้นที่เต็ม ใช้ส่งออก JSON เพื่อเก็บข้อมูล');return false;}
+ }
+ function updateOptions(preferred){
+   const select=$('workspace-list'), previous=preferred||select.value;
+   select.replaceChildren();
+   if(!store.workspaces.length){const option=document.createElement('option');option.value='';option.textContent='ยังไม่มีชุดที่บันทึก';select.append(option);}
+   for(const item of store.workspaces){const option=document.createElement('option');option.value=item.name;option.textContent=item.name;select.append(option);}
+   if(store.workspaces.some(x=>x.name===previous))select.value=previous;
+   select.disabled=!store.workspaces.length;
+   $('load').disabled=$('delete').disabled=!store.workspaces.length;
+ }
+ $('save').addEventListener('click',()=>{
+   if(!args)return;
+   const name=$('workspace-name').value.trim();
+   if(!name){status('ใส่ชื่อชุดวิเคราะห์ก่อนบันทึก');return;}
+   const document=structuredClone(args.document);document.name=name;document.saved_at=new Date().toISOString();
+   if(new TextEncoder().encode(JSON.stringify(document)).length>LIMIT){status('ชุดวิเคราะห์ใหญ่เกิน 300 KB กรุณาลดบันทึกที่ไม่ใช้');return;}
+   const found=store.workspaces.findIndex(x=>x.name===name);
+   if(found<0 && store.workspaces.length>=MAX_SAVES){status('บันทึกได้ไม่เกิน 20 ชุด กรุณาส่งออกหรือลบชุดที่ไม่ใช้ก่อน');return;}
+   if(found>=0 && !window.confirm('บันทึกทับชุด “'+name+'” หรือไม่?'))return;
+   if(found>=0)store.workspaces[found]=document;else store.workspaces.push(document);
+   if(writeStore())status('บันทึก “'+name+'” ในเบราว์เซอร์นี้แล้ว');
+   updateOptions(name);
+ });
+ $('load').addEventListener('click',()=>{
+   const document=store.workspaces.find(x=>x.name===$('workspace-list').value);
+   if(document){status('กำลังเปิดชุดวิเคราะห์…');event('load',{document});}
+ });
+ $('delete').addEventListener('click',()=>{
+   const name=$('workspace-list').value;if(!name)return;
+   if(!window.confirm('ลบชุด “'+name+'” จากเบราว์เซอร์นี้หรือไม่?'))return;
+   store.workspaces=store.workspaces.filter(x=>x.name!==name);
+   if(writeStore())status('ลบชุดที่เลือกแล้ว บันทึกที่กำลังแก้ไขยังอยู่');
+   updateOptions();
+ });
+ window.addEventListener('message',message=>{
+   if(message.source!==window.parent || message.data?.type!=='streamlit:render')return;
+   args=message.data.args;
+   if(!args?.document)return;
+   const theme=message.data.theme;
+   if(theme){document.documentElement.style.setProperty('--text',theme.textColor);document.documentElement.style.setProperty('--surface',theme.secondaryBackgroundColor);document.documentElement.style.setProperty('--muted',theme.textColor);}
+   if(!initialized){
+     initialized=true;readStore();updateOptions();
+     $('workspace-name').disabled=$('save').disabled=false;
+     if(!$('workspace-name').value)$('workspace-name').value=args.document.name||'';
+     if(storageOK)status('พร้อมบันทึก · เก็บได้ 20 ชุด · บันทึกข้อความและเงื่อนไขติดตามอัตโนมัติ');
+   }
+   // A Streamlit session can restart while this keyed iframe survives.
+   // Hydrate once for each server-session token, before writing its draft.
+   const token=args.boot_token||'legacy';
+   if(!args.hydrated && token!==hydrationToken){
+     hydrationToken=token;draftRevision='';readStore();
+     event('hydrate',{research:store.draft||{}});
+   }
+   // Wait for Python to merge local notes. Never erase a stored draft during
+   // the initial empty-server render, and coalesce unchanged refreshes.
+   if(args.hydrated && args.draft_revision!==draftRevision){
+     draftRevision=args.draft_revision;store.draft=args.draft;
+     if(writeStore())status('บันทึกข้อความและเงื่อนไขติดตามล่าสุดแล้ว · ตั้งชื่อชุดเพื่อเก็บตัวกรองด้วย');
+   }
+   resize();
+ });
+ window.addEventListener('storage',e=>{if(e.key===STORE){readStore();updateOptions();}});
+ window.addEventListener('resize',resize);
+ post('streamlit:componentReady',{apiVersion:1});resize();
+})();
+</script></body></html>
