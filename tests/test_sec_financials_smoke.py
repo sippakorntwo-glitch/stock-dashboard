@@ -45,6 +45,7 @@ def test_active_durable_guard_stops_before_any_sec_access(monkeypatch):
 
 
 def test_provider_denial_is_unavailable_and_does_not_retry(monkeypatch):
+    monkeypatch.setattr('sec_financials_job.release_access_pause',lambda:None)
     monkeypatch.setattr(smoke, 'ObjectStore', lambda _: object())
     monkeypatch.setattr(smoke, 'read_manifest', lambda _: {'generation': 'fixture', 'provider_circuits': {'sec': None}})
     monkeypatch.setattr(smoke, '_shard_objects', lambda *_: {

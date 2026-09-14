@@ -97,6 +97,12 @@ def run(*, checkpoint=None):
         if stamp_seconds(until) > datetime.now(timezone.utc).timestamp():
             report.update(reason='Persisted SEC provider cooldown', cooldown_until=until)
             return report
+        from sec_financials_job import release_access_pause
+        incident=release_access_pause()
+        if incident:
+            report.update(reason='Observed SEC denial; dated release pause',
+                          cooldown_until=incident['next_attempt_after'],denial_evidence=incident['evidence_url'])
+            return report
         objects = _shard_objects(store, manifest, ticker)
         bundle = objects.get('financials:'+ticker, ({}, {}))[0]
         profile = objects.get('info:'+ticker, ({}, {}))[0]

@@ -238,6 +238,7 @@ def main(argv=None):
     report_path.write_text(json.dumps(report,ensure_ascii=False,allow_nan=False,indent=2))
     if args.publish and (not args.backfill or report['collection'].get('attempted',0)>0
                          or (args.sec and report['collection'].get('provider_requests',0)>0)
+                         or (args.sec and report['collection'].get('guard_updated'))
                          or report.get('recovery',{}).get('restored',0)>0):
         if read_manifest(store)['generation']!=previous['generation']:
             raise RuntimeError('Prepared snapshot advanced; refusing to overwrite another collector')

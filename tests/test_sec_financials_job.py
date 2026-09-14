@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from dashboard_runtime import DashboardCache
 from sec_reference import INDEX_URL
 from sec_financials_job import collect_batch
+from sec_financials_job import release_access_pause
 
 
 def seed(cache, ticker='AARD', currency='USD'):
@@ -101,6 +102,18 @@ def test_source_conflicts_are_reported_without_overwriting_original_observations
     value=cache.get('financials:AARD',request_remote=False)[0]
     assert value['annual']['income'][0]['values']['grossProfit']==42
     assert value['sec_reconciliation']['conflicts'][0]['sec_value']==40
+
+
+def test_observed_release_denial_expires_automatically_and_is_persisted_without_network(tmp_path,monkeypatch):
+    incident=release_access_pause(now=datetime(2026,9,14,10,tzinfo=timezone.utc))
+    assert incident['http_status']==403
+    assert release_access_pause(now=datetime(2026,9,15,10,tzinfo=timezone.utc)) is None
+    monkeypatch.setattr('sec_financials_job.release_access_pause',lambda:incident)
+    monkeypatch.setattr('sec_financials_job.SecClient',lambda **_:(_ for _ in ()).throw(AssertionError('No provider access during pause')))
+    cache=DashboardCache(tmp_path/'cache.db');seed(cache)
+    result=collect_batch(cache,['AARD'],set())
+    assert result['guard_updated'] and result['provider_requests']==0
+    assert cache.get('external:sec-circuit',request_remote=False)[0]['next_attempt_after']==incident['next_attempt_after']
 
 
 def test_fully_filled_bundle_keeps_sec_revision_checks_due(tmp_path, monkeypatch):

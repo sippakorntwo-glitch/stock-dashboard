@@ -4,6 +4,8 @@ Runs only in the prepared-data collector. No network request is made by the UI.
 Uses the same persistent SEC denial/rate-limit circuit as reference collection.
 """
 from datetime import datetime, timedelta, timezone
+import json
+from pathlib import Path
 import time
 
 from financial_completeness import statement_gaps
@@ -11,6 +13,24 @@ from financial_statements import SCHEMA, observations
 from sec_reference import SecClient, INDEX_URL, INDEX_TTL, ticker_index, normalized
 
 SEC_REFRESH_DAYS = 2
+
+
+def release_access_pause(*, now=None):
+    """Carry the observed pre-release denial into the first production batch.
+
+    This dated incident expires by itself; subsequent provider failures use the
+    durable shared checkpoint circuit. It never enables access or shortens a pause.
+    """
+    path=Path(__file__).with_name('sec_access_pause.json')
+    if not path.exists():
+        return None
+    state=json.loads(path.read_text())
+    observed=datetime.fromisoformat(state['observed_at'])
+    until=datetime.fromisoformat(state['next_attempt_after'])
+    if (observed.tzinfo is None or until.tzinfo is None or state['http_status'] not in (403,429)
+            or until-observed!=timedelta(days=1)):
+        raise ValueError('Invalid dated SEC pause')
+    return state if until>(now or datetime.now(timezone.utc)) else None
 
 
 def collect_batch(cache, universe, etfs, *, limit=300, minutes=15, client=None):
@@ -27,6 +47,14 @@ def collect_batch(cache, universe, etfs, *, limit=300, minutes=15, client=None):
     circuit, _ = cache.get('external:sec-circuit', request_remote=False)
     if isinstance(circuit, dict) and timestamp(circuit.get('next_attempt_after')) > now.timestamp():
         return {**report, 'cooldown_until': circuit['next_attempt_after'], 'provider_requests': 0}
+    # An injected client is used only by deterministic unit fixtures. Production
+    # carries the real CI denial into its checkpoint before making any request.
+    incident=release_access_pause() if client is None else None
+    if incident:
+        cache.put('external:sec-circuit', {'next_attempt_after':incident['next_attempt_after'],
+                  'reason':'access denied or rate limit'}, {'fetched_at':utc_now()})
+        return {**report, 'cooldown_until':incident['next_attempt_after'], 'provider_requests':0,
+                'guard_updated':True, 'denial_evidence':incident['evidence_url']}
     client = client or SecClient(max_requests=2*max(0, limit)+1)
     try:
         raw, meta = cache.get('external:sec-ticker-map', request_remote=False)
