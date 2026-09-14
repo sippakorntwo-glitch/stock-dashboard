@@ -68,11 +68,16 @@ def wait_for_release(page,version):
 
 def wait_page_ready(app,ticker,query=None):
     # A new chart can appear before the slower sections finish. Wait for the
-    # real completed page, not a guessed sleep or an old section's DOM.
+    # real completed page, not a guessed sleep or an old section's DOM. A
+    # matching footer receipt can survive into a new full rerun, before React
+    # marks its old subtree stale; require the frontend to be idle as well.
     app.wait_for_function("""([ticker,query]) => {
+        const root=document.querySelector('[data-testid="stApp"]');
         const nodes=[...document.querySelectorAll('.workspace-ready')];
         const e=nodes.at(-1);
-        return e && e.dataset.ticker===ticker
+        return root?.getAttribute('data-test-script-state')==='notRunning'
+            && root.getAttribute('data-test-connection-state')==='CONNECTED'
+            && e && e.dataset.ticker===ticker
             && (query===null || e.dataset.search===query)
             && !e.closest('[data-stale="true"]');
     }""",arg=[ticker,query],timeout=120000)
