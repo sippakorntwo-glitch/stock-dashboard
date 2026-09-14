@@ -8,7 +8,14 @@ font = "sans serif"
 
 [server]
 headless = true
+# Production updates use a clean deployment, not concurrent module eviction.
+fileWatcherType = "none"
+runOnSave = false
 maxUploadSize = 5
 
 [browser]
 gatherUsageStats = false
+
+[runner]
+# Finish the current run at a yield point before applying queued widget changes.
+fastReruns = false
