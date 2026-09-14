@@ -80,6 +80,7 @@ def overview(frame, selectable=False, prepared=None):
     if selectable:
         tickers = tuple(shown.Ticker.astype(str))
         key = table_key(tickers, st.session_state.get('_table_epoch',0))
+        st.session_state['_active_table_key'] = key
         # Capture the visible order BEFORE any filter, sort, page or data rerun.
         def on_select():
             apply_table_selection(st.session_state,key,tickers)
