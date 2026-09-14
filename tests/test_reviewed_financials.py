@@ -93,6 +93,56 @@ def test_same_date_quarterly_balance_is_corrected_without_touching_another_date(
     assert observations(corrected)['totalLiabilities']['value'] == 132_150_000
 
 
+@pytest.mark.parametrize('already_reviewed', [False, True])
+def test_same_date_partial_copy_cannot_restore_reviewed_provider_liability(already_reviewed):
+    value = apply_reviewed(bundle()) if already_reviewed else bundle()
+    value['quarterly']['balance'] = [{'end': '2024-12-31', 'values': {'totalLiabilities': 132_150_000}}]
+    original = deepcopy(value)
+    corrected = apply_reviewed(value)
+    assert value == original
+    partial = corrected['quarterly']['balance'][0]
+    assert partial['values'] == {'totalLiabilities': 5_394_000}
+    assert partial['field_provenance']['totalLiabilities']['same_date_balance_context'] == {
+        'period': 'annual', 'end': '2024-12-31', 'currency': 'USD',
+        'totalAssets': 77_507_000, 'stockholdersEquity': -54_643_000,
+        'provider_liabilities': 132_150_000}
+    for result in (observations(value), metric_observations('AARD', {'financialCurrency': 'USD'}, value)):
+        assert result['totalLiabilities']['value'] == 5_394_000
+        assert result['totalLiabilities']['source'] == ISSUER_SOURCE
+        assert result['liabilitiesToEquity']['state'] == 'not_meaningful'
+    exported = [r for r in export_statements(value) if r['รายการต้นทาง'] == 'totalLiabilities']
+    assert len(exported) == 2
+    assert all(r['ค่าต้นทาง'] == 5_394_000 and r['แหล่งข้อมูล'] == ISSUER_SOURCE for r in exported)
+    assert verify(value, {'financialCurrency': 'USD'})['result'] == 'passed'
+
+
+@pytest.mark.parametrize('changed', [
+    {'end': '2024-09-30'}, {'currency': 'CAD'},
+    {'values': {'totalLiabilities': 132_150_000, 'totalAssets': 77_507_001}},
+    {'values': {'totalLiabilities': 132_150_000, 'stockholdersEquity': -54_643_001}},
+    {'values': {'totalLiabilities': 132_150_001}},
+    {'field_provenance': {'totalLiabilities': {'source': 'SEC EDGAR'}}},
+    {'field_provenance': {'totalLiabilities': {'currency': 'CAD'}}},
+])
+def test_partial_copy_with_conflicting_context_is_not_overridden(changed):
+    value = bundle()
+    row = {'end': '2024-12-31', 'values': {'totalLiabilities': 132_150_000}, **changed}
+    value['quarterly']['balance'] = [row]
+    corrected = apply_reviewed(value)
+    assert corrected['annual']['balance'][0]['values']['totalLiabilities'] == 5_394_000
+    assert corrected['quarterly']['balance'][0] == row
+
+
+def test_partial_copy_requires_a_complete_matching_anchor_even_after_prior_correction():
+    value = bundle()
+    value['annual']['balance'][0]['values'].pop('totalAssets')
+    assert apply_reviewed(value) is value
+    value = apply_reviewed(bundle())
+    value['annual']['balance'][0]['values']['totalAssets'] += 1
+    value['quarterly']['balance'] = [{'end': '2024-12-31', 'values': {'totalLiabilities': 132_150_000}}]
+    assert apply_reviewed(value) is value
+
+
 def test_successful_yahoo_refresh_reapplies_review_but_accepts_a_revised_tuple():
     first = preserve_refresh(None, bundle())
     assert first['observations']['totalLiabilities']['value'] == 5_394_000

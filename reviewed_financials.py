@@ -2,8 +2,9 @@
 
 This release reviewed the issuer's 2026-03-23 financial release on 2026-09-14.
 Its FY2024 balance sheet separates convertible preferred stock from liabilities.
-Only the exact previously observed Yahoo tuple below is eligible. No network
-request occurs while rendering, and a later changed source tuple is not revised.
+An exact previously observed Yahoo tuple must establish the balance context.
+Compatible partial copies at that same instant share its reviewed liability.
+No network request occurs while rendering, and a changed tuple is not revised.
 """
 from copy import deepcopy
 from dataclasses import dataclass
@@ -53,7 +54,8 @@ def apply_reviewed(bundle):
             or bundle.get('currency') != c.currency
             or bundle.get('source') != PROVIDER_SOURCE):
         return bundle
-    matches = []
+    matches, anchors = [], []
+    context = (('totalAssets', c.total_assets), ('stockholdersEquity', c.stockholders_equity))
     for period in ('annual', 'quarterly'):
         section = bundle.get(period, {})
         records = section.get('balance', []) if isinstance(section, dict) else []
@@ -70,17 +72,32 @@ def apply_reviewed(bundle):
             origin = provenance.get('totalLiabilities', {})
             if not isinstance(origin, dict):
                 continue
+            if (origin.get('currency', c.currency) != c.currency
+                    or origin.get('end', c.end) != c.end):
+                continue
+            complete_context = all(_same(values.get(key), expected) for key, expected in context)
+            # A persisted correction may anchor a newly received partial copy,
+            # but only while its full reviewed balance context still matches.
+            previous = origin.get('original_observation', {})
+            if (complete_context and _same(values.get('totalLiabilities'), c.issuer_liabilities)
+                    and origin.get('source') == ISSUER_SOURCE and origin.get('url') == c.url
+                    and origin.get('correction_id') == c.identifier and isinstance(previous, dict)
+                    and previous.get('source') == PROVIDER_SOURCE
+                    and _same(previous.get('value'), c.provider_liabilities)):
+                anchors.append(period)
             if origin.get('source', PROVIDER_SOURCE) != PROVIDER_SOURCE:
                 continue
-            if all(_same(values.get(key), expected) for key, expected in (
-                    ('totalAssets', c.total_assets), ('stockholdersEquity', c.stockholders_equity),
-                    ('totalLiabilities', c.provider_liabilities))):
-                matches.append((period, index))
-    if not matches:
+            if (_same(values.get('totalLiabilities'), c.provider_liabilities)
+                    and all(values.get(key) is None or _same(values.get(key), expected)
+                            for key, expected in context)):
+                matches.append((period, index, complete_context))
+                if complete_context:
+                    anchors.append(period)
+    if not matches or not anchors:
         return bundle
     result = deepcopy(bundle)
     result.pop('observations', None)
-    for period, index in matches:
+    for period, index, complete_context in matches:
         row = result[period]['balance'][index]
         original = deepcopy(row.get('field_provenance', {}).get('totalLiabilities', {}))
         original.update(source=PROVIDER_SOURCE, value=c.provider_liabilities,
@@ -95,5 +112,11 @@ def apply_reviewed(bundle):
             'convertible_preferred_stock': c.convertible_preferred,
             'reason': 'The issuer separately reports convertible preferred stock; the provider amount combines it with total liabilities.',
         }
+        if not complete_context:
+            row['field_provenance']['totalLiabilities']['same_date_balance_context'] = {
+                'period': anchors[0], 'end': c.end, 'currency': c.currency,
+                'totalAssets': c.total_assets, 'stockholdersEquity': c.stockholders_equity,
+                'provider_liabilities': c.provider_liabilities,
+            }
         row.setdefault('field_fetched_at', {})['totalLiabilities'] = c.reviewed_on
     return result

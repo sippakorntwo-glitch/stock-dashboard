@@ -44,6 +44,9 @@ and stockholders' deficit of USD 54,643,000. The observed Yahoo liabilities
 amount of USD 132,150,000 combines the first two financing categories.
 Only AARD, USD, the December 31, 2024 balance date, and that exact assets /
 equity / original-liabilities tuple qualify for the reviewed correction.
+That complete verified balance can also support a compatible partial copy at
+the same date; its provenance records the supporting context. Explicitly
+conflicting copies and partial-only bundles remain untouched.
 The issuer-reported liabilities replace that one cell, while its original
 provider amount, retrieval date, preferred-stock explanation and issuer link
 remain in per-cell provenance and exports. Existing prepared history and

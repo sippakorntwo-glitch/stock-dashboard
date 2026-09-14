@@ -215,7 +215,7 @@ def test_unresolved_sec_owned_cell_is_withheld_from_canonical_trends_and_ratios(
         'ambiguous':ambiguous}]}
     result=observations(value)
     assert result['grossProfit']['state']=='invalid' and result['grossProfit']['value'] is None
-    assert 'grossMargins' not in result
+    assert result['grossMargins']['state']=='invalid' and result['grossMargins']['value'] is None
     trends=build_financial_trends('TEST',{},value,today='2026-09-14')
     latest=trends['periods']['FY'][-1]['metrics']
     assert latest['grossProfit']['state']==latest['grossMargins']['state']=='invalid'
@@ -226,3 +226,54 @@ def test_unresolved_sec_owned_cell_is_withheld_from_canonical_trends_and_ratios(
     # Metadata from a subsequently accepted filing is a different source version.
     row['field_provenance']['grossProfit']['filed']='2026-08-01'
     assert observations(value)['grossProfit']['state']=='available'
+
+
+@pytest.mark.parametrize('kind,field,affected', [
+    ('income', 'grossProfit', ('grossMargins',)),
+    ('income', 'netIncome', ('profitMargins', 'returnOnEquity', 'returnOnAssets', 'cashConversion', 'netIncomeGrowthFY')),
+    ('income', 'operatingIncome', ('operatingMargins', 'roic')),
+    ('balance', 'stockholdersEquity', ('debtToEquity', 'returnOnEquity', 'roic')),
+    ('balance', 'totalAssets', ('returnOnAssets',)),
+    ('balance', 'currentLiabilities', ('currentRatio', 'cashRatio', 'quickRatio')),
+    ('cashflow', 'operatingCashflow', ('freeCashflow', 'fcfMargin', 'cashConversion')),
+    ('cashflow', 'capitalExpenditure', ('capex', 'freeCashflow', 'fcfMargin')),
+])
+@pytest.mark.parametrize('ambiguous', [False, True])
+def test_profile_fallback_cannot_restore_ratios_with_quarantined_sec_inputs(kind, field, affected, ambiguous):
+    from company_metrics import metric_observations
+    value=bundle()
+    value['annual']['balance'][0]['values'].update(currentLiabilities=10, currentAssets=30, receivables=5)
+    row=value['annual'][kind][0]
+    sec(row,field,start=None if kind=='balance' else '2025-01-01')
+    amount=row['values'][field]
+    value['sec_reconciliation']={'conflicts':[{
+        'period':'annual','statement':kind,'field':field,'end':row['end'],'currency':'USD',
+        'provider_value':amount,'sec_value':None if ambiguous else amount+1,
+        'existing_source':'SEC EDGAR','existing_provenance':deepcopy(row['field_provenance'][field]),
+        'ambiguous':ambiguous}]}
+    info={'financialCurrency':'USD','totalRevenue':100,
+          'grossMargins':.4,'operatingMargins':.2,'profitMargins':.1,
+          'returnOnEquity':.15,'returnOnAssets':.1,'debtToEquity':25,
+          'currentRatio':3,'freeCashflow':20}
+    result=metric_observations('TEST',info,value)
+    for key in affected:
+        assert result[key]['state']=='invalid', key
+        assert result[key]['value'] is None, key
+        assert result[key]['source']!='Yahoo Finance profile', key
+        assert any(p['field']==field and p['value']==amount for p in result[key]['provenance']), key
+    # Unrelated reported data remains usable while these specific inputs await review.
+    assert result['revenue']['state']=='available' and result['revenue']['value']==100
+
+
+def test_ordinary_missing_inputs_still_allow_distinct_profile_observations():
+    from company_metrics import metric_observations
+    value=bundle()
+    for row in value['annual']['income']:
+        row['values'].pop('grossProfit', None)
+        row['values'].pop('netIncome', None)
+    info={'financialCurrency':'USD','totalRevenue':100,'grossMargins':.4,
+          'returnOnEquity':.15,'returnOnAssets':.1}
+    result=metric_observations('TEST',info,value)
+    for key in ('grossMargins','returnOnEquity','returnOnAssets'):
+        assert result[key]['state']=='available' and result[key]['value']==info[key]
+        assert result[key]['source']=='Yahoo Finance profile'

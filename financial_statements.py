@@ -261,6 +261,14 @@ def observations(bundle):
 
     def derived(key, inputs, fn, formula, *, denominator=None, same_basis=True):
         rows = [result.get(name, {}) for name in inputs]
+        provenance = combine_provenance(*(r.get('provenance', []) for r in rows))
+        if unresolved_sec_provenance(bundle, provenance):
+            # An omitted derived row would let profile fallbacks reintroduce a
+            # ratio whose reported input is explicitly awaiting source review.
+            lead = next(r for r in rows if unresolved_sec_provenance(bundle, r.get('provenance', [])))
+            put(key, None, lead.get('basis'), lead.get('end'), formula,
+                period_ends=lead.get('period_ends'), provenance=provenance)
+            return
         if not all(r.get('state') == 'available' and r.get('value') is not None for r in rows):
             return
         if len({r['currency'] for r in rows}) != 1 or (same_basis and len({(r['basis'], r['end']) for r in rows}) != 1):
@@ -268,7 +276,6 @@ def observations(bundle):
         if same_basis and len({tuple(r.get('period_ends', [])) for r in rows}) != 1:
             return
         values = [r['value'] for r in rows]
-        provenance = combine_provenance(*(r.get('provenance', []) for r in rows))
         if not compatible_provenance(provenance):
             return
         if denominator is not None and values[denominator] <= 0:
@@ -343,13 +350,17 @@ def observations(bundle):
     flow_end, basis = income.get('end'), income.get('basis')
     for key, capital in [('returnOnEquity', 'stockholdersEquity'), ('returnOnAssets', 'totalAssets')]:
         start, finish = number(opening.get(capital)), number(closing.get(capital))
-        if income.get('end') == flow_end and income.get('basis') == basis and income.get('value') is not None and start is not None and finish is not None:
+        capital_provenance = combine_provenance(income.get('provenance', []),
+            field_provenance(opening_record, capital, bundle), field_provenance(closing_record, capital, bundle))
+        if unresolved_sec_provenance(bundle, capital_provenance):
+            put(key, None, basis, flow_end, f'Net income / average opening and closing {capital}',
+                period_ends=income.get('period_ends'), provenance=capital_provenance)
+        elif income.get('end') == flow_end and income.get('basis') == basis and income.get('value') is not None and start is not None and finish is not None:
             good = start > 0 and finish > 0
             put(key, income['value']/((start+finish)/2) if good else None, basis, flow_end,
                 f'Net income / average opening and closing {capital}',
                 'available' if good else 'not_meaningful', '' if good else 'Opening or closing capital is non-positive', income.get('period_ends'),
-                combine_provenance(income.get('provenance', []), field_provenance(opening_record, capital, bundle),
-                                   field_provenance(closing_record, capital, bundle)))
+                capital_provenance)
     capital_fields = ('stockholdersEquity', 'totalDebt', 'cash')
     operating = result.get('operatingIncome', {})
     opening_record, closing_record = capital_pair(operating)
@@ -358,7 +369,11 @@ def observations(bundle):
     pretax, tax = result.get('pretaxIncome', {}), result.get('taxProvision', {})
     operating_provenance = combine_provenance(*(r.get('provenance', []) for r in (operating, pretax, tax)),
                                              *(field_provenance(r, k, bundle) for r in (opening_record, closing_record) for k in capital_fields))
-    if (flow_end and all(number(r.get(k)) is not None for r in (opening, closing) for k in capital_fields)
+    if unresolved_sec_provenance(bundle, operating_provenance):
+        put('roic', None, basis, flow_end,
+            'Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)',
+            period_ends=operating.get('period_ends'), provenance=operating_provenance)
+    elif (flow_end and all(number(r.get(k)) is not None for r in (opening, closing) for k in capital_fields)
             and all(r.get('end') == flow_end and r.get('basis') == basis and r.get('value') is not None for r in (operating, pretax, tax))
             and len({tuple(r.get('period_ends', [])) for r in (operating, pretax, tax)}) == 1
             and compatible_provenance(operating_provenance)):
