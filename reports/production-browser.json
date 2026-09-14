@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-14T07:53:17.318889+00:00",
-  "run_id": "34818493878",
+  "recorded_at": "2026-09-14T07:53:23.555957+00:00",
+  "run_id": "34818652164",
   "source_sha": "a539c30cae7b4e1ec955c7a3029f6e84f2d4aa9f",
   "result": "failure",
   "error": "Traceback (most recent call last):\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/verify_workspace.py\", line 48, in main\n    production_smoke.run()\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/production_smoke.py\", line 315, in run\n    app=wait_for_release(page,version)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/production_smoke.py\", line 66, in wait_for_release\n    raise RuntimeError('Production did not load the expected single-page release')\nRuntimeError: Production did not load the expected single-page release\n",
