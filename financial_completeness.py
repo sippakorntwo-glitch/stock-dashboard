@@ -1,5 +1,6 @@
 """Preserve dated observations during incomplete provider refreshes."""
 from copy import deepcopy
+from reviewed_financials import apply_reviewed
 from financial_statements import (SCHEMA, number, observations, INCOME_KEYS,
                                   CASHFLOW_KEYS, BALANCE_FIELDS)
 
@@ -33,7 +34,9 @@ def preserve_refresh(previous, incoming):
     rejected instead of silently combining two reporting currencies.
     """
     if not previous:
-        return deepcopy(incoming)
+        merged = apply_reviewed(deepcopy(incoming))
+        merged['observations'] = observations(merged)
+        return merged
     if (previous.get('schema') != SCHEMA or incoming.get('schema') != SCHEMA
             or previous.get('ticker') != incoming.get('ticker')
             or not incoming.get('currency')
@@ -84,5 +87,6 @@ def preserve_refresh(previous, incoming):
                 records.append(row)
             merged[period][kind] = records
     merged['retained_observations'] = retained
+    merged = apply_reviewed(merged)
     merged['observations'] = observations(merged)
     return merged

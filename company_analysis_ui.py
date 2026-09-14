@@ -4,6 +4,7 @@ from __future__ import annotations
 from html import escape
 import json
 from urllib.parse import urlsplit
+from reviewed_financials import apply_reviewed, ISSUER_SOURCE, AARD_RELEASE_URL
 import pandas as pd
 import streamlit as st
 from company_metrics import BY_KEY, GROUPS, REFERENCE_URLS, NONNEGATIVE, Metric
@@ -67,6 +68,7 @@ def analysis_html(rows, ticker, *, group=None):
 
 
 def statement_table(bundle, kind):
+    bundle = apply_reviewed(bundle)
     keys = INCOME_KEYS if kind == 'income' else CASHFLOW_KEYS if kind == 'cashflow' else tuple(BALANCE_FIELDS)
     aliases = {'capitalExpenditure': 'capex', 'repurchaseOfCapitalStock': 'buybacks', 'cashDividendsPaid': 'dividendsPaid'}
     records = bundle.get('annual', {}).get(kind, [])[:4]
@@ -116,8 +118,24 @@ def _sec_badge(origins):
     return ' <abbr tabindex="0" title="'+escape(detail, quote=True)+'">SEC</abbr>'
 
 
+def _issuer_badge(origins):
+    origin = next((p for p in origins if p.get('source') == ISSUER_SOURCE), None)
+    if not origin:
+        return ''
+    original = origin.get('original_observation', {})
+    detail = ('รายงานบริษัท · เผยแพร่ '+str(origin.get('published', ''))+
+              ' · หนี้สินรวมตามรายงานบริษัทแสดงแยกจากหุ้นบุริมสิทธิแปลงสภาพ '+
+              str(origin.get('convertible_preferred_stock', ''))+' USD'+
+              ' · ยอดเดิมจากผู้ให้ข้อมูล '+str(original.get('value', ''))+' USD')
+    attrs = ' title="'+escape(detail, quote=True)+'" aria-label="'+escape(detail, quote=True)+'"'
+    if origin.get('url') == AARD_RELEASE_URL:
+        return ' <a href="'+escape(AARD_RELEASE_URL, quote=True)+'" target="_blank" rel="noopener noreferrer"'+attrs+'>รายงานบริษัท</a>'
+    return ' <abbr tabindex="0"'+attrs+'>รายงานบริษัท</abbr>'
+
+
 def export_statements(bundle):
     """Exact raw cells, including original cash-outflow signs and filing provenance."""
+    bundle = apply_reviewed(bundle)
     rows = []
     for period in ('annual', 'quarterly'):
         for kind, keys in (('income', INCOME_KEYS), ('balance', tuple(BALANCE_FIELDS)), ('cashflow', CASHFLOW_KEYS)):
@@ -147,6 +165,7 @@ def _conflict_badge(conflicts):
 
 def reconciliation_html(bundle):
     """Show both reported amounts and their filing; do not resolve a definition by fiat."""
+    bundle = apply_reviewed(bundle)
     body = []
     for period in ('annual', 'quarterly'):
         for kind in ('income', 'balance', 'cashflow'):
@@ -183,11 +202,13 @@ def history_html(rows, title, *, kind=None):
         first = '<th scope="row"><abbr tabindex="0" title="'+escape(row['_help'],quote=True)+'" aria-label="'+escape(row['Metric']+': '+row['_help'],quote=True)+'">'+escape(row['Metric'])+' <small>ⓘ</small></abbr></th>'
         body.append('<tr data-statement-field="'+escape(row.get('_field', ''), quote=True)+'">'+first+''.join(
             '<td>'+escape(str(row[c]))+_sec_badge(row.get('_provenance', {}).get(c, []))+
+            _issuer_badge(row.get('_provenance', {}).get(c, []))+
             _conflict_badge(row.get('_conflicts', {}).get(c, []))+'</td>' for c in cols[1:])+'</tr>')
     return CSS+'<section class="company-analysis" data-statement="'+escape(kind or '', quote=True)+'"><h4>'+escape(title)+'</h4><div class="company-table-scroll"><table class="company-table"><thead><tr>'+heads+'</tr></thead><tbody>'+''.join(body)+'</tbody></table></div></section>'
 
 
 def render_company_research(ticker, info, bundle=None):
+    bundle = apply_reviewed(bundle)
     st.subheader('วิเคราะห์ข้อมูลการเงินบริษัท', anchor='company-financial-analysis')
     st.caption('ช่วงอ้างอิงเป็นตัวอย่างเพื่อช่วยเปรียบเทียบ ไม่ใช่ค่าเฉลี่ยอุตสาหกรรม มูลค่ายุติธรรม หรือสัญญาณซื้อขาย ระบุหน่วยจำนวนเงิน ร้อยละ และเท่าอย่างชัดเจน พร้อมแยกปีบัญชี (FY) ออกจากข้อมูลย้อนหลัง 12 เดือน (TTM)')
     st.caption('หน่วยย่อ: M = ล้าน · B = พันล้าน · T = ล้านล้าน โดยคงสกุลเงินที่ระบุ เช่น USD ไม่ได้แปลงเป็นเงินบาท วันที่ของงบแสดงเป็นปี ค.ศ.')
@@ -210,7 +231,7 @@ def render_company_research(ticker, info, bundle=None):
         with st.expander('งบการเงินย้อนหลัง — สูงสุด 4 ปีบัญชี', expanded=True):
             st.caption('วันที่ในตารางคือวันสิ้นปีบัญชี (ค.ศ.) ตัวเลขเป็นข้อมูลในงบที่รายงาน ไม่ใช่ผลตอบแทนจากราคาตลาด คำอธิบายอยู่ที่ชื่อรายการ และเลื่อนตารางแนวนอนได้เพื่อดูทุกปี')
             if any(r.get('field_provenance') for records in bundle.get('annual', {}).values() for r in records):
-                st.caption('ป้าย SEC ระบุรายการที่เติมจากเอกสาร SEC EDGAR โดยกดเพื่อเปิดเอกสารต้นทางได้ รายการที่แหล่งข้อมูลไม่รายงานยังคงแสดงว่าไม่มีข้อมูล')
+                st.caption('ป้าย SEC หรือรายงานบริษัทระบุแหล่งข้อมูลของรายการ โดยกดเพื่อเปิดเอกสารต้นทางได้ รายการที่แหล่งข้อมูลไม่รายงานยังคงแสดงว่าไม่มีข้อมูล')
             for kind, title in [('income', 'งบกำไรขาดทุน'), ('balance', 'งบฐานะการเงิน'), ('cashflow', 'งบกระแสเงินสด')]:
                 if bundle.get('annual', {}).get(kind):
                     st.html(history_html(statement_table(bundle, kind), title, kind=kind))

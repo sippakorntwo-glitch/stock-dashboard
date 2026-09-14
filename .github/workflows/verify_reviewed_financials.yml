@@ -1,0 +1,38 @@
+name: Verify reviewed issuer financial facts
+on:
+  pull_request:
+    branches: [main]
+    paths: [reviewed_financials.py, reviewed_financials_smoke.py, financial_statements.py, .github/workflows/verify_reviewed_financials.yml]
+  push:
+    branches: [main]
+    paths: [reviewed_financials.py, reviewed_financials_smoke.py, .github/workflows/verify_reviewed_financials.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: toJSON(github.event.repository.private) == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test exact historical correction and unchanged source guards
+        run: |
+          python -m pip install -q -r requirements-dev.txt
+          python -m pytest -q tests/test_reviewed_financials.py tests/test_financial_provenance.py
+      - name: Verify actual AARD prepared observations without SEC access
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python reviewed_financials_smoke.py
+      - name: Preserve source identity, original amount and issuer provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-issuer-financial-check
+          path: work/reviewed-financials-live-smoke.json
+          retention-days: 14

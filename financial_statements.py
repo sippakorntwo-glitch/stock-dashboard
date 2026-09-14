@@ -10,6 +10,7 @@ from datetime import date, datetime, timezone
 from copy import deepcopy
 import json
 import math
+from reviewed_financials import apply_reviewed
 
 SCHEMA = 1
 SOURCE = 'Yahoo Finance financial statements'
@@ -182,6 +183,7 @@ def observations(bundle):
     """Choose a common TTM window, else a common fiscal year, for flow ratios."""
     if not isinstance(bundle, dict) or bundle.get('schema') != SCHEMA:
         return {}
+    bundle = apply_reviewed(bundle)
     currency = bundle.get('currency') or 'Currency not reported'
     result = {}
 
@@ -406,5 +408,6 @@ def collect(ticker, info, provider=None, *, now=None):
                 if any(s in str(exc).lower() for s in ('429', 'rate limit', 'too many')):
                     raise
                 bundle['errors'].append({'statement': f'{period}.{kind}', 'error': type(exc).__name__})
+    bundle = apply_reviewed(bundle)
     bundle['observations'] = observations(bundle)
     return bundle

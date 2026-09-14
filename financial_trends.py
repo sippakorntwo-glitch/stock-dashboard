@@ -5,6 +5,8 @@ EPS/share counts, or inferred issuance. Each chart and export uses these rows.
 """
 from __future__ import annotations
 
+from reviewed_financials import apply_reviewed
+
 from datetime import datetime, timezone
 import json
 from financial_statements import (SCHEMA, SOURCE, day, number, consecutive_quarters,
@@ -206,6 +208,7 @@ def build_financial_trends(ticker, info, bundle, *, today=None):
         return {**result, 'state': 'not_applicable', 'reason': 'กองทุนใช้การวิเคราะห์เฉพาะกองทุนแทนงบบริษัท'}
     if not isinstance(bundle, dict) or bundle.get('schema') != SCHEMA or bundle.get('ticker') != ticker:
         return {**result, 'state': 'missing_inputs', 'reason': 'ยังไม่มีชุดงบที่ตรวจสอบรหัสหุ้นและรูปแบบได้'}
+    bundle = apply_reviewed(bundle)
     currency = bundle.get('currency')
     if not isinstance(currency, str) or not currency.strip():
         return {**result, 'state': 'missing_inputs', 'reason': 'ยังไม่มีสกุลเงินงบที่รายงาน จึงไม่แสดงจำนวนเงินหรือคำนวณรวม'}

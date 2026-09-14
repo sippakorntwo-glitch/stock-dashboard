@@ -36,6 +36,23 @@ same reporting context; its revision records the prior amount and provenance.
 Ambiguous SEC revisions are withheld from calculations while their original
 raw amounts remain inspectable. Recovered cells stay in the refresh queue.
 
+One reviewed historical exception is recorded in `reviewed_financials.py`.
+The [Aardvark issuer release published March 23, 2026](https://ir.aardvarktherapeutics.com/news-releases/news-release-details/aardvark-therapeutics-reports-fourth-quarter-and-full-year-2025),
+checked September 14, 2026, reports FY2024 assets of USD 77,507,000,
+liabilities of USD 5,394,000, convertible preferred stock of USD 126,756,000,
+and stockholders' deficit of USD 54,643,000. The observed Yahoo liabilities
+amount of USD 132,150,000 combines the first two financing categories.
+Only AARD, USD, the December 31, 2024 balance date, and that exact assets /
+equity / original-liabilities tuple qualify for the reviewed correction.
+The issuer-reported liabilities replace that one cell, while its original
+provider amount, retrieval date, preferred-stock explanation and issuer link
+remain in per-cell provenance and exports. Existing prepared history and
+subsequent matching refreshes use the same correction. A changed source tuple
+is never overwritten by this rule; other periods, EPS and missing revenue or
+gross-profit cells are unaffected. No issuer request occurs in the page.
+The read-only `reviewed_financials_smoke.py` checks an authentic, checksum-verified
+AARD shard and fails to claim success if the source tuple now requires review.
+
 Collection is bounded, uses the shared SEC access circuit, and runs outside the
 interactive page. A denial or rate limit stops requests and records a 24-hour
 pause. The source check never bypasses that pause. Prepared snapshots publish
