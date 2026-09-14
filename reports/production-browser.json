@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-14T12:21:35.871343+00:00",
-  "run_id": "34838644308",
+  "recorded_at": "2026-09-14T13:05:25.368115+00:00",
+  "run_id": "34840738215",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-14.36",
@@ -639,7 +639,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260914T113732Z-889cc1bc",
+      "source_generation": "generations/20260914T123848Z-f32bd2d9",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -709,7 +709,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260914T113732Z-889cc1bc"
+            "source_generation": "generations/20260914T123848Z-f32bd2d9"
           }
         },
         {
@@ -750,7 +750,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260914T113732Z-889cc1bc"
+            "source_generation": "generations/20260914T123848Z-f32bd2d9"
           }
         },
         {
@@ -777,7 +777,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260914T113732Z-889cc1bc",
+      "source_generation": "generations/20260914T123848Z-f32bd2d9",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -840,7 +840,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-14T12:07:13.659423+00:00",
+      "verified_at": "2026-09-14T12:57:09.197020+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -902,11 +902,10 @@
       "QQQI_chart_bars": 657,
       "auto_refresh_verified": {
         "session": "pre",
-        "state": "budget",
+        "state": "scheduled",
         "effective_seconds": 30.0,
-        "next_due": 1789388242.6581132,
-        "second_observation": false,
-        "reason": "provider session or request budget requires a conservative wait"
+        "next_due": 1789390887.8432958,
+        "second_observation": true
       },
       "quote_controls": {
         "requested_seconds": [
@@ -915,26 +914,26 @@
           30
         ],
         "initial": {
-          "state": "budget",
+          "state": "updating",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1789388242.6581132",
-          "busy": "false",
+          "nextDue": "1789388309.488676",
+          "busy": "true",
           "session": "pre"
         },
         "sixty_seconds": {
-          "state": "budget",
+          "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "60",
-          "nextDue": "1789388269.4557726",
+          "nextDue": "1789390917.8432958",
           "busy": "false",
           "session": "pre"
         },
         "resumed": {
-          "state": "budget",
+          "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1789388242.6581132",
+          "nextDue": "1789390922.7682874",
           "busy": "false",
           "session": "pre"
         },
@@ -942,13 +941,13 @@
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260914T113732Z-889cc1bc",
-        "generation_after": "generations/20260914T113732Z-889cc1bc"
+        "generation_before": "generations/20260914T123848Z-f32bd2d9",
+        "generation_after": "generations/20260914T123848Z-f32bd2d9"
       },
       "minute_price": {
-        "price": 53.93,
-        "bar_time": "2026-09-14T12:16:44+00:00",
-        "fetched_at": "2026-09-14T12:16:49.455305+00:00",
+        "price": 53.68,
+        "bar_time": "2026-09-14T13:01:27+00:00",
+        "fetched_at": "2026-09-14T13:01:32.767804+00:00",
         "state": "recent"
       },
       "theme": {
@@ -963,8 +962,8 @@
             "box": {
               "left": 48.390625,
               "right": 119.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 535.296875,
+              "bottom": 575.296875,
               "width": 390,
               "height": 844
             }
@@ -974,8 +973,8 @@
             "box": {
               "left": 135.390625,
               "right": 215.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 535.296875,
+              "bottom": 575.296875,
               "width": 390,
               "height": 844
             }
