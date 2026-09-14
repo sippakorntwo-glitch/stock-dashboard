@@ -7,19 +7,19 @@ from dashboard_runtime import DashboardCache
 
 
 def populated(ticker='OLD'):
-    return {'schema':1,'ticker':ticker,'currency':'USD','errors':[],
+    return {'schema':1,'collection_revision':2,'ticker':ticker,'currency':'USD','errors':[],
             'annual':{'income':[{'end':'2025-12-31','values':{'revenue':100}}]},
             'quarterly':{},'observations':{'revenue':{'value':100,'basis':'FY'}}}
 
 
-def test_backfill_skips_existing_statements_even_when_their_refresh_is_due():
+def test_backfill_retries_due_incomplete_statements_but_honors_currency_and_cooldown():
     names=('OLD','NEW','RETRY','NOCCY','FUND')
     profiles={'info:'+t:({'financialCurrency':'USD'}, {}) for t in names}
     profiles['info:NOCCY']=({}, {})
     statements={'financials:OLD':(populated(),{'fetched_at':'2025-01-01T00:00:00Z','available':True})}
     attempts={'attempt:financials:RETRY':({}, {'retry_after':'2026-10-01T00:00:00Z'})}
     now=datetime(2026,9,13,tzinfo=timezone.utc).timestamp()
-    assert job.due_symbols(names,profiles,statements,attempts,{'FUND'},now=now,only_missing=True)==['NEW']
+    assert job.due_symbols(names,profiles,statements,attempts,{'FUND'},now=now,only_missing=True)==['NEW','OLD']
     assert job.due_symbols(names,profiles,statements,attempts,{'FUND'},now=now)==['NEW','OLD']
 
 
@@ -52,7 +52,9 @@ def test_partial_refresh_does_not_replace_populated_statements(tmp_path,monkeypa
     monkeypatch.setattr(job.time,'sleep',lambda _:None)
     report=job.collect_batch(cache,('AAPL',),set())
     assert report['updated']==0 and report['partial_preserved']==['AAPL']
-    assert cache.get('financials:AAPL',request_remote=False)[0]==previous
+    stored=cache.get('financials:AAPL',request_remote=False)[0]
+    assert stored['annual']['income'][0]['values']==previous['annual']['income'][0]['values']
+    assert stored['errors']==partial['errors']
 
 
 def test_audit_explains_currency_blockers_separately_from_pending_and_funds(tmp_path):
