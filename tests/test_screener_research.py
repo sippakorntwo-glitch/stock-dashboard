@@ -157,6 +157,44 @@ def test_column_config_preserves_percent_points_annualized_headers_and_source_un
 
 
 @real_streamlit
+def test_restored_columns_keep_saved_order_without_default_state_warning(monkeypatch, caplog):
+    from streamlit.testing.v1 import AppTest
+    import streamlit.elements.lib.policies as policies
+    monkeypatch.setattr(policies, '_shown_default_value_warning', False)
+    monkeypatch.setattr(policies._LOGGER, 'propagate', True)
+    at = AppTest.from_string('''
+import pandas as pd
+import streamlit as st
+from screener_view import render_result_columns
+from filters_ui import filter_universe
+frame = pd.DataFrame([{'Ticker':'A', 'Security_Name':'Fixture', 'ROE':15., 'Trailing_PE':12.,
+    'Asset_Type':'Common Stock', 'Industry':'Software', 'Currency':'USD', 'Status':'PASS',
+    'Price_AsOf':pd.Timestamp.now('UTC').date().isoformat(),
+    'Profile_AsOf':pd.Timestamp.now('UTC').isoformat()}])
+frame = filter_universe(frame)
+fields = render_result_columns(frame)
+st.dataframe(frame.reindex(columns=fields))
+''', default_timeout=30)
+    at.session_state['result_view_preset'] = 'custom'
+    at.session_state['result_custom_columns'] = ['ROE', 'Trailing_PE']
+    at.session_state['screen_fresh'] = True
+    at.session_state['screen_profile_fresh'] = True
+    at.session_state['screen_price_age'] = 12
+    at.session_state['screen_profile_age'] = 21
+    at.run()
+    assert not at.exception, str(at.exception)
+    assert not at.warning, str(at.warning)
+    assert 'created with a default value' not in caplog.text
+    assert at.multiselect(key='result_custom_columns').value == ['ROE', 'Trailing_PE']
+    assert at.number_input(key='screen_price_age').value == 12
+    assert at.number_input(key='screen_profile_age').value == 21
+    columns = at.dataframe[0].value.columns.tolist()
+    assert columns[:2] == ['Ticker', 'Security_Name']
+    assert columns.index('ROE') < columns.index('Trailing_PE')
+    assert {'Price_AsOf', 'Profile_AsOf'} <= set(columns)
+
+
+@real_streamlit
 def test_live_filter_removal_and_column_choices_keep_selected_stock_and_numeric_values():
     from streamlit.testing.v1 import AppTest
     script = '''

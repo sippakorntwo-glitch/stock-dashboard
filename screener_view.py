@@ -102,9 +102,11 @@ def render_result_columns(work):
                 st.session_state['result_custom_columns'] = valid
         def use_custom():
             st.session_state['result_view_preset'] = 'custom'
+        defaults = {} if 'result_custom_columns' in st.session_state else {
+            'default': [f for f in TABLE_FIELDS if f not in IDENTITY_FIELDS]}
         selected = st.multiselect('คอลัมน์ตามลำดับที่เลือก', options,
-            default=[f for f in TABLE_FIELDS if f not in IDENTITY_FIELDS],
             format_func=lambda f: labels.get(f, f), key='result_custom_columns', on_change=use_custom,
+            **defaults,
             help='เลือกใหม่ตามลำดับที่ต้องการ ชื่อหุ้นและชื่อบริษัทอยู่หน้าเสมอ เกณฑ์ที่ใช้กรองและหน่วยอ้างอิงจะยังแสดง')
     active = work.attrs.get('active_filter_fields', [])
     fields = result_fields(preset, active, selected)

@@ -19,7 +19,7 @@ def reference_for(ticker,manifest):
 
 
 def verify_asset_reference(page,app):
-    from production_smoke import no_exception,wait_page_ready,chart_for_symbol,select_manual_ticker
+    from production_smoke import no_exception,wait_page_ready,chart_for_symbol,select_manual_ticker,open_research_expander
     from clean_ui_smoke import verify_clean_presentation
     manifest,_=public_summary()
     field=app.locator('[data-testid="stSidebar"]').get_by_role('textbox',name='Ticker สำหรับวิเคราะห์',exact=True)
@@ -43,10 +43,11 @@ def verify_asset_reference(page,app):
     field=select_manual_ticker(app,'AAAU')
     wait_page_ready(app,'AAAU');chart_for_symbol(page,app,'AAAU')
     expect(field).to_have_value('AAAU')
+    open_research_expander(app,'เปิดรายละเอียดพื้นฐานและปันผล')
+    open_research_expander(app,'เปิดกราฟและแผนซื้อขาย')
     section=app.locator('.st-key-research_fundamentals')
     expect(section.get_by_text('AAAU holds physical gold',exact=False)).to_be_visible()
-    analysis=app.locator('.st-key-research_technical [data-testid="stExpander"]').filter(
-        has=app.get_by_text('ตารางวิเคราะห์ 360°',exact=True))
+    analysis=app.get_by_text('ตารางวิเคราะห์ 360°',exact=True).locator('xpath=ancestor::details[1]')
     technical=analysis.locator('.workspace-help-table')
     if not technical.is_visible():
         analysis.locator('summary').first.click()
@@ -58,7 +59,7 @@ def verify_asset_reference(page,app):
         expect(row).to_contain_text('N/A — ไม่ใช้กับหลักทรัพย์ประเภทนี้')
     fundrow=section.locator('.workspace-help-table tr').filter(has=app.get_by_text('Portfolio P/E',exact=False)).first
     expect(fundrow).to_contain_text('N/A — Not applicable')
-    section.get_by_text('Official sources & filed financials',exact=True).click()
+    open_research_expander(app,'Official sources & filed financials')
     expect(section.get_by_role('link',name='Gold trust annual report',exact=True)).to_have_attribute('href',
         'https://www.sec.gov/Archives/edgar/data/1708646/000119312526067559/d56933d10k.htm')
     expect(section.get_by_text('Annual sponsor fee: 0.18%',exact=False)).to_be_visible()
@@ -68,11 +69,11 @@ def verify_asset_reference(page,app):
     for ticker in ('AAPL','MSFT'):
         field=select_manual_ticker(app,ticker);wait_page_ready(app,ticker)
         expect(field).to_have_value(ticker)
+        open_research_expander(app,'เปิดรายละเอียดพื้นฐานและปันผล')
         section=app.locator('.st-key-research_fundamentals')
         reference=reference_for(ticker,manifest)
-        expander=section.locator('[data-testid="stExpander"]').filter(has=app.get_by_text('Official sources & filed financials',exact=True)).first
-        summary=expander.locator('summary').first
-        if not expander.locator('[data-testid="stDataFrame"]').is_visible():summary.click()
+        expander=section.get_by_text('Official sources & filed financials',exact=True).locator('xpath=ancestor::details[1]')
+        open_research_expander(app,'Official sources & filed financials')
         link=expander.get_by_role('link',name='SEC filings',exact=True)
         expect(link).to_be_visible()
         assert link.get_attribute('href').startswith('https://www.sec.gov/')

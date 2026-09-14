@@ -248,9 +248,11 @@ def filter_universe(frame):
                 categories[field]=_category(frame,field,cols[i%2])
             lo,hi=st.columns(2)
             fresh=lo.checkbox('จำกัดอายุข้อมูลราคา',key='screen_fresh')
-            max_price_age=lo.number_input('อายุข้อมูลราคาสูงสุด (วันปฏิทิน)',min_value=0,max_value=3650,value=4,key='screen_price_age') if fresh else None
+            price_default={} if 'screen_price_age' in st.session_state else {'value':4}
+            max_price_age=lo.number_input('อายุข้อมูลราคาสูงสุด (วันปฏิทิน)',min_value=0,max_value=3650,key='screen_price_age',**price_default) if fresh else None
             profiles_fresh=hi.checkbox('จำกัดอายุข้อมูลพื้นฐาน',key='screen_profile_fresh')
-            max_profile_age=hi.number_input('อายุข้อมูลพื้นฐานสูงสุด (วัน)',min_value=0,max_value=3650,value=14,key='screen_profile_age') if profiles_fresh else None
+            profile_default={} if 'screen_profile_age' in st.session_state else {'value':14}
+            max_profile_age=hi.number_input('อายุข้อมูลพื้นฐานสูงสุด (วัน)',min_value=0,max_value=3650,key='screen_profile_age',**profile_default) if profiles_fresh else None
             favourites=st.checkbox('เฉพาะรายการโปรดในเซสชันนี้',key='screen_favourites')
             st.caption('อายุข้อมูลนับวันปฏิทิน รวมเสาร์–อาทิตย์และวันหยุด ตัวกรองวันที่ต้องมีวันที่จริงที่ไม่ใช่อนาคต')
         include_missing=st.checkbox('รวมรายการที่ไม่ได้รายงานค่าตัวเลขที่กำลังกรอง',value=False,key='screen_missing',
