@@ -1,6 +1,8 @@
 """Interaction checks for the research release, used by CI and production gates."""
 from __future__ import annotations
 
+import json
+
 from playwright.sync_api import expect
 
 
@@ -56,6 +58,13 @@ def verify_research_features(page, app, ticker):
             component = frame
             break
     assert component is not None, 'Private workspace component was not rendered'
+    title = component.frame_element().get_attribute('title')
+    assert title, 'Private workspace iframe has no stable title'
+    selector = 'iframe[title=' + json.dumps(title) + ']'
+    expect(app.locator(selector)).to_have_count(1)
+    # Loading a workspace intentionally reruns the app and can replace its
+    # iframe. Resolve the current iframe for each action, not a retained Frame.
+    component = app.frame_locator(selector)
     expect(component.locator('#save')).to_be_enabled(timeout=30000)
     name='CI research verification'
     component.locator('#workspace-name').fill(name)
@@ -70,9 +79,12 @@ def verify_research_features(page, app, ticker):
     wait_page_ready(app,ticker,old_query)
     expect(query).to_have_value(old_query)
     report['private_workspace_restores_filters'] = True
+    expect(component.get_by_role('option', name=name, exact=True)).to_have_count(1)
+    expect(component.locator('#workspace-list')).to_have_value(name)
     # Remove only the record created by this isolated verification browser.
     page.once('dialog',lambda dialog:dialog.accept())
     component.locator('#delete').click()
     expect(component.locator('#status')).to_contain_text('ลบชุดที่เลือกแล้ว')
+    expect(component.get_by_role('option', name=name, exact=True)).to_have_count(0)
     no_exception(app)
     return report
