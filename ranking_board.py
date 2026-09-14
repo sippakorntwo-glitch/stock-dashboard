@@ -4,6 +4,9 @@ import json
 import os
 from pathlib import Path
 import re
+import threading
+import time
+from copy import deepcopy
 import requests
 import streamlit as st
 import dashboard_runtime as a
@@ -33,8 +36,10 @@ def validate_payload(data):
     return data
 
 
-@st.cache_data(ttl=60,show_spinner=False)
-def read_ranking(repo,local_file=''):
+READ_ERROR = 'อ่านอันดับรอบใหม่ไม่ได้ — คงข้อมูลเดิมและเวลาจริงไว้'
+
+
+def _fetch_ranking(repo,local_file=''):
     try:
         if local_file: data=json.loads(Path(local_file).read_text(encoding='utf-8'))
         else:
@@ -53,7 +58,58 @@ def read_ranking(repo,local_file=''):
                     data=json.loads(b''.join(parts))
         return validate_payload(data),''
     except (requests.RequestException,ValueError,OSError,TypeError,KeyError):
-        return None,'อ่านอันดับรอบใหม่ไม่ได้ — คงข้อมูลเดิมและเวลาจริงไว้'
+        return None,READ_ERROR
+
+
+@st.cache_data(ttl=60,show_spinner=False)
+def read_ranking(repo,local_file=''):
+    """Synchronous reader retained for local files and non-UI callers."""
+    return _fetch_ranking(repo,local_file)
+
+
+class RankingReader:
+    """One coalesced download at a time; UI reads never wait for the network."""
+    def __init__(self,repo,*,fetcher=None,clock=time.monotonic):
+        self.repo=checked_repo(repo)
+        self.fetcher=fetcher or _fetch_ranking
+        self.clock=clock
+        self.lock=threading.Lock()
+        self.thread=None
+        self.busy=False
+        self.next_check=0.
+        self.payload=None
+        self.error=''
+
+    def read(self):
+        with self.lock:
+            if not self.busy and self.clock()>=self.next_check:
+                self.busy=True
+                self.thread=threading.Thread(target=self._run,name='published-ranking',daemon=True)
+                self.thread.start()
+            return deepcopy(self.payload),self.error,self.busy
+
+    def _run(self):
+        try:
+            payload,error=self.fetcher(self.repo)
+            if payload is not None:payload=validate_payload(payload)
+        except Exception:
+            # A failed worker must release its lease and retain the last good
+            # publication. Never send exception details or tokens to the page.
+            payload,error=None,READ_ERROR
+        with self.lock:
+            if payload is not None:
+                if self.payload is None or seconds(payload['computed_at'])>=seconds(self.payload['computed_at']):
+                    self.payload=deepcopy(payload)
+                else:
+                    error='อันดับที่ได้รับเก่ากว่ารอบที่มีอยู่ — คงข้อมูลเดิมและเวลาจริงไว้'
+            self.error=error
+            self.next_check=self.clock()+60
+            self.busy=False
+
+
+@st.cache_resource(max_entries=2,show_spinner=False)
+def ranking_reader(version,repo):
+    return RankingReader(repo)
 
 
 def consume_selection(cache):
@@ -90,12 +146,18 @@ def pick_buttons(rows,entry):
         st.button(label,key='ranking_pick_'+row['ticker'],width='stretch',on_click=queue_selection,args=(row,))
 
 
-@st.fragment(run_every=60)
+@st.fragment(run_every=5)
 def render_board(cache):
     if st.session_state.get('_ranking_pending'):st.rerun()
     config=a.settings() or {};repo=config.get('DASHBOARD_DATA_REPO') or a.DEFAULT_REPO
     local=os.environ.get('DASHBOARD_RANKING_FILE','')
-    payload,error=read_ranking(repo,local)
+    # Local fixture/file reads remain immediate. Remote work runs outside the
+    # Streamlit render thread, including the initial request and cache expiry.
+    if local:
+        payload,error=read_ranking(repo,local)
+        busy=False
+    else:
+        payload,error,busy=ranking_reader(a.APP_VERSION,repo).read()
     key='ranking:last-good:'+repo+':'+local
     previous,_=cache.get(key,request_remote=False)
     if payload:
@@ -108,8 +170,10 @@ def render_board(cache):
     with st.container(border=True,height=560,key='ranking_board'):
         st.subheader('Top 10 · จังหวะเข้าซื้อ')
         st.caption('ผ่านโมเดล ณ เวลาตรวจ ไม่ใช่การรับประกันกำไร')
+        if busy:st.caption('กำลังตรวจอันดับที่เผยแพร่ · ใช้ตัวกรองและดูหุ้นต่อได้')
         if not payload:
-            st.info('ยังไม่มีอันดับที่เผยแพร่สำเร็จ — ไม่แสดงรายชื่อสุ่ม')
+            if error:st.warning(error)
+            st.info('ยังไม่มีอันดับที่อ่านสำเร็จ — จะแสดงเมื่อได้รับข้อมูลจริง')
             st.caption('รอบคำนวณทุก 30 นาที · ยังรอข้อมูลจริง');return
         now=utc();counts=payload['counts']
         entries,watch=split_entries(payload,now)
@@ -125,7 +189,7 @@ def render_board(cache):
         with st.expander('เฝ้าดู / รอยืนยัน — ยังไม่ใช่จุดซื้อ',expanded=not entries):
             if watch:pick_buttons(watch,False)
             else:st.caption('ไม่มีรายการเฝ้าดูเพิ่มเติมในอันดับรอบนี้')
-        st.caption('คำนวณทุก 30 นาที · หน้าเว็บตรวจสถานะทุก 1 นาที')
+        st.caption('คำนวณทุก 30 นาที · ตรวจชุดอันดับใหม่ไม่ถี่กว่า 1 นาที')
         with st.expander('เหตุผล เงื่อนไข และอายุข้อมูล'):
             st.write('ตรวจทั้งทะเบียนจาก snapshot ไม่ขึ้นกับตัวกรองส่วนบุคคล; ราคา ≥1 USD สภาพคล่องประมาณ ≥1 ล้าน USD/วัน ประวัติ ≥200 แท่ง ราคาไม่เกิน 4 วัน และตัด Shell/ETF ทดหรือผกผันที่ตรวจพบ')
             st.write('รายชื่อซื้อ: คะแนน ≥80/100 และคะแนนครบ R:R ≥2 ราคายังอยู่ในโซน quote ไม่เกิน 15 นาที ในช่วงตลาดปกติ และผ่าน checklist เพิ่มเติมด้านกำไร กระแสเงินสด หนี้ สเปรด และวันประกาศกำไร ช่องที่ไม่ทราบจะไม่ถือว่าผ่าน; ETF ใช้เกณฑ์กองทุนแยก')

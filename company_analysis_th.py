@@ -266,6 +266,8 @@ def profile_text_th(info):
     return ' · '.join(parts)
 
 TEXT = {
+    'Reported total liabilities differ from the same-date SEC filing; source definition requires reconciliation': 'ยอดหนี้สินรวมต่างจากเอกสาร SEC ณ วันเดียวกัน จึงพักใช้ในการวิเคราะห์อัตราส่วนจนกว่าจะตรวจขอบเขตรายการได้ โดยดูยอดต้นทางทั้งสองแหล่งในรายละเอียดด้านล่าง',
+    'The retained SEC amount conflicts with an unresolved filing context; excluded until reconciled': 'ข้อมูล SEC ของงวดนี้ขัดแย้งกัน จึงพักใช้ตัวเลขและอัตราส่วนที่เกี่ยวข้องจนกว่าจะตรวจสอบได้ โดยยังเก็บข้อมูลต้นทางไว้ให้เปรียบเทียบ',
     DIVIDEND_YIELD_SOURCE_DISAGREEMENT: 'ผู้ให้ข้อมูลรายงานอัตราผลตอบแทนเงินปันผลย้อนหลังเป็นศูนย์ แต่ประวัติมีการจ่ายเงินสดเป็นบวกในช่วงหนึ่งปีย้อนหลังจากวันที่ข้อมูลบริษัท ยังยืนยันองค์ประกอบของเงินจ่ายและนิยามอัตราผลตอบแทนให้ตรงกันไม่ได้ จึงงดแสดงค่านี้',
     'Quote and reporting currencies differ; EV units or FX conversion are not verified': 'สกุลเงินราคาหุ้นต่างจากสกุลเงินรายงานงบ โดยยังไม่ได้ยืนยันหน่วยมูลค่ากิจการ (EV) หรือการแปลงอัตราแลกเปลี่ยน',
     'Review reported net revenue and accounting notes': 'ตรวจรายได้สุทธิและหมายเหตุประกอบงบ',

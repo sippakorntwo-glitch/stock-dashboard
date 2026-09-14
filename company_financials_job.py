@@ -20,6 +20,7 @@ from financial_statements import collect, SCHEMA
 from financial_completeness import COLLECTION_REVISION, preserve_refresh, statement_gaps
 
 PRIORITY = ('AAPL','MSFT','NVDA','AMZN','GOOGL','META','TSLA','BRK-B','JPM','ORCL')
+FINANCIAL_REFRESH_DAYS = 2
 
 
 def due_symbols(universe, profiles, statements, attempts, etfs, *, now=None, only_missing=False):
@@ -36,14 +37,28 @@ def due_symbols(universe, profiles, statements, attempts, etfs, *, now=None, onl
         if only_missing and not needs_revision and value and value.get('schema') == SCHEMA and value.get('observations') and not value.get('errors') and not statement_gaps(value):
             continue
         attempt = attempts.get('attempt:financials:'+ticker, ({},{}))[1]
-        if timestamp(attempt.get('retry_after')) > clock and (not needs_revision or attempt.get('success') is not True):
+        retry = timestamp(attempt.get('retry_after'))
+        last_attempt = timestamp(attempt.get('fetched_at'))
+        # Migrate the former seven-day success schedule without shortening a
+        # failure cooldown or a retry whose successful check date is unknown.
+        if attempt.get('success') is True and last_attempt > 0:
+            retry = min(retry, last_attempt + FINANCIAL_REFRESH_DAYS*86400)
+        if retry > clock and (not needs_revision or attempt.get('success') is not True):
             continue
-        stamp = timestamp(meta.get('fetched_at'))
-        # Successful observations refresh weekly, independently of price updates.
-        refresh_days = 7 if value and meta.get('available') and not value.get('errors') else 1
+        # SEC reconciliation updates the object metadata but is not a Yahoo
+        # statement refresh. The bundle retains that provider's check date.
+        source_stamp = timestamp((value or {}).get('fetched_at'))
+        stamp = source_stamp if 0 < source_stamp <= clock else timestamp(meta.get('fetched_at'))
+        # Poll reported statements throughout the year, including issuers with
+        # non-calendar fiscal years. A calendar flip never creates a statement.
+        refresh_days = FINANCIAL_REFRESH_DAYS if value and meta.get('available') and not value.get('errors') else 1
         if not needs_revision and value and value.get('schema') == SCHEMA and clock-stamp < refresh_days*86400:
             continue
-        result.append((stamp > 0, priority.get(ticker, 999), stamp, ticker))
+        # Oldest check first: a persistently unavailable or failing company must
+        # not take every small batch while other due companies never get checked.
+        # Popular names only break ties, never outrank older outstanding work.
+        checked = max(stamp, last_attempt)
+        result.append((checked, priority.get(ticker, 999), ticker))
     return [entry[-1] for entry in sorted(result)]
 
 
@@ -96,7 +111,7 @@ def collect_batch(cache, universe, etfs, *, limit=150, minutes=12, only_missing=
                 report['retained_fields'] += len(merged.get('retained_observations', []))
             if not has_records:
                 report['not_reported'] += 1
-            retry = (datetime.now(timezone.utc)+timedelta(days=7 if has_records and not value['errors'] else 1)).isoformat()
+            retry = (datetime.now(timezone.utc)+timedelta(days=FINANCIAL_REFRESH_DAYS if has_records and not value['errors'] else 1)).isoformat()
             cache.put('attempt:financials:'+ticker, {}, {'fetched_at':stamp,'success':has_records,'retry_after':retry})
         except Exception as exc:
             report['failed'] += 1
@@ -134,6 +149,13 @@ def audit_all(cache, universe, etfs):
         counts['companies_rechecked_revision']+=int(not etf and bool(bundle) and bundle.get('collection_revision', 0) >= COLLECTION_REVISION)
         counts['companies_with_statement_gaps']+=int(not etf and bool(statement_gaps(bundle)))
         counts['companies_without_financial_currency']+=int(not etf and not info.get('financialCurrency'))
+        reconciliation=(bundle or {}).get('sec_reconciliation', {})
+        counts['companies_checked_with_sec']+=int(not etf and bool(reconciliation.get('checked_at')))
+        counts['companies_with_source_disagreements']+=int(not etf and bool(reconciliation.get('conflicts')))
+        counts['sec_filled_cells']+=sum(1 for period in ('annual','quarterly')
+            for kind in ('income','balance','cashflow') for row in (bundle or {}).get(period,{}).get(kind,[])
+            for field, source in row.get('field_provenance',{}).items()
+            if source.get('source')=='SEC EDGAR' and field in row.get('values',{}))
         missing=[key for key,state in states.items() if state in ('pending','not_reported','missing_inputs')]
         invalid=[key for key,state in states.items() if state=='invalid']
         counts['with_missing_applicable_metrics']+=bool(missing)
@@ -148,6 +170,8 @@ def audit_all(cache, universe, etfs):
                      'Collection Retry After':attempt.get('retry_after'),
                      'Statements Fetched':(bundle or {}).get('fetched_at'),
                      'Collection Revision':(bundle or {}).get('collection_revision', 0),
+                     'SEC Checked At':reconciliation.get('checked_at'),
+                     'Source Disagreements':json.dumps(reconciliation.get('conflicts',[]),ensure_ascii=False) if not etf else '',
                      'Missing Statement Cells':json.dumps(statement_gaps(bundle), ensure_ascii=False) if not etf else '',
                      'Missing Applicable Metrics':'; '.join(missing),'Invalid Source Metrics':'; '.join(invalid),
                      'Not Meaningful':'; '.join(k for k,s in states.items() if s=='not_meaningful'),
@@ -162,14 +186,15 @@ def audit_all(cache, universe, etfs):
             'examples':examples,'data_complete':not counts['with_missing_applicable_metrics'] and not counts['with_invalid_source_metrics']},rows
 
 
-def main():
+def main(argv=None):
     parser=argparse.ArgumentParser()
     parser.add_argument('--publish',action='store_true')
     parser.add_argument('--audit-only',action='store_true')
     parser.add_argument('--backfill',action='store_true',help='Only collect missing statements; do not republish a no-op batch')
+    parser.add_argument('--sec',action='store_true',help='Reconcile dated missing cells with verified SEC filings')
     parser.add_argument('--limit',type=int,default=150)
     parser.add_argument('--minutes',type=float,default=12)
-    args=parser.parse_args()
+    args=parser.parse_args(argv)
     import dashboard_runtime as a
     from data_sync import ObjectStore, config_from, read_manifest, read_checked, restore_checkpoint, utc_now
     from data_quality import checked_universe
@@ -191,9 +216,18 @@ def main():
             'scope':'Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.'}
     if args.publish:
         from financial_recovery import recover_recent_failure
-        report['recovery']=recover_recent_failure(cache,universe,previous['generation'])
+        if args.sec:
+            report['recovery']=recover_recent_failure(cache,universe,previous['generation'],workflow_name='sec_financials.yml')
+        else:
+            report['recovery']=recover_recent_failure(cache,universe,previous['generation'])
     report['before'],_=audit_all(cache,universe,etfs)
-    report['collection']={} if args.audit_only else collect_batch(cache,universe,etfs,limit=max(0,args.limit),minutes=max(0,args.minutes),only_missing=args.backfill)
+    if args.audit_only:
+        report['collection']={}
+    elif args.sec:
+        from sec_financials_job import collect_batch as collect_sec
+        report['collection']=collect_sec(cache,universe,etfs,limit=max(0,args.limit),minutes=max(0,args.minutes))
+    else:
+        report['collection']=collect_batch(cache,universe,etfs,limit=max(0,args.limit),minutes=max(0,args.minutes),only_missing=args.backfill)
     report['after'],rows=audit_all(cache,universe,etfs)
     pd.DataFrame(rows).to_csv('work/company-financials-all-securities.csv',index=False,encoding='utf-8-sig')
     pd.DataFrame([{'Metric':k,**v} for k,v in report['after']['field_counts'].items()]).fillna(0).to_csv('work/company-financials-all-metrics.csv',index=False)
@@ -203,6 +237,8 @@ def main():
     report.update(finished_at=utc_now(),result='audit_completed',data_complete=report['after']['data_complete'])
     report_path.write_text(json.dumps(report,ensure_ascii=False,allow_nan=False,indent=2))
     if args.publish and (not args.backfill or report['collection'].get('attempted',0)>0
+                         or (args.sec and report['collection'].get('provider_requests',0)>0)
+                         or (args.sec and report['collection'].get('guard_updated'))
                          or report.get('recovery',{}).get('restored',0)>0):
         if read_manifest(store)['generation']!=previous['generation']:
             raise RuntimeError('Prepared snapshot advanced; refusing to overwrite another collector')
@@ -220,7 +256,7 @@ def main():
     Path('work/company-financials-report.json').write_text(json.dumps(report,ensure_ascii=False,allow_nan=False,indent=2))
     if args.publish:
         from verification_report import publish_report
-        publish_report('company-fundamentals-v28',report)
+        publish_report('sec-financials-reconciliation' if args.sec else 'company-fundamentals-v28',report)
     print(json.dumps({'result':report['result'],'data_complete':report['data_complete'],
                       'collection':report['collection'],'counts':report['after']['counts']},ensure_ascii=False),flush=True)
 

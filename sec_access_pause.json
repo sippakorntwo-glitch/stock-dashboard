@@ -1,0 +1,7 @@
+{
+  "observed_at": "2026-09-14T09:41:12.893856+00:00",
+  "next_attempt_after": "2026-09-15T09:41:12.893856+00:00",
+  "http_status": 403,
+  "source_url": "https://data.sec.gov/submissions/CIK0001774857.json",
+  "evidence_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/34829217550/job/103928318347"
+}

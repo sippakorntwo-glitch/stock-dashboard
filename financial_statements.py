@@ -7,10 +7,15 @@ derived values so a calculation can be inspected and audited.
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+from copy import deepcopy
+import json
 import math
+from reviewed_financials import apply_reviewed
 
 SCHEMA = 1
 SOURCE = 'Yahoo Finance financial statements'
+LIABILITIES_SOURCE_DISAGREEMENT = 'Reported total liabilities differ from the same-date SEC filing; source definition requires reconciliation'
+SEC_SOURCE_DISAGREEMENT = 'The retained SEC amount conflicts with an unresolved filing context; excluded until reconciled'
 FLOW_FIELDS = {
     'revenue': ('Total Revenue',),
     'grossProfit': ('Gross Profit',),
@@ -101,22 +106,102 @@ def consecutive_quarters(records):
     return all(dates) and all(65 <= (a-b).days <= 115 for a, b in zip(dates, dates[1:]))
 
 
+def field_provenance(record, key, bundle):
+    """Identify one reported cell; bundle refresh time is not a retained cell's age."""
+    if not record or number(record.get('values', {}).get(key)) is None:
+        return []
+    supplied = record.get('field_provenance', {}).get(key, {})
+    origin = deepcopy(supplied) if isinstance(supplied, dict) else {}
+    origin.setdefault('source', bundle.get('source') or SOURCE)
+    origin.setdefault('end', record.get('end'))
+    origin.setdefault('currency', record.get('currency') or bundle.get('currency'))
+    origin.setdefault('fetched_at', record.get('field_fetched_at', {}).get(key, bundle.get('fetched_at')))
+    origin['field'] = key
+    origin['value'] = number(record.get('values', {}).get(key))
+    return [origin]
+
+
+def combine_provenance(*groups):
+    """Keep the actual dated inputs of a derived value, without duplicate cells."""
+    result, seen = [], set()
+    for group in groups:
+        for origin in group or []:
+            identity = json.dumps(origin, sort_keys=True, ensure_ascii=False)
+            if identity not in seen:
+                seen.add(identity)
+                result.append(deepcopy(origin))
+    return result
+
+
+def provenance_source(provenance, fallback=SOURCE):
+    return ' + '.join(sorted({str(p['source']) for p in provenance if p.get('source')})) or fallback
+
+
+def compatible_provenance(provenance):
+    """Known duration starts at the same end must agree; absent starts stay unknown."""
+    starts = {}
+    for origin in provenance:
+        if origin.get('start') and origin.get('end'):
+            starts.setdefault(origin['end'], set()).add(origin['start'])
+    return all(len(values) == 1 for values in starts.values())
+
+
+def cell_conflicts(bundle, record, field, *, period=None, kind=None):
+    """A stale comparison must not flag a value that has since been replaced."""
+    value = number(record.get('values', {}).get(field))
+    if value is None:
+        return []
+    return [c for c in bundle.get('sec_reconciliation', {}).get('conflicts', [])
+            if c.get('field') == field and c.get('end') == record.get('end')
+            and c.get('currency') == bundle.get('currency')
+            and number(c.get('provider_value')) == value
+            and ((number(c.get('sec_value')) is not None and number(c['sec_value']) != value)
+                 or (c.get('ambiguous') is True and c.get('existing_source') == 'SEC EDGAR'))
+            and (period is None or c.get('period') == period)
+            and (kind is None or c.get('statement') == kind)]
+
+
+def unresolved_sec_provenance(bundle, provenance):
+    """Only the retained SEC cell/version implicated in a conflict is withheld."""
+    matches=[]
+    for origin in provenance:
+        if origin.get('source')!='SEC EDGAR':
+            continue
+        for conflict in bundle.get('sec_reconciliation',{}).get('conflicts',[]):
+            if (conflict.get('existing_source')!='SEC EDGAR'
+                    or any(conflict.get(k)!=origin.get(k) for k in ('field','end','currency'))
+                    or number(conflict.get('provider_value'))!=number(origin.get('value'))):
+                continue
+            previous=conflict.get('existing_provenance',{})
+            if any(previous.get(k) and previous[k]!=origin.get(k) for k in ('filed','accession','start')):
+                continue
+            matches.append(conflict)
+    return matches
+
+
 def observations(bundle):
     """Choose a common TTM window, else a common fiscal year, for flow ratios."""
     if not isinstance(bundle, dict) or bundle.get('schema') != SCHEMA:
         return {}
+    bundle = apply_reviewed(bundle)
     currency = bundle.get('currency') or 'Currency not reported'
     result = {}
 
-    def put(key, value, basis, end, formula=None, state='available', reason='', period_ends=None):
+    def put(key, value, basis, end, formula=None, state='available', reason='', period_ends=None, provenance=()):
         value = number(value)
         if key in ('totalAssets','totalLiabilities','totalDebt','cash',
                    'currentAssets','currentLiabilities','receivables','inventory') and value is not None and value < 0:
             value, state, reason = None, 'invalid', 'Unexpected negative source amount'
+        unresolved = unresolved_sec_provenance(bundle, provenance)
+        if unresolved:
+            value, state, reason = None, 'invalid', SEC_SOURCE_DISAGREEMENT
         result[key] = {'value': value, 'basis': basis, 'end': end,
-                       'currency': currency, 'source': SOURCE, 'formula': formula,
+                       'currency': currency, 'source': provenance_source(provenance, bundle.get('source') or SOURCE), 'formula': formula,
+                       'provenance': deepcopy(list(provenance)),
                        'state': state if value is not None or state != 'available' else 'missing_inputs',
                        'reason': reason}
+        if unresolved:
+            result[key]['source_disagreements']=deepcopy(unresolved)
         if period_ends:
             result[key]['period_ends'] = list(period_ends)
 
@@ -137,7 +222,8 @@ def observations(bundle):
                 if all(v is not None for v in values):
                     put(key, sum(values), selected_basis, selected_end,
                         'Sum of 4 consecutive reported quarters',
-                        period_ends=[r['end'] for r in quarters[:4]])
+                        period_ends=[r['end'] for r in quarters[:4]],
+                        provenance=combine_provenance(*(field_provenance(r, key, bundle) for r in quarters[:4])))
         else:
             selected_end, selected_basis = (years[0]['end'] if years else None), 'FY'
         # A known annual observation is not "not reported" merely because a
@@ -146,23 +232,43 @@ def observations(bundle):
             if key not in result:
                 record = next((r for r in years if number(r['values'].get(key)) is not None), None)
                 if record:
-                    put(key, record['values'][key], 'FY', record['end'])
+                    put(key, record['values'][key], 'FY', record['end'],
+                        provenance=field_provenance(record, key, bundle))
 
     balances = {}
     for record in [*annual.get('balance', []), *quarterly.get('balance', [])]:
         # The same balance date describes the same point in time; a partial
         # quarterly copy must not erase fields reported in its annual counterpart.
-        old = balances.get(record['end'], {}).get('values', {})
+        old_record = balances.get(record['end'], {})
+        old = old_record.get('values', {})
         supplied = {key:value for key,value in record['values'].items() if number(value) is not None}
-        balances[record['end']] = {'end': record['end'], 'values': {**old, **supplied}}
+        origins = deepcopy(old_record.get('field_provenance', {}))
+        for key in supplied:
+            origins[key] = field_provenance(record, key, bundle)[0]
+        balances[record['end']] = {'end': record['end'], 'values': {**old, **supplied},
+                                   'field_provenance': origins}
     latest_balance = balances[max(balances)] if balances else None
     if latest_balance:
         for key, value in latest_balance['values'].items():
             if key in BALANCE_FIELDS:
-                put(key, value, 'Balance sheet', latest_balance['end'])
+                put(key, value, 'Balance sheet', latest_balance['end'],
+                    provenance=field_provenance(latest_balance, key, bundle))
+                if key == 'totalLiabilities':
+                    conflicts = cell_conflicts(bundle, latest_balance, key, kind='balance')
+                    if conflicts:
+                        result[key].update(value=None, state='invalid', reason=LIABILITIES_SOURCE_DISAGREEMENT,
+                                           source_disagreements=deepcopy(conflicts))
 
     def derived(key, inputs, fn, formula, *, denominator=None, same_basis=True):
         rows = [result.get(name, {}) for name in inputs]
+        provenance = combine_provenance(*(r.get('provenance', []) for r in rows))
+        if unresolved_sec_provenance(bundle, provenance):
+            # An omitted derived row would let profile fallbacks reintroduce a
+            # ratio whose reported input is explicitly awaiting source review.
+            lead = next(r for r in rows if unresolved_sec_provenance(bundle, r.get('provenance', [])))
+            put(key, None, lead.get('basis'), lead.get('end'), formula,
+                period_ends=lead.get('period_ends'), provenance=provenance)
+            return
         if not all(r.get('state') == 'available' and r.get('value') is not None for r in rows):
             return
         if len({r['currency'] for r in rows}) != 1 or (same_basis and len({(r['basis'], r['end']) for r in rows}) != 1):
@@ -170,16 +276,18 @@ def observations(bundle):
         if same_basis and len({tuple(r.get('period_ends', [])) for r in rows}) != 1:
             return
         values = [r['value'] for r in rows]
+        if not compatible_provenance(provenance):
+            return
         if denominator is not None and values[denominator] <= 0:
             put(key, None, rows[0]['basis'], rows[0]['end'], formula,
-                'not_meaningful', 'Denominator is zero or negative', rows[0].get('period_ends'))
+                'not_meaningful', 'Denominator is zero or negative', rows[0].get('period_ends'), provenance)
             return
         try:
             value = fn(*values)
         except (ZeroDivisionError, OverflowError):
             return
         put(key, value, rows[0]['basis'], rows[0]['end'], formula,
-            period_ends=rows[0].get('period_ends'))
+            period_ends=rows[0].get('period_ends'), provenance=provenance)
 
     for key, numerator in [('grossMargins', 'grossProfit'), ('operatingMargins', 'operatingIncome'),
                            ('profitMargins', 'netIncome'), ('fcfMargin', 'freeCashflow')]:
@@ -209,7 +317,7 @@ def observations(bundle):
             put(key, -row['value'] if valid else None, row['basis'], row['end'],
                 'Negative reported cash outflow displayed as spending',
                 'available' if valid else 'invalid', '' if valid else 'Unexpected positive cash-outflow sign',
-                row.get('period_ends'))
+                row.get('period_ends'), row.get('provenance', []))
     fcf, ocf, capex = (result.get(k, {}) for k in ('freeCashflow', 'operatingCashflow', 'capex'))
     newer_complete_fcf = (ocf.get('state') == capex.get('state') == 'available'
                           and ocf.get('basis') == capex.get('basis') == 'TTM (4 reported quarters)'
@@ -230,30 +338,45 @@ def observations(bundle):
     def capital_pair(flow):
         flow_end = flow.get('end')
         end = day(flow_end)
-        closing = balances.get(flow_end, {}).get('values', {})
+        closing = balances.get(flow_end, {})
         prior_dates = sorted((d for d in balances if end and day(d)
                               and 350 <= (end-day(d)).days <= 380), reverse=True)
-        opening = balances[prior_dates[0]]['values'] if prior_dates else {}
+        opening = balances[prior_dates[0]] if prior_dates else {}
         return opening, closing
 
     income = result.get('netIncome', {})
-    opening, closing = capital_pair(income)
+    opening_record, closing_record = capital_pair(income)
+    opening, closing = (r.get('values', {}) for r in (opening_record, closing_record))
     flow_end, basis = income.get('end'), income.get('basis')
     for key, capital in [('returnOnEquity', 'stockholdersEquity'), ('returnOnAssets', 'totalAssets')]:
         start, finish = number(opening.get(capital)), number(closing.get(capital))
-        if income.get('end') == flow_end and income.get('basis') == basis and income.get('value') is not None and start is not None and finish is not None:
+        capital_provenance = combine_provenance(income.get('provenance', []),
+            field_provenance(opening_record, capital, bundle), field_provenance(closing_record, capital, bundle))
+        if unresolved_sec_provenance(bundle, capital_provenance):
+            put(key, None, basis, flow_end, f'Net income / average opening and closing {capital}',
+                period_ends=income.get('period_ends'), provenance=capital_provenance)
+        elif income.get('end') == flow_end and income.get('basis') == basis and income.get('value') is not None and start is not None and finish is not None:
             good = start > 0 and finish > 0
             put(key, income['value']/((start+finish)/2) if good else None, basis, flow_end,
                 f'Net income / average opening and closing {capital}',
-                'available' if good else 'not_meaningful', '' if good else 'Opening or closing capital is non-positive', income.get('period_ends'))
+                'available' if good else 'not_meaningful', '' if good else 'Opening or closing capital is non-positive', income.get('period_ends'),
+                capital_provenance)
     capital_fields = ('stockholdersEquity', 'totalDebt', 'cash')
     operating = result.get('operatingIncome', {})
-    opening, closing = capital_pair(operating)
+    opening_record, closing_record = capital_pair(operating)
+    opening, closing = (r.get('values', {}) for r in (opening_record, closing_record))
     flow_end, basis = operating.get('end'), operating.get('basis')
     pretax, tax = result.get('pretaxIncome', {}), result.get('taxProvision', {})
-    if (flow_end and all(number(r.get(k)) is not None for r in (opening, closing) for k in capital_fields)
+    operating_provenance = combine_provenance(*(r.get('provenance', []) for r in (operating, pretax, tax)),
+                                             *(field_provenance(r, k, bundle) for r in (opening_record, closing_record) for k in capital_fields))
+    if unresolved_sec_provenance(bundle, operating_provenance):
+        put('roic', None, basis, flow_end,
+            'Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)',
+            period_ends=operating.get('period_ends'), provenance=operating_provenance)
+    elif (flow_end and all(number(r.get(k)) is not None for r in (opening, closing) for k in capital_fields)
             and all(r.get('end') == flow_end and r.get('basis') == basis and r.get('value') is not None for r in (operating, pretax, tax))
-            and len({tuple(r.get('period_ends', [])) for r in (operating, pretax, tax)}) == 1):
+            and len({tuple(r.get('period_ends', [])) for r in (operating, pretax, tax)}) == 1
+            and compatible_provenance(operating_provenance)):
         first = opening['stockholdersEquity'] + opening['totalDebt'] - opening['cash']
         last = closing['stockholdersEquity'] + closing['totalDebt'] - closing['cash']
         effective_tax = tax['value']/pretax['value'] if pretax['value'] > 0 else None
@@ -263,7 +386,8 @@ def observations(bundle):
             basis, flow_end, 'Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)',
             'available' if good else 'not_meaningful',
             '' if good else 'Non-positive invested capital or tax rate outside 0–100%; no assumed tax rate used',
-            operating.get('period_ends'))
+            operating.get('period_ends'),
+            operating_provenance)
 
     # Historical growth always compares two reported full fiscal years.
     ai = annual.get('income', [])
@@ -274,7 +398,8 @@ def observations(bundle):
                 good = previous > 0
                 put(key, current/previous-1 if good else None, 'FY vs prior FY', ai[0]['end'],
                     f'{raw} / prior fiscal-year {raw} - 1',
-                    'available' if good else 'not_meaningful', '' if good else 'Prior year is zero or a loss')
+                    'available' if good else 'not_meaningful', '' if good else 'Prior year is zero or a loss',
+                    provenance=combine_provenance(*(field_provenance(r, raw, bundle) for r in ai[:2])))
     return result
 
 
@@ -298,5 +423,6 @@ def collect(ticker, info, provider=None, *, now=None):
                 if any(s in str(exc).lower() for s in ('429', 'rate limit', 'too many')):
                     raise
                 bundle['errors'].append({'statement': f'{period}.{kind}', 'error': type(exc).__name__})
+    bundle = apply_reviewed(bundle)
     bundle['observations'] = observations(bundle)
     return bundle
