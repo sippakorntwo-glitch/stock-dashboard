@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-14T22:32:03.765082+00:00",
-  "run_id": "34904439883",
+  "recorded_at": "2026-09-15T00:40:35.869490+00:00",
+  "run_id": "34914009402",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
-  "started_at": "2026-09-14T22:31:12.817889+00:00",
-  "source_generation": "generations/20260914T182924Z-fd7137c0",
+  "started_at": "2026-09-15T00:39:48.076664+00:00",
+  "source_generation": "generations/20260915T003423Z-b9dd7f5d",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
@@ -8682,10 +8682,10 @@
     },
     "data_complete": false
   },
-  "finished_at": "2026-09-14T22:32:03.756794+00:00",
+  "finished_at": "2026-09-15T00:40:35.860815+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260914T182924Z-fd7137c0",
+  "generation": "generations/20260915T003423Z-b9dd7f5d",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
