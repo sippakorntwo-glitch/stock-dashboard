@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-15T10:37:48.989683+00:00",
-  "run_id": "34958313224",
+  "recorded_at": "2026-09-15T12:37:38.016563+00:00",
+  "run_id": "34969767505",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
-  "started_at": "2026-09-15T10:31:23.073358+00:00",
-  "source_generation": "generations/20260915T073920Z-f2f14921",
+  "started_at": "2026-09-15T12:36:49.738854+00:00",
+  "source_generation": "generations/20260915T123112Z-eb5bb760",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
@@ -4340,33 +4340,18 @@
   },
   "collection": {
     "provider": "SEC EDGAR",
-    "attempted": 1,
+    "attempted": 0,
     "checked": 0,
     "updated": 0,
     "filled_cells": 0,
     "conflicting_cells": 0,
-    "failed": 1,
+    "failed": 0,
     "revised_cells": 0,
-    "errors": [
-      {
-        "ticker": "AARD",
-        "error": "HTTPError"
-      }
-    ],
+    "errors": [],
     "symbols_updated": [],
     "only_missing": true,
-    "unmapped_companies": 5,
-    "due_before": 4011,
-    "remaining_due": 4010,
     "cooldown_until": "2026-09-16T10:31:53.835842+00:00",
-    "provider_requests": 1,
-    "http_evidence": [
-      {
-        "url": "https://data.sec.gov/submissions/CIK0001774857.json",
-        "received_at": "2026-09-15T10:31:53.832640+00:00",
-        "http_status": 403
-      }
-    ]
+    "provider_requests": 0
   },
   "after": {
     "counts": {
@@ -8697,10 +8682,10 @@
     },
     "data_complete": false
   },
-  "finished_at": "2026-09-15T10:37:48.979687+00:00",
+  "finished_at": "2026-09-15T12:37:38.008094+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260915T103315Z-a0bc0e84",
+  "generation": "generations/20260915T123112Z-eb5bb760",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -8712,5 +8697,6 @@
     "return_1y": 8100,
     "return_2y": 6911,
     "return_3y": 6152
-  }
+  },
+  "snapshot_unchanged": true
 }
