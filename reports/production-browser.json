@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-14T13:05:25.368115+00:00",
-  "run_id": "34840738215",
+  "recorded_at": "2026-09-15T03:36:26.942451+00:00",
+  "run_id": "34924758904",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-14.36",
@@ -272,10 +272,10 @@
       {
         "period": "3 วัน",
         "interval": "5m",
-        "bars": 1716,
+        "bars": 1560,
         "visible_bars": 234,
-        "first": 1788960600,
-        "last": 1789156500
+        "first": 1789047000,
+        "last": 1789415700
       },
       {
         "period": "5 ปี",
@@ -304,8 +304,8 @@
       },
       {
         "period": "3 วัน",
-        "bars": 1716,
-        "mixed_bars": 1637,
+        "bars": 1560,
+        "mixed_bars": 1490,
         "flat_bars": 0,
         "missing_volume": 0
       },
@@ -360,26 +360,26 @@
         "ticker": "SPY",
         "period": "3 วัน",
         "interval": "5m",
-        "trend": "mixed",
-        "bar_time": 1789156500,
-        "return_percent": 0.00785185036082936,
+        "trend": "downtrend",
+        "bar_time": 1789415700,
+        "return_percent": 0.39722467890010993,
         "levels": {
-          "support": 764.4199829101562,
-          "resistance": 765.7249755859375,
+          "support": 761.114990234375,
+          "resistance": 762.7000122070312,
           "bars": 20,
           "state": "breakdown"
         },
-        "volume_ratio": 9.109336406892531,
+        "volume_ratio": 5.573692517946471,
         "metrics": {
-          "ema20": 764.9947871742372,
-          "ema50": 764.9282596824067,
-          "sma200": 762.0414556884766,
-          "rsi": 29.596378214629908,
-          "macd": -0.21889278471303442,
-          "signal": -0.1511820952567759,
-          "hist": -0.06771068945625852
+          "ema20": 761.7754072994667,
+          "ema50": 761.9335811911754,
+          "sma200": 762.1541134643554,
+          "rsi": 27.88713223596116,
+          "macd": -0.24238976686979186,
+          "signal": -0.12499027024449316,
+          "hist": -0.1173994966252987
         },
-        "atr_pct": 0.043763936855029384,
+        "atr_pct": 0.050314155852440035,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
@@ -467,12 +467,12 @@
         {
           "ticker": "SPY",
           "period": "7 วัน",
-          "percent": 0.23610112823531093,
-          "display": "+0.24%",
-          "first": 1788355800,
-          "last": 1789156500,
-          "start_price": 762.3800048828125,
-          "end_price": 764.1799926757812,
+          "percent": -1.0663551873654087,
+          "display": "-1.07%",
+          "first": 1788442200,
+          "last": 1789415700,
+          "start_price": 768.969970703125,
+          "end_price": 760.77001953125,
           "bars": 546
         },
         {
@@ -631,7 +631,7 @@
       "intraday": {
         "ticker": "SPY",
         "interval": "5m",
-        "time": "1789143000",
+        "time": "1789402200",
         "timezone": "America/New_York"
       }
     },
@@ -639,13 +639,13 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260914T123848Z-f32bd2d9",
+      "source_generation": "generations/20260915T003423Z-b9dd7f5d",
       "counts": {
         "universe": 9876,
         "prices": 9876,
         "histories": 9876,
         "info": 9876,
-        "industry": 9418,
+        "industry": 9419,
         "dividends_checked": 9875,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3801,
@@ -709,7 +709,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260914T123848Z-f32bd2d9"
+            "source_generation": "generations/20260915T003423Z-b9dd7f5d"
           }
         },
         {
@@ -750,7 +750,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260914T123848Z-f32bd2d9"
+            "source_generation": "generations/20260915T003423Z-b9dd7f5d"
           }
         },
         {
@@ -777,7 +777,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260914T123848Z-f32bd2d9",
+      "source_generation": "generations/20260915T003423Z-b9dd7f5d",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -840,7 +840,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-14T12:57:09.197020+00:00",
+      "verified_at": "2026-09-15T03:30:27.773951+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -901,11 +901,12 @@
       "empty_results_handled": true,
       "QQQI_chart_bars": 657,
       "auto_refresh_verified": {
-        "session": "pre",
+        "session": "closed",
         "state": "scheduled",
-        "effective_seconds": 30.0,
-        "next_due": 1789390887.8432958,
-        "second_observation": true
+        "effective_seconds": 1800.0,
+        "next_due": 1789444992.2255394,
+        "second_observation": false,
+        "reason": "provider session or request budget requires a conservative wait"
       },
       "quote_controls": {
         "requested_seconds": [
@@ -916,39 +917,39 @@
         "initial": {
           "state": "updating",
           "requestedSeconds": "30",
-          "effectiveSeconds": "30",
-          "nextDue": "1789388309.488676",
+          "effectiveSeconds": "1800",
+          "nextDue": "1789391224.8213594",
           "busy": "true",
-          "session": "pre"
+          "session": "closed"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
-          "effectiveSeconds": "60",
-          "nextDue": "1789390917.8432958",
+          "effectiveSeconds": "1800",
+          "nextDue": "1789444992.2255394",
           "busy": "false",
-          "session": "pre"
+          "session": "closed"
         },
         "resumed": {
           "state": "scheduled",
           "requestedSeconds": "30",
-          "effectiveSeconds": "30",
-          "nextDue": "1789390922.7682874",
+          "effectiveSeconds": "1800",
+          "nextDue": "1789444992.2255394",
           "busy": "false",
-          "session": "pre"
+          "session": "closed"
         },
         "pause_resume": true,
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260914T123848Z-f32bd2d9",
-        "generation_after": "generations/20260914T123848Z-f32bd2d9"
+        "generation_before": "generations/20260915T003423Z-b9dd7f5d",
+        "generation_after": "generations/20260915T003423Z-b9dd7f5d"
       },
       "minute_price": {
-        "price": 53.68,
-        "bar_time": "2026-09-14T13:01:27+00:00",
-        "fetched_at": "2026-09-14T13:01:32.767804+00:00",
-        "state": "recent"
+        "price": 54.25,
+        "bar_time": "2026-09-14T23:59:00+00:00",
+        "fetched_at": "2026-09-15T03:33:12.224948+00:00",
+        "state": "stale"
       },
       "theme": {
         "background": "radial-gradient(at 12% 0%, rgb(21, 35, 64) 0px, rgba(0, 0, 0, 0) 48%), none",
