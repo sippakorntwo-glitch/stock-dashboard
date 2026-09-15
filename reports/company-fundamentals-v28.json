@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-14T22:54:13.838028+00:00",
-  "run_id": "34905848817",
+  "recorded_at": "2026-09-15T04:57:07.609971+00:00",
+  "run_id": "34930366203",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
-  "started_at": "2026-09-14T22:48:30.934765+00:00",
-  "source_generation": "generations/20260914T182924Z-fd7137c0",
+  "started_at": "2026-09-15T04:51:01.574881+00:00",
+  "source_generation": "generations/20260915T003423Z-b9dd7f5d",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
@@ -8678,14 +8678,14 @@
     },
     "data_complete": false
   },
-  "finished_at": "2026-09-14T22:54:13.829973+00:00",
+  "finished_at": "2026-09-15T04:57:07.601580+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260914T224954Z-e5edc38d",
+  "generation": "generations/20260915T045232Z-19ffa285",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 18,
+    "checked_today": 0,
     "industry": 9419,
     "info": 9876,
     "financial_statements": 4158,
