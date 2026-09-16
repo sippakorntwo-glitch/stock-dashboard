@@ -1,8 +1,8 @@
 {
-  "recorded_at": "2026-09-16T02:31:29.454817+00:00",
-  "run_id": "35048209282",
+  "recorded_at": "2026-09-16T04:31:33.177252+00:00",
+  "run_id": "35055849640",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
-  "started_at": "2026-09-16T02:30:42.580651+00:00",
+  "started_at": "2026-09-16T04:30:49.503310+00:00",
   "source_generation": "generations/20260916T003120Z-f07147b3",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
@@ -8682,7 +8682,7 @@
     },
     "data_complete": false
   },
-  "finished_at": "2026-09-16T02:31:29.446497+00:00",
+  "finished_at": "2026-09-16T04:31:33.168577+00:00",
   "result": "audit_completed",
   "data_complete": false,
   "generation": "generations/20260916T003120Z-f07147b3",
