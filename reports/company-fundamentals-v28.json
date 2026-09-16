@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-15T22:53:19.548447+00:00",
-  "run_id": "35032578371",
+  "recorded_at": "2026-09-16T04:54:54.519694+00:00",
+  "run_id": "35057011880",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
-  "started_at": "2026-09-15T22:46:54.449929+00:00",
-  "source_generation": "generations/20260915T165117Z-b4aa867b",
+  "started_at": "2026-09-16T04:48:48.591697+00:00",
+  "source_generation": "generations/20260916T003120Z-f07147b3",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
@@ -4339,10 +4339,10 @@
     "data_complete": false
   },
   "collection": {
-    "due_before": 4,
-    "attempted": 4,
+    "due_before": 0,
+    "attempted": 0,
     "updated": 0,
-    "not_reported": 4,
+    "not_reported": 0,
     "failed": 0,
     "errors": [],
     "symbols_updated": [],
@@ -8678,14 +8678,14 @@
     },
     "data_complete": false
   },
-  "finished_at": "2026-09-15T22:53:19.539790+00:00",
+  "finished_at": "2026-09-16T04:54:54.511295+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260915T224837Z-c9209390",
+  "generation": "generations/20260916T045023Z-a21db5be",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9875,
+    "checked_today": 0,
     "industry": 9421,
     "info": 9876,
     "financial_statements": 4158,
