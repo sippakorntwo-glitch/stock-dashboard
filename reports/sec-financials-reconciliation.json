@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-16T04:31:33.177252+00:00",
-  "run_id": "35055849640",
+  "recorded_at": "2026-09-16T07:24:28.820157+00:00",
+  "run_id": "35064471860",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
-  "started_at": "2026-09-16T04:30:49.503310+00:00",
-  "source_generation": "generations/20260916T003120Z-f07147b3",
+  "started_at": "2026-09-16T07:23:42.412932+00:00",
+  "source_generation": "generations/20260916T071817Z-f210bb8a",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
@@ -8682,21 +8682,21 @@
     },
     "data_complete": false
   },
-  "finished_at": "2026-09-16T04:31:33.168577+00:00",
+  "finished_at": "2026-09-16T07:24:28.810493+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260916T003120Z-f07147b3",
+  "generation": "generations/20260916T071817Z-f210bb8a",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
     "checked_today": 9875,
-    "industry": 9421,
+    "industry": 9422,
     "info": 9876,
     "financial_statements": 4158,
     "dividends": 9875,
-    "return_1y": 8100,
+    "return_1y": 8103,
     "return_2y": 6911,
-    "return_3y": 6152
+    "return_3y": 6153
   },
   "snapshot_unchanged": true
 }
