@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-17T03:35:08.082272+00:00",
-  "run_id": "35177849930",
+  "recorded_at": "2026-09-18T03:34:13.564096+00:00",
+  "run_id": "35302839898",
   "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-14.36",
@@ -17,22 +17,22 @@
     {
       "ticker": "MSFT",
       "via": "cell",
-      "bars": 1508
+      "bars": 1509
     },
     {
       "ticker": "AAPL",
       "via": "row",
-      "bars": 1508
+      "bars": 1509
     },
     {
       "ticker": "SPY",
       "via": "manual",
-      "bars": 1508
+      "bars": 1509
     }
   ],
   "volume_split": {
-    "bars": 1508,
-    "mixed_bars": 1498,
+    "bars": 1509,
+    "mixed_bars": 1499,
     "flat_bars": 0,
     "missing_volume": 0,
     "rendered_stacks": [
@@ -215,25 +215,25 @@
     "period": "1 ปี",
     "interval": "1d",
     "trend": "uptrend",
-    "bar_time": "2026-09-15",
-    "return_percent": 40.5002006110663,
+    "bar_time": "2026-09-16",
+    "return_percent": 40.09570573089045,
     "levels": {
-      "support": 302.94000244140625,
+      "support": 305.739990234375,
       "resistance": 336.2200012207031,
       "bars": 20,
       "state": "inside"
     },
-    "volume_ratio": 0.7356127570641545,
+    "volume_ratio": 0.8399632870914373,
     "metrics": {
-      "ema20": 321.39595554179505,
-      "ema50": 315.34674703338237,
-      "sma200": 285.10205284118655,
-      "rsi": 61.358545365897804,
-      "macd": 4.3380509998071375,
-      "signal": 2.751228356903891,
-      "hist": 1.5868226429032464
+      "ema20": 322.4449125056345,
+      "ema50": 316.015894352156,
+      "sma200": 285.380120010376,
+      "rsi": 62.15377354465252,
+      "macd": 4.662314473495826,
+      "signal": 3.1334455802222783,
+      "hist": 1.5288688932735477
     },
-    "atr_pct": 2.2779128598646903,
+    "atr_pct": 2.2111091438198014,
     "below_chart": true,
     "source_values_checked": true,
     "warnings": [],
@@ -243,8 +243,8 @@
       "scroll": 325
     }
   },
-  "chart_bars": 1508,
-  "chart_last_bar": "2026-09-15",
+  "chart_bars": 1509,
+  "chart_last_bar": "2026-09-16",
   "deployed_version": "2026-09-14.36",
   "research_improvements": {
     "modes_preserve_ticker": true,
@@ -266,53 +266,53 @@
         "interval": "5m",
         "bars": 1716,
         "visible_bars": 78,
-        "first": 1789565400,
-        "last": 1789588500
+        "first": 1789651800,
+        "last": 1789674900
       },
       {
         "period": "3 วัน",
         "interval": "5m",
         "bars": 1716,
         "visible_bars": 234,
-        "first": 1789392600,
-        "last": 1789588500
+        "first": 1789479000,
+        "last": 1789674900
       },
       {
         "period": "5 ปี",
         "interval": "1d",
-        "bars": 1508,
+        "bars": 1509,
         "visible_bars": 1255,
-        "first": "2021-09-15",
-        "last": "2026-09-15"
+        "first": "2021-09-16",
+        "last": "2026-09-16"
       },
       {
         "period": "10 ปี",
         "interval": "1d",
         "bars": 2765,
         "visible_bars": 2513,
-        "first": "2016-09-16",
-        "last": "2026-09-16"
+        "first": "2016-09-19",
+        "last": "2026-09-17"
       }
     ],
     "volume_split_ranges": [
       {
         "period": "1 วัน",
         "bars": 1716,
-        "mixed_bars": 1635,
+        "mixed_bars": 1634,
         "flat_bars": 0,
         "missing_volume": 0
       },
       {
         "period": "3 วัน",
         "bars": 1716,
-        "mixed_bars": 1635,
+        "mixed_bars": 1634,
         "flat_bars": 0,
         "missing_volume": 0
       },
       {
         "period": "5 ปี",
-        "bars": 1508,
-        "mixed_bars": 1488,
+        "bars": 1509,
+        "mixed_bars": 1489,
         "flat_bars": 0,
         "missing_volume": 0
       },
@@ -329,26 +329,26 @@
         "ticker": "SPY",
         "period": "1 วัน",
         "interval": "5m",
-        "trend": "downtrend",
-        "bar_time": 1789588500,
-        "return_percent": -0.6770214432999966,
+        "trend": "mixed",
+        "bar_time": 1789674900,
+        "return_percent": 0.17205794383743367,
         "levels": {
-          "support": 749.5999755859375,
-          "resistance": 760.3599853515625,
+          "support": 762.1400146484375,
+          "resistance": 763.5700073242188,
           "bars": 20,
           "state": "inside"
         },
-        "volume_ratio": 3.1673692950164063,
+        "volume_ratio": 5.595632348592236,
         "metrics": {
-          "ema20": 754.4451056631078,
-          "ema50": 756.6257766488682,
-          "sma200": 758.9337350463867,
-          "rsi": 43.87424338631025,
-          "macd": -1.5477429459929226,
-          "signal": -1.7703928202876669,
-          "hist": 0.22264987429474425
+          "ema20": 762.7275804665435,
+          "ema50": 762.2438635366452,
+          "sma200": 759.6552224731445,
+          "rsi": 50.653347040751086,
+          "macd": 0.1531416554646512,
+          "signal": 0.15651048461499933,
+          "hist": -0.0033688291503481405
         },
-        "atr_pct": 0.17111283325551682,
+        "atr_pct": 0.052030574312069845,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
@@ -360,26 +360,26 @@
         "ticker": "SPY",
         "period": "3 วัน",
         "interval": "5m",
-        "trend": "downtrend",
-        "bar_time": 1789588500,
-        "return_percent": -0.6082880575239757,
+        "trend": "mixed",
+        "bar_time": 1789674900,
+        "return_percent": 0.49544218762125336,
         "levels": {
-          "support": 749.5999755859375,
-          "resistance": 760.3599853515625,
+          "support": 762.1400146484375,
+          "resistance": 763.5700073242188,
           "bars": 20,
           "state": "inside"
         },
-        "volume_ratio": 3.1673692950164063,
+        "volume_ratio": 5.595632348592236,
         "metrics": {
-          "ema20": 754.4451056631078,
-          "ema50": 756.6257766488682,
-          "sma200": 758.9337350463867,
-          "rsi": 43.87424338631025,
-          "macd": -1.5477429459929226,
-          "signal": -1.7703928202876669,
-          "hist": 0.22264987429474425
+          "ema20": 762.7275804665435,
+          "ema50": 762.2438635366452,
+          "sma200": 759.6552224731445,
+          "rsi": 50.653347040751086,
+          "macd": 0.1531416554646512,
+          "signal": 0.15651048461499933,
+          "hist": -0.0033688291503481405
         },
-        "atr_pct": 0.17111283325551682,
+        "atr_pct": 0.052030574312069845,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
@@ -392,36 +392,8 @@
         "period": "5 ปี",
         "interval": "1d",
         "trend": "mixed",
-        "bar_time": "2026-09-15",
-        "return_percent": 80.93302472798977,
-        "levels": {
-          "support": 756.6400146484375,
-          "resistance": 776.780029296875,
-          "bars": 20,
-          "state": "inside"
-        },
-        "volume_ratio": 1.2138296979391174,
-        "metrics": {
-          "ema20": 763.928329498674,
-          "ema50": 758.3336193127265,
-          "sma200": 712.9856332397461,
-          "rsi": 44.43067712538749,
-          "macd": 0.030223102775153166,
-          "signal": 1.715440532128443,
-          "hist": -1.6852174293532898
-        },
-        "atr_pct": 0.8079558071657479,
-        "below_chart": true,
-        "source_values_checked": true,
-        "warnings": []
-      },
-      {
-        "ticker": "SPY",
-        "period": "10 ปี",
-        "interval": "1d",
-        "trend": "mixed",
         "bar_time": "2026-09-16",
-        "return_percent": 312.79473198976194,
+        "return_percent": 80.4211048364873,
         "levels": {
           "support": 756.1500244140625,
           "resistance": 775.2999877929688,
@@ -431,14 +403,42 @@
         "volume_ratio": 1.527591484307778,
         "metrics": {
           "ema20": 762.9875350505116,
-          "ema50": 758.1656337612462,
-          "sma200": 713.3854064941406,
-          "rsi": 41.784260269142194,
-          "macd": -0.7201480796380793,
-          "signal": 1.2283228097800931,
-          "hist": -1.9484708894181724
+          "ema50": 758.165633762932,
+          "sma200": 713.3854071044922,
+          "rsi": 41.78426026914653,
+          "macd": -0.7201480796419446,
+          "signal": 1.2283228097743655,
+          "hist": -1.94847088941631
         },
-        "atr_pct": 0.8679028928417938,
+        "atr_pct": 0.8679028928419251,
+        "below_chart": true,
+        "source_values_checked": true,
+        "warnings": []
+      },
+      {
+        "ticker": "SPY",
+        "period": "10 ปี",
+        "interval": "1d",
+        "trend": "mixed",
+        "bar_time": "2026-09-17",
+        "return_percent": 317.397035763131,
+        "levels": {
+          "support": 749.5999755859375,
+          "resistance": 775.2999877929688,
+          "bars": 20,
+          "state": "inside"
+        },
+        "volume_ratio": 1.260393761900951,
+        "metrics": {
+          "ema20": 762.9506246253587,
+          "ema50": 758.3395295699434,
+          "sma200": 713.8095346069335,
+          "rsi": 49.995108596499634,
+          "macd": -0.6177886063957203,
+          "signal": 0.859100525644109,
+          "hist": -1.4768891320398292
+        },
+        "atr_pct": 0.8860430867825717,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
@@ -469,34 +469,34 @@
         {
           "ticker": "SPY",
           "period": "7 วัน",
-          "percent": -1.916608957009791,
-          "display": "-1.92%",
-          "first": 1788874200,
-          "last": 1789588500,
-          "start_price": 768.8049926757812,
-          "end_price": 754.0700073242188,
+          "percent": -0.18845239630006505,
+          "display": "-0.19%",
+          "first": 1788960600,
+          "last": 1789674900,
+          "start_price": 764.1199951171875,
+          "end_price": 762.6799926757812,
           "bars": 546
         },
         {
           "ticker": "SPY",
           "period": "10 ปี",
-          "percent": 312.79473198976194,
-          "display": "+312.79%",
-          "first": "2016-09-16",
-          "last": "2026-09-16",
-          "start_price": 182.6694793701172,
-          "end_price": 754.0499877929688,
+          "percent": 317.397035763131,
+          "display": "+317.40%",
+          "first": "2016-09-19",
+          "last": "2026-09-17",
+          "start_price": 182.7037353515625,
+          "end_price": 762.5999755859375,
           "bars": 2513
         },
         {
           "ticker": "SPY",
           "period": "1 ปี",
-          "percent": 15.867836611036946,
-          "display": "+15.87%",
-          "first": "2025-09-15",
-          "last": "2026-09-15",
-          "start_price": 653.6671752929688,
-          "end_price": 757.3900146484375,
+          "percent": 15.515921225155417,
+          "display": "+15.52%",
+          "first": "2025-09-16",
+          "last": "2026-09-16",
+          "start_price": 652.7671508789062,
+          "end_price": 754.0499877929688,
           "bars": 252
         }
       ]
@@ -510,7 +510,7 @@
       "refresh_schedule": "7,37 * * * *",
       "first_rank": "01 · PSQO · 90/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
       "clicked": "PSQO",
-      "chart_bars": 503,
+      "chart_bars": 504,
       "filter_independent": true,
       "completed_search_before_selection": true,
       "single_click": true,
@@ -569,7 +569,7 @@
         {
           "series": "signal",
           "pane": 3,
-          "highlight": "macd"
+          "highlight": "signal"
         },
         {
           "series": "hist",
@@ -633,7 +633,7 @@
       "intraday": {
         "ticker": "SPY",
         "interval": "5m",
-        "time": "1789575000",
+        "time": "1789661400",
         "timezone": "America/New_York"
       }
     },
@@ -641,13 +641,13 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260917T003209Z-92a02e93",
+      "source_generation": "generations/20260918T003421Z-f67635a9",
       "counts": {
         "universe": 9876,
         "prices": 9876,
         "histories": 9876,
         "info": 9876,
-        "industry": 9428,
+        "industry": 9436,
         "dividends_checked": 9876,
         "dividends_with_payments": 6074,
         "dividends_no_payments": 3802,
@@ -666,7 +666,7 @@
           "ticker": "AEON",
           "industry_state": "available",
           "dividend_state": "no_payments",
-          "history_bars": 928,
+          "history_bars": 929,
           "company_analysis": {
             "ticker": "AEON",
             "groups": 9,
@@ -711,14 +711,14 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260917T003209Z-92a02e93"
+            "source_generation": "generations/20260918T003421Z-f67635a9"
           }
         },
         {
           "ticker": "AESP",
           "industry_state": "available",
           "dividend_state": "no_payments",
-          "history_bars": 53,
+          "history_bars": 54,
           "company_analysis": {
             "ticker": "AESP",
             "groups": 9,
@@ -752,14 +752,14 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260917T003209Z-92a02e93"
+            "source_generation": "generations/20260918T003421Z-f67635a9"
           }
         },
         {
           "ticker": "SPY",
           "industry_state": "available",
           "dividend_state": "available",
-          "history_bars": 1508,
+          "history_bars": 1509,
           "company_analysis": {
             "ticker": "SPY",
             "fund_specific_table": true
@@ -779,56 +779,56 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260917T003209Z-92a02e93",
+      "source_generation": "generations/20260918T003421Z-f67635a9",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
-          "price_asof": "2026-09-15",
+          "price_asof": "2026-09-16",
           "returns": {
-            "1 Day (%)": -0.5223941108804753,
-            "3 Days (%)": 1.460632913829163,
-            "7 Days (%)": 0.9536592316815362,
-            "1 Month (%)": 8.305822989064815,
-            "6 Months (%)": 32.70881807510073,
-            "1 Year (%)": 40.5002006110663,
-            "3 Years (%)": 91.88699514748464,
-            "5 Years (%)": 127.94508037498353
+            "1 Day (%)": 0.32293334219983816,
+            "3 Days (%)": 0.04213881875192449,
+            "7 Days (%)": 3.8878652354742416,
+            "1 Month (%)": 8.655578603040448,
+            "6 Months (%)": 31.71552575662677,
+            "1 Year (%)": 40.09570573089045,
+            "3 Years (%)": 92.50666223416124,
+            "5 Years (%)": 129.0500982973085
           }
         },
         {
           "ticker": "MSFT",
-          "price_asof": "2026-09-15",
+          "price_asof": "2026-09-16",
           "returns": {
-            "1 Day (%)": -1.640254147099185,
-            "3 Days (%)": 0.9503680961292504,
-            "7 Days (%)": -2.548420004005836,
-            "1 Month (%)": 0.5360998570305808,
-            "6 Months (%)": 26.18748309327985,
-            "1 Year (%)": -2.7456328866495627,
-            "3 Years (%)": 54.06798421604135,
-            "5 Years (%)": 69.92995262716246
+            "1 Day (%)": -1.3719036432262244,
+            "3 Days (%)": -1.0754024246582894,
+            "7 Days (%)": -1.8811335169965915,
+            "1 Month (%)": -0.8431585596655911,
+            "6 Months (%)": 23.087114923495335,
+            "1 Year (%)": -2.8889629132507255,
+            "3 Years (%)": 51.954319927536275,
+            "5 Years (%)": 67.37904018507577
           }
         },
         {
           "ticker": "SPY",
-          "price_asof": "2026-09-15",
+          "price_asof": "2026-09-16",
           "returns": {
-            "1 Day (%)": -0.45867813741702346,
-            "3 Days (%)": -0.05806083573938192,
-            "7 Days (%)": -2.0409442438937053,
-            "1 Month (%)": -2.440942312840344,
-            "6 Months (%)": 14.96700961375348,
-            "1 Year (%)": 15.867836611036946,
-            "3 Years (%)": 76.6924740856108,
-            "5 Years (%)": 80.93302472798977
+            "1 Day (%)": -0.4409916675517711,
+            "3 Days (%)": -1.3398043319637343,
+            "7 Days (%)": -2.095588698538764,
+            "1 Month (%)": -2.871169628182746,
+            "6 Months (%)": 13.306905597900997,
+            "1 Year (%)": 15.515921225155417,
+            "3 Years (%)": 75.91327499770219,
+            "5 Years (%)": 80.4211048364873
           }
         },
         {
           "ticker": "AAC",
-          "price_asof": "2026-09-15",
+          "price_asof": "2026-09-16",
           "returns": {
-            "1 Day (%)": 0.09900272108767094,
-            "3 Days (%)": 0.49701028802195957,
+            "1 Day (%)": 0.0,
+            "3 Days (%)": -0.09881649204468435,
             "7 Days (%)": 0.49701028802195957,
             "1 Month (%)": null,
             "6 Months (%)": null,
@@ -842,7 +842,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-17T03:29:14.091003+00:00",
+      "verified_at": "2026-09-18T03:28:37.091063+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -854,7 +854,7 @@
           "บริษัท / กองทุน",
           "หมวดหมู่ / คุณภาพข้อมูล"
         ],
-        "rows": 1172,
+        "rows": 1188,
         "minimum_price": 5,
         "maximum_rsi": 70,
         "minimum_roe": 10,
@@ -895,18 +895,18 @@
         "QQQI": true
       },
       "combined_numeric_filter": {
-        "rows": 65,
+        "rows": 57,
         "minimum_1m": 0
       },
       "invalid_bounds_handled": true,
       "annualized_csv_verified": true,
       "empty_results_handled": true,
-      "QQQI_chart_bars": 659,
+      "QQQI_chart_bars": 660,
       "auto_refresh_verified": {
         "session": "closed",
         "state": "scheduled",
         "effective_seconds": 1800.0,
-        "next_due": 1789617707.88842,
+        "next_due": 1789704054.8789082,
         "second_observation": false,
         "reason": "provider session or request budget requires a conservative wait"
       },
@@ -920,7 +920,7 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1789617707.88842",
+          "nextDue": "1789704054.8789082",
           "busy": "false",
           "session": "closed"
         },
@@ -928,7 +928,7 @@
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "1800",
-          "nextDue": "1789617707.88842",
+          "nextDue": "1789704054.8789082",
           "busy": "false",
           "session": "closed"
         },
@@ -936,7 +936,7 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1789617707.88842",
+          "nextDue": "1789704054.8789082",
           "busy": "false",
           "session": "closed"
         },
@@ -944,13 +944,13 @@
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260917T003209Z-92a02e93",
-        "generation_after": "generations/20260917T003209Z-92a02e93"
+        "generation_before": "generations/20260918T003421Z-f67635a9",
+        "generation_after": "generations/20260918T003421Z-f67635a9"
       },
       "minute_price": {
-        "price": 53.52,
-        "bar_time": "2026-09-16T23:55:00+00:00",
-        "fetched_at": "2026-09-17T03:31:47.887275+00:00",
+        "price": 54.052,
+        "bar_time": "2026-09-17T23:57:00+00:00",
+        "fetched_at": "2026-09-18T03:30:54.877726+00:00",
         "state": "stale"
       },
       "theme": {
