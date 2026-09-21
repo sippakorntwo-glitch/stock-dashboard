@@ -129,6 +129,37 @@ SOURCE_LABELS = {
     'Financial statements': 'งบการเงิน',
 }
 
+# These describe the provider field's definition, not a reconstructed period.
+# A profile fetch time, mostRecentQuarter, or unrelated SEC filing cannot date
+# the price or denominator used in a separately supplied valuation multiple.
+PROFILE_PERIOD_LABELS = {
+    'marketCap': 'มูลค่าตลาด ณ จุดเวลา · ไม่ระบุวันที่อ้างอิง',
+    'enterpriseValue': 'มูลค่ากิจการจากผู้ให้ข้อมูล · ไม่ระบุวันที่องค์ประกอบ',
+    'trailingPE': 'ราคา / กำไรย้อนหลัง 12 เดือน (TTM) · ไม่ระบุวันสิ้นงวด',
+    'forwardPE': 'ราคา / กำไรคาดการณ์ · ไม่ระบุงวดประมาณการ',
+    'priceToBook': 'ราคา / มูลค่าทางบัญชี · ไม่ระบุวันที่งบ',
+    'priceToSales': 'มูลค่าตลาด / ยอดขายย้อนหลัง 12 เดือน (TTM) · ไม่ระบุวันสิ้นงวด',
+    'evRevenue': 'EV / รายได้ · ไม่ระบุงวดรายได้',
+    'evEbitda': 'EV / EBITDA · ไม่ระบุงวด EBITDA',
+    'dilutedEPS': 'กำไรต่อหุ้นย้อนหลัง 12 เดือน (TTM) · ไม่ระบุวันสิ้นงวด',
+    'forwardEps': 'กำไรต่อหุ้นคาดการณ์ · ไม่ระบุงวดประมาณการ',
+    'dividendYield': 'เงินปันผลย้อนหลัง 12 เดือน · ไม่ระบุวันสิ้นช่วง',
+}
+
+
+def period_label_th(metric_key, item):
+    """Describe a field's basis without borrowing dates from other observations."""
+    if item.get('state') == 'not_applicable':
+        return 'ไม่ใช้กับหลักทรัพย์ประเภทนี้'
+    basis = item.get('basis') or 'Provider period'
+    if (item.get('source') == 'Yahoo Finance profile'
+            and basis == 'Provider period' and not item.get('end')):
+        return PROFILE_PERIOD_LABELS.get(metric_key, 'ผู้ให้ข้อมูลไม่ระบุรอบบัญชี')
+    period = PERIOD_LABELS.get(basis, basis)
+    if item.get('end'):
+        period += ' · ' + item['end']
+    return period
+
 SECTOR_LABELS = {
     'Basic Materials': 'วัสดุพื้นฐาน', 'Communication Services': 'บริการสื่อสาร',
     'Consumer Cyclical': 'สินค้าและบริการที่ขึ้นกับวัฏจักรเศรษฐกิจ',
@@ -418,10 +449,7 @@ def build_rows_th(ticker, info, bundle=None, *, is_etf=False):
             display_assessment = STATE_ASSESSMENTS.get(state, STATE_ASSESSMENTS['not_reported'])
             reason = item.get('reason')
             meaning = TEXT.get(reason, reason) if reason else 'ข้อมูลที่ขาดไม่ได้มีค่าเป็นศูนย์ และไม่ได้เป็นคะแนนว่าบริษัทอ่อนแอ'
-        basis = item.get('basis') or 'Provider period'
-        period = PERIOD_LABELS.get(basis, basis)
-        if item.get('end'):
-            period += ' · ' + item['end']
+        period = period_label_th(metric.key, item)
         label, tooltip = METRIC_TEXT[metric.key]
         if item.get('reason') == DIVIDEND_YIELD_SOURCE_DISAGREEMENT:
             tooltip += '\nการตรวจสอบแหล่งข้อมูล: ' + TEXT[item['reason']]

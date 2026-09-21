@@ -116,6 +116,17 @@ def industry_summary(work):
     st.caption('มัธยฐานเฉพาะรายการที่ผ่านตัวกรองและมีข้อมูลอย่างน้อย 3 ตัวต่อกลุ่ม ไม่ใช่ผลตอบแทนดัชนีหรือภาพรวมตลาดทั้งหมด')
 
 
+def technical_analysis_rows(analysis, *, is_etf=False):
+    """Keep company fundamentals in their canonical table; preserve fund context."""
+    if is_etf:
+        return analysis.copy()
+    projected = analysis.loc[analysis['หมวด'].isin(('เทคนิค', 'สภาพคล่อง', 'ความเสี่ยง'))].copy()
+    for column in ('เกณฑ์อ้างอิง', 'รอบข้อมูล'):
+        if column in projected and projected[column].fillna('').astype(str).str.strip().isin(('', '—')).all():
+            projected = projected.drop(columns=[column])
+    return projected
+
+
 def technical(ticker,daily_history,info,row):
     from return_audit_ui import render_return_audit
     render_return_audit(ticker,daily_history,row)
@@ -135,8 +146,8 @@ def technical(ticker,daily_history,info,row):
     from company_analysis_th import localize_360_frame
     analysis=adapt_analysis(analysis,ticker,info,is_etf)
     analysis=localize_360_frame(analysis)
-    with st.expander('ตารางวิเคราะห์ 360°',expanded=False):
-        table(analysis,height=450)
+    with st.expander('ตารางวิเคราะห์ 360°' if is_etf else 'ตัวชี้วัดเทคนิคและความเสี่ยง',expanded=False):
+        table(technical_analysis_rows(analysis, is_etf=is_etf),height=450)
     a.render_position_sizer(ticker,row,metrics,currency)
     st.caption('ราคาชุดรายวันอาจไม่ผ่านเกณฑ์ quote อายุไม่เกิน 15 นาที ระบบจึงคงสถานะรอยืนยัน ไม่ลดเกณฑ์เพื่อให้เกิดสัญญาณซื้อ')
 
@@ -147,7 +158,6 @@ def fundamentals(ticker,history,info,row,frame=None):
     etf=a.asset_is_etf(ticker,row,info)
     from reference_ui import render_references
     from asset_semantics import field_state,display_value
-    render_references(ticker,info,etf,a.get_data_cache())
     if not etf:
         from company_analysis_ui import render_company_research
         render_company_research(ticker,info,info.get('_FinancialStatements'))
@@ -165,6 +175,7 @@ def fundamentals(ticker,history,info,row,frame=None):
             records.append({'มิติ':label,'ค่า':value,'หน่วย': '%' if pct else profile_unit(info,key),'สถานะข้อมูล':state,'ฟิลด์ต้นทาง':key})
         table(pd.DataFrame(records),height=480)
         st.caption('อัตราการเติบโตและอัตรากำไรเป็นค่าที่แหล่งข้อมูลรายงาน ช่วงอ้างอิงอาจต่างกัน ตัวเลขมูลค่าและกระแสเงินสดใช้สกุลที่ผู้ให้ข้อมูลระบุ ไม่ใช่มูลค่ายุติธรรมอัตโนมัติ')
+    render_references(ticker,info,etf,a.get_data_cache())
     if info.get('longBusinessSummary'):
         with st.expander('ธุรกิจ / กลยุทธ์กองทุน',expanded=False): st.write(info['longBusinessSummary'])
     result=a.load_dividend_history(ticker)

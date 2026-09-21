@@ -148,6 +148,20 @@ def test_thai_tables_keep_metric_only_help_and_include_all_annual_source_fields(
     assert len(soup.select('tbody abbr[title][tabindex="0"]')) == 54
     assert all(has_thai(n.get_text()) for n in soup.select('h4, thead th, tbody th'))
     assert not soup.select('thead [title], td [title]')
+    # The compact presentation retains all figures and periods, while detailed
+    # interpretation remains available to mouse, keyboard and touch readers.
+    for source, rendered in zip(rows, soup.select('tr[data-metric]')):
+        assert [cell.get_text() for cell in rendered.select('td')] == [
+            source['Current Value'], source['Period'], source['Assessment']]
+        assert source['Reference / Benchmark'] in rendered.abbr['title']
+        assert source['Interpretation'] in rendered.abbr['title']
+        glossary = rendered.find_parent('section').select_one('details.company-glossary')
+        assert source['_help'] in glossary.get_text()
+        assert source['Reference / Benchmark'] in glossary.get_text()
+        assert source['Interpretation'] in glossary.get_text()
+    assert all([cell.get_text() for cell in header.select('th')] ==
+               ['ตัวชี้วัด', 'ค่าปัจจุบัน', 'รอบข้อมูล', 'การประเมิน']
+               for header in soup.select('thead'))
     restored = set()
     for kind in ('income', 'balance', 'cashflow'):
         annual = statement_table(bundle, kind)
