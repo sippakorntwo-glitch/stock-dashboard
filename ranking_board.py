@@ -140,13 +140,16 @@ def split_entries(payload,now=None):
     return entries,watch
 
 
-def pick_buttons(rows,entry):
+def pick_buttons(rows,entry,*,payload=None,pulse=None):
     for rank,row in enumerate(rows,1):
         label=f"{rank:02d} · {row['ticker']} · {row['score']}/100 · "+('ผ่าน ณ เวลาตรวจ' if entry else 'เฝ้าดู ไม่ใช่จุดซื้อ')
         st.button(label,key='ranking_pick_'+row['ticker'],width='stretch',on_click=queue_selection,args=(row,))
+        if payload is not None and pulse is not None:
+            from market_pulse_ui import render_candidate_pulse
+            render_candidate_pulse(row,payload,pulse)
 
 
-@st.fragment(run_every=5)
+@st.fragment(run_every=30)
 def render_board(cache):
     if st.session_state.get('_ranking_pending'):st.rerun()
     config=a.settings() or {};repo=config.get('DASHBOARD_DATA_REPO') or a.DEFAULT_REPO
@@ -167,7 +170,7 @@ def render_board(cache):
     elif previous:
         try:payload=validate_payload(previous)
         except ValueError:payload=None
-    with st.container(border=True,height=560,key='ranking_board'):
+    with st.container(border=True,height=720,key='ranking_board'):
         st.subheader('Top 10 · จังหวะเข้าซื้อ')
         st.caption('ผ่านโมเดล ณ เวลาตรวจ ไม่ใช่การรับประกันกำไร')
         if busy:st.caption('กำลังตรวจอันดับที่เผยแพร่ · ใช้ตัวกรองและดูหุ้นต่อได้')
@@ -180,16 +183,19 @@ def render_board(cache):
         st.caption('จัดอันดับ '+a.thai_time(payload['computed_at']))
         st.caption(f"ตรวจ {counts.get('scanned',0):,}/{counts.get('total',0):,} รายชื่อ · คำนวณโมเดลได้ {counts.get('evaluated',0):,}")
         st.caption(f"ผ่านเงื่อนไขซื้อขณะตรวจสอบสถานะ: {len(entries)} ตัว · ไม่เติมให้ครบ 10")
+        from market_pulse_ui import render_pulse_header, render_pulse_method
+        pulse=render_pulse_header(payload)
         if error:st.warning(error)
         if not fresh(payload['computed_at'],now,STALE_SECONDS):
             st.warning('อันดับเกิน 35 นาที — ไม่มีรายชื่อที่ยืนยันสถานะซื้อ')
         if not entries:
             st.info('ยังไม่มีหุ้นผ่านเงื่อนไขซื้อครบ ณ เวลานี้ รวมกรณีตลาดปิด ราคาเก่า หรือข้อมูลไม่ครบ')
-        pick_buttons(entries,True)
+        pick_buttons(entries,True,payload=payload,pulse=pulse)
         with st.expander('เฝ้าดู / รอยืนยัน — ยังไม่ใช่จุดซื้อ',expanded=not entries):
-            if watch:pick_buttons(watch,False)
+            if watch:pick_buttons(watch,False,payload=payload,pulse=pulse)
             else:st.caption('ไม่มีรายการเฝ้าดูเพิ่มเติมในอันดับรอบนี้')
-        st.caption('คำนวณทุก 30 นาที · ตรวจชุดอันดับใหม่ไม่ถี่กว่า 1 นาที')
+        st.caption('อันดับทั้งตลาดทุก 30 นาที · ตลาดและแรงส่งกลุ่มนี้ทุก 30 วินาที')
+        render_pulse_method()
         with st.expander('เหตุผล เงื่อนไข และอายุข้อมูล'):
             st.write('ตรวจทั้งทะเบียนจาก snapshot ไม่ขึ้นกับตัวกรองส่วนบุคคล; ราคา ≥1 USD สภาพคล่องประมาณ ≥1 ล้าน USD/วัน ประวัติ ≥200 แท่ง ราคาไม่เกิน 4 วัน และตัด Shell/ETF ทดหรือผกผันที่ตรวจพบ')
             st.write('รายชื่อซื้อ: คะแนน ≥80/100 และคะแนนครบ R:R ≥2 ราคายังอยู่ในโซน quote ไม่เกิน 15 นาที ในช่วงตลาดปกติ และผ่าน checklist เพิ่มเติมด้านกำไร กระแสเงินสด หนี้ สเปรด และวันประกาศกำไร ช่องที่ไม่ทราบจะไม่ถือว่าผ่าน; ETF ใช้เกณฑ์กองทุนแยก')

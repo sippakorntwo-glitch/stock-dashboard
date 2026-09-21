@@ -257,6 +257,48 @@ def verify_fundamentals(app,ticker,*,is_fund=False,annual_periods=None):
             'annual_statements':annual,'consolidated_fundamentals':consolidated}
 
 
+def verify_risk_explanations(app):
+    """Read native help and the visible box, using the same two real risk charts."""
+    section=app.locator('.st-key-research_risk')
+    charts=section.locator('[data-testid="stPlotlyChart"]')
+    expect(charts).to_have_count(2,timeout=60000)
+    cards=section.locator('[data-testid="stMetric"]')
+    expect(cards).to_have_count(4)
+    definitions={
+        'ผลตอบแทนสะสม':('ราคาปิดสุดท้าย','เกณฑ์อ่านค่า','ผลตอบแทนสูงไม่ได้แปลว่าความเสี่ยงต่ำ'),
+        'CAGR':('365.25','365 วัน','เกณฑ์อ่านค่า'),
+        'Volatility ต่อปี':('√252','20 จุด','15%','30%','ไม่ใช่มาตรฐานสากล'),
+        'Maximum drawdown':('จุดสูงสุดก่อนหน้า','10%','20%','ไม่ใช่มาตรฐานสากล'),
+    }
+    for label,phrases in definitions.items():
+        card=cards.filter(has=app.get_by_text(label,exact=True))
+        expect(card).to_have_count(1)
+        help_button=card.locator('[data-testid="stTooltipIcon"] button')
+        expect(help_button).to_have_count(1)
+        help_button.hover()
+        tooltip=app.locator('[data-testid="stTooltipContent"]:visible')
+        expect(tooltip).to_have_count(1)
+        for phrase in phrases:
+            expect(tooltip).to_contain_text(phrase)
+        # Leave the actual help target, so the next card opens its own tooltip.
+        card.locator('[data-testid="stMetricValue"]').hover()
+    explanation=section.locator('.st-key-risk_explanation')
+    expect(explanation).to_have_count(1)
+    expect(explanation).to_be_visible()
+    for phrase in ('อ่านกราฟและความเสี่ยงของช่วงนี้','ช่วงที่นำมาอธิบาย',
+                   'กราฟบน','กราฟล่าง','จำนวนครั้ง','ไม่ใช่ความน่าจะเป็นในอนาคต'):
+        expect(explanation).to_contain_text(phrase)
+    assert section.evaluate('''section=>{
+        const charts=section.querySelectorAll('[data-testid="stPlotlyChart"]');
+        const box=section.querySelector('.st-key-risk_explanation');
+        return charts.length===2 && box
+            && !!(charts[1].compareDocumentPosition(box)&Node.DOCUMENT_POSITION_FOLLOWING)
+            && box.getBoundingClientRect().top>=charts[1].getBoundingClientRect().bottom-1;
+    }'''), 'The explanation must remain below both risk charts'
+    return {'metrics':4,'native_tooltips_read':list(definitions),'charts':2,
+            'explanation_below_charts':True,'observed_window_and_distribution_explained':True}
+
+
 def verify_sections(app,ticker,*,is_fund=False):
     no_exception(app)
     for label in ('เปิดกราฟและแผนซื้อขาย','เปิดรายละเอียดพื้นฐานและปันผล',
@@ -267,12 +309,13 @@ def verify_sections(app,ticker,*,is_fund=False):
         expect(app.locator('.st-key-'+section).get_by_role('heading',name=title,exact=True)).to_be_visible(timeout=60000)
     expect(app.locator('.st-key-research_fundamentals').get_by_role('heading',name=re.compile('ประวัติปันผล'))).to_be_visible(timeout=60000)
     verify_fundamentals(app,ticker,is_fund=is_fund)
-    expect(app.locator('.st-key-research_risk [data-testid="stPlotlyChart"]')).to_have_count(2,timeout=60000)
+    risk_explanations=verify_risk_explanations(app)
     expect(app.locator('.st-key-research_comparison [data-testid="stPlotlyChart"]')).to_have_count(1,timeout=120000)
     expect(app.locator('.st-key-research_comparison').get_by_role('heading',name='Correlation ของผลตอบแทนรายวัน')).to_be_visible(timeout=30000)
     from clean_ui_smoke import verify_clean_presentation
     verify_clean_presentation(app)
     no_exception(app)
+    return risk_explanations
 
 
 def click_filtered_stock(page,app,ticker,*,row_selector=False):
@@ -311,7 +354,7 @@ def run():
             chart.locator('#rsi').click();chart.locator('#macd').click()
             page.wait_for_timeout(1000)
             if chart.locator('#error').is_visible(): raise RuntimeError('Candlestick JavaScript error')
-            verify_sections(app,'AAPL')
+            report['risk_explanations']=verify_sections(app,'AAPL')
             report['company_analysis']=[verify_fundamentals(app,'AAPL')]
             Path('work').mkdir(exist_ok=True)
             app.locator('.st-key-company_financial_analysis .company-analysis[data-group]').first.screenshot(path='work/financial-valuation.png')

@@ -196,6 +196,7 @@ def fundamentals(ticker,history,info,row,frame=None):
 
 
 def risk(ticker,history):
+    from risk_explanations import RISK_METRIC_HELP, risk_summary
     if history is None: st.info('ยังไม่มีประวัติราคาให้คำนวณความเสี่ยง'); return
     close=clean_close(a.completed_daily_history(history))
     years=st.radio('ช่วงตัวอย่างความเสี่ยง',['1 ปี','3 ปี','5 ปี','ทั้งหมด'],horizontal=True,key='risk_period')
@@ -203,14 +204,20 @@ def risk(ticker,history):
     if years!='ทั้งหมด': close=close.loc[close.index>=close.index[-1]-pd.DateOffset(years=int(years.split()[0]))]
     stats=risk_metrics(close.to_frame('Close'))
     for box,label,key in zip(st.columns(4),['ผลตอบแทนสะสม','CAGR','Volatility ต่อปี','Maximum drawdown'],['return_pct','cagr_pct','volatility_pct','max_drawdown_pct']):
-        box.metric(label,a.show_number(stats[key],'%'))
+        box.metric(label,a.show_number(stats[key],'%'),help=RISK_METRIC_HELP[key])
     st.caption(f"ข้อมูลจริง {stats['start'] or '—'} ถึง {stats['end'] or '—'} · {stats['observations']:,} แท่ง ไม่รับรองว่าครบช่วงที่เลือก")
     dd=(close/close.cummax()-1)*100
-    plot(go.Figure(go.Scatter(x=dd.index,y=dd,fill='tozeroy',name='Drawdown (%)')),'drawdown')
+    drawdown_chart=go.Figure(go.Scatter(x=dd.index,y=dd,fill='tozeroy',name='Drawdown (%)'))
+    drawdown_chart.update_layout(yaxis_title='จากจุดสูงสุดก่อนหน้า (%)')
+    plot(drawdown_chart,'drawdown')
     changes=close.pct_change(fill_method=None).dropna()*100
-    plot(go.Figure(go.Histogram(x=changes,nbinsx=40,name='Daily returns (%)')),'daily_distribution',300)
-    st.write(f"ดีที่สุดต่อวัน {a.show_number(stats['best_day_pct'],'%')} · แย่ที่สุดต่อวัน {a.show_number(stats['worst_day_pct'],'%')}")
-    st.caption('Volatility = ส่วนเบี่ยงเบนมาตรฐานผลตอบแทนรายวัน × √252; CAGR ใช้จำนวนวันปฏิทินจริงและไม่แสดงเมื่อข้อมูลสั้นกว่า 1 ปี; Drawdown วัดภายในช่วงตัวอย่าง ไม่ใช่ขีดจำกัดความเสียหายในอนาคต')
+    distribution_chart=go.Figure(go.Histogram(x=changes,nbinsx=40,name='Daily returns (%)'))
+    distribution_chart.update_layout(xaxis_title='ผลตอบแทนจากราคาปิดก่อนหน้า (%)',yaxis_title='จำนวนครั้ง')
+    plot(distribution_chart,'daily_distribution',300)
+    with st.container(border=True,key='risk_explanation'):
+        st.markdown('**อ่านกราฟและความเสี่ยงของช่วงนี้**')
+        for paragraph in risk_summary(close,stats):
+            st.markdown(paragraph)
 
 
 def compare(ticker,frame):
