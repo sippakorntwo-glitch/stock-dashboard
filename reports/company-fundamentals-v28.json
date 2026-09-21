@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-09-21T05:53:46.794968+00:00",
+  "recorded_at": "2026-09-21T06:20:52.109955+00:00",
   "run_id": "35564456215",
   "source_sha": "bba2e7ee115d0900887d808b186798f87cc9e9d1",
-  "started_at": "2026-09-21T05:32:05.020073+00:00",
-  "source_generation": "generations/20260921T052653Z-4c1cd652",
+  "started_at": "2026-09-21T06:03:58.380652+00:00",
+  "source_generation": "generations/20260921T055810Z-3e9eea9e",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-21T05:53:46.761130+00:00",
+  "finished_at": "2026-09-21T06:20:52.076184+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260921T054916Z-ee2d2ac1",
+  "generation": "generations/20260921T061616Z-f80427c5",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -29,13 +29,13 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305797,
-    "report_sha256": "318b71e0b6bcf1ddf2833efaa7a2971bc2e5ed77f4a38ab285741c76648edc86",
+    "report_bytes": 305948,
+    "report_sha256": "13557579140f0d65672a2c029d541d1f42a100e55a3884b615b6f27d550e9e1d",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
-    "artifact_name": "company-financials-audit-1",
+    "artifact_name": "company-financials-audit-2",
     "artifact_name_prefix": "company-financials-audit-",
     "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35564456215",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
@@ -3979,27 +3979,37 @@
     }
   },
   "collection": {
-    "due_before": 921,
-    "attempted": 577,
-    "updated": 0,
-    "not_reported": 9,
-    "failed": 0,
-    "errors": [],
+    "due_before": 344,
+    "attempted": 344,
+    "updated": 3,
+    "not_reported": 1,
+    "failed": 1,
+    "errors": [
+      {
+        "ticker": "HELP",
+        "error": "ValueError",
+        "rate_limited": false
+      }
+    ],
     "errors_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 1,
+      "included": 1,
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [],
+    "symbols_updated": [
+      "AWRE",
+      "BGSI",
+      "BJRI"
+    ],
     "symbols_updated_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 3,
+      "included": 3,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": true,
-    "retained_fields": 222,
-    "remaining_due": 344
+    "retained_fields": 93,
+    "remaining_due": 0
   }
 }
