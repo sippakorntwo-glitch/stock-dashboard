@@ -5,6 +5,7 @@ import hashlib
 import json
 from playwright.sync_api import expect
 from quality_smoke import public_summary,fetch_public,REPO
+from reference_ui import REFERENCE_LABEL
 
 
 def reference_for(ticker,manifest):
@@ -59,7 +60,7 @@ def verify_asset_reference(page,app):
         expect(row).to_contain_text('N/A — ไม่ใช้กับหลักทรัพย์ประเภทนี้')
     fundrow=section.locator('.workspace-help-table tr').filter(has=app.get_by_text('Portfolio P/E',exact=False)).first
     expect(fundrow).to_contain_text('N/A — Not applicable')
-    open_research_expander(app,'Official sources & filed financials')
+    open_research_expander(app,REFERENCE_LABEL)
     expect(section.get_by_role('link',name='Gold trust annual report',exact=True)).to_have_attribute('href',
         'https://www.sec.gov/Archives/edgar/data/1708646/000119312526067559/d56933d10k.htm')
     expect(section.get_by_text('Annual sponsor fee: 0.18%',exact=False)).to_be_visible()
@@ -72,15 +73,15 @@ def verify_asset_reference(page,app):
         open_research_expander(app,'เปิดรายละเอียดพื้นฐานและปันผล')
         section=app.locator('.st-key-research_fundamentals')
         reference=reference_for(ticker,manifest)
-        expander=section.get_by_text('Official sources & filed financials',exact=True).locator('xpath=ancestor::details[1]')
-        open_research_expander(app,'Official sources & filed financials')
-        link=expander.get_by_role('link',name='SEC filings',exact=True)
+        expander=section.get_by_text(REFERENCE_LABEL,exact=True).locator('xpath=ancestor::details[1]')
+        open_research_expander(app,REFERENCE_LABEL)
+        link=expander.get_by_role('link',name='เอกสารที่ยื่นต่อ SEC',exact=True)
         expect(link).to_be_visible()
         assert link.get_attribute('href').startswith('https://www.sec.gov/')
         facts=reference.get('facts',[])
         if facts:
             expect(expander.locator('[data-testid="stDataFrame"]')).to_be_visible()
-            expect(expander.get_by_text('SEC reported fiscal-year or point-in-time figures',exact=False)).to_be_visible()
+            expect(expander.get_by_text('งบ SEC แสดงปีบัญชี (FY) หรือยอด ณ วันสิ้นงวด',exact=False)).to_be_visible()
         report['SEC_examples'].append({'ticker':ticker,'verified_cik':reference.get('cik'),
             'stored_fiscal_records':len(facts),'submissions_checked_at':reference.get('checked_at')})
         verify_clean_presentation(app);no_exception(app)

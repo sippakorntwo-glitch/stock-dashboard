@@ -36,6 +36,10 @@ CSS = '''<style>
 .company-table tbody th{min-width:165px;font-weight:600}
 .company-table td:first-child{min-width:165px;font-weight:600}.company-table td:nth-child(2){min-width:125px;font-variant-numeric:tabular-nums}
 .company-table td:nth-child(3){min-width:210px}.company-table td:nth-child(5){min-width:260px}.company-table td:nth-child(6){min-width:150px;color:#b2c4d5}
+.company-analysis[data-group] .company-table tbody th{width:34%;min-width:200px}
+.company-analysis[data-group] .company-table td:nth-child(2){width:17%;min-width:120px}
+.company-analysis[data-group] .company-table td:nth-child(3){width:30%;min-width:190px;color:#b2c4d5}
+.company-analysis[data-group] .company-table td:nth-child(4){width:19%;min-width:130px}
 .company-table abbr{border:0;text-decoration:none;cursor:help}.company-table abbr:focus{outline:2px solid #58cdb7;outline-offset:4px}.company-table small{color:#68c9cf}
 .company-rating{display:inline-block;padding:3px 7px;border-radius:5px;background:#263b53;color:#d3dfed;white-space:normal;min-width:95px}
 .company-rating.good{background:#123e37;color:#81e2bf}.company-rating.bad{background:#492c3b;color:#ffb6c5}.company-rating.watch{background:#473d26;color:#f5d68c}
@@ -50,20 +54,21 @@ def analysis_html(rows, ticker, *, group=None):
         selected = [r for r in rows if r['Group'] == name]
         if not selected:
             continue
-        header = ''.join(f'<th scope="col">{escape(CSV_HEADERS[c])}</th>' for c in ('Metric', 'Current Value', 'Reference / Benchmark', 'Assessment', 'Interpretation', 'Period'))
+        header = ''.join(f'<th scope="col">{escape(CSV_HEADERS[c])}</th>' for c in ('Metric', 'Current Value', 'Period', 'Assessment'))
         body, glossary = [], []
         for row in selected:
-            label, tip = escape(row['Metric']), escape(row['_help'], quote=True)
-            cells = f'<th scope="row"><abbr tabindex="0" title="{tip}" aria-label="{escape(row["Metric"]+": "+row["_help"],quote=True)}">{label} <small>ⓘ</small></abbr></th>'
-            cells += '<td>'+escape(row['Current Value'])+'</td><td>'+escape(row['Reference / Benchmark'])+'</td>'
+            detail = (row['_help'] + '\nเกณฑ์อ้างอิง: ' + row['Reference / Benchmark']
+                      + '\nการตีความ: ' + row['Interpretation'])
+            label, tip = escape(row['Metric']), escape(detail, quote=True)
+            cells = f'<th scope="row"><abbr tabindex="0" title="{tip}" aria-label="{escape(row["Metric"]+": "+detail,quote=True)}">{label} <small>ⓘ</small></abbr></th>'
+            cells += '<td>'+escape(row['Current Value'])+'</td><td>'+escape(row['Period'])+'</td>'
             css = COLORS.get(row.get('_assessment', row['Assessment']), '')
             cells += f'<td><span class="company-rating {css}">{escape(row["Assessment"])}</span></td>'
-            cells += '<td>'+escape(row['Interpretation'])+'</td><td>'+escape(row['Period'])+'</td>'
             body.append(f'<tr data-metric="{escape(row["_key"],quote=True)}" data-state="{escape(row["_state"],quote=True)}">{cells}</tr>')
-            glossary.append(f'<dt>{label}</dt><dd>{escape(row["_help"])}</dd>')
+            glossary.append(f'<dt>{label}</dt><dd>{escape(detail)}</dd>')
         html.append(f'<section class="company-analysis" data-ticker="{escape(ticker,quote=True)}" data-group="{escape(name,quote=True)}"><h4>{escape(GROUP_LABELS[name])}</h4>'
                     f'<div class="company-table-scroll"><table class="company-table"><thead><tr>{header}</tr></thead><tbody>{"".join(body)}</tbody></table></div>'
-                    '<details class="company-glossary"><summary>คำอธิบายตัวชี้วัด — อ่านได้ด้วยแป้นพิมพ์และมือถือ</summary><dl>'+''.join(glossary)+'</dl></details></section>')
+                    '<details class="company-glossary"><summary>คำอธิบายและเกณฑ์อ้างอิงของตัวชี้วัด</summary><dl>'+''.join(glossary)+'</dl></details></section>')
     return ''.join(html)
 
 
@@ -210,17 +215,20 @@ def history_html(rows, title, *, kind=None):
 def render_company_research(ticker, info, bundle=None):
     bundle = apply_reviewed(bundle)
     st.subheader('วิเคราะห์ข้อมูลการเงินบริษัท', anchor='company-financial-analysis')
-    st.caption('ช่วงอ้างอิงเป็นตัวอย่างเพื่อช่วยเปรียบเทียบ ไม่ใช่ค่าเฉลี่ยอุตสาหกรรม มูลค่ายุติธรรม หรือสัญญาณซื้อขาย ระบุหน่วยจำนวนเงิน ร้อยละ และเท่าอย่างชัดเจน พร้อมแยกปีบัญชี (FY) ออกจากข้อมูลย้อนหลัง 12 เดือน (TTM)')
+    st.caption('อ่านรอบข้อมูลของแต่ละรายการก่อนเทียบ: FY = ปีบัญชี · TTM = ย้อนหลัง 12 เดือน · ณ วันสิ้นงวด = ยอดคงเหลือ · คาดการณ์ = ประมาณการอนาคต ส่วนมูลค่าตลาดและอัตราส่วนราคามาจากผู้ให้ข้อมูลคนละฐานกับงบ SEC')
     st.caption('หน่วยย่อ: M = ล้าน · B = พันล้าน · T = ล้านล้าน โดยคงสกุลเงินที่ระบุ เช่น USD ไม่ได้แปลงเป็นเงินบาท วันที่ของงบแสดงเป็นปี ค.ศ.')
     profile = profile_text_th(info)
     if profile:
         st.write(profile)
-    st.caption('ดึงข้อมูลบริษัทเมื่อ: '+str(info.get('_Fetched_At_UTC') or 'ไม่มีข้อมูลรายงาน')+' · ดึงงบการเงินเมื่อ: '+str((bundle or {}).get('fetched_at') or 'ยังไม่ได้เก็บข้อมูล'))
     if bundle and bundle.get('errors'):
         st.caption('การดึงงบบางรายการยังไม่ครบ ตัวเลขที่มีข้อมูลยังคงระบุรอบบัญชีของตนเอง และไม่ได้ประมาณค่าที่ขาดหายไป')
+    reconciliation = reconciliation_html(bundle) if bundle else ''
+    if reconciliation:
+        st.warning('พบรายการที่แหล่งข้อมูลรายงานต่างกัน โปรดเปิดรายละเอียดการเปรียบเทียบด้านล่าง หนี้สินรวมที่ยังต่างกันจะพักใช้ในการวิเคราะห์อัตราส่วน')
     from financial_trends_ui import render_financial_trends
     render_financial_trends(ticker, info, bundle)
     rows = build_rows_th(ticker, info, bundle)
+    st.caption('ตารางรวมตัวชี้วัดพื้นฐานไว้ที่นี่ เปิดคำอธิบายใต้แต่ละหมวดเพื่อดูนิยาม แหล่งข้อมูล และเกณฑ์อ้างอิง ซึ่งเป็นตัวอย่างประกอบการเปรียบเทียบ ไม่ใช่มูลค่ายุติธรรมหรือสัญญาณซื้อขาย')
     # One stable element holds all grouped sections; switching symbols replaces it.
     with st.container(key='company_financial_analysis'):
         st.html(analysis_html(rows, ticker))
@@ -228,7 +236,7 @@ def render_company_research(ticker, info, bundle=None):
     st.download_button('ดาวน์โหลดบทวิเคราะห์บริษัท', pd.DataFrame(export).to_csv(index=False).encode('utf-8-sig'),
                        f'{ticker}_company_analysis.csv', 'text/csv', key=f'company_export_{ticker}', on_click='ignore')
     if bundle and any(bundle.get('annual', {}).values()):
-        with st.expander('งบการเงินย้อนหลัง — สูงสุด 4 ปีบัญชี', expanded=True):
+        with st.expander('งบการเงินย้อนหลัง — สูงสุด 4 ปีบัญชี', expanded=False):
             st.caption('วันที่ในตารางคือวันสิ้นปีบัญชี (ค.ศ.) ตัวเลขเป็นข้อมูลในงบที่รายงาน ไม่ใช่ผลตอบแทนจากราคาตลาด คำอธิบายอยู่ที่ชื่อรายการ และเลื่อนตารางแนวนอนได้เพื่อดูทุกปี')
             if any(r.get('field_provenance') for records in bundle.get('annual', {}).values() for r in records):
                 st.caption('ป้าย SEC หรือรายงานบริษัทระบุแหล่งข้อมูลของรายการ โดยกดเพื่อเปิดเอกสารต้นทางได้ รายการที่แหล่งข้อมูลไม่รายงานยังคงแสดงว่าไม่มีข้อมูล')
@@ -240,13 +248,12 @@ def render_company_research(ticker, info, bundle=None):
             st.download_button('ดาวน์โหลดงบและแหล่งข้อมูลรายรายการ',
                 pd.DataFrame(export_statements(bundle)).to_csv(index=False).encode('utf-8-sig'),
                 f'{ticker}_statement_sources.csv', 'text/csv', key=f'statement_sources_{ticker}', on_click='ignore')
-    if bundle:
-        reconciliation = reconciliation_html(bundle)
-        if reconciliation:
-            with st.expander('ตรวจรายการที่แหล่งข้อมูลรายงานต่างกัน', expanded=True):
-                st.caption('ตารางแสดงยอดต้นทางทั้งสองแหล่ง ณ วันสิ้นงวดเดียวกัน ความต่างอาจเกิดจากขอบเขตรายการหรือการปรับงบ จึงไม่เลือกแทนค่าอัตโนมัติ หนี้สินรวมที่ยังต่างกันจะพักใช้ในการวิเคราะห์อัตราส่วน')
-                st.html(reconciliation)
+    if reconciliation:
+        with st.expander('ตรวจรายการที่แหล่งข้อมูลรายงานต่างกัน', expanded=False):
+            st.caption('ตารางแสดงยอดต้นทางทั้งสองแหล่ง ณ วันสิ้นงวดเดียวกัน ความต่างอาจเกิดจากขอบเขตรายการหรือการปรับงบ จึงไม่เลือกแทนค่าอัตโนมัติ หนี้สินรวมที่ยังต่างกันจะพักใช้ในการวิเคราะห์อัตราส่วน')
+            st.html(reconciliation)
     with st.expander('วิธีอ่านและตีความผลเปรียบเทียบ'):
+        st.caption('ดึงข้อมูลบริษัทเมื่อ: '+str(info.get('_Fetched_At_UTC') or 'ไม่มีข้อมูลรายงาน')+' · ดึงงบการเงินเมื่อ: '+str((bundle or {}).get('fetched_at') or 'ยังไม่ได้เก็บข้อมูล'))
         st.write('ไม่มีอัตราส่วนเดียวที่ยืนยันคุณภาพบริษัทได้ ควรเปรียบเทียบกับบริษัทในอุตสาหกรรมเดียวกัน ประวัติของบริษัท นโยบายบัญชี กำหนดชำระหนี้ และความสามารถสร้างเงินสดอย่างต่อเนื่อง ธนาคาร บริษัทประกัน และ REIT ต้องใช้ตัวชี้วัดเงินทุนและกระแสเงินสดเฉพาะธุรกิจ')
         st.write('N/A หมายถึงไม่ใช้กับหลักทรัพย์ประเภทนี้ ส่วน N/M หมายถึงตีความอัตราส่วนไม่ได้ สถานะไม่มีข้อมูลรายงานหรือข้อมูลสำหรับคำนวณไม่เพียงพอหมายถึงข้อมูลที่ขาด ไม่ใช่ศูนย์หรือคะแนนลงทุนติดลบ งบการเงินอัปเดตเมื่อบริษัทเผยแพร่รายงาน ไม่ได้เปลี่ยนทุกครั้งที่ราคาหุ้นเคลื่อนไหว')
         for label, (_, url) in zip(('คู่มืออ่านงบการเงินจาก SEC (ภาษาอังกฤษ)', 'ข้อมูลผลตอบแทนต่อเงินลงทุนจาก NYU Stern (ภาษาอังกฤษ)'), REFERENCE_URLS):
