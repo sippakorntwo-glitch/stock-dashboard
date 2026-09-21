@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-21T09:12:10.253821+00:00",
-  "run_id": "35579183443",
-  "source_sha": "f90dac081cdf0c6dbad8cd2311b57a61f7b61092",
+  "recorded_at": "2026-09-21T11:08:08.802538+00:00",
+  "run_id": "35591138286",
+  "source_sha": "52f333be889a1781a9a3d1461a12123b5a73fc46",
   "url": "https://my-stock-terminal.streamlit.app/",
-  "expected_version": "2026-09-21.37",
+  "expected_version": "2026-09-21.38",
   "layout": "single-page",
   "views": [
     "ภาพรวมและค้นหา",
@@ -72,6 +72,18 @@
     "approximation_visible": true,
     "toggle_preserves_zoom_and_indicators": true,
     "volume_visibility": true
+  },
+  "risk_explanations": {
+    "metrics": 4,
+    "native_tooltips_read": [
+      "ผลตอบแทนสะสม",
+      "CAGR",
+      "Volatility ต่อปี",
+      "Maximum drawdown"
+    ],
+    "charts": 2,
+    "explanation_below_charts": true,
+    "observed_window_and_distribution_explained": true
   },
   "company_analysis": [
     {
@@ -245,7 +257,7 @@
   },
   "chart_bars": 1511,
   "chart_last_bar": "2026-09-18",
-  "deployed_version": "2026-09-21.37",
+  "deployed_version": "2026-09-21.38",
   "research_improvements": {
     "modes_preserve_ticker": true,
     "financial_periods": [
@@ -506,6 +518,153 @@
       "entry_rows": 0,
       "watch_rows": 10,
       "refresh_schedule": "7,37 * * * *",
+      "pulse_before": {
+        "provider_state": "partial",
+        "refresh_seconds": 30,
+        "news_seconds": 300,
+        "scope": "published-top10",
+        "rendered_at": "2026-09-21T10:58:13.549979+00:00",
+        "quotes_checked_at": "2026-09-21T10:57:54.113046+00:00",
+        "observations": [
+          {
+            "ticker": "BAP",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:53:48.243838+00:00"
+          },
+          {
+            "ticker": "BMRC",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:54:24.641355+00:00"
+          },
+          {
+            "ticker": "A",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:55:06.891531+00:00"
+          },
+          {
+            "ticker": "REFI",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-21T09:22:13+00:00",
+            "news_checked_at": "2026-09-21T10:55:36.830067+00:00"
+          },
+          {
+            "ticker": "THNQ",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-21T08:09:48+00:00",
+            "news_checked_at": "2026-09-21T10:56:11.358942+00:00"
+          },
+          {
+            "ticker": "MATX",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:56:47.169239+00:00"
+          },
+          {
+            "ticker": "CON",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:57:19.864640+00:00"
+          },
+          {
+            "ticker": "CVBF",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:57:54.408800+00:00"
+          },
+          {
+            "ticker": "AVBC",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "BCAL",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          }
+        ]
+      },
+      "pulse_detail": {
+        "ticker": "BAP",
+        "criteria_explained": 3,
+        "news_detail_opened": true,
+        "news_links": 0,
+        "provider_success_required": false
+      },
+      "pulse_after": {
+        "provider_state": "partial",
+        "refresh_seconds": 30,
+        "news_seconds": 300,
+        "scope": "published-top10",
+        "rendered_at": "2026-09-21T10:59:23.059683+00:00",
+        "quotes_checked_at": "2026-09-21T10:59:15.300236+00:00",
+        "observations": [
+          {
+            "ticker": "BAP",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:53:48.243838+00:00"
+          },
+          {
+            "ticker": "BMRC",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:54:24.641355+00:00"
+          },
+          {
+            "ticker": "A",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:55:06.891531+00:00"
+          },
+          {
+            "ticker": "REFI",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-21T09:22:13+00:00",
+            "news_checked_at": "2026-09-21T10:55:36.830067+00:00"
+          },
+          {
+            "ticker": "THNQ",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-21T08:09:48+00:00",
+            "news_checked_at": "2026-09-21T10:56:11.358942+00:00"
+          },
+          {
+            "ticker": "MATX",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:56:47.169239+00:00"
+          },
+          {
+            "ticker": "CON",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:57:19.864640+00:00"
+          },
+          {
+            "ticker": "CVBF",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:57:54.408800+00:00"
+          },
+          {
+            "ticker": "AVBC",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:58:37.178690+00:00"
+          },
+          {
+            "ticker": "BCAL",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": "2026-09-21T10:59:15.567235+00:00"
+          }
+        ]
+      },
       "first_rank": "01 · BAP · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
       "clicked": "BAP",
       "chart_bars": 1511,
@@ -639,7 +798,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260921T073915Z-f68d0da2",
+      "source_generation": "generations/20260921T105247Z-95fe633c",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -709,7 +868,7 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20260921T073915Z-f68d0da2"
+            "source_generation": "generations/20260921T105247Z-95fe633c"
           }
         },
         {
@@ -750,7 +909,7 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20260921T073915Z-f68d0da2"
+            "source_generation": "generations/20260921T105247Z-95fe633c"
           }
         },
         {
@@ -777,7 +936,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260921T073915Z-f68d0da2",
+      "source_generation": "generations/20260921T105247Z-95fe633c",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -840,7 +999,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-21T08:58:49.367840+00:00",
+      "verified_at": "2026-09-21T11:01:06.875784+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -904,7 +1063,7 @@
         "session": "pre",
         "state": "scheduled",
         "effective_seconds": 30.0,
-        "next_due": 1789981592.1516047,
+        "next_due": 1789988665.0339599,
         "second_observation": true
       },
       "quote_controls": {
@@ -914,18 +1073,18 @@
           30
         ],
         "initial": {
-          "state": "updating",
+          "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1789981172.6035922",
-          "busy": "true",
+          "nextDue": "1789988665.0339599",
+          "busy": "false",
           "session": "pre"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "60",
-          "nextDue": "1789981622.1516047",
+          "nextDue": "1789988695.0339599",
           "busy": "false",
           "session": "pre"
         },
@@ -933,7 +1092,7 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1789981627.4989588",
+          "nextDue": "1789988695.3451102",
           "busy": "false",
           "session": "pre"
         },
@@ -941,13 +1100,13 @@
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260921T073915Z-f68d0da2",
-        "generation_after": "generations/20260921T073915Z-f68d0da2"
+        "generation_before": "generations/20260921T105247Z-95fe633c",
+        "generation_after": "generations/20260921T105247Z-95fe633c"
       },
       "minute_price": {
-        "price": 54.77,
-        "bar_time": "2026-09-21T09:05:53+00:00",
-        "fetched_at": "2026-09-21T09:06:37.498497+00:00",
+        "price": 54.72,
+        "bar_time": "2026-09-21T11:04:13+00:00",
+        "fetched_at": "2026-09-21T11:04:25.344810+00:00",
         "state": "recent"
       },
       "theme": {
@@ -973,8 +1132,8 @@
             "box": {
               "left": 135.390625,
               "right": 215.390625,
-              "top": 804.296875,
-              "bottom": 844.296875,
+              "top": 535.296875,
+              "bottom": 575.296875,
               "width": 390,
               "height": 844
             }
@@ -982,10 +1141,10 @@
           {
             "tab": "ความเสี่ยง / แนวโน้ม",
             "box": {
-              "left": 131.390625,
-              "right": 259.390625,
-              "top": 402.296875,
-              "bottom": 442.296875,
+              "left": 213.390625,
+              "right": 341.390625,
+              "top": 541.296875,
+              "bottom": 581.296875,
               "width": 390,
               "height": 844
             }
@@ -993,10 +1152,10 @@
           {
             "tab": "บริษัท / กองทุน",
             "box": {
-              "left": 253.390625,
-              "right": 341.390625,
-              "top": 402.296875,
-              "bottom": 442.296875,
+              "left": 151.390625,
+              "right": 239.390625,
+              "top": 541.296875,
+              "bottom": 581.296875,
               "width": 390,
               "height": 844
             }
@@ -1006,8 +1165,8 @@
             "box": {
               "left": 193.390625,
               "right": 341.390625,
-              "top": 402.296875,
-              "bottom": 442.296875,
+              "top": 541.296875,
+              "bottom": 581.296875,
               "width": 390,
               "height": 844
             }
@@ -1016,8 +1175,8 @@
         "numeric_input_box": {
           "left": 49.390625,
           "right": 276.609375,
-          "top": 572.5,
-          "bottom": 608.09375,
+          "top": 711.5,
+          "bottom": 747.09375,
           "width": 390,
           "height": 844
         },
@@ -1149,5 +1308,5 @@
   "javascript_errors": [],
   "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "f90dac081cdf0c6dbad8cd2311b57a61f7b61092"
+  "tested_sha": "52f333be889a1781a9a3d1461a12123b5a73fc46"
 }
