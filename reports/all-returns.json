@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-09-21T06:26:22.420865+00:00",
-  "run_id": "35568270706",
-  "source_sha": "bba2e7ee115d0900887d808b186798f87cc9e9d1",
+  "recorded_at": "2026-09-21T09:14:42.177366+00:00",
+  "run_id": "35581943374",
+  "source_sha": "f90dac081cdf0c6dbad8cd2311b57a61f7b61092",
   "catalog_members": 9876,
   "priced_members": 9876,
   "periods_checked": 79008,
@@ -31,9 +31,9 @@
   "unpriced_tickers": [],
   "error_count": 1,
   "result": "failure",
-  "audited_at": "2026-09-21T06:26:21.905357+00:00",
-  "generation": "generations/20260921T061616Z-f80427c5",
-  "published_at": "2026-09-21T06:20:48.791581+00:00",
+  "audited_at": "2026-09-21T09:14:41.628137+00:00",
+  "generation": "generations/20260921T073915Z-f68d0da2",
+  "published_at": "2026-09-21T07:43:47.641752+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9876,
