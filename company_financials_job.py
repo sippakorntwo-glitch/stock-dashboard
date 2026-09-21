@@ -255,8 +255,10 @@ def main(argv=None):
     report.update(finished_at=utc_now(),result='audit_completed',data_complete=report['after']['data_complete'])
     Path('work/company-financials-report.json').write_text(json.dumps(report,ensure_ascii=False,allow_nan=False,indent=2))
     if args.publish:
+        from financial_report import public_summary
         from verification_report import publish_report
-        publish_report('sec-financials-reconciliation' if args.sec else 'company-fundamentals-v28',report)
+        publish_report('sec-financials-reconciliation' if args.sec else 'company-fundamentals-v28',
+                       public_summary(report,report_path,sec=args.sec))
     print(json.dumps({'result':report['result'],'data_complete':report['data_complete'],
                       'collection':report['collection'],'counts':report['after']['counts']},ensure_ascii=False),flush=True)
 
