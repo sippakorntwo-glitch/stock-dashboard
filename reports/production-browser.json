@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-21T09:05:43.109234+00:00",
-  "run_id": "35579183356",
+  "recorded_at": "2026-09-21T09:12:10.253821+00:00",
+  "run_id": "35579183443",
   "source_sha": "f90dac081cdf0c6dbad8cd2311b57a61f7b61092",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-21.37",
@@ -840,7 +840,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-21T08:50:24.880656+00:00",
+      "verified_at": "2026-09-21T08:58:49.367840+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -904,7 +904,7 @@
         "session": "pre",
         "state": "scheduled",
         "effective_seconds": 30.0,
-        "next_due": 1789981094.8107183,
+        "next_due": 1789981592.1516047,
         "second_observation": true
       },
       "quote_controls": {
@@ -914,18 +914,18 @@
           30
         ],
         "initial": {
-          "state": "scheduled",
+          "state": "updating",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1789981094.8107183",
-          "busy": "false",
+          "nextDue": "1789981172.6035922",
+          "busy": "true",
           "session": "pre"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "60",
-          "nextDue": "1789981124.8107183",
+          "nextDue": "1789981622.1516047",
           "busy": "false",
           "session": "pre"
         },
@@ -933,7 +933,7 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1789981130.3640332",
+          "nextDue": "1789981627.4989588",
           "busy": "false",
           "session": "pre"
         },
@@ -945,9 +945,9 @@
         "generation_after": "generations/20260921T073915Z-f68d0da2"
       },
       "minute_price": {
-        "price": 54.7698,
-        "bar_time": "2026-09-21T08:58:05+00:00",
-        "fetched_at": "2026-09-21T08:58:20.363546+00:00",
+        "price": 54.77,
+        "bar_time": "2026-09-21T09:05:53+00:00",
+        "fetched_at": "2026-09-21T09:06:37.498497+00:00",
         "state": "recent"
       },
       "theme": {
@@ -962,8 +962,8 @@
             "box": {
               "left": 48.390625,
               "right": 119.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 535.296875,
+              "bottom": 575.296875,
               "width": 390,
               "height": 844
             }
@@ -973,8 +973,8 @@
             "box": {
               "left": 135.390625,
               "right": 215.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 804.296875,
+              "bottom": 844.296875,
               "width": 390,
               "height": 844
             }
@@ -982,10 +982,10 @@
           {
             "tab": "ความเสี่ยง / แนวโน้ม",
             "box": {
-              "left": 213.390625,
-              "right": 341.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "left": 131.390625,
+              "right": 259.390625,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -993,10 +993,10 @@
           {
             "tab": "บริษัท / กองทุน",
             "box": {
-              "left": 151.390625,
-              "right": 239.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "left": 253.390625,
+              "right": 341.390625,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1006,8 +1006,8 @@
             "box": {
               "left": 193.390625,
               "right": 341.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1016,8 +1016,8 @@
         "numeric_input_box": {
           "left": 49.390625,
           "right": 276.609375,
-          "top": 711.5,
-          "bottom": 747.09375,
+          "top": 572.5,
+          "bottom": 608.09375,
           "width": 390,
           "height": 844
         },
