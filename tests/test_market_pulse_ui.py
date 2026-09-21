@@ -119,6 +119,18 @@ def test_real_overlay_uses_source_clocks_and_keeps_strong_momentum_separate_from
     assert (payload, state) == original
 
 
+def test_provider_headline_and_publisher_cannot_render_markdown_images_or_links(monkeypatch):
+    payload, state = fixtures()
+    article = state['news']['TEST']['items'][0]
+    article['title'] = '![remote](https://news.example.com/image) [label](https://news.example.com/other)'
+    article['publisher'] = '**Publisher**'
+    at, _ = run_app(monkeypatch, payload, state)
+    link = at.get('link_button')[0]
+    assert link.proto.url == article['url']
+    assert link.proto.label.startswith(r'\!\[remote\]\(https://news\.example\.com/image\)')
+    assert any(value.startswith(r'\*\*Publisher\*\* · เผยแพร่ ') for value in captions(at))
+
+
 def test_pause_stops_new_requests_and_retains_prices_and_independent_filter(monkeypatch):
     payload, state = fixtures()
     at, service = run_app(monkeypatch, payload, state)

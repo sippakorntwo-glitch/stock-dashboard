@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from html import escape
 import os
+import re
 import pandas as pd
 import streamlit as st
 import dashboard_runtime as a
@@ -10,6 +11,11 @@ from market_pulse import assess_pulse
 from market_pulse_service import PulseService
 
 REFRESH_SECONDS = 30
+
+
+def literal_text(value):
+    """Provider text stays literal even in Streamlit's Markdown button labels."""
+    return re.sub(r'([\\`*_{}\[\]()#+.!|>~\-])', r'\\\1', str(value))
 
 
 @st.cache_resource(max_entries=1, show_spinner=False)
@@ -127,7 +133,7 @@ def render_candidate_pulse(row, payload, state):
     st.markdown(markup, unsafe_allow_html=True)
     if quote:
         session = {'regular': 'ตลาดปกติ', 'pre': 'ก่อนเปิดตลาด', 'post': 'หลังปิดตลาด'}.get(quote.get('session'), 'ไม่ระบุช่วงตลาด')
-        st.caption(display_number(quote.get('price')) + ' ' + str(quote.get('currency') or 'ไม่ระบุสกุลเงิน')
+        st.caption(display_number(quote.get('price')) + ' ' + literal_text(quote.get('currency') or 'ไม่ระบุสกุลเงิน')
                    + ' · ' + display_number(quote.get('change_pct'), '%', signed=True) + ' · ' + session)
         st.caption('ราคาต้นทาง: ' + a.thai_time(quote.get('quote_time')) + source_delay(quote))
     else:
@@ -160,10 +166,9 @@ def render_candidate_pulse(row, payload, state):
         if not articles:
             st.caption('ยังไม่มีข่าวที่อ่านและตรวจวันเผยแพร่ได้ ไม่ได้หมายความว่าไม่มีเหตุการณ์ใหม่')
         for article in articles[:3]:
-            # The pure normalizer validates HTTPS destinations. Streamlit escapes
-            # button text, so a publisher headline cannot inject HTML or Markdown.
-            st.link_button(article['title'], article['url'], width='stretch')
-            st.caption(article['publisher'] + ' · เผยแพร่ ' + a.thai_time(article['published_at']))
+            # Link destinations are validated separately from literal labels.
+            st.link_button(literal_text(article['title']), article['url'], width='stretch')
+            st.caption(literal_text(article['publisher']) + ' · เผยแพร่ ' + a.thai_time(article['published_at']))
         if context.get('checked_at'):
             st.caption('ตรวจข่าวสำเร็จ: ' + a.thai_time(context['checked_at']))
         st.caption('Yahoo Finance · รอบตรวจไม่ใช่อายุราคา ข่าวใหม่ขึ้นอยู่กับเวลาที่ต้นทางเผยแพร่')
