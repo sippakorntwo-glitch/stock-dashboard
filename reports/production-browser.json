@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-09-21T03:39:24.434463+00:00",
-  "run_id": "35557250354",
-  "source_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a",
+  "recorded_at": "2026-09-21T06:23:21.421733+00:00",
+  "run_id": "35564456199",
+  "source_sha": "bba2e7ee115d0900887d808b186798f87cc9e9d1",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-14.36",
   "layout": "single-page",
@@ -639,7 +639,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260921T003528Z-c35cef21",
+      "source_generation": "generations/20260921T055810Z-3e9eea9e",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -709,7 +709,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260921T003528Z-c35cef21"
+            "source_generation": "generations/20260921T055810Z-3e9eea9e"
           }
         },
         {
@@ -750,7 +750,7 @@
               "thai_labels_and_help": true,
               "values_states_and_explanations_match": true
             },
-            "source_generation": "generations/20260921T003528Z-c35cef21"
+            "source_generation": "generations/20260921T055810Z-3e9eea9e"
           }
         },
         {
@@ -777,7 +777,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260921T003528Z-c35cef21",
+      "source_generation": "generations/20260921T055810Z-3e9eea9e",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -840,7 +840,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-21T03:32:10.046508+00:00",
+      "verified_at": "2026-09-21T06:16:04.001133+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -901,10 +901,10 @@
       "empty_results_handled": true,
       "QQQI_chart_bars": 662,
       "auto_refresh_verified": {
-        "session": "unknown",
+        "session": "closed",
         "state": "scheduled",
         "effective_seconds": 1800.0,
-        "next_due": 1789963533.936289,
+        "next_due": 1789973369.776991,
         "second_observation": false,
         "reason": "provider session or request budget requires a conservative wait"
       },
@@ -915,40 +915,40 @@
           30
         ],
         "initial": {
-          "state": "scheduled",
+          "state": "updating",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
           "nextDue": "1789963533.936289",
-          "busy": "false",
+          "busy": "true",
           "session": "unknown"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "1800",
-          "nextDue": "1789963533.936289",
+          "nextDue": "1789973369.776991",
           "busy": "false",
-          "session": "unknown"
+          "session": "closed"
         },
         "resumed": {
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1789963533.936289",
+          "nextDue": "1789973369.776991",
           "busy": "false",
-          "session": "unknown"
+          "session": "closed"
         },
         "pause_resume": true,
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260921T003528Z-c35cef21",
-        "generation_after": "generations/20260921T003528Z-c35cef21"
+        "generation_before": "generations/20260921T055810Z-3e9eea9e",
+        "generation_after": "generations/20260921T055810Z-3e9eea9e"
       },
       "minute_price": {
         "price": 54.3,
         "bar_time": "2026-09-18T23:58:00+00:00",
-        "fetched_at": "2026-09-21T03:35:33.935636+00:00",
+        "fetched_at": "2026-09-21T06:19:29.776433+00:00",
         "state": "stale"
       },
       "theme": {
@@ -1150,5 +1150,5 @@
   "javascript_errors": [],
   "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "78cd05ab89087a3b103f09c034e7e269666bba3a"
+  "tested_sha": "bba2e7ee115d0900887d808b186798f87cc9e9d1"
 }
