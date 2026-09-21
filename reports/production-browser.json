@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-09-21T06:23:21.421733+00:00",
-  "run_id": "35564456199",
-  "source_sha": "bba2e7ee115d0900887d808b186798f87cc9e9d1",
+  "recorded_at": "2026-09-21T09:05:43.109234+00:00",
+  "run_id": "35579183356",
+  "source_sha": "f90dac081cdf0c6dbad8cd2311b57a61f7b61092",
   "url": "https://my-stock-terminal.streamlit.app/",
-  "expected_version": "2026-09-14.36",
+  "expected_version": "2026-09-21.37",
   "layout": "single-page",
   "views": [
     "ภาพรวมและค้นหา",
@@ -113,10 +113,10 @@
           "rows": 6
         }
       ],
-      "reused_360": {
-        "rows": 15,
-        "thai_labels_and_help": true,
-        "values_states_and_explanations_match": true
+      "consolidated_fundamentals": {
+        "technical_rows": 9,
+        "duplicate_fundamentals": 0,
+        "canonical_metrics": 54
       }
     },
     {
@@ -158,10 +158,10 @@
           "rows": 6
         }
       ],
-      "reused_360": {
-        "rows": 15,
-        "thai_labels_and_help": true,
-        "values_states_and_explanations_match": true
+      "consolidated_fundamentals": {
+        "technical_rows": 9,
+        "duplicate_fundamentals": 0,
+        "canonical_metrics": 54
       }
     },
     {
@@ -203,10 +203,10 @@
           "rows": 6
         }
       ],
-      "reused_360": {
-        "rows": 15,
-        "thai_labels_and_help": true,
-        "values_states_and_explanations_match": true
+      "consolidated_fundamentals": {
+        "technical_rows": 9,
+        "duplicate_fundamentals": 0,
+        "canonical_metrics": 54
       }
     }
   ],
@@ -245,7 +245,7 @@
   },
   "chart_bars": 1511,
   "chart_last_bar": "2026-09-18",
-  "deployed_version": "2026-09-14.36",
+  "deployed_version": "2026-09-21.37",
   "research_improvements": {
     "modes_preserve_ticker": true,
     "financial_periods": [
@@ -639,7 +639,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260921T055810Z-3e9eea9e",
+      "source_generation": "generations/20260921T073915Z-f68d0da2",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -704,12 +704,12 @@
                 "rows": 6
               }
             ],
-            "reused_360": {
-              "rows": 15,
-              "thai_labels_and_help": true,
-              "values_states_and_explanations_match": true
+            "consolidated_fundamentals": {
+              "technical_rows": 9,
+              "duplicate_fundamentals": 0,
+              "canonical_metrics": 54
             },
-            "source_generation": "generations/20260921T055810Z-3e9eea9e"
+            "source_generation": "generations/20260921T073915Z-f68d0da2"
           }
         },
         {
@@ -745,12 +745,12 @@
                 "rows": 0
               }
             ],
-            "reused_360": {
-              "rows": 15,
-              "thai_labels_and_help": true,
-              "values_states_and_explanations_match": true
+            "consolidated_fundamentals": {
+              "technical_rows": 9,
+              "duplicate_fundamentals": 0,
+              "canonical_metrics": 54
             },
-            "source_generation": "generations/20260921T055810Z-3e9eea9e"
+            "source_generation": "generations/20260921T073915Z-f68d0da2"
           }
         },
         {
@@ -777,7 +777,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260921T055810Z-3e9eea9e",
+      "source_generation": "generations/20260921T073915Z-f68d0da2",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -840,7 +840,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-21T06:16:04.001133+00:00",
+      "verified_at": "2026-09-21T08:50:24.880656+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -901,12 +901,11 @@
       "empty_results_handled": true,
       "QQQI_chart_bars": 662,
       "auto_refresh_verified": {
-        "session": "closed",
+        "session": "pre",
         "state": "scheduled",
-        "effective_seconds": 1800.0,
-        "next_due": 1789973369.776991,
-        "second_observation": false,
-        "reason": "provider session or request budget requires a conservative wait"
+        "effective_seconds": 30.0,
+        "next_due": 1789981094.8107183,
+        "second_observation": true
       },
       "quote_controls": {
         "requested_seconds": [
@@ -915,41 +914,41 @@
           30
         ],
         "initial": {
-          "state": "updating",
+          "state": "scheduled",
           "requestedSeconds": "30",
-          "effectiveSeconds": "1800",
-          "nextDue": "1789963533.936289",
-          "busy": "true",
-          "session": "unknown"
+          "effectiveSeconds": "30",
+          "nextDue": "1789981094.8107183",
+          "busy": "false",
+          "session": "pre"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
-          "effectiveSeconds": "1800",
-          "nextDue": "1789973369.776991",
+          "effectiveSeconds": "60",
+          "nextDue": "1789981124.8107183",
           "busy": "false",
-          "session": "closed"
+          "session": "pre"
         },
         "resumed": {
           "state": "scheduled",
           "requestedSeconds": "30",
-          "effectiveSeconds": "1800",
-          "nextDue": "1789973369.776991",
+          "effectiveSeconds": "30",
+          "nextDue": "1789981130.3640332",
           "busy": "false",
-          "session": "closed"
+          "session": "pre"
         },
         "pause_resume": true,
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260921T055810Z-3e9eea9e",
-        "generation_after": "generations/20260921T055810Z-3e9eea9e"
+        "generation_before": "generations/20260921T073915Z-f68d0da2",
+        "generation_after": "generations/20260921T073915Z-f68d0da2"
       },
       "minute_price": {
-        "price": 54.3,
-        "bar_time": "2026-09-18T23:58:00+00:00",
-        "fetched_at": "2026-09-21T06:19:29.776433+00:00",
-        "state": "stale"
+        "price": 54.7698,
+        "bar_time": "2026-09-21T08:58:05+00:00",
+        "fetched_at": "2026-09-21T08:58:20.363546+00:00",
+        "state": "recent"
       },
       "theme": {
         "background": "radial-gradient(at 12% 0%, rgb(21, 35, 64) 0px, rgba(0, 0, 0, 0) 48%), none",
@@ -1150,5 +1149,5 @@
   "javascript_errors": [],
   "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "bba2e7ee115d0900887d808b186798f87cc9e9d1"
+  "tested_sha": "f90dac081cdf0c6dbad8cd2311b57a61f7b61092"
 }
