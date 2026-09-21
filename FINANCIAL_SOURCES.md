@@ -71,4 +71,13 @@ Yahoo refresh/audit progress; `reports/sec-financials-reconciliation.json` recor
 SEC checks and actual filled-cell counts. These are separate from browser test
 results and do not assert every issuer filing has been manually verified.
 
+The published JSON reports are bounded summaries. Aggregate counts and collector
+queue/cooldown controls remain exact; symbol lists and representative metric
+evidence include explicit sample and omitted counts. Full per-cell provenance
+stays in the Actions artifact's original JSON, per-security CSV and recovery
+checkpoint. Each summary identifies its run, artifact name and full-report
+checksum so detailed evidence can be traced without duplicating it on the report
+branch. Artifacts expire after the workflow's 14-day retention period. Growing
+provenance must not prevent a completed collection from publishing its status.
+
 Primary reference: [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces).

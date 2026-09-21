@@ -2,7 +2,7 @@ name: Reconcile missing financial cells with SEC filings
 on:
   push:
     branches: [main]
-    paths: [sec_financials.py, sec_financials_job.py, .github/workflows/sec_financials.yml]
+    paths: [sec_financials.py, sec_financials_job.py, company_financials_job.py, financial_report.py, .github/workflows/sec_financials.yml]
   workflow_dispatch:
   schedule:
     - cron: '19 */2 * * *'
@@ -74,7 +74,7 @@ jobs:
         if: steps.queue.outputs.run_batch == 'true'
         run: |
           python -m pip install -q -r requirements-dev.txt
-          python -m pytest -q tests/test_sec_financials.py tests/test_sec_financials_job.py tests/test_financial_recovery.py tests/test_financial_completeness.py
+          python -m pytest -q tests/test_sec_financials.py tests/test_sec_financials_job.py tests/test_financial_recovery.py tests/test_financial_completeness.py tests/test_financial_report.py
       - name: Fill only dated missing cells and report source disagreements
         if: steps.queue.outputs.run_batch == 'true'
         env:
@@ -83,6 +83,7 @@ jobs:
           DASHBOARD_DATA_VISIBILITY: public
           DASHBOARD_DATA_BRANCH: dashboard-data
           PYTHONUNBUFFERED: '1'
+          FINANCIAL_AUDIT_ARTIFACT_NAME: sec-financials-audit-${{ matrix.batch }}
         run: python company_financials_job.py --publish --backfill --sec --limit 300 --minutes 15
       - name: Preserve per-security reconciliation and recovery evidence
         if: always() && steps.queue.outputs.run_batch == 'true'
