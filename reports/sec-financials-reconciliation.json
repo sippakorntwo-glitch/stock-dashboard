@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-09-22T22:29:09.491875+00:00",
-  "run_id": "35792505510",
+  "recorded_at": "2026-09-23T00:36:04.400617+00:00",
+  "run_id": "35802657800",
   "source_sha": "52f333be889a1781a9a3d1461a12123b5a73fc46",
-  "started_at": "2026-09-22T22:28:27.918604+00:00",
-  "source_generation": "generations/20260922T203126Z-efc85f66",
+  "started_at": "2026-09-23T00:35:12.277951+00:00",
+  "source_generation": "generations/20260922T225759Z-3d24c20d",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-22T22:29:09.465262+00:00",
+  "finished_at": "2026-09-23T00:36:04.368507+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260922T203126Z-efc85f66",
+  "generation": "generations/20260922T225759Z-3d24c20d",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305879,
-    "report_sha256": "356150a18acc377b420e837f5908aab9b3979aa5bf13c9b8d55097af534285c7",
+    "report_sha256": "d203dcef4655be5c46240ac4ebaf8228d0f7703e4db47bc39d8b3075c88b2bd1",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35792505510",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35802657800",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -114,14 +114,14 @@
         "not_applicable": 5676
       },
       "operatingMargins": {
-        "available": 3728,
-        "not_meaningful": 461,
+        "available": 3729,
+        "not_meaningful": 460,
         "not_reported": 11,
         "not_applicable": 5676
       },
       "profitMargins": {
-        "available": 3726,
-        "not_meaningful": 463,
+        "available": 3727,
+        "not_meaningful": 462,
         "not_reported": 11,
         "not_applicable": 5676
       },
@@ -139,8 +139,8 @@
       },
       "roic": {
         "available": 1348,
-        "missing_inputs": 1438,
-        "not_meaningful": 1374,
+        "missing_inputs": 1439,
+        "not_meaningful": 1373,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -170,8 +170,8 @@
       },
       "epsGrowthFY": {
         "available": 2019,
-        "not_reported": 477,
-        "not_meaningful": 1664,
+        "not_reported": 478,
+        "not_meaningful": 1663,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -321,9 +321,9 @@
         "not_applicable": 5676
       },
       "fcfMargin": {
-        "available": 3436,
+        "available": 3437,
         "missing_inputs": 274,
-        "not_meaningful": 450,
+        "not_meaningful": 449,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -2081,14 +2081,14 @@
         "not_applicable": 5676
       },
       "operatingMargins": {
-        "available": 3728,
-        "not_meaningful": 461,
+        "available": 3729,
+        "not_meaningful": 460,
         "not_reported": 11,
         "not_applicable": 5676
       },
       "profitMargins": {
-        "available": 3726,
-        "not_meaningful": 463,
+        "available": 3727,
+        "not_meaningful": 462,
         "not_reported": 11,
         "not_applicable": 5676
       },
@@ -2106,8 +2106,8 @@
       },
       "roic": {
         "available": 1348,
-        "missing_inputs": 1438,
-        "not_meaningful": 1374,
+        "missing_inputs": 1439,
+        "not_meaningful": 1373,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -2137,8 +2137,8 @@
       },
       "epsGrowthFY": {
         "available": 2019,
-        "not_reported": 477,
-        "not_meaningful": 1664,
+        "not_reported": 478,
+        "not_meaningful": 1663,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -2288,9 +2288,9 @@
         "not_applicable": 5676
       },
       "fcfMargin": {
-        "available": 3436,
+        "available": 3437,
         "missing_inputs": 274,
-        "not_meaningful": 450,
+        "not_meaningful": 449,
         "pending": 40,
         "not_applicable": 5676
       },
