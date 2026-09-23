@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-09-23T04:31:36.736195+00:00",
-  "run_id": "35818582773",
+  "recorded_at": "2026-09-23T07:38:26.800489+00:00",
+  "run_id": "35827518299",
   "source_sha": "52f333be889a1781a9a3d1461a12123b5a73fc46",
-  "started_at": "2026-09-23T04:30:44.065922+00:00",
-  "source_generation": "generations/20260922T225759Z-3d24c20d",
+  "started_at": "2026-09-23T07:37:45.279713+00:00",
+  "source_generation": "generations/20260923T073216Z-a302288a",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-23T04:31:36.702924+00:00",
+  "finished_at": "2026-09-23T07:38:26.774784+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260922T225759Z-3d24c20d",
+  "generation": "generations/20260923T073216Z-a302288a",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -21,8 +21,8 @@
     "info": 9876,
     "financial_statements": 4160,
     "dividends": 9876,
-    "return_1y": 8127,
-    "return_2y": 6925,
+    "return_1y": 8122,
+    "return_2y": 6923,
     "return_3y": 6172
   },
   "snapshot_unchanged": true,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305879,
-    "report_sha256": "76c29f2542980c72f491d5654c2138044b3461396719f82c371106b94e4c050e",
+    "report_sha256": "f54b2c5baf973f0fa6062b151813eb8c43402a6201cb7f5a588ebe73d6e13681",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35818582773",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35827518299",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -70,8 +70,8 @@
       },
       "trailingPE": {
         "available": 2272,
-        "not_meaningful": 1757,
-        "not_reported": 171,
+        "not_meaningful": 1758,
+        "not_reported": 170,
         "not_applicable": 5676
       },
       "forwardPE": {
@@ -169,9 +169,9 @@
         "not_applicable": 5676
       },
       "epsGrowthFY": {
-        "available": 2019,
-        "not_reported": 478,
-        "not_meaningful": 1663,
+        "available": 2020,
+        "not_reported": 476,
+        "not_meaningful": 1664,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -347,8 +347,8 @@
         "not_applicable": 5676
       },
       "payoutRatio": {
-        "available": 2269,
-        "not_meaningful": 1755,
+        "available": 2268,
+        "not_meaningful": 1756,
         "not_reported": 176,
         "not_applicable": 5676
       },
@@ -2037,8 +2037,8 @@
       },
       "trailingPE": {
         "available": 2272,
-        "not_meaningful": 1757,
-        "not_reported": 171,
+        "not_meaningful": 1758,
+        "not_reported": 170,
         "not_applicable": 5676
       },
       "forwardPE": {
@@ -2136,9 +2136,9 @@
         "not_applicable": 5676
       },
       "epsGrowthFY": {
-        "available": 2019,
-        "not_reported": 478,
-        "not_meaningful": 1663,
+        "available": 2020,
+        "not_reported": 476,
+        "not_meaningful": 1664,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -2314,8 +2314,8 @@
         "not_applicable": 5676
       },
       "payoutRatio": {
-        "available": 2269,
-        "not_meaningful": 1755,
+        "available": 2268,
+        "not_meaningful": 1756,
         "not_reported": 176,
         "not_applicable": 5676
       },
