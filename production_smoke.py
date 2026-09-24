@@ -361,6 +361,8 @@ def run():
             print('VERIFIED_INITIAL_SINGLE_PAGE: AAPL; all research sections',flush=True)
             from chart_commentary_smoke import verify_chart_commentary
             report['chart_commentary']=verify_chart_commentary(page,app,payload,screenshot=True)
+            from stock_brief_smoke import verify_stock_brief
+            report['stock_brief']=verify_stock_brief(app,payload)
             report.update(chart=True,chart_bars=len(payload['records']),chart_last_bar=payload.get('lastBar'),deployed_version=version,views=list(VIEWS))
             for ticker,row_selector in [('MSFT',False),('AAPL',True)]:
                 chart,payload=click_filtered_stock(page,app,ticker,row_selector=row_selector)

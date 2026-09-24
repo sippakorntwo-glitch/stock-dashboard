@@ -13,6 +13,64 @@ def close_enough(left,right):
         assert left is not None and math.isclose(left,right,rel_tol=1e-9,abs_tol=1e-9),(left,right)
 
 
+def verify_reference_lines(page, payload, card, *, screenshot=False):
+    """Read prices back from actual Lightweight Charts price-line objects."""
+    frame = None
+    for candidate in page.frames:
+        try:
+            if not candidate.locator('#reference-levels-data').count():
+                continue
+            actual = candidate.eval_on_selector('#payload', 'e=>JSON.parse(e.textContent)')
+            if (actual.get('ticker'),actual.get('period'),actual['records'][-1]['time']) == (payload['ticker'],payload['period'],payload['records'][-1]['time']):
+                frame = candidate
+                break
+        except Exception:
+            continue
+    assert frame is not None, 'No reference levels on the selected chart'
+    receipt = frame.locator('#chart-levels')
+    expect(receipt).to_have_attribute('data-ticker', payload['ticker'])
+    expect(receipt).to_have_attribute('data-period', payload['period'])
+    expect(frame.locator('#chart canvas').first).to_be_visible()
+    expected = json.loads(card.get_attribute('data-report'))['levels']
+    line_data = lambda: json.loads(receipt.get_attribute('data-rendered-lines'))
+    frame.wait_for_function("document.querySelector('#chart-levels').dataset.renderedLines !== undefined")
+    button = frame.locator('#levels-toggle')
+    original_report = card.get_attribute('data-report')
+    original_payload = frame.locator('#payload').text_content()
+    original_range = frame.locator('#chart').evaluate('e=>[e.dataset.rangeFrom,e.dataset.rangeTo]')
+    original_controls = frame.locator('#ema20,#ema50,#sma200,#volume,#volumeSplit,#rsi,#macd,#log,#inspect-toggle').evaluate_all('els=>els.map(e=>[e.id,e.getAttribute("aria-pressed")])')
+    initial_visible = button.get_attribute('aria-pressed') == 'true'
+    assert len(line_data()) == 2
+    for line in line_data():
+        close_enough(line['price'], expected[line['key']])
+        assert line['visible'] == line['axisLabelVisible'] == initial_visible
+        assert f'{line["price"]:,.{payload["precision"]}f}' in receipt.inner_text()
+    # Genuine clicks update only line visibility. The source snapshot, selected
+    # range, indicator preferences and hover-independent commentary stay fixed.
+    for visible in (not initial_visible, initial_visible):
+        button.click()
+        expect(button).to_have_attribute('aria-pressed', str(visible).lower())
+        for line in line_data():
+            assert line['visible'] == line['axisLabelVisible'] == visible
+            close_enough(line['price'], expected[line['key']])
+        assert frame.locator('#chart').evaluate('e=>[e.dataset.rangeFrom,e.dataset.rangeTo]') == original_range
+        assert card.get_attribute('data-report') == original_report
+        assert frame.locator('#payload').text_content() == original_payload
+    assert frame.locator('#ema20,#ema50,#sma200,#volume,#volumeSplit,#rsi,#macd,#log,#inspect-toggle').evaluate_all('els=>els.map(e=>[e.id,e.getAttribute("aria-pressed")])') == original_controls
+    result = {'actual_price_lines': line_data(), 'toggle_preserves_range_and_snapshot': True,
+              'shares_commentary_calculation': True}
+    if screenshot:
+        if not initial_visible:
+            button.click()
+        page.wait_for_timeout(150)
+        Path('work').mkdir(exist_ok=True)
+        frame.locator('#shell').screenshot(path='work/v39-support-resistance.png')
+        result['screenshot'] = 'work/v39-support-resistance.png'
+        if not initial_visible:
+            button.click()
+    return result
+
+
 def verify_chart_commentary(page,app,payload,*,screenshot=False):
     assert not payload.get('demo')
     rows=payload['records'];last=rows[-1];start=payload['visibleStart']
@@ -71,6 +129,7 @@ def verify_chart_commentary(page,app,payload,*,screenshot=False):
             'trend':trend,'bar_time':last['time'],'return_percent':expected,'levels':data['levels'],
             'volume_ratio':data['volume_ratio'],'metrics':data['metrics'],'atr_pct':data['atr_pct'],
             'below_chart':True,'source_values_checked':True,'warnings':data['warnings']}
+    result['chart_reference_lines']=verify_reference_lines(page,payload,card,screenshot=screenshot)
     if screenshot:
         Path('work').mkdir(exist_ok=True)
         card.screenshot(path='work/v26-chart-commentary.png')

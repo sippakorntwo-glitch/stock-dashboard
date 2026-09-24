@@ -22,6 +22,7 @@ if os.environ.get('DASHBOARD_OFFLINE_TEST_STUBS') == '1':
 def isolated_ranking_feed(tmp_path, monkeypatch):
     monkeypatch.setenv('DASHBOARD_ALLOW_MINUTE_QUOTES','false')
     monkeypatch.setenv('DASHBOARD_ALLOW_MARKET_PULSE','false')
+    monkeypatch.setenv('DASHBOARD_ALLOW_STOCK_BRIEF','false')
     import json
     from datetime import datetime, timezone
     fixture = {

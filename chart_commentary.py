@@ -12,6 +12,7 @@ import json
 import math
 from zoneinfo import ZoneInfo
 from chart_performance import period_performance, format_return, _date_label
+from chart_levels import reference_levels, level_caption
 
 TITLE = 'สรุปแนวโน้มและวิเคราะห์กราฟ'
 METHOD = 'chart-commentary-v1'
@@ -115,15 +116,7 @@ def summarize_chart(payload: Mapping, *, now=None) -> dict:
     regime = 'unknown' if sma is None else 'above' if close > sma else 'below' if close < sma else 'at'
     # The window's total return and its last-bar trend are deliberately separate.
     perf = period_performance(payload)
-    prior_window = records[max(start, len(records)-21):-1]
-    support = resistance = None
-    if len(prior_window) >= 5:
-        lows = [number(r.get('low'), positive=True) for r in prior_window]
-        highs = [number(r.get('high'), positive=True) for r in prior_window]
-        if all(v is not None for v in lows+highs) and all(lo <= hi for lo,hi in zip(lows,highs)):
-            support, resistance = min(lows), max(highs)
-    level_state = ('unknown' if support is None else 'breakout' if close > resistance else
-                   'breakdown' if close < support else 'inside')
+    levels = reference_levels(payload)
     volume = number(last.get('volume'), nonnegative=True)
     volumes = [number(r.get('volume'), nonnegative=True) for r in records[-21:-1]]
     average = math.fsum(volumes)/20 if len(volumes)==20 and all(v is not None for v in volumes) else None
@@ -175,7 +168,7 @@ def summarize_chart(payload: Mapping, *, now=None) -> dict:
                   latest_time=times[-1], close=close, metrics=metric, slopes_5bars=slopes,
                   trend=trend, regime=regime, distance_ema20_pct=pct(close,ema20),
                   return_window=perf, visible_bars=len(records)-start, available_bars=len(records),
-                  levels={'support':support,'resistance':resistance,'bars':len(prior_window), 'state':level_state},
+                  levels=levels,
                   volume=volume, average_volume_20=average, volume_ratio=volume_ratio,
                   atr14=atr, atr_pct=number(atr/close*100) if atr is not None else None,
                   histogram_change=hist_delta, bar_state=bar_state,
@@ -235,9 +228,13 @@ def commentary_html(payload: Mapping, *, now=None) -> str:
     volume_text = ('ยังเปรียบเทียบ Volume ไม่ได้ ต้องมีแท่งล่าสุดและ Volume ครบ 20 แท่งก่อนหน้าโดยค่าเฉลี่ยมากกว่าศูนย์' if data['volume_ratio'] is None else
                    f'Volume ล่าสุด {fmt(data["volume"],0)} เทียบค่าเฉลี่ย 20 แท่งก่อนหน้า {fmt(data["average_volume_20"],0)} = {fmt(data["volume_ratio"],2)}x; '+
                    ('สูงกว่าค่าเฉลี่ย' if data['volume_ratio']>1 else 'ต่ำกว่าค่าเฉลี่ย' if data['volume_ratio']<1 else 'เท่าค่าเฉลี่ย')+' ปริมาณซื้อขายไม่บอกทิศทางด้วยตัวมันเอง')
-    level_text = ('ข้อมูลกรอบราคาไม่พอ ต้องมี High/Low ที่ใช้ได้อย่างน้อย 5 แท่งก่อนหน้าในช่วงที่เลือก' if levels['support'] is None else
-                  f'กรอบ {levels["bars"]} แท่งก่อนหน้าภายในช่วงที่เลือก (ไม่รวมแท่งล่าสุด): Low {fmt(levels["support"])} / High {fmt(levels["resistance"])}; '+
-                  {'inside':'ราคายังอยู่ในกรอบเดิม','breakout':'ราคาล่าสุดสูงกว่าขอบบนเดิม','breakdown':'ราคาล่าสุดต่ำกว่าขอบล่างเดิม'}[levels['state']])
+    level_text = level_caption(levels, precision)
+    if levels['support'] is not None:
+        level_text += (f'. ใช้ Low ต่ำสุด / High สูงสุดของ {levels["bars"]} แท่งก่อนหน้าภายในช่วงที่เลือก (ไม่รวมแท่งล่าสุด); '+
+                       {'inside':'ราคายังอยู่ในกรอบเดิม',
+                        'breakout':'ราคาล่าสุดทะลุแนวต้านเดิมแล้ว ยังไม่ยืนยันว่าแนวต้านเดิมจะกลายเป็นแนวรับ',
+                        'breakdown':'ราคาล่าสุดหลุดแนวรับเดิมแล้ว ยังไม่ยืนยันว่าแนวรับเดิมจะกลายเป็นแนวต้าน'}[levels['state']]+
+                       '. เส้นประสีเขียวคือแนวรับ สีส้มคือแนวต้าน เปิด/ซ่อนได้ด้วยปุ่มแนวรับ / แนวต้านบนกราฟ; เปอร์เซ็นต์ = (ระดับ / Close ล่าสุด − 1) × 100')
     volatility = ('ATR14 ยังไม่มีค่าที่ใช้ได้' if data['atr14'] is None else f'ATR14 = {fmt(data["atr14"])} หรือ {fmt(data["atr_pct"],2)}% ของราคา เป็นขนาดความผันผวนต่อแท่ง ไม่ใช่เป้าราคาหรือโอกาสขาดทุน')
     if levels['support'] is None:
         scenarios = 'ยังไม่มีกรอบราคาที่พอสร้างเงื่อนไขติดตาม ไม่สร้างแนวรับ/แนวต้านขึ้นมาแทนข้อมูลที่ขาด'
