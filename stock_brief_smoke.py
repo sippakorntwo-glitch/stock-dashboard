@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import ipaddress
+import re
 from urllib.parse import urlsplit
 
 from playwright.sync_api import expect
@@ -74,7 +75,9 @@ def verify_stock_brief(app, payload):
     if checked:
         assert _stamp(checked) <= rendered
         assert 'ตรวจข่าวสำเร็จ:' in text
-    links = card.get_by_role('link', include_hidden=True)
+    # Streamlit headings also contain permalink anchors. Only the numbered
+    # article buttons are provider source links, including collapsed articles.
+    links = card.get_by_role('link', name=re.compile(r'^\d+\.\s'), include_hidden=True)
     source_links = list(dict.fromkeys(links.evaluate_all('els => els.map(e => e.href).filter(Boolean)')))
     assert len(source_links) <= 10
     for href in source_links:

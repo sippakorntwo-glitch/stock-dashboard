@@ -13,6 +13,47 @@ def close_enough(left,right):
         assert left is not None and math.isclose(left,right,rel_tol=1e-9,abs_tol=1e-9),(left,right)
 
 
+def verify_mobile_chart_layout(frame):
+    """Measure actual canvas bounds and reach controls inside the narrow iframe."""
+    shell=frame.locator('#shell')
+    old_scroll=shell.evaluate('e=>e.scrollTop')
+    before_payload=frame.locator('#payload').text_content()
+    before_controls=frame.locator('.controls button[aria-pressed]').evaluate_all('es=>es.map(e=>[e.id,e.getAttribute("aria-pressed")])')
+    try:
+        dimensions=frame.evaluate("""()=>{
+          const shell=document.getElementById('shell'),wrap=document.getElementById('chartwrap'),chart=document.getElementById('chart');
+          const w=wrap.getBoundingClientRect(),c=chart.getBoundingClientRect();
+          return {width:shell.clientWidth,scrollWidth:shell.scrollWidth,height:shell.clientHeight,scrollHeight:shell.scrollHeight,
+            wrapHeight:w.height,chartHeight:c.height,overflowY:getComputedStyle(shell).overflowY,
+            canvases:[...chart.querySelectorAll('canvas')].map(e=>{const r=e.getBoundingClientRect();return {left:r.left-w.left,right:r.right-w.right,top:r.top-w.top,bottom:r.bottom-w.bottom}})};
+        }""")
+        assert dimensions['scrollWidth']<=dimensions['width']+2,dimensions
+        assert dimensions['wrapHeight']>=349,dimensions
+        assert dimensions['chartHeight']<=dimensions['wrapHeight']+2,dimensions
+        assert dimensions['canvases'],dimensions
+        for canvas in dimensions['canvases']:
+            assert canvas['left']>=-2 and canvas['right']<=2 and canvas['top']>=-2 and canvas['bottom']<=2,dimensions
+        if dimensions['scrollHeight']>dimensions['height']+2:
+            assert dimensions['overflowY'] in ('auto','scroll'),dimensions
+        reachable=[]
+        for control in frame.locator('.controls button:visible').all():
+            control.scroll_into_view_if_needed()
+            expect(control).to_be_in_viewport(ratio=.9)
+            if control.is_enabled():control.click(trial=True)
+            reachable.append(control.get_attribute('id'))
+        for selector in ('.header','#chart-levels','#chartwrap','.footer'):
+            item=frame.locator(selector)
+            item.scroll_into_view_if_needed()
+            expect(item).to_be_in_viewport(ratio=.9)
+        frame.locator('#chartwrap').scroll_into_view_if_needed()
+        frame.locator('#shell').screenshot(path='work/v39-chart-mobile.png')
+        assert frame.locator('#payload').text_content()==before_payload
+        assert frame.locator('.controls button[aria-pressed]').evaluate_all('es=>es.map(e=>[e.id,e.getAttribute("aria-pressed")])')==before_controls
+        return {**dimensions,'reachable_controls':reachable,'screenshot':'work/v39-chart-mobile.png'}
+    finally:
+        shell.evaluate('(e,y)=>e.scrollTop=y',old_scroll)
+
+
 def verify_reference_lines(page, payload, card, *, screenshot=False):
     """Read prices back from actual Lightweight Charts price-line objects."""
     frame = None
@@ -142,6 +183,12 @@ def verify_chart_commentary(page,app,payload,*,screenshot=False):
             assert dimensions['scroll']<=dimensions['width']+4,dimensions
             card.screenshot(path='work/v26-chart-commentary-mobile.png')
             result['mobile_dimensions']=dimensions
+            for frame in page.frames:
+                if frame.locator('#chart-levels').count() and frame.locator('#chart-levels').get_attribute('data-ticker')==payload['ticker']:
+                    result['mobile_chart_layout']=verify_mobile_chart_layout(frame)
+                    break
+            else:
+                raise AssertionError('Mobile chart frame not found')
         finally:
             page.set_viewport_size(old or {'width':1440,'height':1000})
     return result

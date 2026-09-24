@@ -82,7 +82,13 @@ def level_caption(levels, precision=2):
 _STYLE = '''
 #chart-levels{padding:3px 20px 8px;font-size:12px;line-height:1.6;color:#c6d4e8;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 #chart-levels[data-visible=false]{color:#9aa9bd}#levels-toggle[aria-pressed=true]{border-color:#62bfa9}
-@media(max-width:620px){#chart-levels{padding-left:14px;padding-right:14px;font-size:11px}}
+@media(max-width:620px){
+ #chart-levels{padding-left:14px;padding-right:14px;font-size:11px}
+ /* Match the chart API's 350px minimum; wrapped controls remain reachable. */
+ #shell{overflow-y:auto;overflow-x:hidden}
+ #shell>*{flex-shrink:0}
+ #chartwrap{flex:1 0 350px;min-height:350px}
+}
 '''
 _BUTTON = '<button id="levels-toggle" aria-pressed="true" title="แสดง/ซ่อน High/Low สูงสุด 20 แท่งก่อนหน้าในช่วงที่เลือก ไม่รวมแท่งล่าสุด">แนวรับ / แนวต้าน</button>\n  '
 _SCRIPT = r'''
