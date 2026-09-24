@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-09-24T16:33:07.979943+00:00",
-  "run_id": "36027971928",
+  "recorded_at": "2026-09-24T18:35:00.131265+00:00",
+  "run_id": "36042063538",
   "source_sha": "baa06f7351923dfb23f299a7ba976c6c99333dce",
-  "started_at": "2026-09-24T16:32:15.078941+00:00",
-  "source_generation": "generations/20260924T143133Z-c6873db2",
+  "started_at": "2026-09-24T18:34:24.033734+00:00",
+  "source_generation": "generations/20260924T170225Z-d0a2a541",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-24T16:33:07.946807+00:00",
+  "finished_at": "2026-09-24T18:35:00.111246+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260924T143133Z-c6873db2",
+  "generation": "generations/20260924T170225Z-d0a2a541",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305879,
-    "report_sha256": "2420ea65a4d5038d78c974aae984833e83c0da1507e392ebf86f9bae701ca377",
+    "report_sha256": "c4833b226c336a95e146919d55ecb16372c8c1090a8b383ea274008135859bd4",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36027971928",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36042063538",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -169,8 +169,8 @@
         "not_applicable": 5676
       },
       "epsGrowthFY": {
-        "available": 2020,
-        "not_reported": 476,
+        "available": 2019,
+        "not_reported": 477,
         "not_meaningful": 1664,
         "pending": 40,
         "not_applicable": 5676
@@ -245,8 +245,8 @@
         "not_applicable": 5676
       },
       "interestCoverage": {
-        "missing_inputs": 1612,
-        "available": 2516,
+        "missing_inputs": 1613,
+        "available": 2515,
         "not_meaningful": 32,
         "pending": 40,
         "not_applicable": 5676
@@ -2136,8 +2136,8 @@
         "not_applicable": 5676
       },
       "epsGrowthFY": {
-        "available": 2020,
-        "not_reported": 476,
+        "available": 2019,
+        "not_reported": 477,
         "not_meaningful": 1664,
         "pending": 40,
         "not_applicable": 5676
@@ -2212,8 +2212,8 @@
         "not_applicable": 5676
       },
       "interestCoverage": {
-        "missing_inputs": 1612,
-        "available": 2516,
+        "missing_inputs": 1613,
+        "available": 2515,
         "not_meaningful": 32,
         "pending": 40,
         "not_applicable": 5676
