@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-09-23T22:29:15.238483+00:00",
-  "run_id": "35928465555",
+  "recorded_at": "2026-09-24T00:42:03.656764+00:00",
+  "run_id": "35939203938",
   "source_sha": "52f333be889a1781a9a3d1461a12123b5a73fc46",
-  "started_at": "2026-09-23T22:28:22.705790+00:00",
-  "source_generation": "generations/20260923T203213Z-f9acaf69",
+  "started_at": "2026-09-24T00:41:11.481612+00:00",
+  "source_generation": "generations/20260924T003540Z-eee9e1e1",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-23T22:29:15.206175+00:00",
+  "finished_at": "2026-09-24T00:42:03.624158+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260923T203213Z-f9acaf69",
+  "generation": "generations/20260924T003540Z-eee9e1e1",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305879,
-    "report_sha256": "d6d9c384d54d1bf0aa9cd375accfd36241b391b5408ff966908e1c672665c582",
+    "report_sha256": "b84b4a3c1adcf1f81be6eb17e563d90ca85b924b0d0be5d048524772f50c11e5",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35928465555",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35939203938",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -156,15 +156,15 @@
       },
       "revenueGrowthFY": {
         "available": 3465,
-        "not_reported": 316,
-        "not_meaningful": 379,
+        "not_reported": 317,
+        "not_meaningful": 378,
         "pending": 40,
         "not_applicable": 5676
       },
       "netIncomeGrowthFY": {
-        "available": 2137,
+        "available": 2136,
         "not_meaningful": 1709,
-        "not_reported": 314,
+        "not_reported": 315,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -2123,15 +2123,15 @@
       },
       "revenueGrowthFY": {
         "available": 3465,
-        "not_reported": 316,
-        "not_meaningful": 379,
+        "not_reported": 317,
+        "not_meaningful": 378,
         "pending": 40,
         "not_applicable": 5676
       },
       "netIncomeGrowthFY": {
-        "available": 2137,
+        "available": 2136,
         "not_meaningful": 1709,
-        "not_reported": 314,
+        "not_reported": 315,
         "pending": 40,
         "not_applicable": 5676
       },
