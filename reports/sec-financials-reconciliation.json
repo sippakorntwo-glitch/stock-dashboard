@@ -1,29 +1,29 @@
 {
-  "recorded_at": "2026-09-24T04:31:59.104561+00:00",
-  "run_id": "35955916708",
+  "recorded_at": "2026-09-24T07:05:30.464789+00:00",
+  "run_id": "35965275141",
   "source_sha": "52f333be889a1781a9a3d1461a12123b5a73fc46",
-  "started_at": "2026-09-24T04:31:06.573336+00:00",
-  "source_generation": "generations/20260924T003540Z-eee9e1e1",
+  "started_at": "2026-09-24T07:04:38.118638+00:00",
+  "source_generation": "generations/20260924T065941Z-bbae741c",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-24T04:31:59.070857+00:00",
+  "finished_at": "2026-09-24T07:05:30.432246+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260924T003540Z-eee9e1e1",
+  "generation": "generations/20260924T065941Z-bbae741c",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9876,
+    "checked_today": 9867,
     "industry": 9483,
     "info": 9876,
     "financial_statements": 4160,
     "dividends": 9876,
-    "return_1y": 8122,
-    "return_2y": 6923,
-    "return_3y": 6172
+    "return_1y": 8129,
+    "return_2y": 6927,
+    "return_3y": 6179
   },
   "snapshot_unchanged": true,
   "report_format": "financial-audit-summary-v1",
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305879,
-    "report_sha256": "10ef6c195aecabdfcd9a837e2c23a43a085d403834bd15b963b4998faba1abdf",
+    "report_sha256": "4cac6e2d08ff7a787abf39b9320b3c9a51e12a937c70a70f6f2d6e64b0dbfd09",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35955916708",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/35965275141",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
