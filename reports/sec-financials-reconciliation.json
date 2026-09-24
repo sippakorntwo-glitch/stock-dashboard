@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-09-24T12:38:28.474236+00:00",
-  "run_id": "36000113492",
-  "source_sha": "52f333be889a1781a9a3d1461a12123b5a73fc46",
-  "started_at": "2026-09-24T12:37:34.396288+00:00",
-  "source_generation": "generations/20260924T123159Z-d10c2fb0",
+  "recorded_at": "2026-09-24T14:37:41.996088+00:00",
+  "run_id": "36013425444",
+  "source_sha": "baa06f7351923dfb23f299a7ba976c6c99333dce",
+  "started_at": "2026-09-24T14:36:48.309067+00:00",
+  "source_generation": "generations/20260924T143133Z-c6873db2",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-24T12:38:28.439513+00:00",
+  "finished_at": "2026-09-24T14:37:41.961127+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260924T123159Z-d10c2fb0",
+  "generation": "generations/20260924T143133Z-c6873db2",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305879,
-    "report_sha256": "7c7c1bfbbb5e87e220d5a0ee2b698b1661d1c7f9b352ec726aa67f7dadff7a80",
+    "report_sha256": "e9777d1a1f01ac156d20be94ab1418997b656a827df17c222ae1be38870e7470",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36000113492",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36013425444",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
