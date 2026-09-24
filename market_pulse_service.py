@@ -57,18 +57,20 @@ def fetch_quotes(symbols):
         )
 
 
-def fetch_news(ticker):
+def fetch_news(ticker, *, count=5):
     """Use get_news's normal endpoint, but validate failures before calling it empty.
 
     yfinance 1.7's Ticker.get_news memoizes each instance and converts some
     malformed responses into [].  This equivalent uncached request validates
     the HTTP status and stream envelope so errors cannot erase good news.
     """
+    if isinstance(count, bool) or not isinstance(count, int) or not 1 <= count <= 10:
+        raise ValueError('News count must be between 1 and 10')
     from yfinance.data import YfData
     import dashboard_runtime as a
     with a.core._PROVIDER_LOCK:
         response = YfData().post(
-            NEWS_URL, body={'serviceConfig': {'snippetCount': 5, 's': [ticker]}},
+            NEWS_URL, body={'serviceConfig': {'snippetCount': count, 's': [ticker]}},
             timeout=10,
         )
         response.raise_for_status()

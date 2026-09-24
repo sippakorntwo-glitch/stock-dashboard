@@ -148,7 +148,7 @@ def range_payload(frame,ticker,period,interval,fetched_at=''):
 
 
 @st.fragment(run_every=60)
-def render_chart(ticker,daily_history,daily_meta=None):
+def render_chart(ticker,daily_history,daily_meta=None,*,info=None,is_etf=False):
     if st.session_state.get('selected_ticker',ticker) != ticker:
         return
     # Allocate every sibling before provider/cache spinners or optional messages.
@@ -159,6 +159,7 @@ def render_chart(ticker,daily_history,daily_meta=None):
     notices=st.container(key='chart_notices')
     chart_slot=st.container(key='chart_display')
     commentary_slot=st.container(key='chart_commentary_display')
+    brief_slot=st.container(key='stock_brief_display')
     with controls:
         period=st.radio('ช่วงเวลาแสดงกราฟ',PERIODS,index=PERIODS.index('1 ปี'),horizontal=True,key='chart_period',
             help='ช่วงย้อนหลัง ไม่ใช่ขนาดแท่ง: 1/3/5/7 วันใช้ 5 นาทีและนับวันซื้อขายล่าสุดที่มีข้อมูล; เดือน/ปีใช้แท่งรายวัน')
@@ -200,16 +201,25 @@ def render_chart(ticker,daily_history,daily_meta=None):
             first=history.index[min(payload['visibleStart'],len(history)-1)];last=history.index[-1]
             st.caption(f'ช่วงข้อมูลที่แสดงจริง: {first:%Y-%m-%d} ถึง {last:%Y-%m-%d} · ดึงสำเร็จ {a.thai_time(meta.get("fetched_at"))}')
             if short and (pd.Timestamp.now(tz=last.tz).date()-last.date()).days>4:st.warning('แท่งระหว่างวันล่าสุดเกิน 4 วันปฏิทิน อาจเป็นวันหยุดหรือข้อมูลเก่า ไม่ใช่ราคา ณ ขณะนี้')
-            html=with_inspector(with_performance(a.build_chart_html(payload),payload))
+            from chart_levels import with_levels
+            html=with_levels(with_inspector(with_performance(a.build_chart_html(payload),payload)),payload)
         with chart_slot:
             if hasattr(st,'iframe'):st.iframe(html,height=900)
             else:components.html(html,height=900,scrolling=False)
         from chart_commentary import commentary_html
         commentary_slot.markdown(commentary_html(payload),unsafe_allow_html=True)
     except (ValueError,TypeError,KeyError) as exc:
-        chart_slot.empty();commentary_slot.empty()
+        chart_slot.empty();commentary_slot.empty();brief_slot.empty()
         with notices:
             st.warning(f'แสดงกราฟไม่ได้ ({type(exc).__name__}) ไม่เปลี่ยนข้อมูลให้คะแนนรายวัน')
+        return
+    # A missing article/quote must not remove a successfully rendered chart.
+    from stock_brief_ui import render_stock_brief
+    with brief_slot:
+        try:
+            render_stock_brief(payload,info=info,is_etf=is_etf)
+        except (ValueError,TypeError,KeyError):
+            st.caption('ยังแสดงข้อมูลข่าวประกอบไม่ได้ กราฟใช้ข้อมูลราคาที่ตรวจสอบแล้วด้านบน')
 
 
 def first_chart_load_finished(state, current_revision, rendered_revision):

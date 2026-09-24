@@ -291,12 +291,14 @@ def test_default_fetchers_use_normal_authentication_and_uncached_validated_news(
     monkeypatch.setattr(yfinance.data, 'YfData', Data)
     service_module.fetch_quotes(('AAPL', 'SPY', 'QQQ'))
     service_module.fetch_news('AAPL')
-    service_module.fetch_news('AAPL')
+    service_module.fetch_news('AAPL', count=10)
     assert calls == [(service_module.QUOTE_URL,
                       {'symbols': 'AAPL,SPY,QQQ', 'formatted': 'false'}, 10)]
     expected = (service_module.NEWS_URL,
                 {'serviceConfig': {'snippetCount': 5, 's': ['AAPL']}}, 10)
-    assert news_calls == [expected, 'status checked', expected, 'status checked']
+    selected = (service_module.NEWS_URL,
+                {'serviceConfig': {'snippetCount': 10, 's': ['AAPL']}}, 10)
+    assert news_calls == [expected, 'status checked', selected, 'status checked']
 
 
 @pytest.mark.parametrize('payload', [None, [], {}, {'data': {}},

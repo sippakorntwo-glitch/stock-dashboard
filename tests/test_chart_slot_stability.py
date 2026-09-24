@@ -14,14 +14,14 @@ def test_chart_slots_are_allocated_before_dynamic_work():
         if isinstance(node,ast.Assign) and isinstance(node.value,ast.Call):
             if isinstance(node.value.func,ast.Attribute) and node.value.func.attr in ('container','empty'):
                 slots[node.targets[0].id]=(i,node.value.func.attr)
-    assert {k:v[1] for k,v in slots.items()}=={'controls':'container','notices':'container','chart_slot':'container','commentary_slot':'container'}
+    assert {k:v[1] for k,v in slots.items()}=={'controls':'container','notices':'container','chart_slot':'container','commentary_slot':'container','brief_slot':'container'}
     protected=next(n for n in function.body if isinstance(n,ast.Try))
     assert all(i<function.body.index(protected) for i,_ in slots.values())
     markdown=[n for n in ast.walk(protected) if isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute) and n.func.attr=='markdown']
     assert len(markdown)==1 and isinstance(markdown[0].func.value,ast.Name) and markdown[0].func.value.id=='commentary_slot'
     assert all(any(isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute) and n.func.attr=='empty'
                    and isinstance(n.func.value,ast.Name) and n.func.value.id==slot for n in ast.walk(protected.handlers[0]))
-               for slot in ('chart_slot','commentary_slot'))
+               for slot in ('chart_slot','commentary_slot','brief_slot'))
 
 
 @pytest.mark.skipif(os.environ.get('DASHBOARD_OFFLINE_TEST_STUBS')=='1',reason='Requires actual Streamlit')

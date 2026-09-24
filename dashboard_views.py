@@ -130,9 +130,9 @@ def technical_analysis_rows(analysis, *, is_etf=False):
 def technical(ticker,daily_history,info,row):
     from return_audit_ui import render_return_audit
     render_return_audit(ticker,daily_history,row)
-    render_chart(ticker,daily_history,a.get_data_cache().history(ticker)[1])
-    # Daily criteria must NEVER be calculated from the selected intraday chart.
     is_etf=a.asset_is_etf(ticker,row,info)
+    render_chart(ticker,daily_history,a.get_data_cache().history(ticker)[1],info=info,is_etf=is_etf)
+    # Daily criteria must NEVER be calculated from the selected intraday chart.
     benchmark,_=a.get_data_cache().history('SPY') if is_etf else (None,{})
     ctx=a.decision_context(daily_history,info,benchmark)
     scored=a.criteria_score(ctx,info,is_etf)
