@@ -1,51 +1,394 @@
 {
-  "recorded_at": "2026-09-21T11:12:56.726652+00:00",
-  "run_id": "35592629188",
-  "source_sha": "52f333be889a1781a9a3d1461a12123b5a73fc46",
+  "recorded_at": "2026-09-24T15:04:20.236736+00:00",
+  "run_id": "36017086497",
+  "source_sha": "baa06f7351923dfb23f299a7ba976c6c99333dce",
   "catalog_members": 9876,
-  "priced_members": 9876,
-  "periods_checked": 79008,
-  "numeric_periods": 67733,
-  "unavailable_periods": 11275,
-  "max_difference_pp": 5.928590951498336e-12,
-  "errors": [
-    {
-      "ticker": "WHLR",
-      "field": "Return_5Y",
-      "actual": -99.99999999980336,
-      "expected": -99.99999999980336,
-      "audit_record": {
-        "value": -99.99999999980336,
-        "annualized": -99.544247311785,
-        "start": "2021-09-17",
-        "end": "2026-09-18",
-        "requested_start": "2021-09-18",
-        "start_price": 136297725952.0,
-        "end_price": 0.26800000667572,
-        "state": "available",
-        "basis": "adjusted-close",
-        "method_version": 3
-      }
-    }
+  "priced_members": 9867,
+  "periods_checked": 78936,
+  "numeric_periods": 67772,
+  "unavailable_periods": 11164,
+  "max_difference_pp": 9.592326932761353e-12,
+  "errors": [],
+  "unpriced_tickers": [
+    "PIEL",
+    "PJUS",
+    "PLTG",
+    "PLUL",
+    "PMAR",
+    "PMBS",
+    "POCT",
+    "PPTY",
+    "PQNT"
   ],
-  "unpriced_tickers": [],
-  "error_count": 1,
-  "result": "failure",
-  "audited_at": "2026-09-21T11:12:56.245182+00:00",
-  "generation": "generations/20260921T105247Z-95fe633c",
-  "published_at": "2026-09-21T10:57:39.121153+00:00",
+  "error_count": 0,
+  "result": "passed",
+  "audited_at": "2026-09-24T15:04:08.749414+00:00",
+  "generation": "generations/20260924T143133Z-c6873db2",
+  "published_at": "2026-09-24T14:35:49.098746+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9876,
     "histories": 9876,
     "info": 9876,
-    "industry": 9447,
+    "industry": 9483,
     "dividends_checked": 9876,
-    "dividends_with_payments": 6075,
-    "dividends_no_payments": 3801,
-    "financial_statements": 4159,
+    "dividends_with_payments": 6080,
+    "dividends_no_payments": 3796,
+    "financial_statements": 4160,
     "unattempted_info": 0,
     "unattempted_dividends": 0
   },
-  "missing_price_diagnostic": {}
+  "missing_price_diagnostic": {
+    "PIEL": {
+      "rows": 21,
+      "last_observations": [
+        {
+          "date": "2026-09-18 00:00:00-04:00",
+          "values": {
+            "Open": 28.36199951171875,
+            "High": 28.36199951171875,
+            "Low": 28.36199951171875,
+            "Close": 28.36199951171875,
+            "Adj Close": 28.36199951171875,
+            "Volume": 100.0
+          }
+        },
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 28.858999252319336,
+            "High": 28.858999252319336,
+            "Low": 28.858999252319336,
+            "Close": 28.858999252319336,
+            "Adj Close": 28.858999252319336,
+            "Volume": 100.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 28.659000396728516,
+            "High": 28.659000396728516,
+            "Low": 28.659000396728516,
+            "Close": 28.659000396728516,
+            "Adj Close": 28.659000396728516,
+            "Volume": 100.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    },
+    "PJUS": {
+      "rows": 22,
+      "last_observations": [
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 53.209999084472656,
+            "High": 53.209999084472656,
+            "Low": 53.209999084472656,
+            "Close": 53.209999084472656,
+            "Adj Close": 53.209999084472656,
+            "Volume": 100.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 52.7599983215332,
+            "High": 52.7599983215332,
+            "Low": 52.63999938964844,
+            "Close": 52.63999938964844,
+            "Adj Close": 52.63999938964844,
+            "Volume": 100.0
+          }
+        },
+        {
+          "date": "2026-09-24 00:00:00-04:00",
+          "values": {
+            "Open": 52.7599983215332,
+            "High": 52.7599983215332,
+            "Low": 52.638301849365234,
+            "Close": 52.638301849365234,
+            "Adj Close": 52.638301849365234,
+            "Volume": 6.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    },
+    "PLTG": {
+      "rows": 22,
+      "last_observations": [
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 18.31999969482422,
+            "High": 19.18000030517578,
+            "Low": 18.024999618530273,
+            "Close": 19.16699981689453,
+            "Adj Close": 19.16699981689453,
+            "Volume": 78900.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 19.969999313354492,
+            "High": 21.389999389648438,
+            "Low": 19.610000610351562,
+            "Close": 21.006000518798828,
+            "Adj Close": 21.006000518798828,
+            "Volume": 109200.0
+          }
+        },
+        {
+          "date": "2026-09-24 00:00:00-04:00",
+          "values": {
+            "Open": 20.389999389648438,
+            "High": 21.1299991607666,
+            "Low": 20.31999969482422,
+            "Close": 21.0049991607666,
+            "Adj Close": 21.0049991607666,
+            "Volume": 35011.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    },
+    "PLUL": {
+      "rows": 22,
+      "last_observations": [
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 7.300000190734863,
+            "High": 7.380000114440918,
+            "Low": 7.0,
+            "Close": 7.131999969482422,
+            "Adj Close": 7.131999969482422,
+            "Volume": 59300.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 7.0970001220703125,
+            "High": 7.119999885559082,
+            "Low": 6.795000076293945,
+            "Close": 6.849999904632568,
+            "Adj Close": 6.849999904632568,
+            "Volume": 19700.0
+          }
+        },
+        {
+          "date": "2026-09-24 00:00:00-04:00",
+          "values": {
+            "Open": 6.550000190734863,
+            "High": 6.550000190734863,
+            "Low": 6.159900188446045,
+            "Close": 6.179999828338623,
+            "Adj Close": 6.179999828338623,
+            "Volume": 29589.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    },
+    "PMAR": {
+      "rows": 22,
+      "last_observations": [
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 48.880001068115234,
+            "High": 49.0099983215332,
+            "Low": 48.880001068115234,
+            "Close": 49.0099983215332,
+            "Adj Close": 49.0099983215332,
+            "Volume": 7600.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 49.08000183105469,
+            "High": 49.08000183105469,
+            "Low": 48.91999816894531,
+            "Close": 48.97999954223633,
+            "Adj Close": 48.97999954223633,
+            "Volume": 4500.0
+          }
+        },
+        {
+          "date": "2026-09-24 00:00:00-04:00",
+          "values": {
+            "Open": 48.900001525878906,
+            "High": 48.93000030517578,
+            "Low": 48.880001068115234,
+            "Close": 48.880001068115234,
+            "Adj Close": 48.880001068115234,
+            "Volume": 6877.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    },
+    "PMBS": {
+      "rows": 22,
+      "last_observations": [
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 47.5,
+            "High": 47.540000915527344,
+            "Low": 47.47999954223633,
+            "Close": 47.5099983215332,
+            "Adj Close": 47.5099983215332,
+            "Volume": 232400.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 47.439998626708984,
+            "High": 47.47999954223633,
+            "Low": 46.880001068115234,
+            "Close": 46.97999954223633,
+            "Adj Close": 46.97999954223633,
+            "Volume": 361400.0
+          }
+        },
+        {
+          "date": "2026-09-24 00:00:00-04:00",
+          "values": {
+            "Open": 47.040000915527344,
+            "High": 47.06999969482422,
+            "Low": 46.779998779296875,
+            "Close": 46.779998779296875,
+            "Adj Close": 46.779998779296875,
+            "Volume": 15687.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    },
+    "POCT": {
+      "rows": 22,
+      "last_observations": [
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 47.77000045776367,
+            "High": 47.790000915527344,
+            "Low": 47.72999954223633,
+            "Close": 47.779998779296875,
+            "Adj Close": 47.779998779296875,
+            "Volume": 23700.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 47.619998931884766,
+            "High": 47.86000061035156,
+            "Low": 47.619998931884766,
+            "Close": 47.779998779296875,
+            "Adj Close": 47.779998779296875,
+            "Volume": 39900.0
+          }
+        },
+        {
+          "date": "2026-09-24 00:00:00-04:00",
+          "values": {
+            "Open": 47.7400016784668,
+            "High": 47.790000915527344,
+            "Low": 47.709999084472656,
+            "Close": 47.709999084472656,
+            "Adj Close": 47.709999084472656,
+            "Volume": 6517.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    },
+    "PPTY": {
+      "rows": 22,
+      "last_observations": [
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 32.18000030517578,
+            "High": 32.220001220703125,
+            "Low": 32.18000030517578,
+            "Close": 32.21099853515625,
+            "Adj Close": 32.21099853515625,
+            "Volume": 400.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 32.08000183105469,
+            "High": 32.08000183105469,
+            "Low": 31.729999542236328,
+            "Close": 31.729999542236328,
+            "Adj Close": 31.729999542236328,
+            "Volume": 2200.0
+          }
+        },
+        {
+          "date": "2026-09-24 00:00:00-04:00",
+          "values": {
+            "Open": 31.8799991607666,
+            "High": 31.760099411010742,
+            "Low": 31.760000228881836,
+            "Close": 31.760099411010742,
+            "Adj Close": 31.760099411010742,
+            "Volume": 3508.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    },
+    "PQNT": {
+      "rows": 21,
+      "last_observations": [
+        {
+          "date": "2026-09-18 00:00:00-04:00",
+          "values": {
+            "Open": 23.08099937438965,
+            "High": 23.08099937438965,
+            "Low": 23.08099937438965,
+            "Close": 23.08099937438965,
+            "Adj Close": 23.08099937438965,
+            "Volume": 100.0
+          }
+        },
+        {
+          "date": "2026-09-21 00:00:00-04:00",
+          "values": {
+            "Open": 23.32900047302246,
+            "High": 23.32900047302246,
+            "Low": 23.32900047302246,
+            "Close": 23.32900047302246,
+            "Adj Close": 23.32900047302246,
+            "Volume": 100.0
+          }
+        },
+        {
+          "date": "2026-09-23 00:00:00-04:00",
+          "values": {
+            "Open": 23.0049991607666,
+            "High": 23.0049991607666,
+            "Low": 23.0049991607666,
+            "Close": 23.0049991607666,
+            "Adj Close": 23.0049991607666,
+            "Volume": 1800.0
+          }
+        }
+      ],
+      "note": "Diagnostic only; no raw close substituted for adjusted returns."
+    }
+  }
 }
