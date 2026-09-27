@@ -1,22 +1,22 @@
 {
-  "recorded_at": "2026-09-27T04:31:59.923929+00:00",
-  "run_id": "36294501318",
+  "recorded_at": "2026-09-27T06:37:15.819242+00:00",
+  "run_id": "36300558888",
   "source_sha": "baa06f7351923dfb23f299a7ba976c6c99333dce",
-  "started_at": "2026-09-27T04:31:26.716521+00:00",
-  "source_generation": "generations/20260927T004012Z-b3eec809",
+  "started_at": "2026-09-27T06:36:29.427416+00:00",
+  "source_generation": "generations/20260927T050047Z-29b725d0",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-27T04:31:59.905792+00:00",
+  "finished_at": "2026-09-27T06:37:15.792969+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260927T004012Z-b3eec809",
+  "generation": "generations/20260927T050047Z-29b725d0",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9876,
+    "checked_today": 0,
     "industry": 9483,
     "info": 9876,
     "financial_statements": 4160,
@@ -30,15 +30,15 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305825,
-    "report_sha256": "25f01ae7a6da10fa2d6b4d48f21937a4381cb48f1b20a4d9cf711b9ee1879a31",
+    "report_bytes": 305822,
+    "report_sha256": "3e7092388a946c00a95d9da01d0be4b99cad73e49cd44b4c2302be84d19d9038",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36294501318",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36300558888",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
