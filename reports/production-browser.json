@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-27T03:34:14.941648+00:00",
-  "run_id": "36291160886",
+  "recorded_at": "2026-09-28T03:37:28.293180+00:00",
+  "run_id": "36373507976",
   "source_sha": "baa06f7351923dfb23f299a7ba976c6c99333dce",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-24.39",
@@ -441,18 +441,18 @@
         "quote_time": "2026-09-25T23:59:58+00:00"
       }
     ],
-    "news_checked_at": "2026-09-27T03:23:32.522820+00:00",
+    "news_checked_at": "2026-09-28T03:25:51.708430+00:00",
     "source_links": [
-      "https://www.fool.com/investing/2026/09/26/a-1000-investment-split-between-alphabet-and-nvidi/",
-      "https://www.fool.com/investing/2026/09/26/the-3-magnificent-seven-stocks-that-im-buying-now/",
-      "https://www.fool.com/coverage/better-buy/2026/09/26/intuit-vs-oracle-which-technology-stock-is-a-better-buy-in-2026/",
-      "https://www.fool.com/investing/2026/09/26/this-group-of-stocks-is-back-at-an-all-time-high/",
-      "https://www.barrons.com/articles/apple-berkshire-walmart-stock-new-ceos-outlook-02676898?siteid=yhoof2&yptr=yahoo",
-      "https://www.barrons.com/articles/elon-musk-tesla-spacex-stock-trump-xi-a47adcbd?siteid=yhoof2&yptr=yahoo",
-      "https://www.barchart.com/story/news/4815776/apple-eyes-the-rapidly-growing-fitness-tracker-segment-what-that-could-mean-for-aapl-stock",
-      "https://www.fool.com/investing/2026/09/26/most-investors-own-seven-magnificent-seven-stock/",
-      "https://finance.yahoo.com/economy/policy/articles/china-u-agree-30-billion-100725747.html",
-      "https://www.fool.com/investing/2026/09/26/most-of-berkshire-hathaway-s-earnings-don-t-come-from-its-stock-portfolio-here-s-where-they-do-come-from/"
+      "https://finance.yahoo.com/technology/articles/tsmc-2nm-wafer-capacity-exceed-030730906.html",
+      "https://beincrypto.com/cramer-sacred-stocks-nvidia-apple/",
+      "https://finance.yahoo.com/markets/stocks/articles/actually-made-home-depot-hd-014412375.html",
+      "https://stocktwits.com/news-articles/markets/equity/meta-googl-nvda-bb-spcx-why-retail-traders-couldn-t-take-their-eyes-off-these-stocks-last-week/cZMSQ6MRBff",
+      "https://finance.yahoo.com/technology/ai/articles/trust-paradox-agent-payment-infrastructure-011823753.html",
+      "https://finance.yahoo.com/technology/articles/apple-aapl-premium-iphone-strategy-003254588.html",
+      "https://finance.yahoo.com/technology/articles/apple-aapl-opens-ternus-era-234433247.html",
+      "https://finance.yahoo.com/technology/articles/australia-cracking-down-social-media-233330727.html",
+      "https://finance.yahoo.com/technology/articles/apple-faces-deeper-iphone-probe-224131792.html",
+      "https://finance.yahoo.com/technology/ai/articles/musk-x-corp-spacexai-drop-223128041.html"
     ],
     "source_link_count": 10,
     "quote_and_news_clocks_preserved": true,
@@ -714,7 +714,7 @@
         "interval": "1d",
         "trend": "uptrend",
         "bar_time": "2026-09-25",
-        "return_percent": 321.5948553129749,
+        "return_percent": 321.5949607955122,
         "levels": {
           "support": 747.7432005092232,
           "resistance": 775.1400146484375,
@@ -731,15 +731,15 @@
         },
         "volume_ratio": 0.839303093574839,
         "metrics": {
-          "ema20": 764.7932908403557,
-          "ema50": 759.1853789292538,
-          "sma200": 714.8377188110352,
-          "rsi": 57.03128184039601,
-          "macd": 2.0904708005767816,
-          "signal": 1.297613316985383,
-          "hist": 0.7928574835913986
+          "ema20": 764.7932908403143,
+          "ema50": 759.1853788510455,
+          "sma200": 714.83771484375,
+          "rsi": 57.03128184161174,
+          "macd": 2.090470801373044,
+          "signal": 1.2976133181564242,
+          "hist": 0.79285748321662
         },
-        "atr_pct": 0.8552753650046805,
+        "atr_pct": 0.8552753649205275,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [],
@@ -797,11 +797,11 @@
         {
           "ticker": "SPY",
           "period": "10 ปี",
-          "percent": 321.5948553129749,
+          "percent": 321.5949607955122,
           "display": "+321.59%",
           "first": "2016-09-26",
           "last": "2026-09-25",
-          "start_price": 182.9600067138672,
+          "start_price": 182.9599609375,
           "end_price": 771.3499755859375,
           "bars": 2514
         },
@@ -826,72 +826,72 @@
       "watch_rows": 10,
       "refresh_schedule": "7,37 * * * *",
       "pulse_before": {
-        "provider_state": "partial",
+        "provider_state": "refreshing",
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-09-27T03:26:33.740313+00:00",
-        "quotes_checked_at": "2026-09-27T03:26:06.878806+00:00",
+        "rendered_at": "2026-09-28T03:29:33.228640+00:00",
+        "quotes_checked_at": "2026-09-28T03:28:49.025079+00:00",
         "observations": [
           {
             "ticker": "QCJA",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:00+00:00",
-            "news_checked_at": "2026-09-26T18:58:38.906327+00:00"
+            "news_checked_at": "2026-09-28T03:25:38.894968+00:00"
           },
           {
             "ticker": "UFPT",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-25T23:30:05+00:00",
-            "news_checked_at": "2026-09-26T18:55:38.910954+00:00"
+            "quote_observed_at": "2026-09-25T20:00:00+00:00",
+            "news_checked_at": "2026-09-28T03:26:10.181259+00:00"
           },
           {
             "ticker": "ALLE",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:03+00:00",
-            "news_checked_at": "2026-09-27T03:23:28.300642+00:00"
+            "news_checked_at": "2026-09-28T03:26:47.989609+00:00"
           },
           {
             "ticker": "WTS",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:03+00:00",
-            "news_checked_at": "2026-09-27T03:24:20.855259+00:00"
+            "news_checked_at": "2026-09-28T03:27:21.293335+00:00"
           },
           {
             "ticker": "DRH",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-25T23:30:06+00:00",
-            "news_checked_at": "2026-09-26T18:57:38.816625+00:00"
+            "quote_observed_at": "2026-09-25T20:00:01+00:00",
+            "news_checked_at": "2026-09-28T03:28:15.628038+00:00"
           },
           {
             "ticker": "CURI",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:01+00:00",
-            "news_checked_at": "2026-09-27T03:25:01.296433+00:00"
+            "news_checked_at": "2026-09-28T03:28:49.240863+00:00"
           },
           {
             "ticker": "CWBC",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:01+00:00",
-            "news_checked_at": "2026-09-27T03:25:32.525992+00:00"
+            "news_checked_at": null
           },
           {
             "ticker": "BTCW",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:00+00:00",
-            "news_checked_at": "2026-09-27T03:26:07.040830+00:00"
+            "news_checked_at": null
           },
           {
             "ticker": "BTCO",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:01+00:00",
-            "news_checked_at": "2026-09-26T18:56:38.771266+00:00"
+            "news_checked_at": null
           },
           {
             "ticker": "PABU",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:00+00:00",
-            "news_checked_at": "2026-09-26T18:59:39.140003+00:00"
+            "news_checked_at": null
           }
         ]
       },
@@ -903,72 +903,72 @@
         "provider_success_required": false
       },
       "pulse_after": {
-        "provider_state": "partial",
+        "provider_state": "refreshing",
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-09-27T03:27:14.829261+00:00",
-        "quotes_checked_at": "2026-09-27T03:27:03.032552+00:00",
+        "rendered_at": "2026-09-28T03:30:03.476831+00:00",
+        "quotes_checked_at": "2026-09-28T03:29:33.611903+00:00",
         "observations": [
           {
             "ticker": "QCJA",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:00+00:00",
-            "news_checked_at": "2026-09-26T18:58:38.906327+00:00"
+            "news_checked_at": "2026-09-28T03:25:38.894968+00:00"
           },
           {
             "ticker": "UFPT",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-25T23:30:05+00:00",
-            "news_checked_at": "2026-09-27T03:27:03.355981+00:00"
+            "quote_observed_at": "2026-09-25T20:00:00+00:00",
+            "news_checked_at": "2026-09-28T03:26:10.181259+00:00"
           },
           {
             "ticker": "ALLE",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:03+00:00",
-            "news_checked_at": "2026-09-27T03:23:28.300642+00:00"
+            "news_checked_at": "2026-09-28T03:26:47.989609+00:00"
           },
           {
             "ticker": "WTS",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:03+00:00",
-            "news_checked_at": "2026-09-27T03:24:20.855259+00:00"
+            "news_checked_at": "2026-09-28T03:27:21.293335+00:00"
           },
           {
             "ticker": "DRH",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-25T23:30:06+00:00",
-            "news_checked_at": "2026-09-26T18:57:38.816625+00:00"
+            "quote_observed_at": "2026-09-25T20:00:01+00:00",
+            "news_checked_at": "2026-09-28T03:28:15.628038+00:00"
           },
           {
             "ticker": "CURI",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:01+00:00",
-            "news_checked_at": "2026-09-27T03:25:01.296433+00:00"
+            "news_checked_at": "2026-09-28T03:28:49.240863+00:00"
           },
           {
             "ticker": "CWBC",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:01+00:00",
-            "news_checked_at": "2026-09-27T03:25:32.525992+00:00"
+            "news_checked_at": "2026-09-28T03:29:33.969109+00:00"
           },
           {
             "ticker": "BTCW",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:00+00:00",
-            "news_checked_at": "2026-09-27T03:26:07.040830+00:00"
+            "news_checked_at": null
           },
           {
             "ticker": "BTCO",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:01+00:00",
-            "news_checked_at": "2026-09-26T18:56:38.771266+00:00"
+            "news_checked_at": null
           },
           {
             "ticker": "PABU",
             "assessment": "unknown",
             "quote_observed_at": "2026-09-25T20:00:00+00:00",
-            "news_checked_at": "2026-09-26T18:59:39.140003+00:00"
+            "news_checked_at": null
           }
         ]
       },
@@ -1105,7 +1105,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20260927T004012Z-b3eec809",
+      "source_generation": "generations/20260928T004238Z-e57d2a25",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -1175,7 +1175,7 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20260927T004012Z-b3eec809"
+            "source_generation": "generations/20260928T004238Z-e57d2a25"
           }
         },
         {
@@ -1216,7 +1216,7 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20260927T004012Z-b3eec809"
+            "source_generation": "generations/20260928T004238Z-e57d2a25"
           }
         },
         {
@@ -1243,7 +1243,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20260927T004012Z-b3eec809",
+      "source_generation": "generations/20260928T004238Z-e57d2a25",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -1306,7 +1306,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-27T03:28:42.956654+00:00",
+      "verified_at": "2026-09-28T03:31:39.862629+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -1370,7 +1370,7 @@
         "session": "unknown",
         "state": "scheduled",
         "effective_seconds": 1800.0,
-        "next_due": 1790481666.8832395,
+        "next_due": 1790568245.907505,
         "second_observation": false,
         "reason": "provider session or request budget requires a conservative wait"
       },
@@ -1381,18 +1381,18 @@
           30
         ],
         "initial": {
-          "state": "updating",
+          "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1790395301.951655",
-          "busy": "true",
+          "nextDue": "1790568245.907505",
+          "busy": "false",
           "session": "unknown"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "1800",
-          "nextDue": "1790481666.8832395",
+          "nextDue": "1790568245.907505",
           "busy": "false",
           "session": "unknown"
         },
@@ -1400,7 +1400,7 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1790481666.8832395",
+          "nextDue": "1790568245.907505",
           "busy": "false",
           "session": "unknown"
         },
@@ -1408,13 +1408,13 @@
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20260927T004012Z-b3eec809",
-        "generation_after": "generations/20260927T004012Z-b3eec809"
+        "generation_before": "generations/20260928T004238Z-e57d2a25",
+        "generation_after": "generations/20260928T004238Z-e57d2a25"
       },
       "minute_price": {
         "price": 55.83,
         "bar_time": "2026-09-25T23:56:00+00:00",
-        "fetched_at": "2026-09-27T03:31:06.882640+00:00",
+        "fetched_at": "2026-09-28T03:34:05.907085+00:00",
         "state": "stale"
       },
       "theme": {
