@@ -164,6 +164,89 @@ class DeliveryTests(unittest.TestCase):
         self.assertNotIn('Bearer',json.dumps(self.store.value))
 
 
+class RichReportTests(unittest.TestCase):
+    def setUp(self):
+        self.store=Store(); self.client=Client(self.store)
+        self.calls=[]
+
+    def builder(self, payload, tickers, now, mode):
+        self.calls.append((tickers,mode))
+        return {'stocks':5, 'messages':[
+            {'type':'image','originalContentUrl':'https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/'+'a'*40+'/briefing.png',
+             'previewImageUrl':'https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/'+'a'*40+'/briefing-preview.png'},
+            {'type':'text','text':'Five-stock report with dated sources'}]}
+
+    def test_scan_caps_new_signals_at_five_and_leaves_remaining_for_next_run(self):
+        p=board(tuple('A'+str(i) for i in range(7)))
+        a.deliver(p,self.store,self.client,RECIPIENT,NOW,message_builder=self.builder)
+        a.deliver(p,self.store,self.client,RECIPIENT,NOW,message_builder=self.builder)
+        self.assertEqual([len(c[0]) for c in self.calls],[5,2])
+
+    def test_no_signal_does_not_build_or_publish_a_report(self):
+        p=board();p['items'][0]['ready_at_calculation']=False
+        a.deliver(p,self.store,self.client,RECIPIENT,NOW,message_builder=self.builder)
+        self.assertEqual(self.calls,[])
+
+    def test_preview_works_for_watchlist_but_is_permanently_once(self):
+        p=board();p['items'][0]['ready_at_calculation']=False
+        for now in (NOW,NOW+timedelta(days=40)):
+            a.deliver(p,self.store,self.client,RECIPIENT,now,'preview',self.builder)
+        self.assertEqual(len(self.client.sent),1)
+        self.assertEqual(self.calls,[([], 'preview')])
+
+    def test_retry_keeps_exact_text_and_immutable_image(self):
+        self.client.fail=True
+        with self.assertRaises(a.AlertError):
+            a.deliver(board(),self.store,self.client,RECIPIENT,NOW,message_builder=self.builder)
+        first=copy.deepcopy(self.client.sent[0]); self.client.fail=False
+        a.deliver(board(),self.store,self.client,RECIPIENT,NOW+timedelta(seconds=1),message_builder=self.builder)
+        self.assertEqual(self.client.sent[-1],first)
+        self.assertEqual(len(self.calls),1)
+
+    def test_expiry_during_news_and_image_build_does_not_reserve_or_send(self):
+        with self.assertRaises(a.AlertError):
+            a.deliver(board(),self.store,self.client,RECIPIENT,NOW,message_builder=self.builder,
+                      clock=lambda:NOW+timedelta(minutes=20))
+        self.assertEqual(self.store.writes,0)
+        self.assertEqual(self.client.sent,[])
+
+    def test_image_url_cannot_change_to_mutable_or_external_host(self):
+        for url in ('https://example.com/briefing.png',
+                    'https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/main/briefing.png'):
+            with self.assertRaises(a.AlertError):
+                a.validate_messages([{'type':'image','originalContentUrl':url,'previewImageUrl':url}])
+
+    def test_text_split_preserves_emoji_and_source_links_under_line_limit(self):
+        from stock_alert_report import text_chunks
+        source='https://example.com/verified-news'
+        parts=text_chunks(('บทวิเคราะห์ 📈'*700)+'\n\n'+source)
+        self.assertTrue(all(len(p.encode('utf-16-le'))//2<=4400 for p in parts))
+        self.assertIn(source,parts[-1])
+        self.assertEqual(sum(p.count('📈') for p in parts),700)
+
+    def test_current_price_refresh_never_upgrades_saved_readiness(self):
+        from stock_alert_report import refresh_report_quotes
+        p=board();p['items'][0]['ready_at_calculation']=False
+        raw=[{'symbol':'AAA','regularMarketPrice':101.,'regularMarketTime':NOW.timestamp(),
+              'marketState':'REGULAR','currency':'USD'}]
+        self.assertEqual(refresh_report_quotes(p,['AAA'],lambda _:raw,NOW),1)
+        self.assertEqual(p['items'][0]['quote'],101.)
+        self.assertFalse(p['items'][0]['ready_at_calculation'])
+        self.assertEqual(a.eligible(p,NOW),[])
+
+    def test_bad_refresh_preserves_original_price_and_source_time(self):
+        from stock_alert_report import refresh_report_quotes
+        for extra in ({'currency':'EUR'},{'marketState':'PRE'},
+                      {'regularMarketTime':(NOW+timedelta(seconds=1)).timestamp()},
+                      {'regularMarketTime':(NOW-timedelta(minutes=30)).timestamp()}):
+            p=board(); original=copy.deepcopy(p)
+            raw=[dict(symbol='AAA',regularMarketPrice=101.,regularMarketTime=NOW.timestamp(),
+                      marketState='REGULAR',currency='USD')]
+            raw[0].update(extra)
+            self.assertEqual(refresh_report_quotes(p,['AAA'],lambda _:raw,NOW),0)
+            self.assertEqual(p,original)
+
+
 class HTTPClientTests(unittest.TestCase):
     def pending(self):
         return dict(text='test',retry_key='00000000-0000-4000-a000-000000000000',

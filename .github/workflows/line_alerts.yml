@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'scan = notify new confirmed stocks; test = one setup message; dry-run = no delivery'
+        description: 'scan = 5-stock report after new signals; preview = one format example; dry-run = no delivery'
         type: choice
-        options: [scan, test, dry-run]
+        options: [scan, test, dry-run, preview]
         default: scan
 permissions:
   contents: read
@@ -24,7 +24,7 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     permissions:
       contents: write
     steps:
@@ -35,10 +35,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install entry-policy dependency
-        run: python -m pip install -q pandas==2.2.3
+      - name: Install reporting dependencies and Thai font
+        run: |
+          python -m pip install -q -r requirements-line-alerts.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-core
       - name: Verify notification safety checks
-        run: python -m unittest discover -s tests -p test_line_alerts.py
+        run: |
+          python -m unittest discover -s tests -p 'test_line_alert*.py'
+          python -m unittest discover -s tests -p 'test_stock_alert*.py'
       - name: Deliver only confirmed, current, new signals
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,3 +51,11 @@ jobs:
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
           ALERT_MODE: ${{ inputs.mode || 'scan' }}
         run: python line_alerts.py --mode "$ALERT_MODE"
+      - name: Preserve the report that was prepared
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: line-stock-report
+          path: work/line-report/
+          if-no-files-found: ignore
+          retention-days: 7

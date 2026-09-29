@@ -103,9 +103,7 @@ def format_alert(rows, now):
                       f"โซนเข้า ${row['zone_low']:.4f}–${row['zone_high']:.4f}",
                       f'Stop ${stop:.4f} · เป้าหมาย ${target:.4f}',
                       f'R:R ที่ราคานี้ {(target-q)/(q-stop):.2f}'])
-    lines.extend(['', 'ผ่าน ณ เวลาตรวจเท่านั้น ตรวจราคาก่อนตัดสินใจ',
-                  'ข่าวเชิงลึก/งบเต็ม/ความเหมาะสมกับพอร์ตยังไม่ได้ตรวจครบ; ไม่รับประกันกำไร',
-                  DASHBOARD_URL])
+    lines.extend(['', DASHBOARD_URL])
     message = '\n'.join(lines)
     if len(message.encode('utf-16-le')) // 2 > 4900:
         raise AlertError('Alert message exceeds safe length')
@@ -216,7 +214,9 @@ class LineClient:
         return quota.get('type') == 'limited' and usage['totalUsage'] < quota['value']
 
     def push(self, pending):
-        body = {'to': self.recipient, 'messages': [{'type': 'text', 'text': pending['text']}]}
+        messages = pending.get('messages') or [{'type': 'text', 'text': pending['text']}]
+        validate_messages(messages)
+        body = {'to': self.recipient, 'messages': messages}
         # Stored retry key and body are reused verbatim after uncertain responses.
         for attempt in range(2):
             expiry = stamp(pending.get('expires_at'))
@@ -239,7 +239,29 @@ class LineClient:
             raise AlertError(f'LINE push not accepted (HTTP {code}); stored retry retained')
 
 
-def deliver(payload, store, client, recipient, now, mode='scan'):
+def validate_messages(messages):
+    if not isinstance(messages, list) or not 1 <= len(messages) <= 5:
+        raise AlertError('Invalid LINE report message count')
+    for message in messages:
+        if not isinstance(message, dict):
+            raise AlertError('Invalid LINE report message')
+        if message.get('type') == 'text':
+            value = message.get('text')
+            if not isinstance(value, str) or not 1 <= len(value.encode('utf-16-le')) // 2 <= 4900:
+                raise AlertError('Invalid LINE report text length')
+        elif message.get('type') == 'image':
+            for field in ('originalContentUrl', 'previewImageUrl'):
+                url = message.get(field)
+                if not isinstance(url, str) or not re.fullmatch(
+                        r'https://raw\.githubusercontent\.com/sippakorntwo-glitch/stock-dashboard/'
+                        r'[0-9a-f]{40}/briefing(?:-preview)?\.png', url):
+                    raise AlertError('Image URL must use the immutable report asset')
+        else:
+            raise AlertError('Unsupported LINE report message type')
+
+
+def deliver(payload, store, client, recipient, now, mode='scan', message_builder=None, clock=None):
+    clock = clock or (lambda: now)
     state = store.read()
     scope = opaque_key(recipient, 'recipient-scope-v1')
     bucket = state['recipients'].setdefault(scope, {'seen': {}, 'pending': None})
@@ -269,8 +291,9 @@ def deliver(payload, store, client, recipient, now, mode='scan'):
             bucket['pending'] = None
             store.write(state)
             resumed = 1
-    test_key = opaque_key(recipient, 'setup-test-v1')
-    if mode == 'test':
+    permanent = mode in ('test', 'preview')
+    test_key = opaque_key(recipient, 'five-stock-report-preview-v2' if mode == 'preview' else 'setup-test-v1')
+    if permanent:
         if test_key in bucket['seen']:
             return {'status': 'accepted_by_line' if resumed else 'test_already_processed',
                     'messages': resumed, 'expired_pending': expired}
@@ -281,10 +304,14 @@ def deliver(payload, store, client, recipient, now, mode='scan'):
                 'ไม่ส่งหุ้นซ้ำในวันตลาดสหรัฐเดียวกัน; หากไม่มีหุ้นผ่านจะไม่ส่งแจ้งเตือน\n'
                 'นี่คือข้อความทดสอบ ไม่ใช่สัญญาณซื้อ\n' + DASHBOARD_URL)
         expires = now + timedelta(hours=1)
+        if mode == 'preview':
+            if message_builder is None:
+                raise AlertError('Five-stock preview requires the report builder')
+            text = 'รายงานตัวอย่างรูปแบบใหม่ พร้อมข้อมูลหุ้นจริงตามเวลาที่แสดง'
     else:
         day = now.astimezone(ZoneInfo('America/New_York')).date().isoformat()
         rows = [row for row in eligible(payload, now)
-                if opaque_key(recipient, day + ':' + row['ticker']) not in bucket['seen']]
+                if opaque_key(recipient, day + ':' + row['ticker']) not in bucket['seen']][:5]
         if not rows:
             return {'status': 'accepted_by_line' if resumed else 'no_new_qualified_stocks',
                     'messages': resumed, 'expired_pending': expired}
@@ -295,21 +322,38 @@ def deliver(payload, store, client, recipient, now, mode='scan'):
     client.verify()
     if not client.available():
         return {'status': 'quota_exhausted', 'messages': resumed, 'expired_pending': expired}
+    rich = None
+    if message_builder is not None and mode != 'test':
+        rich = message_builder(payload, [row['ticker'] for row in rows], now, mode)
+        if not isinstance(rich, dict):
+            raise AlertError('Invalid report builder result')
+        validate_messages(rich.get('messages'))
+        if not isinstance(rich.get('stocks'), int) or not 1 <= rich['stocks'] <= 5:
+            raise AlertError('Invalid report stock count')
+        if mode == 'scan':
+            current = {row['ticker'] for row in eligible(payload, clock())}
+            if any(row['ticker'] not in current for row in rows):
+                raise AlertError('A signal expired while preparing the report; nothing sent')
+        if clock() >= expires:
+            raise AlertError('Report reservation expired before delivery; nothing sent')
     pending = {'keys': keys, 'retry_key': str(uuid.uuid4()), 'text': text,
-               'created_at': now.isoformat(), 'expires_at': expires.isoformat(), 'test': mode == 'test'}
+               'created_at': now.isoformat(), 'expires_at': expires.isoformat(), 'test': permanent}
+    if rich is not None:
+        pending['messages'] = rich['messages']
     bucket['pending'] = pending
     store.write(state)  # No outbound message until durable reservation succeeds.
     client.push(pending)
     for key in keys:
-        bucket['seen'][key] = 'setup-test' if mode == 'test' else now.isoformat()
+        bucket['seen'][key] = 'setup-test' if permanent else now.isoformat()
     bucket['pending'] = None
     store.write(state)
-    return {'status': 'accepted_by_line', 'messages': 1 + resumed, 'stocks': len(rows), 'expired_pending': expired}
+    return {'status': 'accepted_by_line', 'messages': 1 + resumed,
+            'stocks': rich['stocks'] if rich else len(rows), 'expired_pending': expired}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mode', choices=('scan', 'test', 'dry-run'), default='scan')
+    parser.add_argument('--mode', choices=('scan', 'test', 'dry-run', 'preview'), default='scan')
     args = parser.parse_args()
     repo = os.environ.get('GITHUB_REPOSITORY', '')
     if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('GITHUB_REF') != 'refs/heads/main':
@@ -331,7 +375,10 @@ def main():
     if args.mode == 'dry-run':
         report = {'status': 'dry_run', 'eligible': len(eligible(payload, now)), 'messages': 0}
     else:
-        report = deliver(payload, store, LineClient(token, recipient, http), recipient, now, args.mode)
+        from stock_alert_report import build_message_bundle
+        builder = lambda data, tickers, at, mode: build_message_bundle(data, tickers, at, mode, store)
+        report = deliver(payload, store, LineClient(token, recipient, http), recipient, now, args.mode,
+                         message_builder=builder, clock=lambda: datetime.now(UTC))
     report['checked_at'] = now.isoformat()
     print('LINE_ALERT_REPORT:', json.dumps(report))
     if os.environ.get('GITHUB_STEP_SUMMARY'):
