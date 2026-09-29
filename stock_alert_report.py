@@ -3,7 +3,44 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
+
+
+def refresh_report_quotes(payload, tickers, fetcher=None, now=None):
+    """Refresh source prices for the five cards, without upgrading saved signals.
+
+    Missing quotes preserve their original source timestamp. The existing
+    readiness flags and entry audit are never changed by this operation.
+    """
+    from market_pulse import normalize_quotes, _stamp
+    try:
+        if fetcher is None:
+            from market_pulse_service import fetch_quotes
+            fetcher = fetch_quotes
+        raw = fetcher(tickers)
+        now = now or datetime.now(timezone.utc)
+        observations = normalize_quotes(raw, tickers, now.isoformat())
+    except Exception:
+        return 0
+    updated = 0
+    for row in payload['items']:
+        quote = observations.get(row['ticker'])
+        if not quote or row['ticker'] not in tickers:
+            continue
+        source_time = _stamp(quote['quote_time'])
+        previous_time = _stamp(row.get('quote_time'))
+        currency = (row.get('info') or {}).get('currency', 'USD')
+        if (source_time is None or not 0 <= (now - source_time).total_seconds() <= 900
+                or (previous_time is not None and source_time < previous_time)
+                or quote['currency'] != currency or quote['market_state'] != 'REGULAR'
+                or quote['session'] != 'regular'
+                or (quote.get('delay_minutes') is not None and quote['delay_minutes'] > 15)):
+            continue
+        row['quote'] = quote['price']
+        row['quote_time'] = quote['quote_time']
+        updated += 1
+    return updated
 
 
 def text_chunks(text, limit=4400):
@@ -37,7 +74,7 @@ def text_chunks(text, limit=4400):
 
 def build_message_bundle(payload, preferred_tickers, now, mode, store):
     from line_alerts import AlertError
-    from stock_alert_briefing import build_briefing, format_briefing_text
+    from stock_alert_briefing import build_briefing, format_briefing_text, select_rows
     from stock_alert_image import render_briefing
     from stock_alert_media import publish_briefing, MediaError
 
@@ -45,8 +82,15 @@ def build_message_bundle(payload, preferred_tickers, now, mode, store):
     output.mkdir(parents=True, exist_ok=True)
     verified_path = Path(__file__).with_name('stock_alert_news.json')
     verified = json.loads(verified_path.read_text(encoding='utf-8')) if verified_path.exists() else {}
+    tickers = [row['ticker'] for row in select_rows(payload, preferred_tickers=preferred_tickers)]
+    updated_quotes = refresh_report_quotes(payload, tickers)
+    now = datetime.now(timezone.utc)
     briefing = build_briefing(payload, now, preferred_tickers=preferred_tickers,
                              verified_news=verified, limit=5)
+    briefing['quotes_refreshed'] = updated_quotes
+    if mode == 'scan' and any(card['status'] != 'entry' for card in briefing['cards']
+                              if card['ticker'] in preferred_tickers):
+        raise AlertError('A current quote no longer passes the entry checks; nothing sent')
     briefing['report_mode'] = mode
     briefing['new_signal_tickers'] = preferred_tickers
     text = format_briefing_text(briefing)

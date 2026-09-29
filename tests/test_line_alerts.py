@@ -224,6 +224,28 @@ class RichReportTests(unittest.TestCase):
         self.assertIn(source,parts[-1])
         self.assertEqual(sum(p.count('📈') for p in parts),700)
 
+    def test_current_price_refresh_never_upgrades_saved_readiness(self):
+        from stock_alert_report import refresh_report_quotes
+        p=board();p['items'][0]['ready_at_calculation']=False
+        raw=[{'symbol':'AAA','regularMarketPrice':101.,'regularMarketTime':NOW.timestamp(),
+              'marketState':'REGULAR','currency':'USD'}]
+        self.assertEqual(refresh_report_quotes(p,['AAA'],lambda _:raw,NOW),1)
+        self.assertEqual(p['items'][0]['quote'],101.)
+        self.assertFalse(p['items'][0]['ready_at_calculation'])
+        self.assertEqual(a.eligible(p,NOW),[])
+
+    def test_bad_refresh_preserves_original_price_and_source_time(self):
+        from stock_alert_report import refresh_report_quotes
+        for extra in ({'currency':'EUR'},{'marketState':'PRE'},
+                      {'regularMarketTime':(NOW+timedelta(seconds=1)).timestamp()},
+                      {'regularMarketTime':(NOW-timedelta(minutes=30)).timestamp()}):
+            p=board(); original=copy.deepcopy(p)
+            raw=[dict(symbol='AAA',regularMarketPrice=101.,regularMarketTime=NOW.timestamp(),
+                      marketState='REGULAR',currency='USD')]
+            raw[0].update(extra)
+            self.assertEqual(refresh_report_quotes(p,['AAA'],lambda _:raw,NOW),0)
+            self.assertEqual(p,original)
+
 
 class HTTPClientTests(unittest.TestCase):
     def pending(self):
