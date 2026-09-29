@@ -1,4 +1,4 @@
-name: Preview LINE alert format (one message)
+name: Preview LINE five-stock report
 on:
   push:
     branches: [main]
@@ -13,7 +13,7 @@ jobs:
   preview:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     permissions:
       contents: write
     steps:
@@ -24,59 +24,26 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install -q pandas==2.2.3
-      - name: Send one clearly fictional format preview
+      - name: Install report dependencies
+        run: |
+          python -m pip install -q -r requirements-line-alerts.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-core
+      - name: Verify report and delivery checks
+        run: |
+          python -m unittest discover -s tests -p 'test_line_alert*.py'
+          python -m unittest discover -s tests -p 'test_stock_alert*.py'
+      - name: Send the requested five-stock report example once
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-        run: |
-          python - <<'PY'
-          import json, os, sys, uuid
-          from datetime import datetime, timedelta
-          from line_alerts import AlertError, GitHubState, JsonHTTP, LineClient, UTC, format_alert, opaque_key, stamp
-
-          def main():
-              if os.environ.get('GITHUB_REF') != 'refs/heads/main':
-                  raise AlertError('Preview is restricted to main')
-              recipient = os.environ['LINE_USER_ID']
-              http = JsonHTTP()
-              client = LineClient(os.environ['LINE_CHANNEL_ACCESS_TOKEN'], recipient, http)
-              store = GitHubState(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN'], http)
-              state = store.read()
-              scope = opaque_key(recipient, 'format-preview-20260930-v1')
-              bucket = state['recipients'].setdefault(scope, {'sent': False, 'pending': None})
-              if bucket['sent']:
-                  print('PREVIEW_REPORT: already_sent; messages=0')
-                  return
-              client.verify()
-              now = datetime.now(UTC)
-              if bucket['pending']:
-                  if stamp(bucket['pending']['expires_at']) <= now:
-                      raise AlertError('Previous preview expired; no new duplicate request sent')
-              else:
-                  if not client.available():
-                      raise AlertError('LINE message quota exhausted')
-                  row = {'ticker': 'DEMO', 'score': 90, 'quote': 100.0,
-                         'quote_time': now.isoformat(), 'zone_low': 98.0,
-                         'zone_high': 101.0, 'stop': 96.0, 'target': 110.0}
-                  text = ('🧪 ตัวอย่างรูปแบบแจ้งเตือน — ข้อมูลสมมติทั้งหมด\n'
-                          'DEMO ไม่ใช่หุ้นจริง ข้อความนี้ไม่ใช่สัญญาณซื้อ\n\n'
-                          + format_alert([row], now))
-                  bucket['pending'] = {'retry_key': str(uuid.uuid4()), 'text': text,
-                                       'expires_at': (now + timedelta(hours=1)).isoformat()}
-                  store.write(state)
-              client.push(bucket['pending'])
-              bucket['pending'] = None
-              bucket['sent'] = True
-              store.write(state)
-              report = {'status': 'accepted_by_line', 'messages': 1, 'fictional_preview': True}
-              print('PREVIEW_REPORT:', json.dumps(report))
-              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as output:
-                  output.write('### Fictional LINE format preview\n\n```json\n' + json.dumps(report, indent=2) + '\n```\n')
-          try:
-              main()
-          except AlertError as error:
-              print('PREVIEW_ERROR:', str(error), file=sys.stderr)
-              sys.exit(1)
-          PY
+        run: python line_alerts.py --mode preview
+      - name: Preserve exact report files for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: line-five-stock-preview
+          path: work/line-report/
+          if-no-files-found: ignore
+          retention-days: 7
