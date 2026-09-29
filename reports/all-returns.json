@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-09-29T18:44:15.343170+00:00",
-  "run_id": "36613885298",
-  "source_sha": "2852d2e28d872a274a3ff660caaccad8b8ca1612",
+  "recorded_at": "2026-09-29T19:54:55.018836+00:00",
+  "run_id": "36622293314",
+  "source_sha": "a5224164b8d4aec5aa4c966e933e0a8f235706a6",
   "catalog_members": 9876,
   "priced_members": 9875,
   "periods_checked": 79000,
@@ -14,15 +14,15 @@
   ],
   "error_count": 0,
   "result": "passed",
-  "audited_at": "2026-09-29T18:44:13.539659+00:00",
-  "generation": "generations/20260929T183301Z-9a90020c",
-  "published_at": "2026-09-29T18:37:34.124496+00:00",
+  "audited_at": "2026-09-29T19:54:53.237019+00:00",
+  "generation": "generations/20260929T191720Z-67c50536",
+  "published_at": "2026-09-29T19:22:07.264791+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9876,
     "histories": 9876,
     "info": 9876,
-    "industry": 9509,
+    "industry": 9517,
     "dividends_checked": 9876,
     "dividends_with_payments": 6084,
     "dividends_no_payments": 3792,
@@ -53,7 +53,7 @@
             "Low": 104.76000213623047,
             "Close": 105.58999633789062,
             "Adj Close": 105.58999633789062,
-            "Volume": 12078000.0
+            "Volume": 12096100.0
           }
         },
         {
@@ -62,9 +62,9 @@
             "Open": 105.4800033569336,
             "High": 105.83999633789062,
             "Low": 104.85160064697266,
-            "Close": 105.07499694824219,
-            "Adj Close": 105.07499694824219,
-            "Volume": 3143659.0
+            "Close": 105.12010192871094,
+            "Adj Close": 105.12010192871094,
+            "Volume": 4065552.0
           }
         }
       ],
