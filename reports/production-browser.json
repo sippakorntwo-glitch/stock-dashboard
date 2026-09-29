@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-09-29T19:52:12.700506+00:00",
-  "run_id": "36614952388",
-  "source_sha": "d6571564574ae5fa40f606d28c817115e7ffdfcb",
+  "recorded_at": "2026-09-29T20:14:28.611424+00:00",
+  "run_id": "36622293314",
+  "source_sha": "a5224164b8d4aec5aa4c966e933e0a8f235706a6",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-24.39",
   "layout": "single-page",
@@ -432,13 +432,13 @@
         "kind": "regular",
         "state": "recent",
         "session": "regular",
-        "quote_time": "2026-09-29T19:35:54+00:00"
+        "quote_time": "2026-09-29T20:00:00+00:00"
       },
       {
         "kind": "extended",
-        "state": "stale",
+        "state": "recent",
         "session": "post",
-        "quote_time": "2026-09-28T23:59:43+00:00"
+        "quote_time": "2026-09-29T20:00:49+00:00"
       }
     ],
     "news_checked_at": "2026-09-29T03:25:37.462605+00:00",
@@ -479,18 +479,18 @@
       {
         "period": "1 วัน",
         "interval": "5m",
-        "bars": 1628,
-        "visible_bars": 68,
+        "bars": 1636,
+        "visible_bars": 76,
         "first": 1790688600,
-        "last": 1790708700
+        "last": 1790711100
       },
       {
         "period": "3 วัน",
         "interval": "5m",
-        "bars": 1635,
-        "visible_bars": 231,
+        "bars": 1638,
+        "visible_bars": 234,
         "first": 1790343000,
-        "last": 1790710800
+        "last": 1790711700
       },
       {
         "period": "5 ปี",
@@ -512,15 +512,15 @@
     "volume_split_ranges": [
       {
         "period": "1 วัน",
-        "bars": 1628,
-        "mixed_bars": 1552,
+        "bars": 1636,
+        "mixed_bars": 1560,
         "flat_bars": 0,
         "missing_volume": 0
       },
       {
         "period": "3 วัน",
-        "bars": 1635,
-        "mixed_bars": 1558,
+        "bars": 1638,
+        "mixed_bars": 1562,
         "flat_bars": 0,
         "missing_volume": 0
       },
@@ -544,34 +544,34 @@
         "ticker": "SPY",
         "period": "1 วัน",
         "interval": "5m",
-        "trend": "uptrend",
-        "bar_time": 1790708700,
-        "return_percent": -0.06728831135525137,
+        "trend": "mixed",
+        "bar_time": 1790711100,
+        "return_percent": -0.15482372184904003,
         "levels": {
-          "support": 762.385009765625,
+          "support": 762.969970703125,
           "resistance": 765.2999877929688,
           "bars": 20,
           "state": "inside",
-          "support_distance_pct": -0.3248898986005777,
-          "resistance_distance_pct": 0.056217746613973496,
-          "start_time": 1790702700,
-          "end_time": 1790708400,
-          "latest_time": 1790708700,
-          "close": 764.8699951171875,
+          "support_distance_pct": -0.16095805865716795,
+          "resistance_distance_pct": 0.14393817958215926,
+          "start_time": 1790705100,
+          "end_time": 1790710800,
+          "latest_time": 1790711100,
+          "close": 764.2000122070312,
           "basis": "prior-selected-window-high-low-max20-min5",
           "reason": ""
         },
-        "volume_ratio": 0.5102547686892874,
+        "volume_ratio": 1.9924061005607416,
         "metrics": {
-          "ema20": 764.1312059049413,
-          "ema50": 764.0098522802708,
-          "sma200": 766.7836093139648,
-          "rsi": 63.012636752860715,
-          "macd": 0.4283111984769903,
-          "signal": 0.28636713816983067,
-          "hist": 0.14194406030715961
+          "ema20": 764.2728445888786,
+          "ema50": 764.1163884945963,
+          "sma200": 766.5877059936523,
+          "rsi": 50.50472585229859,
+          "macd": 0.20572606181883657,
+          "signal": 0.28200338473067593,
+          "hist": -0.07627732291183936
         },
-        "atr_pct": 0.07178988038703885,
+        "atr_pct": 0.06360956194155327,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
@@ -583,7 +583,7 @@
           "actual_price_lines": [
             {
               "key": "support",
-              "price": 762.385009765625,
+              "price": 762.969970703125,
               "visible": true,
               "axisLabelVisible": true
             },
@@ -602,45 +602,44 @@
         "ticker": "SPY",
         "period": "3 วัน",
         "interval": "5m",
-        "trend": "uptrend",
-        "bar_time": 1790710800,
-        "return_percent": -0.6472214146585387,
+        "trend": "mixed",
+        "bar_time": 1790711700,
+        "return_percent": -0.6771186780158311,
         "levels": {
-          "support": 762.6400146484375,
+          "support": 763.5700073242188,
           "resistance": 765.2999877929688,
           "bars": 20,
           "state": "inside",
-          "support_distance_pct": -0.23807750201538802,
-          "resistance_distance_pct": 0.10987701072255884,
-          "start_time": 1790704800,
-          "end_time": 1790710500,
-          "latest_time": 1790710800,
-          "close": 764.4600219726562,
+          "support_distance_pct": -0.0863579238446599,
+          "resistance_distance_pct": 0.14001116830857363,
+          "start_time": 1790705700,
+          "end_time": 1790711400,
+          "latest_time": 1790711700,
+          "close": 764.22998046875,
           "basis": "prior-selected-window-high-low-max20-min5",
           "reason": ""
         },
-        "volume_ratio": 0.0,
+        "volume_ratio": 11.644793043345016,
         "metrics": {
-          "ema20": 764.3138479764453,
-          "ema50": 764.1267022081613,
-          "sma200": 766.6258560180664,
-          "rsi": 55.24398319962839,
-          "macd": 0.269478542742263,
-          "signal": 0.3066573453108413,
-          "hist": -0.037178802568578306
+          "ema20": 764.2959241421695,
+          "ema50": 764.1386569513605,
+          "sma200": 766.5193057250976,
+          "rsi": 50.43210778268547,
+          "macd": 0.17559197471121024,
+          "signal": 0.24877310966855293,
+          "hist": -0.07318113495734269
         },
-        "atr_pct": 0.05957993037073229,
+        "atr_pct": 0.06805076469291169,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
-          "แท่งล่าสุดอาจยังไม่ปิดหรือยืนยันเวลาไม่ได้: การอ่านแนวโน้มและการทะลุกรอบยังเป็นเพียงชั่วคราว",
           "EMA/RSI/MACD/ATR นับแท่ง 5 นาที ไม่ใช่จำนวนวัน; Volume เทียบ 20 แท่งก่อนหน้าและไม่ได้ปรับฤดูกาลระหว่างวัน"
         ],
         "chart_reference_lines": {
           "actual_price_lines": [
             {
               "key": "support",
-              "price": 762.6400146484375,
+              "price": 763.5700073242188,
               "visible": true,
               "axisLabelVisible": true
             },
@@ -789,13 +788,13 @@
         {
           "ticker": "SPY",
           "period": "7 วัน",
-          "percent": -0.2576833772242382,
-          "display": "-0.26%",
+          "percent": -0.28769786046666246,
+          "display": "-0.29%",
           "first": 1789997400,
-          "last": 1790710800,
+          "last": 1790711700,
           "start_price": 766.4349975585938,
-          "end_price": 764.4600219726562,
-          "bars": 543
+          "end_price": 764.22998046875,
+          "bars": 546
         },
         {
           "ticker": "SPY",
@@ -829,71 +828,71 @@
       "watch_rows": 10,
       "refresh_schedule": "7,37 * * * *",
       "pulse_before": {
-        "provider_state": "refreshing",
+        "provider_state": "partial",
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-09-29T19:40:12.271685+00:00",
-        "quotes_checked_at": "2026-09-29T19:39:38.862321+00:00",
+        "rendered_at": "2026-09-29T20:04:21.611733+00:00",
+        "quotes_checked_at": "2026-09-29T20:03:56.361992+00:00",
         "observations": [
           {
             "ticker": "MCS",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-29T19:35:05+00:00",
+            "quote_observed_at": "2026-09-29T20:01:21+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "UFPT",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-29T19:33:59+00:00",
+            "quote_observed_at": "2026-09-29T20:00:57+00:00",
             "news_checked_at": "2026-09-29T03:26:02.417132+00:00"
           },
           {
             "ticker": "ALLE",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:39:10+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:00:47+00:00",
             "news_checked_at": "2026-09-29T03:26:41.062830+00:00"
           },
           {
             "ticker": "DRH",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:39:19+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:00:54+00:00",
             "news_checked_at": "2026-09-29T03:27:54.141042+00:00"
           },
           {
             "ticker": "HBR",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:39:27+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:02:35+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "GAP",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:39:35+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:02:33+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "CWBC",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:38:00+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:01:28+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "JAKK",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-29T19:30:45+00:00",
+            "quote_observed_at": "2026-09-29T20:01:31+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "INFO",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:38:47+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T19:50:38+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "GATX",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-29T19:37:32+00:00",
+            "quote_observed_at": "2026-09-29T20:00:52+00:00",
             "news_checked_at": null
           }
         ]
@@ -906,71 +905,71 @@
         "provider_success_required": false
       },
       "pulse_after": {
-        "provider_state": "refreshing",
+        "provider_state": "partial",
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-09-29T19:41:19.686834+00:00",
-        "quotes_checked_at": "2026-09-29T19:40:43.609532+00:00",
+        "rendered_at": "2026-09-29T20:05:20.252356+00:00",
+        "quotes_checked_at": "2026-09-29T20:05:03.641786+00:00",
         "observations": [
           {
             "ticker": "MCS",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:39:58+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:01:21+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "UFPT",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:39:58+00:00",
-            "news_checked_at": "2026-09-29T03:26:02.417132+00:00"
-          },
-          {
             "ticker": "ALLE",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:40:33+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:00:47+00:00",
             "news_checked_at": "2026-09-29T03:26:41.062830+00:00"
           },
           {
             "ticker": "DRH",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:40:10+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:04:05+00:00",
             "news_checked_at": "2026-09-29T03:27:54.141042+00:00"
           },
           {
+            "ticker": "UFPT",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:04:05+00:00",
+            "news_checked_at": "2026-09-29T03:26:02.417132+00:00"
+          },
+          {
             "ticker": "HBR",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:40:15+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:04:04+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "GAP",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:40:42+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:02:33+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "CWBC",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-29T19:38:00+00:00",
+            "quote_observed_at": "2026-09-29T20:04:03+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "JAKK",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:40:10+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:04:04+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "INFO",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:38:47+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T19:50:38+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "GATX",
-            "assessment": "watch",
-            "quote_observed_at": "2026-09-29T19:39:55+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-09-29T20:00:52+00:00",
             "news_checked_at": null
           }
         ]
@@ -1052,7 +1051,7 @@
         "canvas_index": 1,
         "canvas": {
           "x": 398,
-          "y": 575.90625,
+          "y": 409.90625,
           "width": 868,
           "height": 180
         },
@@ -1065,7 +1064,7 @@
           },
           {
             "x": 397,
-            "y": 153.734375,
+            "y": -12.265625,
             "width": 946,
             "height": 900
           },
@@ -1078,17 +1077,17 @@
         ],
         "visible": {
           "left": 414,
-          "top": 591.90625,
+          "top": 425.90625,
           "right": 1250,
-          "bottom": 739.90625
+          "bottom": 573.90625
         },
         "start": {
           "x": 706.5999999999999,
-          "y": 665.90625
+          "y": 499.90625
         },
         "end": {
           "x": 957.4,
-          "y": 665.90625
+          "y": 499.90625
         },
         "canvas_hits": [
           true,
@@ -1100,7 +1099,7 @@
       "intraday": {
         "ticker": "SPY",
         "interval": "5m",
-        "time": "1790697900",
+        "time": "1790698200",
         "timezone": "America/New_York"
       }
     },
@@ -1309,7 +1308,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-29T19:43:35.285425+00:00",
+      "verified_at": "2026-09-29T20:07:00.462833+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -1370,11 +1369,12 @@
       "empty_results_handled": true,
       "QQQI_chart_bars": 668,
       "auto_refresh_verified": {
-        "session": "regular",
-        "state": "updating",
+        "session": "post",
+        "state": "budget",
         "effective_seconds": 30.0,
-        "next_due": 1790711308.4059,
-        "second_observation": true
+        "next_due": 1790712663.3399482,
+        "second_observation": false,
+        "reason": "provider session or request budget requires a conservative wait"
       },
       "quote_controls": {
         "requested_seconds": [
@@ -1386,25 +1386,25 @@
           "state": "budget",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1790711273.4252896",
+          "nextDue": "1790712663.3399482",
           "busy": "false",
-          "session": "regular"
+          "session": "post"
         },
         "sixty_seconds": {
-          "state": "scheduled",
+          "state": "budget",
           "requestedSeconds": "60",
           "effectiveSeconds": "60",
-          "nextDue": "1790707120.500941",
+          "nextDue": "1790712663.3399482",
           "busy": "false",
-          "session": "regular"
+          "session": "post"
         },
         "resumed": {
           "state": "budget",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1790711308.4059",
+          "nextDue": "1790712663.3399482",
           "busy": "false",
-          "session": "regular"
+          "session": "post"
         },
         "pause_resume": true,
         "interval_choices_visible_across_cadence": true,
@@ -1414,10 +1414,10 @@
         "generation_after": "generations/20260929T191720Z-67c50536"
       },
       "minute_price": {
-        "price": 55.459999084472656,
-        "bar_time": "2026-09-29T19:47:00+00:00",
-        "fetched_at": "2026-09-29T19:47:57.692284+00:00",
-        "state": "recent"
+        "price": 55.45500183105469,
+        "bar_time": "2026-09-29T19:48:00+00:00",
+        "fetched_at": "2026-09-29T19:48:29.805181+00:00",
+        "state": "stale"
       },
       "theme": {
         "background": "radial-gradient(at 12% 0%, rgb(21, 35, 64) 0px, rgba(0, 0, 0, 0) 48%), none",
@@ -1431,8 +1431,8 @@
             "box": {
               "left": 48.390625,
               "right": 119.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 535.296875,
+              "bottom": 575.296875,
               "width": 390,
               "height": 844
             }
@@ -1442,8 +1442,8 @@
             "box": {
               "left": 135.390625,
               "right": 215.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 535.296875,
+              "bottom": 575.296875,
               "width": 390,
               "height": 844
             }
@@ -1618,5 +1618,5 @@
   "javascript_errors": [],
   "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
-  "tested_sha": "d6571564574ae5fa40f606d28c817115e7ffdfcb"
+  "tested_sha": "a5224164b8d4aec5aa4c966e933e0a8f235706a6"
 }
