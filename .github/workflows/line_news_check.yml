@@ -26,12 +26,25 @@ jobs:
           python - <<'PY'
           from datetime import datetime, timezone
           import json
+          import urllib.error
+          import urllib.parse
+          import urllib.request
           from stock_alert_briefing import fetch_alert_news
           for ticker in ('MCS', 'UFPT', 'ALLE', 'DRH', 'GAP'):
               result = fetch_alert_news(ticker, datetime.now(timezone.utc))
               summary = {key: result[key] for key in ('source', 'primary_error', 'fallback_error')}
               summary.update(ticker=ticker, articles=len(result.get('items') or []))
               print('NEWS_FEED_CHECK: ' + json.dumps(summary), flush=True)
+              if ticker == 'MCS' and result.get('fallback_error') == 'HTTP_301':
+                  from stock_alert_briefing import _NoNewsRedirect, RSS_ENDPOINT
+                  try:
+                      urllib.request.build_opener(_NoNewsRedirect()).open(RSS_ENDPOINT + '?s=MCS', timeout=10)
+                  except urllib.error.HTTPError as error:
+                      if error.code == 301:
+                          target = urllib.parse.urlsplit(error.headers.get('Location', ''))
+                          route = {'scheme': target.scheme, 'host': target.hostname, 'path': target.path,
+                                   'parameter_names': sorted(urllib.parse.parse_qs(target.query))}
+                          print('NEWS_FEED_REDIRECT: ' + json.dumps(route), flush=True)
               if result.get('fallback_error') in ('not_attempted_access_or_rate_blocked', 'HTTP_401', 'HTTP_403', 'HTTP_407', 'HTTP_429', 'access_or_rate_blocked'):
                   print('NEWS_FEED_CHECK: stopped after provider access/rate denial', flush=True)
                   break
