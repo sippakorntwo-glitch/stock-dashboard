@@ -1,23 +1,23 @@
 {
-  "recorded_at": "2026-09-29T18:39:21.444028+00:00",
-  "run_id": "36613280959",
-  "source_sha": "2852d2e28d872a274a3ff660caaccad8b8ca1612",
-  "started_at": "2026-09-29T18:38:29.993390+00:00",
-  "source_generation": "generations/20260929T183301Z-9a90020c",
+  "recorded_at": "2026-09-29T20:34:38.554116+00:00",
+  "run_id": "36627155013",
+  "source_sha": "a5224164b8d4aec5aa4c966e933e0a8f235706a6",
+  "started_at": "2026-09-29T20:34:05.999638+00:00",
+  "source_generation": "generations/20260929T191720Z-67c50536",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-29T18:39:21.411748+00:00",
+  "finished_at": "2026-09-29T20:34:38.536327+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260929T183301Z-9a90020c",
+  "generation": "generations/20260929T191720Z-67c50536",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
     "checked_today": 9875,
-    "industry": 9509,
+    "industry": 9517,
     "info": 9876,
     "financial_statements": 4160,
     "dividends": 9876,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305825,
-    "report_sha256": "fcc23c86ba5495c6b1ebbd2976def1cba320845b59966011a72463280494d3e6",
+    "report_sha256": "d1fa0647a3ae9db1c806922f9117cacc12dcd8208644a5417b9799385761ce56",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36613280959",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36627155013",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
