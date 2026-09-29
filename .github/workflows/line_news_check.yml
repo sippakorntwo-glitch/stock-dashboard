@@ -1,0 +1,38 @@
+name: Check stock briefing news feeds
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/line_news_check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  news-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install news dependencies
+        run: python -m pip install -q -r requirements-dev.txt
+      - name: Verify briefing behavior
+        run: python -m pytest -q tests/test_line_alerts.py tests/test_stock_alert_briefing.py tests/test_stock_alert_media.py tests/test_market_pulse.py tests/test_market_pulse_service.py
+      - name: Check public feeds without sending LINE messages
+        run: |
+          python - <<'PY'
+          from datetime import datetime, timezone
+          import json
+          from stock_alert_briefing import fetch_alert_news
+          for ticker in ('MCS', 'UFPT', 'ALLE', 'DRH', 'GAP'):
+              result = fetch_alert_news(ticker, datetime.now(timezone.utc))
+              summary = {key: result[key] for key in ('source', 'primary_error', 'fallback_error')}
+              summary.update(ticker=ticker, articles=len(result.get('items') or []))
+              print('NEWS_FEED_CHECK: ' + json.dumps(summary), flush=True)
+              if result.get('fallback_error') in ('not_attempted_access_or_rate_blocked', 'HTTP_401', 'HTTP_403', 'HTTP_407', 'HTTP_429', 'access_or_rate_blocked'):
+                  print('NEWS_FEED_CHECK: stopped after provider access/rate denial', flush=True)
+                  break
+          PY

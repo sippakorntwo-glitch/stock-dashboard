@@ -7,7 +7,12 @@ unavailable feed cannot become a statement that there is no adverse news.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 import re
+import urllib.error
+import urllib.parse
+import urllib.request
+import xml.etree.ElementTree as ET
 
 from market_pulse import _number, _safe_url, _stamp, _text, normalize_news
 from ranking_policy import POLICY, entry_checks, is_entry
@@ -18,6 +23,147 @@ CONTEXT_NEWS_SECONDS = 30 * 86400
 EQUITIES = {'Stock', 'Common Stock', 'EQUITY'}
 SYMBOL = re.compile(r'[A-Z0-9][A-Z0-9.\-^=_]{0,29}')
 AMBIGUOUS_NAMES = {'gap', 'info'}
+RSS_ENDPOINT = 'https://finance.yahoo.com/rss/headline'
+MAX_RSS_BYTES = 1024 * 1024
+
+
+class NewsFeedError(ValueError):
+    """Only fixed diagnostic codes are carried into public job metadata."""
+
+
+class _NoNewsRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+def _http_status(exc):
+    response = getattr(exc, 'response', None)
+    value = getattr(exc, 'code', None) or getattr(response, 'status_code', None)
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def _blocked_news_access(exc):
+    if _http_status(exc) in {401, 403, 407, 429}:
+        return True
+    # Inspect for an explicit denial, but never return/log the error text.
+    name = type(exc).__name__.casefold()
+    message = str(exc).casefold()[:2000]
+    return ('ratelimit' in name or any(word in message for word in
+            ('captcha', 'access denied', 'accessdenied', 'unauthorized', 'forbidden',
+             'too many requests', 'rate limit', 'bot detection', 'bot blocked')))
+
+
+def _safe_news_error(exc):
+    status = _http_status(exc)
+    if status is not None and 100 <= status <= 599:
+        return f'HTTP_{status}'
+    if _blocked_news_access(exc):
+        return 'access_or_rate_blocked'
+    if isinstance(exc, NewsFeedError):
+        allowed = {'invalid_rss_xml', 'invalid_rss_envelope', 'rss_too_large',
+                   'rss_unsafe_xml', 'invalid_news_list', 'invalid_rss_date',
+                   'invalid_rss_response', 'no_valid_rss_items'}
+        return str(exc) if str(exc) in allowed else 'invalid_feed'
+    # Class names are allowlisted; provider responses and their exception text
+    # can contain request parameters and never belong in public diagnostics.
+    name = type(exc).__name__
+    return name if name in {'TimeoutError', 'ConnectionError', 'URLError', 'HTTPError',
+                            'JSONDecodeError', 'ValueError', 'TypeError', 'ImportError',
+                            'ModuleNotFoundError', 'AttributeError', 'RequestException',
+                            'ReadTimeout', 'ConnectTimeout', 'Timeout'} else 'provider_error'
+
+
+def parse_news_rss(xml, ticker, now):
+    """Parse bounded RSS metadata; a requested ticker is not identity evidence."""
+    if not isinstance(ticker, str) or not SYMBOL.fullmatch(ticker):
+        raise ValueError('Invalid news symbol')
+    current = _stamp(now)
+    if current is None:
+        raise ValueError('Invalid news clock')
+    if not isinstance(xml, bytes) or len(xml) > MAX_RSS_BYTES:
+        raise NewsFeedError('rss_too_large')
+    # No DTD or entities: feeds do not need either and cannot reference files/network.
+    # Reject NUL bytes too, preventing an alternate XML encoding from hiding tokens.
+    if b'\x00' in xml or re.search(br'<!\s*(?:DOCTYPE|ENTITY)', xml, re.I):
+        raise NewsFeedError('rss_unsafe_xml')
+    try:
+        root = ET.fromstring(xml)
+    except ET.ParseError as exc:
+        raise NewsFeedError('invalid_rss_xml') from exc
+    channel = root.find('channel')
+    if root.tag != 'rss' or channel is None:
+        raise NewsFeedError('invalid_rss_envelope')
+    raw_items = channel.findall('item')[:20]
+    result = []
+    seen = set()
+    for item in raw_items:
+        title = _text(item.findtext('title'))
+        url = _safe_url(item.findtext('link'))
+        value = item.findtext('pubDate')
+        try:
+            published = parsedate_to_datetime(value) if isinstance(value, str) else None
+        except (TypeError, ValueError, OverflowError):
+            published = None
+        stamp = _stamp(published)
+        if not title or not url or stamp is None or stamp > current or url in seen:
+            continue
+        source = _text(item.findtext('source'), 100)
+        publisher = source or 'Yahoo Finance RSS (ฟีดรวบรวมข่าว)'
+        result.append({'title': title, 'publisher': publisher, 'link': url,
+                       'providerPublishTime': stamp.isoformat(),
+                       'association': 'rss-request-context', 'requestedTicker': ticker})
+        seen.add(url)
+    if raw_items and not result:
+        raise NewsFeedError('no_valid_rss_items')
+    return result
+
+
+def fetch_news_rss(ticker, now):
+    """One public HTTPS request; no authentication, cookies, redirects or retries."""
+    if not isinstance(ticker, str) or not SYMBOL.fullmatch(ticker):
+        raise ValueError('Invalid news symbol')
+    url = RSS_ENDPOINT + '?' + urllib.parse.urlencode({'s': ticker})
+    request = urllib.request.Request(url, headers={
+        'User-Agent': 'stock-dashboard-news/1.0',
+        'Accept': 'application/rss+xml, application/xml, text/xml',
+    })
+    opener = urllib.request.build_opener(_NoNewsRedirect())
+    with opener.open(request, timeout=10) as response:
+        if response.status != 200 or response.geturl() != url:
+            raise NewsFeedError('invalid_rss_response')
+        length = response.headers.get('Content-Length')
+        if length and length.isdigit() and int(length) > MAX_RSS_BYTES:
+            raise NewsFeedError('rss_too_large')
+        xml = response.read(MAX_RSS_BYTES + 1)
+    return parse_news_rss(xml, ticker, now)
+
+
+def fetch_alert_news(ticker, now, primary_fetcher=None, rss_fetcher=None):
+    """Try RSS only after a non-denial primary failure; never bypass a block."""
+    result = {'items': None, 'source': None, 'primary_error': None, 'fallback_error': None}
+    try:
+        if primary_fetcher is None:
+            from market_pulse_service import fetch_news
+            raw = fetch_news(ticker, count=10)
+        else:
+            raw = primary_fetcher(ticker)
+        if not isinstance(raw, list):
+            raise NewsFeedError('invalid_news_list')
+        result.update(items=raw, source='yahoo_primary')
+        return result
+    except Exception as exc:
+        result['primary_error'] = _safe_news_error(exc)
+        if _blocked_news_access(exc):
+            result['fallback_error'] = 'not_attempted_access_or_rate_blocked'
+            return result
+    try:
+        raw = (rss_fetcher or fetch_news_rss)(ticker, now)
+        if not isinstance(raw, list):
+            raise NewsFeedError('invalid_news_list')
+        result.update(items=raw, source='yahoo_rss')
+    except Exception as exc:
+        result['fallback_error'] = _safe_news_error(exc)
+    return result
 
 
 def _fresh(value, now, seconds):
@@ -171,10 +317,11 @@ def _curated_articles(values, row, now):
 
 
 def fetch_company_news(row, now, news_fetcher=None, verified_news=None):
-    """One bounded request per stock; prioritize recent and directly relevant news."""
+    """At most a primary request plus one permitted RSS fallback per stock."""
     ticker = row['ticker']
     result = {'state': 'unavailable', 'checked_at': now.isoformat(), 'items': [],
               'feed_status': 'unavailable',
+              'feed_diagnostics': {'source': None, 'primary_error': None, 'fallback_error': None},
               'source': 'Yahoo Finance + แหล่งข่าวตามลิงก์',
               'note': 'ดึงข่าวไม่ได้ จึงยังประเมินข่าวบวก/ลบของรอบนี้ไม่ได้'}
     curated = _curated_articles((verified_news or {}).get(ticker, []), row, now)
@@ -182,8 +329,9 @@ def fetch_company_news(row, now, news_fetcher=None, verified_news=None):
     successful = False
     try:
         if news_fetcher is None:
-            from market_pulse_service import fetch_news
-            raw = fetch_news(ticker, count=10)
+            fetched = fetch_alert_news(ticker, now)
+            raw = fetched['items']
+            result['feed_diagnostics'] = {key: fetched[key] for key in ('source', 'primary_error', 'fallback_error')}
         else:
             raw = news_fetcher(ticker)
         if not isinstance(raw, list):
@@ -204,9 +352,10 @@ def fetch_company_news(row, now, news_fetcher=None, verified_news=None):
                                    'summary_th': '', 'positive_th': '', 'negative_th': '',
                                    'evidence_type': 'provider_headline', 'direction': 'unassessed',
                                    'date_precision': 'second'})
-    except Exception:
+    except Exception as exc:
         # Never include provider errors, URLs with credentials or raw response bodies in CI output.
-        pass
+        if not any(result['feed_diagnostics'].values()):
+            result['feed_diagnostics']['primary_error'] = _safe_news_error(exc)
     result['feed_status'] = 'available' if successful else 'unavailable'
     candidates.sort(key=lambda x: (x['evidence_type'] != 'reviewed_source',
                                    -_stamp(x['published_at']).timestamp()))

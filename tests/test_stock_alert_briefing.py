@@ -1,10 +1,17 @@
 import copy
 from datetime import datetime, timedelta, timezone
 import unittest
+from unittest.mock import patch
+import urllib.error
+import sys
+import threading
+from types import SimpleNamespace
 
 from ranking_policy import POLICY, entry_checks
 from stock_alert_briefing import (MODEL, build_briefing, fetch_company_news,
-                                  format_briefing_text, select_rows)
+                                  format_briefing_text, select_rows, fetch_alert_news,
+                                  fetch_news_rss, parse_news_rss, NewsFeedError,
+                                  MAX_RSS_BYTES, _NoNewsRedirect)
 
 NOW = datetime(2026, 9, 29, 18, 40, tzinfo=timezone.utc)
 
@@ -214,6 +221,158 @@ class NewsEvidenceTests(unittest.TestCase):
         self.assertNotIn('ไม่รับประกัน', text)
         for required in ('ด้านบวกของข่าว', 'ด้านลบ/จุดติดตาม', 'R:R =', 'จำนวนหุ้น =', 'https://example.com/ir'):
             self.assertIn(required, text)
+
+
+def rss_item(title='ACME Industries quarterly results', pubdate='Tue, 29 Sep 2026 17:00:00 GMT',
+             link='https://example.com/news', source='Company IR'):
+    return (f'<rss version="2.0"><channel><title>Stock news</title><item><title>{title}</title>'
+            f'<link>{link}</link><pubDate>{pubdate}</pubDate><source>{source}</source>'
+            '</item></channel></rss>').encode()
+
+
+class RSSFallbackTests(unittest.TestCase):
+    def test_rss_source_datetime_kept_without_fabricated_related_ticker(self):
+        values = parse_news_rss(rss_item(), 'ACME', NOW)
+        self.assertEqual(values[0]['providerPublishTime'], '2026-09-29T17:00:00+00:00')
+        self.assertEqual(values[0]['publisher'], 'Company IR')
+        self.assertNotIn('relatedTickers', values[0])
+        self.assertEqual(values[0]['association'], 'rss-request-context')
+        news = fetch_company_news(row(), NOW, lambda ticker: values)
+        self.assertEqual(len(news['items']), 1)
+
+    def test_rss_ambiguous_generic_title_still_fails_company_identity(self):
+        value = row('GAP')
+        value['name'] = 'Gap Inc.'
+        values = parse_news_rss(rss_item(title='Gap Between Bond Yields Widens'), 'GAP', NOW)
+        news = fetch_company_news(value, NOW, lambda ticker: values)
+        self.assertEqual(news['items'], [])
+
+    def test_rss_future_unzoned_unsafe_links_and_invalid_dates_rejected(self):
+        for xml in (rss_item(pubdate='Wed, 30 Sep 2026 17:00:00 GMT'),
+                    rss_item(pubdate='Tue, 29 Sep 2026 17:00:00'),
+                    rss_item(pubdate='not a date'), rss_item(link='http://example.com/news'),
+                    rss_item(link='https://user:password@example.com/news')):
+            with self.assertRaises(NewsFeedError):
+                parse_news_rss(xml, 'ACME', NOW)
+
+    def test_rss_invalid_xml_html_dtd_and_size_fail_closed(self):
+        for xml in (b'<rss', b'<html><body>Login</body></html>',
+                    b'<!DOCTYPE rss [<!ENTITY e SYSTEM "file:///etc/passwd">]><rss><channel/></rss>',
+                    b'<rss><channel/></rss>'.decode().encode('utf-16'),
+                    b' ' * (MAX_RSS_BYTES + 1)):
+            with self.assertRaises(NewsFeedError):
+                parse_news_rss(xml, 'ACME', NOW)
+        self.assertEqual(parse_news_rss(b'<rss><channel/></rss>', 'ACME', NOW), [])
+
+    def test_empty_primary_is_success_and_does_not_call_fallback(self):
+        result = fetch_alert_news('ACME', NOW, lambda ticker: [], lambda *args: self.fail('not needed'))
+        self.assertEqual((result['source'], result['items']), ('yahoo_primary', []))
+
+    def test_primary_timeout_uses_rss_with_safe_diagnostics(self):
+        def timeout(ticker):
+            raise TimeoutError('private-api-key-and-token-must-not-leak')
+        result = fetch_alert_news('ACME', NOW, timeout, lambda ticker, now: parse_news_rss(rss_item(), ticker, now))
+        self.assertEqual(result['source'], 'yahoo_rss')
+        self.assertEqual(result['primary_error'], 'TimeoutError')
+        self.assertNotIn('private-api-key', str(result))
+
+    def test_access_denials_rate_limits_and_explicit_botblock_never_fallback(self):
+        errors = [urllib.error.HTTPError('https://example.com', status, 'denied', None, None)
+                  for status in (401, 403, 407, 429)]
+        errors.append(ValueError('Captcha: bot detection'))
+        for error in errors:
+            def fail(ticker):
+                raise error
+            result = fetch_alert_news('ACME', NOW, fail, lambda *args: self.fail('must not bypass block'))
+            self.assertIsNone(result['items'])
+            self.assertEqual(result['fallback_error'], 'not_attempted_access_or_rate_blocked')
+
+    def test_fallback_failure_sanitized_and_no_third_attempt(self):
+        def primary(ticker):
+            raise ValueError('raw response private value')
+        def fallback(ticker, now):
+            raise NewsFeedError('invalid_rss_xml')
+        result = fetch_alert_news('ACME', NOW, primary, fallback)
+        self.assertEqual(result['primary_error'], 'ValueError')
+        self.assertEqual(result['fallback_error'], 'invalid_rss_xml')
+        self.assertIsNone(result['items'])
+
+    def test_rss_request_uses_fixed_https_host_bounded_read_and_no_redirect(self):
+        calls = {}
+        class Response:
+            status = 200
+            headers = {}
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def geturl(self):
+                return 'https://finance.yahoo.com/rss/headline?s=ACME'
+            def read(self, count):
+                calls['read_limit'] = count
+                return rss_item()
+        class Opener:
+            def open(self, request, timeout):
+                calls['url'] = request.full_url
+                calls['timeout'] = timeout
+                calls['headers'] = dict(request.header_items())
+                return Response()
+        with patch('stock_alert_briefing.urllib.request.build_opener', return_value=Opener()):
+            result = fetch_news_rss('ACME', NOW)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(calls['url'], 'https://finance.yahoo.com/rss/headline?s=ACME')
+        self.assertEqual(calls['timeout'], 10)
+        self.assertEqual(calls['read_limit'], MAX_RSS_BYTES + 1)
+        self.assertNotIn('Authorization', calls['headers'])
+        self.assertNotIn('Cookie', calls['headers'])
+        self.assertIsNone(_NoNewsRedirect().redirect_request(None, None, None, None, None, None))
+
+
+class PrimaryNewsBlockTests(unittest.TestCase):
+    def _provider_call(self, body, payload, json_must_not_run=False):
+        from market_pulse_service import fetch_news
+        class Response:
+            content = body
+            def raise_for_status(self):
+                pass
+            def json(self):
+                if json_must_not_run:
+                    raise AssertionError('challenge must be detected before JSON parse')
+                return payload
+        provider = SimpleNamespace(post=lambda *args, **kwargs: Response())
+        modules = {'yfinance.data': SimpleNamespace(YfData=lambda: provider),
+                   'dashboard_runtime': SimpleNamespace(core=SimpleNamespace(_PROVIDER_LOCK=threading.RLock()))}
+        with patch.dict(sys.modules, modules):
+            return fetch_news('ACME')
+
+    def test_http200_unauthorized_and_rate_envelopes_preserve_denial(self):
+        from market_pulse_service import NewsProviderBlocked
+        for value, code in (({'error': {'code': 'Unauthorized', 'description': 'private-cookie'}}, 401),
+                            ({'errors': [{'message': 'Too Many Requests'}]}, 429),
+                            ({'data': {'errors': [{'code': 'Forbidden'}]}}, 403)):
+            with self.assertRaises(NewsProviderBlocked) as caught:
+                self._provider_call(b'{"error":true}', value)
+            self.assertEqual(caught.exception.code, code)
+            self.assertNotIn('private-cookie', str(caught.exception))
+            result = fetch_alert_news('ACME', NOW,
+                lambda ticker: self._provider_call(b'{"error":true}', value),
+                lambda *args: self.fail('must not bypass HTTP 200 denial'))
+            self.assertEqual(result['fallback_error'], 'not_attempted_access_or_rate_blocked')
+
+    def test_http200_captcha_stops_before_json_decode_and_no_rss_attempt(self):
+        from market_pulse_service import NewsProviderBlocked
+        body = b'<html><body>Verify you are human. CAPTCHA secret-session</body></html>'
+        with self.assertRaises(NewsProviderBlocked) as caught:
+            self._provider_call(body, None, json_must_not_run=True)
+        self.assertEqual(caught.exception.code, 403)
+        self.assertNotIn('secret-session', str(caught.exception))
+
+    def test_normal_article_word_and_generic_envelope_do_not_fake_denial(self):
+        article_data = {'content': {'title': 'ACME wins lawsuit over access denied claim'}}
+        envelope = {'data': {'tickerStream': {'stream': [article_data]}}}
+        self.assertEqual(self._provider_call(b'{"data":{}}', envelope), [article_data])
+        with self.assertRaisesRegex(ValueError, 'Invalid news envelope'):
+            self._provider_call(b'{"errors":[]}', {'errors': ['Upstream temporarily unavailable']})
 
 
 if __name__ == '__main__':

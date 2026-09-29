@@ -28,6 +28,67 @@ MAX_QUOTE_REQUESTS_PER_HOUR = 120
 MAX_NEWS_REQUESTS_PER_HOUR = 120
 QUOTE_URL = 'https://query1.finance.yahoo.com/v7/finance/quote'
 NEWS_URL = 'https://finance.yahoo.com/xhr/ncp?queryRef=latestNews&serviceKey=ncp_fin'
+MAX_NEWS_RESPONSE_BYTES = 1024 * 1024
+
+
+class NewsProviderBlocked(RuntimeError):
+    """Preserve an explicit provider denial without exposing response content."""
+    def __init__(self, code):
+        self.code = code if code in (401, 403, 407, 429) else 403
+        message = 'News provider rate limit' if self.code == 429 else 'News provider access denied'
+        super().__init__(message)
+
+
+def _news_denial_code(value):
+    """Inspect a bounded error/challenge value, never an article's contents."""
+    pending = [value]
+    for _ in range(128):
+        if not pending:
+            break
+        item = pending.pop()
+        if isinstance(item, int) and not isinstance(item, bool) and item in (401, 403, 407, 429):
+            return item
+        if isinstance(item, str):
+            plain = item[:16_384].casefold()
+            compact = re.sub(r'[\s_-]+', '', plain)
+            if compact in ('401', '403', '407', '429'):
+                return int(compact)
+            if any(marker in compact for marker in ('toomanyrequests', 'ratelimit', 'requestlimitexceeded')):
+                return 429
+            if any(marker in compact for marker in ('unauthorized', 'authenticationrequired')):
+                return 401
+            if any(marker in compact for marker in ('forbidden', 'accessdenied', 'captcha',
+                   'verifyyouarehuman', 'verifythatyouarehuman', 'botdetection', 'botblocked',
+                   'challengeplatform', 'cfchl', 'checkingyourbrowser')):
+                return 403
+        elif isinstance(item, dict):
+            pending.extend(list(item.keys())[:32])
+            pending.extend(list(item.values())[:32])
+        elif isinstance(item, list):
+            pending.extend(item[:32])
+    return None
+
+
+def _news_payload_denial(payload):
+    pending = [payload]
+    for _ in range(128):
+        if not pending:
+            break
+        item = pending.pop()
+        if isinstance(item, dict):
+            for key, value in list(item.items())[:64]:
+                key = str(key).casefold()
+                if key in ('error', 'errors'):
+                    code = _news_denial_code(value)
+                    if code:
+                        return code
+                elif key in ('captcha', 'botchallenge') and value:
+                    return 403
+                elif isinstance(value, (dict, list)):
+                    pending.append(value)
+        elif isinstance(item, list):
+            pending.extend(item[:32])
+    return None
 
 
 def _iso(value):
@@ -74,7 +135,21 @@ def fetch_news(ticker, *, count=5):
             timeout=10,
         )
         response.raise_for_status()
+        body = getattr(response, 'content', b'')
+        if isinstance(body, bytes):
+            if len(body) > MAX_NEWS_RESPONSE_BYTES:
+                raise ValueError('News response exceeds size limit')
+            prefix = body[:16_384].lstrip()
+            # An HTTP 200 challenge page can fail JSON decoding. Preserve the
+            # denial before that generic failure can authorize a data fallback.
+            if prefix[:1] not in (b'{', b'['):
+                code = _news_denial_code(prefix.decode('utf-8', errors='replace'))
+                if code:
+                    raise NewsProviderBlocked(code)
         payload = response.json()
+    code = _news_payload_denial(payload)
+    if code:
+        raise NewsProviderBlocked(code)
     if not isinstance(payload, dict) or payload.get('errors') or payload.get('error'):
         raise ValueError('Invalid news envelope')
     data = payload.get('data')
