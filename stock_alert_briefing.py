@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 import re
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -25,15 +26,63 @@ SYMBOL = re.compile(r'[A-Z0-9][A-Z0-9.\-^=_]{0,29}')
 AMBIGUOUS_NAMES = {'gap', 'info'}
 RSS_ENDPOINT = 'https://finance.yahoo.com/rss/headline'
 MAX_RSS_BYTES = 1024 * 1024
+RSS_HEADERS = {'User-Agent': 'stock-dashboard-news/1.0',
+               'Accept': 'application/rss+xml, application/xml, text/xml'}
 
 
 class NewsFeedError(ValueError):
     """Only fixed diagnostic codes are carried into public job metadata."""
 
 
-class _NoNewsRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, *args, **kwargs):
-        return None
+def _valid_rss_url(url, ticker):
+    if not isinstance(url, str) or any(char.isspace() for char in url) or '\\' in url:
+        return False
+    try:
+        parsed = urllib.parse.urlsplit(url)
+        if (parsed.scheme != 'https' or parsed.hostname not in ('finance.yahoo.com', 'feeds.finance.yahoo.com')
+                or parsed.path not in ('/rss/headline', '/rss/2.0/headline')
+                or parsed.username or parsed.password or parsed.port is not None or parsed.fragment):
+            return False
+        fields = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True, strict_parsing=True, max_num_fields=3)
+        values = dict(fields)
+        return (len(fields) == len(values) and values.get('s') == ticker
+                and set(values) <= {'s', 'lang', 'region'}
+                and values.get('lang', 'en-US') == 'en-US' and values.get('region', 'US') == 'US')
+    except (ValueError, TypeError):
+        return False
+
+
+class _RSSCanonicalRedirect(urllib.request.HTTPRedirectHandler):
+    """One public canonical RSS hop, retaining the original ten-second budget."""
+    def __init__(self, ticker, deadline=None):
+        super().__init__()
+        self.ticker, self.count = ticker, 0
+        self.deadline = time.monotonic() + 10 if deadline is None else deadline
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if self.count or not _valid_rss_url(newurl, self.ticker):
+            raise NewsFeedError('rss_redirect_rejected')
+        if time.monotonic() >= self.deadline:
+            raise TimeoutError('RSS deadline reached')
+        self.count += 1
+        return urllib.request.Request(newurl, headers=RSS_HEADERS)
+
+    def http_error_302(self, req, fp, code, msg, headers):
+        location = headers.get('Location') or headers.get('URI')
+        try:
+            if not isinstance(location, str):
+                raise NewsFeedError('rss_redirect_rejected')
+            newurl = urllib.parse.urljoin(req.full_url, location)
+            new = self.redirect_request(req, fp, code, msg, headers, newurl)
+        finally:
+            # Do not consume an unbounded redirect response body.
+            fp.close()
+        remaining = self.deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError('RSS deadline reached')
+        return self.parent.open(new, timeout=remaining)
+
+    http_error_301 = http_error_303 = http_error_307 = http_error_308 = http_error_302
 
 
 def _http_status(exc):
@@ -62,7 +111,7 @@ def _safe_news_error(exc):
     if isinstance(exc, NewsFeedError):
         allowed = {'invalid_rss_xml', 'invalid_rss_envelope', 'rss_too_large',
                    'rss_unsafe_xml', 'invalid_news_list', 'invalid_rss_date',
-                   'invalid_rss_response', 'no_valid_rss_items'}
+                   'invalid_rss_response', 'no_valid_rss_items', 'rss_redirect_rejected'}
         return str(exc) if str(exc) in allowed else 'invalid_feed'
     # Class names are allowlisted; provider responses and their exception text
     # can contain request parameters and never belong in public diagnostics.
@@ -119,17 +168,14 @@ def parse_news_rss(xml, ticker, now):
 
 
 def fetch_news_rss(ticker, now):
-    """One public HTTPS request; no authentication, cookies, redirects or retries."""
+    """Public RSS plus at most one validated canonical redirect; no credentials."""
     if not isinstance(ticker, str) or not SYMBOL.fullmatch(ticker):
         raise ValueError('Invalid news symbol')
     url = RSS_ENDPOINT + '?' + urllib.parse.urlencode({'s': ticker})
-    request = urllib.request.Request(url, headers={
-        'User-Agent': 'stock-dashboard-news/1.0',
-        'Accept': 'application/rss+xml, application/xml, text/xml',
-    })
-    opener = urllib.request.build_opener(_NoNewsRedirect())
+    request = urllib.request.Request(url, headers=RSS_HEADERS)
+    opener = urllib.request.build_opener(_RSSCanonicalRedirect(ticker))
     with opener.open(request, timeout=10) as response:
-        if response.status != 200 or response.geturl() != url:
+        if response.status != 200 or not _valid_rss_url(response.geturl(), ticker):
             raise NewsFeedError('invalid_rss_response')
         length = response.headers.get('Content-Length')
         if length and length.isdigit() and int(length) > MAX_RSS_BYTES:

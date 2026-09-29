@@ -11,7 +11,7 @@ from ranking_policy import POLICY, entry_checks
 from stock_alert_briefing import (MODEL, build_briefing, fetch_company_news,
                                   format_briefing_text, select_rows, fetch_alert_news,
                                   fetch_news_rss, parse_news_rss, NewsFeedError,
-                                  MAX_RSS_BYTES, _NoNewsRedirect)
+                                  MAX_RSS_BYTES, _RSSCanonicalRedirect, _valid_rss_url)
 
 NOW = datetime(2026, 9, 29, 18, 40, tzinfo=timezone.utc)
 
@@ -297,7 +297,7 @@ class RSSFallbackTests(unittest.TestCase):
         self.assertEqual(result['fallback_error'], 'invalid_rss_xml')
         self.assertIsNone(result['items'])
 
-    def test_rss_request_uses_fixed_https_host_bounded_read_and_no_redirect(self):
+    def test_rss_request_uses_fixed_https_host_bounded_read_and_no_credentials(self):
         calls = {}
         class Response:
             status = 200
@@ -325,7 +325,54 @@ class RSSFallbackTests(unittest.TestCase):
         self.assertEqual(calls['read_limit'], MAX_RSS_BYTES + 1)
         self.assertNotIn('Authorization', calls['headers'])
         self.assertNotIn('Cookie', calls['headers'])
-        self.assertIsNone(_NoNewsRedirect().redirect_request(None, None, None, None, None, None))
+
+    def test_one_canonical_rss_redirect_allowed_without_credentials(self):
+        canonical = 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=ACME&region=US&lang=en-US'
+        handler = _RSSCanonicalRedirect('ACME')
+        request = handler.redirect_request(None, None, 301, '', {}, canonical)
+        self.assertEqual(request.full_url, canonical)
+        self.assertEqual(request.get_method(), 'GET')
+        self.assertNotIn('Authorization', dict(request.header_items()))
+        with self.assertRaisesRegex(NewsFeedError, 'rss_redirect_rejected'):
+            handler.redirect_request(None, None, 301, '', {}, canonical)
+
+    def test_external_login_wrong_symbol_and_unsafe_redirects_rejected(self):
+        for url in ('https://example.com/rss/headline?s=ACME',
+                    'https://login.yahoo.com/rss/headline?s=ACME',
+                    'https://finance.yahoo.com/login?s=ACME',
+                    'https://finance.yahoo.com/rss/headline?s=OTHER',
+                    'https://user:password@finance.yahoo.com/rss/headline?s=ACME',
+                    'https://finance.yahoo.com:443/rss/headline?s=ACME',
+                    'https://finance.yahoo.com/rss/headline?s=ACME#section',
+                    'http://finance.yahoo.com/rss/headline?s=ACME',
+                    'https://finance.yahoo.com/rss/headline?s=ACME&s=ACME',
+                    'https://finance.yahoo.com/rss/headline?s=ACME&lang=th-TH',
+                    'https://finance.yahoo.com/rss/headline?s=ACME&redirect=https://example.com'):
+            self.assertFalse(_valid_rss_url(url, 'ACME'))
+            with self.assertRaisesRegex(NewsFeedError, 'rss_redirect_rejected'):
+                _RSSCanonicalRedirect('ACME').redirect_request(None, None, 301, '', {}, url)
+
+    def test_redirect_closes_body_and_uses_remaining_timeout(self):
+        class Body:
+            closed = False
+            def close(self):
+                self.closed = True
+            def read(self, *args):
+                raise AssertionError('redirect body must not be consumed')
+        called = {}
+        def open_again(request, timeout):
+            called.update(url=request.full_url, timeout=timeout)
+            return 'response'
+        with patch('stock_alert_briefing.time.monotonic', return_value=102):
+            handler = _RSSCanonicalRedirect('ACME', deadline=110)
+            handler.parent = SimpleNamespace(open=open_again)
+            original = SimpleNamespace(full_url='https://finance.yahoo.com/rss/headline?s=ACME')
+            body = Body()
+            result = handler.http_error_301(original, body, 301, '',
+                {'Location': 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=ACME'})
+        self.assertEqual(result, 'response')
+        self.assertTrue(body.closed)
+        self.assertEqual(called['timeout'], 8)
 
 
 class PrimaryNewsBlockTests(unittest.TestCase):
