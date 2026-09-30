@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-09-30T04:54:12.793179+00:00",
-  "run_id": "36668665504",
+  "recorded_at": "2026-09-30T04:59:44.977424+00:00",
+  "run_id": "36669703953",
   "source_sha": "f8ca34a75e2d31b89c04d23b31c937fe32871db4",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-24.39",
@@ -832,7 +832,7 @@
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-09-30T04:42:18.783782+00:00",
+        "rendered_at": "2026-09-30T04:50:55.296657+00:00",
         "quotes_checked_at": "2026-09-30T04:29:32.860385+00:00",
         "observations": [
           {
@@ -909,7 +909,7 @@
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-09-30T04:43:07.733073+00:00",
+        "rendered_at": "2026-09-30T04:52:01.725376+00:00",
         "quotes_checked_at": "2026-09-30T04:29:32.860385+00:00",
         "observations": [
           {
@@ -1051,7 +1051,7 @@
         "canvas_index": 1,
         "canvas": {
           "x": 398,
-          "y": 409.90625,
+          "y": 575.90625,
           "width": 868,
           "height": 180
         },
@@ -1064,7 +1064,7 @@
           },
           {
             "x": 397,
-            "y": -12.265625,
+            "y": 153.734375,
             "width": 946,
             "height": 900
           },
@@ -1077,17 +1077,17 @@
         ],
         "visible": {
           "left": 414,
-          "top": 425.90625,
+          "top": 591.90625,
           "right": 1250,
-          "bottom": 573.90625
+          "bottom": 739.90625
         },
         "start": {
           "x": 706.5999999999999,
-          "y": 499.90625
+          "y": 665.90625
         },
         "end": {
           "x": 957.4,
-          "y": 499.90625
+          "y": 665.90625
         },
         "canvas_hits": [
           true,
@@ -1308,7 +1308,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-09-30T04:44:23.625469+00:00",
+      "verified_at": "2026-09-30T04:53:37.101632+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -1451,10 +1451,10 @@
           {
             "tab": "ความเสี่ยง / แนวโน้ม",
             "box": {
-              "left": 213.390625,
-              "right": 341.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "left": 131.390625,
+              "right": 259.390625,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1462,10 +1462,10 @@
           {
             "tab": "บริษัท / กองทุน",
             "box": {
-              "left": 151.390625,
-              "right": 239.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "left": 253.390625,
+              "right": 341.390625,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1475,8 +1475,8 @@
             "box": {
               "left": 193.390625,
               "right": 341.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1485,8 +1485,8 @@
         "numeric_input_box": {
           "left": 49.390625,
           "right": 276.609375,
-          "top": 711.5,
-          "bottom": 747.09375,
+          "top": 572.5,
+          "bottom": 608.09375,
           "width": 390,
           "height": 844
         },
