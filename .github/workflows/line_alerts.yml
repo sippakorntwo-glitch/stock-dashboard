@@ -1,5 +1,9 @@
 name: LINE stock alerts
 on:
+  schedule:
+    # Independent wake-up shortly after the :07/:37 ranking refresh. The
+    # completion event is a second wake-up; durable slot keys allow one push.
+    - cron: '16,46 10-21 * * 1-5'
   push:
     branches: [main]
     paths: ['.github/workflows/line_alerts.yml']
@@ -23,7 +27,7 @@ jobs:
   notify:
     if: >-
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
