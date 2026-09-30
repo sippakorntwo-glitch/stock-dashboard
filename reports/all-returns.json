@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-09-29T19:54:55.018836+00:00",
-  "run_id": "36622293314",
-  "source_sha": "a5224164b8d4aec5aa4c966e933e0a8f235706a6",
+  "recorded_at": "2026-09-30T04:40:28.661418+00:00",
+  "run_id": "36669703953",
+  "source_sha": "f8ca34a75e2d31b89c04d23b31c937fe32871db4",
   "catalog_members": 9876,
   "priced_members": 9875,
   "periods_checked": 79000,
@@ -14,9 +14,9 @@
   ],
   "error_count": 0,
   "result": "passed",
-  "audited_at": "2026-09-29T19:54:53.237019+00:00",
-  "generation": "generations/20260929T191720Z-67c50536",
-  "published_at": "2026-09-29T19:22:07.264791+00:00",
+  "audited_at": "2026-09-30T04:40:26.459572+00:00",
+  "generation": "generations/20260930T041053Z-c79f1aa4",
+  "published_at": "2026-09-30T04:15:16.966152+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9876,
@@ -61,10 +61,10 @@
           "values": {
             "Open": 105.4800033569336,
             "High": 105.83999633789062,
-            "Low": 104.85160064697266,
-            "Close": 105.12010192871094,
-            "Adj Close": 105.12010192871094,
-            "Volume": 4065552.0
+            "Low": 104.8499984741211,
+            "Close": 105.41000366210938,
+            "Adj Close": 105.41000366210938,
+            "Volume": 7323300.0
           }
         }
       ],
