@@ -1,0 +1,41 @@
+name: Check LINE quota and monthly schedule
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/line_schedule_check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read quota without sending a message
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from line_alerts import AlertError, JsonHTTP, LineClient, number
+          client = LineClient(os.environ['LINE_CHANNEL_ACCESS_TOKEN'], os.environ['LINE_USER_ID'], JsonHTTP())
+          code, _, quota = client.call('GET', 'message/quota')
+          code2, _, usage = client.call('GET', 'message/quota/consumption')
+          if code != 200 or code2 != 200 or not number(usage.get('totalUsage')):
+              raise AlertError('Cannot verify LINE quota usage')
+          limit = quota.get('value')
+          if quota.get('type') == 'limited' and (not number(limit) or limit < 0):
+              raise AlertError('Invalid LINE quota response')
+          report = {'type': quota.get('type'), 'limit': limit, 'used': usage['totalUsage'],
+                    'remaining': max(0, limit - usage['totalUsage']) if number(limit) else None,
+                    'checked_at': datetime.now(timezone.utc).isoformat(), 'messages_sent': 0}
+          print('LINE_QUOTA_CHECK:', json.dumps(report))
+          PY
