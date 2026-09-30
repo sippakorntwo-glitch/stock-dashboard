@@ -1,44 +1,44 @@
 {
-  "recorded_at": "2026-09-30T04:34:16.394526+00:00",
-  "run_id": "36669338793",
+  "recorded_at": "2026-09-30T07:45:51.084366+00:00",
+  "run_id": "36679282779",
   "source_sha": "f8ca34a75e2d31b89c04d23b31c937fe32871db4",
-  "started_at": "2026-09-30T04:33:35.474972+00:00",
-  "source_generation": "generations/20260930T041053Z-c79f1aa4",
+  "started_at": "2026-09-30T07:44:57.354314+00:00",
+  "source_generation": "generations/20260930T073915Z-22e1b1ed",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-30T04:34:16.369229+00:00",
+  "finished_at": "2026-09-30T07:45:51.050643+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260930T041053Z-c79f1aa4",
+  "generation": "generations/20260930T073915Z-22e1b1ed",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 18,
+    "checked_today": 9876,
     "industry": 9517,
     "info": 9876,
     "financial_statements": 4160,
     "dividends": 9876,
-    "return_1y": 8147,
+    "return_1y": 8152,
     "return_2y": 6958,
-    "return_3y": 6194
+    "return_3y": 6196
   },
   "snapshot_unchanged": true,
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305823,
-    "report_sha256": "418c9c7156c20c4de77940f8c33c7a28087faa94eb731d18b332acd12d14f609",
+    "report_bytes": 305825,
+    "report_sha256": "88af4ebddcc6eddc55f5340fc78d5090f43987ab37fde876e0ed52193f4dacc6",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36669338793",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36679282779",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -145,13 +145,13 @@
         "not_applicable": 5676
       },
       "revenueGrowth": {
-        "available": 3464,
-        "not_reported": 736,
+        "available": 3465,
+        "not_reported": 735,
         "not_applicable": 5676
       },
       "earningsGrowth": {
-        "available": 1939,
-        "not_reported": 2261,
+        "available": 1938,
+        "not_reported": 2262,
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
@@ -2111,13 +2111,13 @@
         "not_applicable": 5676
       },
       "revenueGrowth": {
-        "available": 3464,
-        "not_reported": 736,
+        "available": 3465,
+        "not_reported": 735,
         "not_applicable": 5676
       },
       "earningsGrowth": {
-        "available": 1939,
-        "not_reported": 2261,
+        "available": 1938,
+        "not_reported": 2262,
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
