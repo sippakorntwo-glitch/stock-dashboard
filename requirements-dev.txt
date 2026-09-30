@@ -1,3 +1,4 @@
--r requirements.txt
+# Test the LINE reporting extras alongside the core dashboard.
+-r requirements-line-alerts.txt
 pytest==9.0.2
 PyYAML==6.0.3
