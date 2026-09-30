@@ -1,22 +1,39 @@
 {
-  "recorded_at": "2026-09-30T05:19:33.147635+00:00",
-  "run_id": "36670957323",
-  "source_sha": "f8ca34a75e2d31b89c04d23b31c937fe32871db4",
+  "recorded_at": "2026-09-30T14:07:13.107096+00:00",
+  "run_id": "36726317768",
+  "source_sha": "5567cdf7ba48ec296b25f4295bfe9d36b0674f5d",
   "catalog_members": 9876,
-  "priced_members": 9875,
-  "periods_checked": 79000,
-  "numeric_periods": 67904,
-  "unavailable_periods": 11096,
+  "priced_members": 9876,
+  "periods_checked": 79008,
+  "numeric_periods": 67931,
+  "unavailable_periods": 11077,
   "max_difference_pp": 5.539568803669681e-12,
-  "errors": [],
-  "unpriced_tickers": [
-    "DIS"
+  "errors": [
+    {
+      "ticker": "WHLR",
+      "field": "Return_5Y",
+      "actual": -99.99999999970814,
+      "expected": -99.99999999970814,
+      "audit_record": {
+        "value": -99.99999999970814,
+        "annualized": -99.50678603618708,
+        "start": "2021-09-29",
+        "end": "2026-09-29",
+        "requested_start": "2021-09-29",
+        "start_price": 1144378359808.0,
+        "end_price": 3.339999914169312,
+        "state": "available",
+        "basis": "adjusted-close",
+        "method_version": 3
+      }
+    }
   ],
-  "error_count": 0,
-  "result": "passed",
-  "audited_at": "2026-09-30T05:19:31.372316+00:00",
-  "generation": "generations/20260930T051212Z-b42fd19e",
-  "published_at": "2026-09-30T05:16:48.210576+00:00",
+  "unpriced_tickers": [],
+  "error_count": 1,
+  "result": "failure",
+  "audited_at": "2026-09-30T14:07:12.677905+00:00",
+  "generation": "generations/20260930T133548Z-f99bccb9",
+  "published_at": "2026-09-30T13:40:10.779901+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9876,
@@ -24,51 +41,11 @@
     "info": 9876,
     "industry": 9517,
     "dividends_checked": 9876,
-    "dividends_with_payments": 6084,
-    "dividends_no_payments": 3792,
+    "dividends_with_payments": 6091,
+    "dividends_no_payments": 3785,
     "financial_statements": 4160,
     "unattempted_info": 0,
     "unattempted_dividends": 0
   },
-  "missing_price_diagnostic": {
-    "DIS": {
-      "rows": 21,
-      "last_observations": [
-        {
-          "date": "2026-09-25 00:00:00-04:00",
-          "values": {
-            "Open": 105.1500015258789,
-            "High": 106.16999816894531,
-            "Low": 104.4800033569336,
-            "Close": 106.1500015258789,
-            "Adj Close": 106.1500015258789,
-            "Volume": 7246700.0
-          }
-        },
-        {
-          "date": "2026-09-28 00:00:00-04:00",
-          "values": {
-            "Open": 105.12000274658203,
-            "High": 106.58000183105469,
-            "Low": 104.76000213623047,
-            "Close": 105.58999633789062,
-            "Adj Close": 105.58999633789062,
-            "Volume": 12096100.0
-          }
-        },
-        {
-          "date": "2026-09-29 00:00:00-04:00",
-          "values": {
-            "Open": 105.4800033569336,
-            "High": 105.83999633789062,
-            "Low": 104.8499984741211,
-            "Close": 105.41000366210938,
-            "Adj Close": 105.41000366210938,
-            "Volume": 7323300.0
-          }
-        }
-      ],
-      "note": "Diagnostic only; no raw close substituted for adjusted returns."
-    }
-  }
+  "missing_price_diagnostic": {}
 }
