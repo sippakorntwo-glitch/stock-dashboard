@@ -1,5 +1,8 @@
 name: LINE stock alerts
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/line_alerts.yml']
   workflow_run:
     workflows: ['Refresh Top 10 board (30 minutes)']
     types: [completed]
@@ -7,10 +10,10 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'scan = 5-stock report after new signals; preview = one format example; dry-run = no delivery'
+        description: 'scheduled = due quota-planned round; schedule-check = quota and plan without delivery'
         type: choice
-        options: [scan, test, dry-run, preview]
-        default: scan
+        options: [scheduled, schedule-check, scan, test, dry-run, preview]
+        default: scheduled
 permissions:
   contents: read
 concurrency:
@@ -20,7 +23,7 @@ jobs:
   notify:
     if: >-
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
@@ -44,12 +47,12 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_line_alert*.py'
           python -m unittest discover -s tests -p 'test_stock_alert*.py'
-      - name: Deliver only confirmed, current, new signals
+      - name: Deliver the due pre-market or regular report within monthly quota
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-          ALERT_MODE: ${{ inputs.mode || 'scan' }}
+          ALERT_MODE: ${{ inputs.mode || 'scheduled' }}
         run: python line_alerts.py --mode "$ALERT_MODE"
       - name: Preserve the report that was prepared
         if: always()

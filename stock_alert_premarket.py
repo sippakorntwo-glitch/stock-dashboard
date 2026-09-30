@@ -25,7 +25,7 @@ def apply_pre_market_assessment(card, row, now):
         card['situation'] = 'ยังไม่มีราคา Pre-market อายุไม่เกิน 15 นาที; แสดงราคาปกติล่าสุดเป็นข้อมูลประกอบ'
         details.insert(0, 'รอราคา Pre-market ปัจจุบัน')
     elif candidate:
-        card['situation'] = 'ราคา Pre-market อยู่ในโซนและ R:R ≥2; รอยืนยัน Bid/Ask ก่อนส่งคำสั่ง'
+        card['situation'] = 'ราคา Pre-market อยู่ในโซนและ R:R อย่างน้อย 2; รอยืนยัน Bid/Ask ก่อนส่งคำสั่ง'
     elif card['situation'].startswith('ราคาอยู่ในโซนเข้า'):
         card['situation'] = 'ราคา Pre-market อยู่ในโซน แต่ยังมีเงื่อนไขค้าง'
     card['blockers'] = ([] if current else ['ราคา Pre-market ปัจจุบัน']) + blockers + ['Bid/Ask ก่อนตลาดเปิด']

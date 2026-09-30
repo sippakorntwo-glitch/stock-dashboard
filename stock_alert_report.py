@@ -142,7 +142,7 @@ def build_message_bundle(payload, preferred_tickers, now, mode, store):
     from datetime import timedelta
     current_quotes = [datetime.fromisoformat(card['quote_time']) + timedelta(minutes=15)
                       for card in briefing['cards'] if card['quote_fresh']]
-    expires = min(current_quotes + [now + timedelta(minutes=2)])
+    expires = min(current_quotes + [now + timedelta(minutes=5)])
     return {'messages': messages, 'stocks': briefing['actual_count'], 'expires_at': expires.isoformat()}
 
 
