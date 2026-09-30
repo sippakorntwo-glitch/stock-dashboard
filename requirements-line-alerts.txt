@@ -1,2 +1,4 @@
 -r requirements.txt
 Pillow==12.3.0
+pandas-market-calendars==5.4.0
+exchange-calendars==4.11.1

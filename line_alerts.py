@@ -213,6 +213,17 @@ class LineClient:
             raise AlertError('Cannot verify LINE quota usage')
         return quota.get('type') == 'limited' and usage['totalUsage'] < quota['value']
 
+    def quota_snapshot(self):
+        code, _, quota = self.call('GET', 'message/quota')
+        code2, _, usage = self.call('GET', 'message/quota/consumption')
+        limit, used = quota.get('value'), usage.get('totalUsage')
+        if (code != 200 or code2 != 200 or quota.get('type') != 'limited'
+                or not number(limit) or not number(used) or limit < 0 or used < 0
+                or int(limit) != limit or int(used) != used):
+            raise AlertError('Cannot verify a finite LINE monthly quota')
+        return {'type': 'limited', 'limit': int(limit), 'used': int(used),
+                'remaining': max(0, int(limit) - int(used))}
+
     def push(self, pending):
         messages = pending.get('messages') or [{'type': 'text', 'text': pending['text']}]
         validate_messages(messages)
@@ -262,6 +273,9 @@ def validate_messages(messages):
 
 def deliver(payload, store, client, recipient, now, mode='scan', message_builder=None, clock=None):
     clock = clock or (lambda: now)
+    if mode == 'scheduled':
+        from line_alert_schedule import deliver_scheduled
+        return deliver_scheduled(payload, store, client, recipient, now, message_builder, clock)
     state = store.read()
     scope = opaque_key(recipient, 'recipient-scope-v1')
     bucket = state['recipients'].setdefault(scope, {'seen': {}, 'pending': None})
@@ -353,7 +367,7 @@ def deliver(payload, store, client, recipient, now, mode='scan', message_builder
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mode', choices=('scan', 'test', 'dry-run', 'preview'), default='scan')
+    parser.add_argument('--mode', choices=('scan', 'test', 'dry-run', 'preview', 'scheduled', 'schedule-check'), default='scheduled')
     args = parser.parse_args()
     repo = os.environ.get('GITHUB_REPOSITORY', '')
     if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('GITHUB_REF') != 'refs/heads/main':
@@ -365,14 +379,17 @@ def main():
     http = JsonHTTP()
     store = GitHubState(repo, github_token, http)
     payload = None
-    if args.mode != 'test':
+    if args.mode not in ('test', 'schedule-check'):
         raw = store.call('GET', '/contents/top10.json?ref=dashboard-rankings')
         try:
             payload = json.loads(base64.b64decode(raw['content']))
         except (ValueError, KeyError, TypeError):
             raise AlertError('Cannot read published ranking') from None
     now = datetime.now(UTC)
-    if args.mode == 'dry-run':
+    if args.mode == 'schedule-check':
+        from line_alert_schedule import schedule_summary
+        report = schedule_summary(LineClient(token, recipient, http).quota_snapshot(), now)
+    elif args.mode == 'dry-run':
         report = {'status': 'dry_run', 'eligible': len(eligible(payload, now)), 'messages': 0}
     else:
         from stock_alert_report import build_message_bundle

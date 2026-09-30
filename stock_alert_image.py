@@ -221,7 +221,7 @@ def _card(draw, text, card, index, y):
     score = _number(card.get("score"), digits=0)
     score_text = f"คะแนน {score}/100"
     text.line((920, y + 29), score_text, 25, INK, True)
-    label = "ผ่านเกณฑ์เข้า" if ready else "เฝ้าดู / รอจังหวะ"
+    label = ("ผ่านเกณฑ์เข้า" if ready else "ก่อนเปิด / เข้าโซน" if card.get('status') == 'pre_candidate' else "เฝ้าดู / รอจังหวะ")
     draw.rounded_rectangle((1173, y + 21, right - 27, y + 69), radius=24, fill=pale)
     label_w = text.width(label, 24, True)
     text.line(((1173 + right - 27 - label_w) / 2, y + 29), label, 24, accent, True)
@@ -238,7 +238,7 @@ def _card(draw, text, card, index, y):
     strip_y = y + 180
     draw.rounded_rectangle((x, strip_y, right - 28, strip_y + 94), radius=15, fill="#F2F6FA")
     metrics = [
-        ("ราคาล่าสุด ($)" if card.get('quote_fresh') else "ราคาปกติล่าสุด ($)", _number(card.get("quote")), INK),
+        ("Pre-market ($)" if card.get('quote_session') == 'pre' else "ราคาล่าสุด ($)" if card.get('quote_fresh') else "ราคาปกติล่าสุด ($)", _number(card.get("quote")), INK),
         ("โซนซื้อ ($)", f"{_number(card.get('zone_low'))}–{_number(card.get('zone_high'))}", INK),
         ("ตัดขาดทุน ($)", _number(card.get("stop")), RED),
         ("เป้าหมาย ($)", _number(card.get("target")), TEAL),
@@ -321,6 +321,9 @@ def render_briefing(briefing: dict, output_dir, *, font_dir=None, stem="stock-br
     text.line((58, 175), "ข้อมูลรอบ " + _time(briefing.get("computed_at") or briefing.get("generated_at")) + " · เวลาไทย", 25, "#D3DEE9")
     ready_count = sum(card.get("status") == "entry" for card in cards)
     status = f"ผ่านเกณฑ์เข้า {ready_count}  |  เฝ้าดู {len(cards) - ready_count}"
+    if briefing.get('report_session') == 'pre':
+        candidate_count = briefing.get('pre_candidate_count', 0)
+        status = f"เข้าโซนก่อนเปิด {candidate_count}  |  เฝ้าดู {len(cards) - candidate_count}"
     text.line((58, 217), status, 25, "#92D9C8", True)
     market = briefing.get("market_status")
     if isinstance(market, dict):

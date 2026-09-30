@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-def refresh_report_quotes(payload, tickers, fetcher=None, now=None, *, allow_closed=False):
+def refresh_report_quotes(payload, tickers, fetcher=None, now=None, *, allow_closed=False, pre_market=False):
     """Refresh source prices for the five cards, without upgrading saved signals.
 
     Missing quotes preserve their original source timestamp. The existing
@@ -21,7 +21,7 @@ def refresh_report_quotes(payload, tickers, fetcher=None, now=None, *, allow_clo
         raw = fetcher(tickers)
         now = now or datetime.now(timezone.utc)
         observations = normalize_quotes(raw, tickers, now.isoformat())
-        if allow_closed:
+        if allow_closed or pre_market:
             from stock_brief_service import normalize_brief_quotes
             observations = {ticker: normalize_brief_quotes(raw, ticker, now.isoformat())
                             for ticker in tickers}
@@ -31,23 +31,40 @@ def refresh_report_quotes(payload, tickers, fetcher=None, now=None, *, allow_clo
     for row in payload['items']:
         quote = observations.get(row['ticker'])
         extended = None
-        if quote and allow_closed:
+        if quote and (allow_closed or pre_market):
             extended, quote = quote['extended'], quote['regular']
+        if pre_market and row['ticker'] in tickers:
+            row['quote_session'] = 'regular'
+            row.pop('extended_quote', None)
+            # A current PRE observation has its own source timestamp and
+            # currency. A recent POST/regular observation cannot substitute.
+            pre_time = _stamp(extended.get('quote_time')) if extended else None
+            currency = (row.get('info') or {}).get('currency', 'USD')
+            delay = extended.get('delay_minutes') if extended else None
+            if (extended and extended.get('session') == 'pre' and extended.get('market_state') == 'PRE'
+                    and pre_time is not None and 0 <= (now - pre_time).total_seconds() <= 900
+                    and extended['currency'] == currency and (delay is None or 0 <= delay <= 15)):
+                row['regular_quote'] = quote
+                row['quote'], row['quote_time'] = extended['price'], extended['quote_time']
+                row['quote_session'] = 'pre'
+                row['pre_change_pct'] = extended.get('change_pct')
+                updated += 1
+                continue
         if not quote or row['ticker'] not in tickers:
             continue
         source_time = _stamp(quote['quote_time'])
         previous_time = _stamp(row.get('quote_time'))
         currency = (row.get('info') or {}).get('currency', 'USD')
-        maximum_age = 4 * 86400 if allow_closed else 900
+        maximum_age = 4 * 86400 if allow_closed or pre_market else 900
         if (source_time is None or not 0 <= (now - source_time).total_seconds() <= maximum_age
                 or (previous_time is not None and source_time < previous_time)
-                or quote['currency'] != currency or (not allow_closed and quote['market_state'] != 'REGULAR')
+                or quote['currency'] != currency or (not (allow_closed or pre_market) and quote['market_state'] != 'REGULAR')
                 or quote['session'] != 'regular'
                 or (quote.get('delay_minutes') is not None and quote['delay_minutes'] > 15)):
             continue
         row['quote'] = quote['price']
         row['quote_time'] = quote['quote_time']
-        if extended and extended['currency'] == currency:
+        if extended and extended['currency'] == currency and not pre_market:
             row['extended_quote'] = extended
         updated += 1
     return updated
@@ -93,7 +110,8 @@ def build_message_bundle(payload, preferred_tickers, now, mode, store):
     verified_path = Path(__file__).with_name('stock_alert_news.json')
     verified = json.loads(verified_path.read_text(encoding='utf-8')) if verified_path.exists() else {}
     tickers = [row['ticker'] for row in select_rows(payload, preferred_tickers=preferred_tickers)]
-    updated_quotes = refresh_report_quotes(payload, tickers, allow_closed=mode == 'preview')
+    pre_market = mode == 'scheduled' and payload.get('report_session') == 'pre'
+    updated_quotes = refresh_report_quotes(payload, tickers, allow_closed=mode == 'preview', pre_market=pre_market)
     now = datetime.now(timezone.utc)
     briefing = build_briefing(payload, now, preferred_tickers=preferred_tickers,
                              verified_news=verified, limit=5)
@@ -121,7 +139,11 @@ def build_message_bundle(payload, preferred_tickers, now, mode, store):
     messages = [{'type': 'image', 'originalContentUrl': media['original_url'],
                  'previewImageUrl': media['preview_url']}]
     messages.extend({'type': 'text', 'text': chunk} for chunk in chunks)
-    return {'messages': messages, 'stocks': briefing['actual_count']}
+    from datetime import timedelta
+    current_quotes = [datetime.fromisoformat(card['quote_time']) + timedelta(minutes=15)
+                      for card in briefing['cards'] if card['quote_fresh']]
+    expires = min(current_quotes + [now + timedelta(minutes=2)])
+    return {'messages': messages, 'stocks': briefing['actual_count'], 'expires_at': expires.isoformat()}
 
 
 def render_review(input_path, output_dir):

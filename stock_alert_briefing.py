@@ -481,7 +481,8 @@ def _card(row, payload, now, news_fetcher, verified_news):
     info = row.get('info') if isinstance(row.get('info'), dict) else {}
     q, low, high, stop, target = (_number_or_none(row.get(key), True)
                                  for key in ('quote', 'zone_low', 'zone_high', 'stop', 'target'))
-    quote_current = _fresh(row.get('quote_time'), now, 900)
+    pre_report = payload.get('report_session') == 'pre'
+    quote_current = _fresh(row.get('quote_time'), now, 900) and (not pre_report or row.get('quote_session') == 'pre')
     ready = quote_current and _fresh(row.get('info_fetched_at'), now, 7 * 86400) and is_entry(row, payload, now)
     plan_valid = all(x is not None for x in (q, stop, target)) and stop < q < target
     rr = (target - q) / (q - stop) if plan_valid else None
@@ -539,7 +540,7 @@ def _card(row, payload, now, news_fetcher, verified_news):
     for article in news['items']:
         article['analysis'] = news_analysis(article)
     technical = technical_analysis(row, now)
-    return {
+    card = {
         'ticker': row['ticker'], 'name': _text(row.get('name'), 100) or row['ticker'],
         'asset_type': 'ETF' if row['asset_type'] == 'ETF' else ('REIT' if is_reit else 'หุ้น'),
         'business': reviewed_story.get('company_relevance') or _text(info.get('industry') or row.get('industry'), 100),
@@ -549,6 +550,7 @@ def _card(row, payload, now, news_fetcher, verified_news):
         'status_label': 'ผ่านเกณฑ์เข้าซื้อ' if ready else 'เฝ้าดู / รอเงื่อนไข',
         'quote': q, 'quote_time': quote_time.isoformat() if quote_time is not None else None,
         'quote_fresh': quote_current, 'currency': _text(info.get('currency'), 10) or 'USD',
+        'quote_session': row.get('quote_session', 'regular'),
         'extended_quote': row.get('extended_quote'),
         'zone_low': low, 'zone_high': high, 'stop': stop, 'target': target, 'rr': rr,
         'upside_pct': upside, 'downside_pct': downside, 'situation': situation,
@@ -559,6 +561,10 @@ def _card(row, payload, now, news_fetcher, verified_news):
         'factor_basis': 'ปัจจัยจากตัวเลขบริษัทใน Yahoo Finance; แยกจากผลวิเคราะห์ข่าว',
         'news': news, 'next_step': next_step,
     }
+    if pre_report:
+        from stock_alert_premarket import apply_pre_market_assessment
+        apply_pre_market_assessment(card, row, now)
+    return card
 
 
 def build_briefing(payload, now=None, news_fetcher=None, limit=5, preferred_tickers=(), verified_news=None):
@@ -574,8 +580,11 @@ def build_briefing(payload, now=None, news_fetcher=None, limit=5, preferred_tick
     return {
         'schema': 1, 'generated_at': now.isoformat(), 'computed_at': payload['computed_at'],
         'requested_count': limit, 'actual_count': len(cards), 'cards': cards,
-        'market_status': 'ช่วงเวลาซื้อขายปกติสหรัฐ' if market_window else 'นอกช่วงเวลาซื้อขายปกติสหรัฐ',
+        'market_status': ('ก่อนตลาดเปิดสหรัฐ · Pre-market' if payload.get('report_session') == 'pre' else
+                          'ช่วงเวลาซื้อขายปกติสหรัฐ' if market_window else 'นอกช่วงเวลาซื้อขายปกติสหรัฐ'),
         'entry_count': sum(card['status'] == 'entry' for card in cards),
+        'pre_candidate_count': sum(card['status'] == 'pre_candidate' for card in cards),
+        'report_session': payload.get('report_session'),
         'selection_note': 'หุ้นที่กระตุ้นแจ้งเตือนและหุ้นอันดับถัดไป; แยกสถานะผ่านเกณฑ์กับเฝ้าดูทุกตัว',
         'glossary': [
             'กรอบราคาอิงแผนจากกราฟรายวัน; เป้าเป็นระดับอ้างอิงของแผน ไม่ได้กำหนดว่าจะถึงภายในวันนี้',
@@ -594,6 +603,8 @@ def format_briefing_text(briefing):
     clock = _stamp(briefing['generated_at']).tz_convert('Asia/Bangkok').strftime('%d/%m/%Y %H:%M')
     lines = [f"สรุปหุ้น {briefing['actual_count']} ตัว · {clock} น. ไทย",
              f"ผ่านเกณฑ์ {briefing['entry_count']} ตัว · {briefing['market_status']}"]
+    if briefing.get('report_session') == 'pre':
+        lines[1] = f"เข้าโซนก่อนเปิด {briefing.get('pre_candidate_count', 0)} ตัว · {briefing['market_status']}"
     for index, card in enumerate(briefing['cards'], 1):
         quote_clock = _stamp(card['quote_time'])
         quote_clock = quote_clock.tz_convert('Asia/Bangkok').strftime('%d/%m %H:%M') if quote_clock is not None else 'ไม่ทราบเวลา'
@@ -601,7 +612,7 @@ def format_briefing_text(briefing):
                       'หมวด: ' + card['sector_th'] + ' | อุตสาหกรรม: ' + card['industry_th'],
                       _text(card.get('business'), 80),
                       card['situation'],
-                      f"{'ราคา' if card['quote_fresh'] else 'ราคาตลาดปกติล่าสุด'} {_money(card['quote'])} ณ {quote_clock} น. ไทย",
+                      f"{'ราคา Pre-market' if card.get('quote_session') == 'pre' else 'ราคา' if card['quote_fresh'] else 'ราคาตลาดปกติล่าสุด'} {_money(card['quote'])} ณ {quote_clock} น. ไทย",
                       f"โซนเข้า {_money(card['zone_low'])}–{_money(card['zone_high'])}",
                       f"Stop {_money(card['stop'])} | เป้า {_money(card['target'])} | R:R " +
                       (f"{card['rr']:.2f}" if card['rr'] is not None else 'ยังคำนวณไม่ได้')])
