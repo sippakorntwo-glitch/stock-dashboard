@@ -238,7 +238,7 @@ def _card(draw, text, card, index, y):
     strip_y = y + 180
     draw.rounded_rectangle((x, strip_y, right - 28, strip_y + 94), radius=15, fill="#F2F6FA")
     metrics = [
-        ("ราคาล่าสุด ($)", _number(card.get("quote")), INK),
+        ("ราคาล่าสุด ($)" if card.get('quote_fresh') else "ราคาปกติล่าสุด ($)", _number(card.get("quote")), INK),
         ("โซนซื้อ ($)", f"{_number(card.get('zone_low'))}–{_number(card.get('zone_high'))}", INK),
         ("ตัดขาดทุน ($)", _number(card.get("stop")), RED),
         ("เป้าหมาย ($)", _number(card.get("target")), TEAL),
@@ -264,7 +264,7 @@ def _card(draw, text, card, index, y):
     news_items = news.get("items") or []
     if news.get("state") == "available" and news_items:
         item = news_items[0]
-        headline = _clean(item.get("summary_th") or item.get("title"))
+        headline = _clean(item.get("summary_th") or ('ประเด็น: ' + str(item.get('topic', 'ข่าวบริษัท')) + ' · ' + str(item.get('context', ''))))
         publisher = _clean(item.get("publisher"), "แหล่งข่าว")
         news_label = ("บริบทเก่า " if str(item.get('age_label', '')).startswith('บริบทเก่า') else "ข่าว ") + _news_date(item) + " · " + publisher
     else:

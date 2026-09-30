@@ -305,6 +305,10 @@ def _company_relevance(article, raw_item, row):
 def _topic_guide(title):
     """A topic-specific question/conditional effect, never headline sentiment."""
     topics = [
+        (r'\b(?:appoint\w*|leadership|chief executive|chief financial|ceo|cfo|succession|senior vice president)\b', 'ผู้บริหาร/การบริหาร',
+         'ติดตามผลงานผู้บริหารใหม่จากยอดขาย ต้นทุน และการส่งมอบ; การแต่งตั้งยังไม่ใช่ตัวเลขกำไรเพิ่ม'),
+        (r'\b(?:labou?r|workers?|wages?|strike|staffing)\b', 'แรงงาน/ต้นทุนดำเนินงาน',
+         'ตรวจต้นทุนแรงงาน กำลังผลิต และการส่งมอบ ว่าปัญหากระทบรายได้หรือกำไรเท่าใด'),
         (r'\b(?:earnings?|revenue|profit|eps|guidance|quarterly results)\b', 'ผลประกอบการ',
          'เทียบรายได้/กำไรกับที่ตลาดคาด: สูงกว่าคาดอาจหนุนราคา ต่ำกว่าคาดอาจกดดัน'),
         (r'\b(?:lawsuit|litigation|investigation|recall|regulat\w*|fda|approval)\b', 'กฎเกณฑ์/คดี/การดำเนินงาน',
@@ -313,7 +317,7 @@ def _topic_guide(title):
          'ดูรายได้เพิ่มเทียบเงินลงทุน/หนี้ใหม่ และข้อตกลงปิดจริงแล้วหรือยัง'),
         (r'\b(?:dividend\w*|buyback|repurchase)\b', 'การคืนเงินผู้ถือหุ้น',
          'ดูจำนวนเงิน วันมีผล และเงินสดรองรับ; แผนซื้อหุ้นคืนต่างจากยอดที่ซื้อจริง'),
-        (r'\b(?:price target|upgrade\w*|downgrade\w*|valuat\w*)\b', 'มุมมองมูลค่าจากบทวิเคราะห์',
+        (r'\b(?:price target|upgrade\w*|downgrade\w*|valuat\w*|underperform\w*|outperform\w*|stock looks rich|overvalu\w*|underval\w*)\b', 'มุมมองมูลค่าจากบทวิเคราะห์',
          'เทียบสมมติฐานกำไรและระยะเวลาของเป้าราคา; เป็นมุมมองผู้วิเคราะห์'),
         (r'\b(?:launch\w*|product\w*|production|factory|deliveries)\b', 'สินค้า/กำลังผลิต',
          'ดูยอดขายหรือกำลังผลิตที่เกิดขึ้นจริงเทียบต้นทุนและกำหนดส่งมอบ'),
