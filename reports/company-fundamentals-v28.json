@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-09-30T11:09:18.087865+00:00",
-  "run_id": "36704978230",
-  "source_sha": "f8ca34a75e2d31b89c04d23b31c937fe32871db4",
-  "started_at": "2026-09-30T10:52:24.900795+00:00",
-  "source_generation": "generations/20260930T074817Z-859e89bb",
+  "recorded_at": "2026-09-30T17:09:00.355461+00:00",
+  "run_id": "36747189600",
+  "source_sha": "5567cdf7ba48ec296b25f4295bfe9d36b0674f5d",
+  "started_at": "2026-09-30T16:51:37.329297+00:00",
+  "source_generation": "generations/20260930T133548Z-f99bccb9",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-30T11:09:18.064122+00:00",
+  "finished_at": "2026-09-30T17:09:00.321698+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260930T110446Z-73eebe97",
+  "generation": "generations/20260930T170427Z-0f572722",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -29,15 +29,15 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305720,
-    "report_sha256": "83ba6b1d954214ea824a48d6f29f8615ccbff9e0dad1983fd26215085388d7d2",
+    "report_bytes": 305690,
+    "report_sha256": "075a51949063eab447b4b2b3c28531bb296a16ba8e2cce8b7f1367fa66051f30",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36704978230",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36747189600",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -51,7 +51,7 @@
       "companies_checked_with_sec": 0,
       "companies_with_source_disagreements": 0,
       "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3679,
+      "with_missing_applicable_metrics": 3678,
       "with_invalid_source_metrics": 85,
       "funds": 5676
     },
@@ -75,8 +75,8 @@
       },
       "forwardPE": {
         "available": 2439,
-        "not_meaningful": 877,
-        "not_reported": 884,
+        "not_meaningful": 878,
+        "not_reported": 883,
         "not_applicable": 5676
       },
       "priceToBook": {
@@ -149,8 +149,8 @@
         "not_applicable": 5676
       },
       "earningsGrowth": {
-        "available": 1938,
-        "not_reported": 2262,
+        "available": 1939,
+        "not_reported": 2261,
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
@@ -2017,7 +2017,7 @@
       "companies_checked_with_sec": 0,
       "companies_with_source_disagreements": 0,
       "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3679,
+      "with_missing_applicable_metrics": 3678,
       "with_invalid_source_metrics": 85,
       "funds": 5676
     },
@@ -2041,8 +2041,8 @@
       },
       "forwardPE": {
         "available": 2439,
-        "not_meaningful": 877,
-        "not_reported": 884,
+        "not_meaningful": 878,
+        "not_reported": 883,
         "not_applicable": 5676
       },
       "priceToBook": {
@@ -2115,8 +2115,8 @@
         "not_applicable": 5676
       },
       "earningsGrowth": {
-        "available": 1938,
-        "not_reported": 2262,
+        "available": 1939,
+        "not_reported": 2261,
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
@@ -3973,9 +3973,9 @@
     }
   },
   "collection": {
-    "due_before": 1007,
+    "due_before": 961,
     "attempted": 400,
-    "updated": 2,
+    "updated": 0,
     "not_reported": 0,
     "failed": 0,
     "errors": [],
@@ -3985,18 +3985,15 @@
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [
-      "KT",
-      "LII"
-    ],
+    "symbols_updated": [],
     "symbols_updated_summary": {
-      "total": 2,
-      "included": 2,
+      "total": 0,
+      "included": 0,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 215,
-    "remaining_due": 607
+    "retained_fields": 170,
+    "remaining_due": 561
   }
 }
