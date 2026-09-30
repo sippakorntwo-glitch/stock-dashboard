@@ -1,23 +1,23 @@
 {
-  "recorded_at": "2026-09-30T16:35:59.784392+00:00",
-  "run_id": "36745192456",
+  "recorded_at": "2026-09-30T18:38:02.247715+00:00",
+  "run_id": "36759688752",
   "source_sha": "5567cdf7ba48ec296b25f4295bfe9d36b0674f5d",
-  "started_at": "2026-09-30T16:35:07.387823+00:00",
-  "source_generation": "generations/20260930T133548Z-f99bccb9",
+  "started_at": "2026-09-30T18:37:20.744540+00:00",
+  "source_generation": "generations/20260930T183148Z-0bd9ee9f",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-30T16:35:59.752398+00:00",
+  "finished_at": "2026-09-30T18:38:02.221800+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260930T133548Z-f99bccb9",
+  "generation": "generations/20260930T183148Z-0bd9ee9f",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
     "checked_today": 9876,
-    "industry": 9517,
+    "industry": 9526,
     "info": 9876,
     "financial_statements": 4160,
     "dividends": 9876,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305825,
-    "report_sha256": "66d0fd9b1ada5ac2195b9053bd3073f8356f485b89b0e265305992bfc0bd645d",
+    "report_sha256": "a5983c6e2c239bd093ba54759d7ec2ff520021cdf2dde7bbfb07bd4cadad2dfe",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36745192456",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36759688752",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
