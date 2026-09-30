@@ -196,7 +196,7 @@ class NewsEvidenceTests(unittest.TestCase):
             raise ValueError('network failed')
         news = fetch_company_news(row(), NOW, fail, {'ACME': [reviewed()]})
         self.assertEqual((news['state'], news['feed_status']), ('available', 'unavailable'))
-        self.assertIn('ฟีดข่าวรอบนี้ดึงไม่ได้', news['note'])
+        self.assertIn('ยังอัปเดตข่าวรอบนี้ไม่ได้', news['note'])
         self.assertNotIn('ไม่พบข่าว', news['note'])
 
     def test_reviewed_date_visible_and_failed_feed_not_hidden_in_text(self):
@@ -205,7 +205,7 @@ class NewsEvidenceTests(unittest.TestCase):
         report = build_briefing(payload(), NOW, fail, verified_news={'ACME': [reviewed()]})
         text = format_briefing_text(report)
         self.assertIn('ตรวจข่าว 30/09 01:40 น. ไทย', text)
-        self.assertIn('ฟีดข่าวรอบนี้ดึงไม่ได้', text)
+        self.assertIn('ยังอัปเดตข่าวรอบนี้ไม่ได้', text)
 
     def test_curated_evidence_requires_review_time_and_provenance(self):
         invalid = [reviewed(reviewed_at=(NOW + timedelta(hours=1)).isoformat()),
@@ -219,7 +219,7 @@ class NewsEvidenceTests(unittest.TestCase):
                                 verified_news={'ACME': [reviewed()]})
         text = format_briefing_text(report)
         self.assertNotIn('ไม่รับประกัน', text)
-        for required in ('ด้านบวกของข่าว', 'ด้านลบ/จุดติดตาม', 'R:R =', 'จำนวนหุ้น =', 'https://example.com/ir'):
+        for required in ('มุมหนุน', 'มุมกดดัน/จุดติดตาม', 'R:R =', 'จำนวนหุ้น =', 'https://example.com/ir'):
             self.assertIn(required, text)
 
 

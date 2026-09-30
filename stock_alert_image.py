@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw, ImageFont, features
 
 WIDTH = 1600
 MAX_CARDS = 5
-CARD_H = 420
+CARD_H = 535
 CARD_GAP = 20
 NAVY = "#101F38"
 INK = "#14253D"
@@ -228,12 +228,14 @@ def _card(draw, text, card, index, y):
 
     text.paragraph((x, y + 79), card.get("situation", "รอรายละเอียดสถานการณ์ล่าสุด"),
                    right - x - 26, size=25, lines=1, color=INK)
+    classification = 'หมวด ' + _clean(card.get('sector_th')) + '  |  อุตสาหกรรม ' + _clean(card.get('industry_th'))
+    text.paragraph((x, y + 113), classification, right - x - 26, size=22, lines=1, color=TEAL)
     business = _clean(card.get("business"), "")
     meta = ((business + " · ") if business else "") + "ราคาบันทึก " + _time(card.get("quote_time")) + " (เวลาไทย)"
-    text.paragraph((x, y + 115), meta, right - x - 26, size=20, lines=1, color=MUTED)
+    text.paragraph((x, y + 147), meta, right - x - 26, size=20, lines=1, color=MUTED)
 
     # All quote-dependent numbers stay together. Unknowns are shown as dashes.
-    strip_y = y + 154
+    strip_y = y + 180
     draw.rounded_rectangle((x, strip_y, right - 28, strip_y + 94), radius=15, fill="#F2F6FA")
     metrics = [
         ("ราคาล่าสุด ($)", _number(card.get("quote")), INK),
@@ -254,7 +256,7 @@ def _card(draw, text, card, index, y):
         text.line((mx + 20, strip_y + 43), value, value_size, color, True)
         mx += widths[i]
 
-    facts_y = y + 268
+    facts_y = y + 294
     col_w = 452
     first_good = _first(card.get("positive_factors"), "ยังไม่มีปัจจัยบวกที่ยืนยันได้")
     first_risk = _first(card.get("risk_factors"), _first(card.get("blockers"), "ตรวจสเปรดและจุดตัดขาดทุนก่อนเข้า"))
@@ -264,7 +266,7 @@ def _card(draw, text, card, index, y):
         item = news_items[0]
         headline = _clean(item.get("summary_th") or item.get("title"))
         publisher = _clean(item.get("publisher"), "แหล่งข่าว")
-        news_label = "ข่าว " + _news_date(item) + " · " + publisher
+        news_label = ("บริบทเก่า " if str(item.get('age_label', '')).startswith('บริบทเก่า') else "ข่าว ") + _news_date(item) + " · " + publisher
     else:
         headline = _clean(news.get("note"), "ยังไม่มีข่าวล่าสุดที่ตรวจสอบได้")
         news_label = "ข่าวล่าสุด"
@@ -278,7 +280,14 @@ def _card(draw, text, card, index, y):
         text.paragraph((cx + 16, facts_y), label, col_w - 16, size=22, lines=1, color=color, bold=True)
         text.paragraph((cx, facts_y + 33), value, col_w, size=23, lines=2, color=INK, leading=31)
 
-    action_y = y + 371
+    tech = card.get('technical') or {}
+    text.line((x, y + 397), 'กราฟรายวัน ณ ' + _clean(tech.get('asof')), 21, TEAL, True)
+    technical_values = ('EMA20 $' + _number(tech.get('ema20')) + '  ·  EMA50 $' + _number(tech.get('ema50')) +
+                        '  ·  EMA200 $' + _number(tech.get('ema200')) + '  ·  RSI14 ' + _number(tech.get('rsi14'), digits=1))
+    text.paragraph((x, y + 429), technical_values, right - x - 26, size=23, lines=1, color=INK)
+    text.paragraph((x, y + 461), tech.get('summary', 'รอข้อมูลกราฟรายวัน'), right - x - 26,
+                   size=21, lines=1, color=MUTED)
+    action_y = y + 493
     draw.rounded_rectangle((x, action_y - 5, right - 28, y + CARD_H - 15), radius=10, fill=pale)
     action_prefix = "ทำอย่างไรต่อ  "
     text.line((x + 14, action_y), action_prefix, 23, accent, True)

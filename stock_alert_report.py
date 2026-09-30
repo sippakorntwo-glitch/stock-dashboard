@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-def refresh_report_quotes(payload, tickers, fetcher=None, now=None):
+def refresh_report_quotes(payload, tickers, fetcher=None, now=None, *, allow_closed=False):
     """Refresh source prices for the five cards, without upgrading saved signals.
 
     Missing quotes preserve their original source timestamp. The existing
@@ -21,24 +21,34 @@ def refresh_report_quotes(payload, tickers, fetcher=None, now=None):
         raw = fetcher(tickers)
         now = now or datetime.now(timezone.utc)
         observations = normalize_quotes(raw, tickers, now.isoformat())
+        if allow_closed:
+            from stock_brief_service import normalize_brief_quotes
+            observations = {ticker: normalize_brief_quotes(raw, ticker, now.isoformat())
+                            for ticker in tickers}
     except Exception:
         return 0
     updated = 0
     for row in payload['items']:
         quote = observations.get(row['ticker'])
+        extended = None
+        if quote and allow_closed:
+            extended, quote = quote['extended'], quote['regular']
         if not quote or row['ticker'] not in tickers:
             continue
         source_time = _stamp(quote['quote_time'])
         previous_time = _stamp(row.get('quote_time'))
         currency = (row.get('info') or {}).get('currency', 'USD')
-        if (source_time is None or not 0 <= (now - source_time).total_seconds() <= 900
+        maximum_age = 4 * 86400 if allow_closed else 900
+        if (source_time is None or not 0 <= (now - source_time).total_seconds() <= maximum_age
                 or (previous_time is not None and source_time < previous_time)
-                or quote['currency'] != currency or quote['market_state'] != 'REGULAR'
+                or quote['currency'] != currency or (not allow_closed and quote['market_state'] != 'REGULAR')
                 or quote['session'] != 'regular'
                 or (quote.get('delay_minutes') is not None and quote['delay_minutes'] > 15)):
             continue
         row['quote'] = quote['price']
         row['quote_time'] = quote['quote_time']
+        if extended and extended['currency'] == currency:
+            row['extended_quote'] = extended
         updated += 1
     return updated
 
@@ -83,7 +93,7 @@ def build_message_bundle(payload, preferred_tickers, now, mode, store):
     verified_path = Path(__file__).with_name('stock_alert_news.json')
     verified = json.loads(verified_path.read_text(encoding='utf-8')) if verified_path.exists() else {}
     tickers = [row['ticker'] for row in select_rows(payload, preferred_tickers=preferred_tickers)]
-    updated_quotes = refresh_report_quotes(payload, tickers)
+    updated_quotes = refresh_report_quotes(payload, tickers, allow_closed=mode == 'preview')
     now = datetime.now(timezone.utc)
     briefing = build_briefing(payload, now, preferred_tickers=preferred_tickers,
                              verified_news=verified, limit=5)
@@ -112,3 +122,38 @@ def build_message_bundle(payload, preferred_tickers, now, mode, store):
                  'previewImageUrl': media['preview_url']}]
     messages.extend({'type': 'text', 'text': chunk} for chunk in chunks)
     return {'messages': messages, 'stocks': briefing['actual_count']}
+
+
+def render_review(input_path, output_dir):
+    """Prepare a real-data report for review; no LINE client or media publication."""
+    from stock_alert_briefing import build_briefing, format_briefing_text, select_rows
+    from stock_alert_image import render_briefing
+    payload = json.loads(Path(input_path).read_text(encoding='utf-8'))
+    tickers = [row['ticker'] for row in select_rows(payload)]
+    updated = refresh_report_quotes(payload, tickers, allow_closed=True)
+    now = datetime.now(timezone.utc)
+    verified = json.loads(Path(__file__).with_name('stock_alert_news.json').read_text(encoding='utf-8'))
+    briefing = build_briefing(payload, now, verified_news=verified)
+    briefing.update(report_mode='review', quotes_refreshed=updated)
+    text = format_briefing_text(briefing)
+    text_chunks(text)  # Verify the same delivery-size limit before saving the preview.
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    (output / 'briefing.json').write_text(json.dumps(briefing, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
+    (output / 'briefing.txt').write_text(text, encoding='utf-8')
+    render_briefing(briefing, output)
+    print('STOCK_REPORT_REVIEW: ' + json.dumps({
+        'stocks': len(briefing['cards']), 'generated_at': briefing['generated_at'],
+        'technical_available': sum(bool(card['technical']['ema200']) for card in briefing['cards']),
+        'news_available': sum(card['news']['feed_status'] == 'available' for card in briefing['cards']),
+        'messages_sent': 0,
+    }))
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description='Render a stock report without sending LINE messages')
+    parser.add_argument('--input', required=True)
+    parser.add_argument('--output', default='work/stock-report-review')
+    args = parser.parse_args()
+    render_review(args.input, args.output)

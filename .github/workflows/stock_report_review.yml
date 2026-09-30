@@ -1,0 +1,46 @@
+name: Review industry and analysis stock report
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/stock_report_review.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install report dependencies and Thai font
+        run: |
+          python -m pip install -q -r requirements-line-alerts.txt pytest==9.0.2
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-core
+      - name: Check ranking, prices, news and report limits
+        run: |
+          python -m py_compile stock_alert_analysis.py stock_alert_briefing.py stock_alert_report.py stock_alert_image.py ranking_engine.py
+          python -m pytest -q tests/test_line_alerts.py tests/test_stock_alert_briefing.py tests/test_stock_alert_analysis.py tests/test_stock_alert_media.py tests/test_market_pulse.py tests/test_market_pulse_service.py tests/test_ranking.py tests/test_ranking_reader.py tests/test_stock_brief_service.py
+      - name: Recalculate from the verified daily-price snapshot without publishing
+        env:
+          DASHBOARD_DATA_REPO: ${{ github.repository }}
+          DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DASHBOARD_DATA_VISIBILITY: public
+          DASHBOARD_DATA_BRANCH: dashboard-data
+          PYTHONUNBUFFERED: '1'
+        run: python ranking_job.py --no-quote-refresh --output work/report-input.json
+      - name: Render a real-data review without sending LINE messages
+        run: python stock_alert_report.py --input work/report-input.json --output work/stock-report-review
+      - name: Preserve the revised report for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-report-industry-analysis
+          path: work/stock-report-review/
+          if-no-files-found: ignore
+          retention-days: 7

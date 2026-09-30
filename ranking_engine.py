@@ -119,6 +119,8 @@ def evaluate(ticker, row, history, info, info_meta, benchmark, now):
     ready = bool(plan['ready'] and qualified and regular_session_clock(now)
                  and fresh(ctx.get('quote_time'), now, 900))
     daily_close = a.number(m.get('Close'))
+    from stock_alert_analysis import daily_technicals
+    technical = daily_technicals(f, a.number(m.get('RSI_14')))
     reference = ctx.get('quote') or daily_close
     distance = abs(reference / plan['entry'] - 1) * 100 if reference and plan.get('entry') else None
     reasons = []
@@ -137,7 +139,7 @@ def evaluate(ticker, row, history, info, info_meta, benchmark, now):
                 daily_close=daily_close, price_asof=f.index[-1].date().isoformat(),
                 quote=a.number(ctx.get('quote')), quote_time=seconds(ctx.get('quote_time')),
                 zone_low=plan.get('zone_low'), zone_high=plan.get('zone_high'), stop=plan.get('stop'), target=plan.get('target'),
-                distance_pct=distance, rsi=a.number(m.get('RSI_14')),
+                distance_pct=distance, rsi=a.number(m.get('RSI_14')), technical=technical,
                 liquidity=a.number(row.get('Dollar_Volume_20D')), reasons=reasons[:4], blockers=blockers,
                 info_fetched_at=stamp, info=public_info(info), info_meta=public_info(info_meta))
 

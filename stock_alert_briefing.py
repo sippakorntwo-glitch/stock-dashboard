@@ -417,7 +417,7 @@ def fetch_company_news(row, now, news_fetcher=None, verified_news=None):
     if result['items']:
         result['state'] = 'available'
         if not successful:
-            result['note'] = 'ฟีดข่าวรอบนี้ดึงไม่ได้; แสดงข่าวที่ตรวจไว้ตามวันตรวจที่ระบุ'
+            result['note'] = 'ยังอัปเดตข่าวรอบนี้ไม่ได้; แสดงข่าวที่ตรวจสอบไว้พร้อมวันที่'
         else:
             result['note'] = ('ข่าวตรงบริษัทใน 7 วัน; เวลาเป็นเวลาเผยแพร่ต้นทาง' if recent else
                               'ไม่พบข่าวตรงบริษัทใน 7 วันในข้อมูลที่อ่านได้; แสดงบริบทเก่าไม่เกิน 30 วัน')
@@ -473,6 +473,7 @@ def _fundamental_factors(row, now):
 
 
 def _card(row, payload, now, news_fetcher, verified_news):
+    from stock_alert_analysis import industry_labels, technical_analysis, news_analysis
     info = row.get('info') if isinstance(row.get('info'), dict) else {}
     q, low, high, stop, target = (_number_or_none(row.get(key), True)
                                  for key in ('quote', 'zone_low', 'zone_high', 'stop', 'target'))
@@ -531,15 +532,20 @@ def _card(row, payload, now, news_fetcher, verified_news):
     news = fetch_company_news(row, now, news_fetcher, verified_news)
     is_reit = 'reit' in str(info.get('industry') or row.get('industry') or '').casefold()
     reviewed_story = next((item for item in news['items'] if item['evidence_type'] == 'reviewed_source'), {})
+    for article in news['items']:
+        article['analysis'] = news_analysis(article)
+    technical = technical_analysis(row, now)
     return {
         'ticker': row['ticker'], 'name': _text(row.get('name'), 100) or row['ticker'],
         'asset_type': 'ETF' if row['asset_type'] == 'ETF' else ('REIT' if is_reit else 'หุ้น'),
         'business': reviewed_story.get('company_relevance') or _text(info.get('industry') or row.get('industry'), 100),
+        **industry_labels(row), 'technical': technical,
         'score': _number(row['score']), 'coverage': _number(row['coverage']),
         'status': 'entry' if ready else 'watch',
         'status_label': 'ผ่านเกณฑ์เข้าซื้อ' if ready else 'เฝ้าดู / รอเงื่อนไข',
         'quote': q, 'quote_time': quote_time.isoformat() if quote_time is not None else None,
         'quote_fresh': quote_current, 'currency': _text(info.get('currency'), 10) or 'USD',
+        'extended_quote': row.get('extended_quote'),
         'zone_low': low, 'zone_high': high, 'stop': stop, 'target': target, 'rr': rr,
         'upside_pct': upside, 'downside_pct': downside, 'situation': situation,
         'positive_factors': positive, 'risk_factors': risks[:3], 'blockers': blockers,
@@ -572,6 +578,8 @@ def build_briefing(payload, now=None, news_fetcher=None, limit=5, preferred_tick
             'โซนเข้า = ช่วงราคาที่แผนรอซื้อ; ถ้าราคาเกินโซนให้รอ',
             'Stop = ราคาที่แผนใช้ตัดขาดทุน; เป้า = ราคาที่แผนใช้ทำกำไร',
             'R:R = กำไรถึงเป้า ÷ ขาดทุนถึง Stop; 2 เท่า = เสี่ยง 1 เพื่อเป้า 2',
+            'EMA20/50/200 = เส้นราคาเฉลี่ยให้น้ำหนักวันล่าสุด ใช้ดูแนวโน้มสั้น/ยาวจากกราฟรายวัน',
+            'RSI14 = ตัวชี้แรงซื้อขาย 0–100; ต่ำกว่า 30 รอการกลับตัว สูงกว่า 70 ระวังไล่ราคา',
             'จำนวนหุ้น = เงินที่ยอมเสียต่อครั้ง ÷ (ราคาซื้อ − Stop); แปลงเป็นสกุลเดียวกันก่อน',
         ],
     }
@@ -586,33 +594,43 @@ def format_briefing_text(briefing):
         quote_clock = _stamp(card['quote_time'])
         quote_clock = quote_clock.tz_convert('Asia/Bangkok').strftime('%d/%m %H:%M') if quote_clock is not None else 'ไม่ทราบเวลา'
         lines.extend(['', f"{index}. {card['ticker']} · {card['asset_type']} · {card['status_label']} · {card['score']:g}/100",
+                      'หมวด: ' + card['sector_th'] + ' | อุตสาหกรรม: ' + card['industry_th'],
                       _text(card.get('business'), 80),
                       card['situation'],
-                      f"ราคา {_money(card['quote'])} ณ {quote_clock} น. ไทย",
+                      f"{'ราคา' if card['quote_fresh'] else 'ราคาตลาดปกติล่าสุด'} {_money(card['quote'])} ณ {quote_clock} น. ไทย",
                       f"โซนเข้า {_money(card['zone_low'])}–{_money(card['zone_high'])}",
                       f"Stop {_money(card['stop'])} | เป้า {_money(card['target'])} | R:R " +
                       (f"{card['rr']:.2f}" if card['rr'] is not None else 'ยังคำนวณไม่ได้')])
+        extended = card.get('extended_quote')
+        if isinstance(extended, dict) and _stamp(extended.get('quote_time')) is not None:
+            extended_time = _stamp(extended['quote_time']).tz_convert('Asia/Bangkok').strftime('%d/%m %H:%M')
+            extended_label = 'หลังตลาด' if extended.get('session') == 'post' else 'ก่อนตลาด'
+            lines.append(f"{extended_label}: {_money(extended.get('price'))} ณ {extended_time} น. ไทย")
         if card['upside_pct'] is not None:
             lines.append(f"ถึงเป้า +{card['upside_pct']:.1f}% | ถึง Stop −{card['downside_pct']:.1f}%")
         if card['positive_factors']:
             lines.append('ปัจจัยหนุนจากงบ: ' + '; '.join(card['positive_factors'][:2]))
         if card['risk_factors']:
             lines.append('จุดระวัง: ' + card['risk_factors'][0])
-        for article in card['news']['items'][:1]:
-            lines.extend(['ข่าว: ' + (article['summary_th'] or article['title']),
+        tech = card['technical']
+        lines.extend(['วิเคราะห์กราฟรายวัน ณ ' + (tech.get('asof') or 'ยังไม่ทราบวันที่'),
+                      f"EMA20 {_money(tech['ema20'])} | EMA50 {_money(tech['ema50'])} | EMA200 {_money(tech['ema200'])}",
+                      tech['short_term'], tech['long_term'], tech['momentum']])
+        for article in card['news']['items'][:2]:
+            analysis = article['analysis']
+            lines.extend(['[' + analysis['type_label'] + '] ' + (article['summary_th'] or article['title']),
                           article['age_label'] + ' · ' + _stamp(article['published_at']).strftime('%d/%m/%Y') +
-                          ' · ' + article['publisher']])
+                          ' · ' + article['publisher'],
+                          'ข้อมูลที่ใช้: ' + analysis['evidence_label']])
             if article.get('reviewed_at'):
                 reviewed = _stamp(article['reviewed_at']).tz_convert('Asia/Bangkok').strftime('%d/%m %H:%M')
                 lines.append('ตรวจข่าว ' + reviewed + ' น. ไทย')
             if card['news'].get('feed_status') == 'unavailable':
-                lines.append('ฟีดข่าวรอบนี้ดึงไม่ได้ ใช้ข่าวที่ตรวจไว้')
-            if article['positive_th']:
-                lines.append('ด้านบวกของข่าว: ' + article['positive_th'])
-            if article['negative_th']:
-                lines.append('ด้านลบ/จุดติดตาม: ' + article['negative_th'])
-            if not article['positive_th'] and not article['negative_th']:
-                lines.append('ประเมินผลข่าว: ' + article['context'])
+                lines.append('ยังอัปเดตข่าวรอบนี้ไม่ได้; ใช้ข่าวที่ตรวจสอบไว้พร้อมวันที่')
+            lines.append('มุมหนุน: ' + analysis['positive_case'])
+            lines.append('มุมกดดัน/จุดติดตาม: ' + analysis['negative_case'])
+            if analysis['watch']:
+                lines.append('ผลต่อการตัดสินใจ: ' + analysis['watch'])
             lines.append(article['url'])
         if not card['news']['items']:
             lines.append('ข่าว: ' + card['news']['note'])
