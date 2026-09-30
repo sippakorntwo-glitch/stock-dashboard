@@ -1,43 +1,43 @@
 {
-  "recorded_at": "2026-09-30T05:16:51.897049+00:00",
-  "run_id": "36670692133",
+  "recorded_at": "2026-09-30T11:09:18.087865+00:00",
+  "run_id": "36704978230",
   "source_sha": "f8ca34a75e2d31b89c04d23b31c937fe32871db4",
-  "started_at": "2026-09-30T05:00:31.502849+00:00",
-  "source_generation": "generations/20260930T041053Z-c79f1aa4",
+  "started_at": "2026-09-30T10:52:24.900795+00:00",
+  "source_generation": "generations/20260930T074817Z-859e89bb",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-30T05:16:51.868434+00:00",
+  "finished_at": "2026-09-30T11:09:18.064122+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260930T051212Z-b42fd19e",
+  "generation": "generations/20260930T110446Z-73eebe97",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 18,
+    "checked_today": 9876,
     "industry": 9517,
     "info": 9876,
     "financial_statements": 4160,
     "dividends": 9876,
-    "return_1y": 8147,
+    "return_1y": 8152,
     "return_2y": 6958,
-    "return_3y": 6194
+    "return_3y": 6196
   },
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305689,
-    "report_sha256": "9df37d9588a9cc40b771fcc7e47f822fbdada503c31442cc84305b27aa32f464",
+    "report_bytes": 305720,
+    "report_sha256": "83ba6b1d954214ea824a48d6f29f8615ccbff9e0dad1983fd26215085388d7d2",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36670692133",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36704978230",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -144,13 +144,13 @@
         "not_applicable": 5676
       },
       "revenueGrowth": {
-        "available": 3464,
-        "not_reported": 736,
+        "available": 3465,
+        "not_reported": 735,
         "not_applicable": 5676
       },
       "earningsGrowth": {
-        "available": 1939,
-        "not_reported": 2261,
+        "available": 1938,
+        "not_reported": 2262,
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
@@ -2110,13 +2110,13 @@
         "not_applicable": 5676
       },
       "revenueGrowth": {
-        "available": 3464,
-        "not_reported": 736,
+        "available": 3465,
+        "not_reported": 735,
         "not_applicable": 5676
       },
       "earningsGrowth": {
-        "available": 1939,
-        "not_reported": 2261,
+        "available": 1938,
+        "not_reported": 2262,
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
@@ -3973,9 +3973,9 @@
     }
   },
   "collection": {
-    "due_before": 1295,
+    "due_before": 1007,
     "attempted": 400,
-    "updated": 0,
+    "updated": 2,
     "not_reported": 0,
     "failed": 0,
     "errors": [],
@@ -3985,15 +3985,18 @@
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [],
+    "symbols_updated": [
+      "KT",
+      "LII"
+    ],
     "symbols_updated_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 2,
+      "included": 2,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 252,
-    "remaining_due": 895
+    "retained_fields": 215,
+    "remaining_due": 607
   }
 }
