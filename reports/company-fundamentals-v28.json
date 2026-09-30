@@ -1,22 +1,22 @@
 {
-  "recorded_at": "2026-09-29T23:05:30.140040+00:00",
-  "run_id": "36641657153",
-  "source_sha": "a5224164b8d4aec5aa4c966e933e0a8f235706a6",
-  "started_at": "2026-09-29T22:48:36.317759+00:00",
-  "source_generation": "generations/20260929T191720Z-67c50536",
+  "recorded_at": "2026-09-30T05:16:51.897049+00:00",
+  "run_id": "36670692133",
+  "source_sha": "f8ca34a75e2d31b89c04d23b31c937fe32871db4",
+  "started_at": "2026-09-30T05:00:31.502849+00:00",
+  "source_generation": "generations/20260930T041053Z-c79f1aa4",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-09-29T23:05:30.102172+00:00",
+  "finished_at": "2026-09-30T05:16:51.868434+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20260929T230055Z-d82b5654",
+  "generation": "generations/20260930T051212Z-b42fd19e",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9875,
+    "checked_today": 18,
     "industry": 9517,
     "info": 9876,
     "financial_statements": 4160,
@@ -29,15 +29,15 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305797,
-    "report_sha256": "2231c69fc4a8250eaa8fb8a1704a67e66ef7154c6287d8356eeff5a50065f973",
+    "report_bytes": 305689,
+    "report_sha256": "9df37d9588a9cc40b771fcc7e47f822fbdada503c31442cc84305b27aa32f464",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36641657153",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36670692133",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -51,7 +51,7 @@
       "companies_checked_with_sec": 0,
       "companies_with_source_disagreements": 0,
       "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3680,
+      "with_missing_applicable_metrics": 3679,
       "with_invalid_source_metrics": 85,
       "funds": 5676
     },
@@ -137,8 +137,8 @@
         "not_applicable": 5676
       },
       "roic": {
-        "available": 1348,
-        "missing_inputs": 1441,
+        "available": 1349,
+        "missing_inputs": 1440,
         "not_meaningful": 1371,
         "pending": 40,
         "not_applicable": 5676
@@ -3973,9 +3973,9 @@
     }
   },
   "collection": {
-    "due_before": 1007,
+    "due_before": 1295,
     "attempted": 400,
-    "updated": 8,
+    "updated": 0,
     "not_reported": 0,
     "failed": 0,
     "errors": [],
@@ -3985,24 +3985,15 @@
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [
-      "DPZ",
-      "DSS",
-      "DUK",
-      "DVA",
-      "DXC",
-      "E",
-      "EEFT",
-      "EG"
-    ],
+    "symbols_updated": [],
     "symbols_updated_summary": {
-      "total": 8,
-      "included": 8,
+      "total": 0,
+      "included": 0,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 541,
-    "remaining_due": 607
+    "retained_fields": 252,
+    "remaining_due": 895
   }
 }
