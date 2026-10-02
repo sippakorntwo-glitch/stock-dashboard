@@ -64,7 +64,8 @@ class EventDiscoveryTests(unittest.TestCase):
         self.assertTrue(event['urgent'])
         self.assertEqual(event['status'], 'recovery_watch')
         self.assertIn('recovery_not_confirmed', event['reasons'])
-        self.assertIn('ข่าวกระทบราคา / รอติดตาม', format_report(report))
+        self.assertIn('1) WDC', format_report(report))
+        self.assertIn('สถานะ: รอฟื้นตัว', format_report(report))
 
     def test_balanced_scan_keeps_losers_even_when_gainers_dominate_scores(self):
         values = [(10000 + i, dict(row(), ticker='UP' + str(i)), {'change_pct': 20}) for i in range(20)]

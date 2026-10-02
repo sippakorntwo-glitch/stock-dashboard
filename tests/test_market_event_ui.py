@@ -47,7 +47,8 @@ def test_negative_news_panel_explains_recovery_and_opens_correct_chart(monkeypat
     assert frame.iloc[0]['สถานะ'] == 'รอฟื้นตัว'
     assert frame.iloc[0]['เปลี่ยนแปลง %'] < -10
     assert any('Toshiba' in text.value for text in at.markdown)
-    assert any('ยังไม่ยืนยันการฟื้นตัว' in text.value for text in at.caption)
+    assert any('ยังไม่ยืนยันการฟื้นตัว' in text.value for text in at.markdown)
+    assert frame.iloc[0]['ลำดับ'] == 1
     at.text_input(key='event_independent_search').set_value('KEEP').run()
     at.button(key='event_select_WDC').click().run()
     assert not at.exception, str(at.exception)

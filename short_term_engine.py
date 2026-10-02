@@ -104,15 +104,15 @@ def build_pool(cache, universe, now):
         if (number(row.get('Close')) or 0) <= 0 or (number(row.get('Dollar_Volume_20D')) or 0) < MIN_DOLLARS:
             rejected['daily_liquidity_or_price'] += 1
             continue
-        info, _ = cache.get('info:' + ticker, request_remote=False)
+        info, info_meta = cache.get('info:' + ticker, request_remote=False)
         info = info if isinstance(info, dict) else {}
         if info.get('currency') != 'USD' or re.search(r'shell compan|blank check', str(info.get('industry', '')), re.I):
             rejected['currency_or_shell'] += 1
             continue
-        eligible.append((ticker, row, info))
+        eligible.append((ticker, row, info, info_meta))
     eligible.sort(key=lambda x: -(number(x[1].get('Dollar_Volume_20D')) or 0))
     rows = []
-    for ticker, row, info in eligible:
+    for ticker, row, info, info_meta in eligible:
         if len(rows) >= MAX_POOL:
             break
         frame, _ = cache.history(ticker)
@@ -120,7 +120,8 @@ def build_pool(cache, universe, now):
             rejected['missing_daily_history'] += 1
             continue
         # Never use the unfinished current day as a volume/range baseline.
-        frame = frame.loc[frame.index.date <= datetime.fromisoformat(context['previous_day']).date()].tail(20)
+        completed = frame.loc[frame.index.date <= datetime.fromisoformat(context['previous_day']).date()]
+        frame = completed.tail(20)
         if len(frame) < 20 or frame.index[-1].date().isoformat() != context['previous_day']:
             rejected['daily_baseline_not_previous_session'] += 1
             continue
@@ -130,6 +131,8 @@ def build_pool(cache, universe, now):
         if not shares or shares < MIN_SHARES or not dollars or dollars < MIN_DOLLARS or not adr or adr <= 0:
             rejected['completed_daily_liquidity'] += 1
             continue
+        from short_term_context import daily_context, company_context
+        bundle, _ = cache.get('financials:' + ticker, request_remote=False)
         rows.append({'ticker': ticker, 'name': str(info.get('shortName') or row.get('Security_Name') or ticker),
                      'asset_type': 'Common Stock', 'currency': 'USD',
                      'sector': str(info.get('sector') or 'ไม่ระบุ'),
@@ -137,10 +140,13 @@ def build_pool(cache, universe, now):
                      'baseline_day': context['previous_day'], 'average_shares_20d': shares,
                      'average_dollars_20d': dollars, 'adr_20d': adr,
                      'previous_close': float(frame.Close.iloc[-1]),
-                     'previous_high': float(frame.High.iloc[-1])})
+                     'previous_high': float(frame.High.iloc[-1]),
+                     'daily_context': daily_context(completed),
+                     'company': company_context(ticker, info, info_meta or {}, bundle, now)})
     return {'model': MODEL, 'computed_at': instant(now).isoformat(), 'scope': 'most-liquid-common-stocks',
             'universe_checked': len(universe), 'eligible_before_cap': len(eligible),
-            'limit': MAX_POOL, 'minimum_entry_price': MIN_ENTRY_PRICE, 'excluded': dict(rejected), 'items': rows}
+            'limit': MAX_POOL, 'minimum_entry_price': MIN_ENTRY_PRICE, 'context_version': 1,
+            'excluded': dict(rejected), 'items': rows}
 
 
 def validate_pool(pool, now):

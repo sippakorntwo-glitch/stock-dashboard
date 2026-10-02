@@ -83,7 +83,8 @@ def get_reader(repo):
 def render_event_board():
     import dashboard_runtime as a
     import pandas as pd
-    from short_term_report import LABELS, thai_time
+    from short_term_report import LABELS, thai_time, report_sections, report_rows
+    from short_term_context import GLOSSARY
     from market_pulse import _safe_url
     from market_pulse_ui import literal_text
     from ranking_board import queue_selection
@@ -109,12 +110,18 @@ def render_event_board():
             st.caption(error)
         plans = {c['ticker']: c for c in value['cards']}
         rows = []
-        for e in value['events']:
+        ordered = report_rows(value)
+        included = {e['ticker'] for e in ordered}
+        ordered += [e for e in value['events'] if e['ticker'] not in included]
+        for index, e in enumerate(ordered, 1):
             c = plans.get(e['ticker'])
             current = c and instant(c.get('expires_at')) and now < instant(c['expires_at'])
             status = 'แผนมีเงื่อนไข' if current else 'รอฟื้นตัว' if e['status'] == 'recovery_watch' else 'ข่าว/รอติดตาม'
-            rows.append({'หุ้น': e['ticker'], 'สถานะ': status, 'หมวด': e['industry'],
+            rows.append({'ลำดับ': index, 'หุ้น': e['ticker'], 'สถานะ': status, 'หมวด': e['industry'],
                          'ราคา USD': e['price'], 'เปลี่ยนแปลง %': e['change_pct'], 'RVOL': e.get('rvol'),
+                         'VWAP': e.get('vwap'), 'SMA20': (e.get('daily_context') or {}).get('sma20'),
+                         'SMA50': (e.get('daily_context') or {}).get('sma50'),
+                         'SMA200': (e.get('daily_context') or {}).get('sma200'),
                          'ราคา ณ (ไทย)': thai_time(e['quote_time']),
                          'ข่าว': _safe_url(e['news'][0]['url'])})
         if rows:
@@ -122,26 +129,25 @@ def render_event_board():
                          column_config={'ราคา USD': st.column_config.NumberColumn(format='$%.4f'),
                                         'เปลี่ยนแปลง %': st.column_config.NumberColumn(format='%+.2f%%'),
                                         'RVOL': st.column_config.NumberColumn(format='%.2fx'),
+                                        'VWAP': st.column_config.NumberColumn(format='$%.2f'),
+                                        'SMA20': st.column_config.NumberColumn(format='$%.2f'),
+                                        'SMA50': st.column_config.NumberColumn(format='$%.2f'),
+                                        'SMA200': st.column_config.NumberColumn(format='$%.2f'),
                                         'ข่าว': st.column_config.LinkColumn(display_text='อ่านต้นฉบับ')})
-            for e in value['events'][:5]:
-                with st.expander(e['ticker'] + ' · ข่าว สาเหตุที่จับตา และเงื่อนไขเข้า'):
-                    st.markdown(literal_text(e['action']))
-                    for article in e['news']:
-                        st.markdown(literal_text(article['title']))
-                        st.caption(article['publisher'] + ' · ' + thai_time(article['published_at']))
-                        impact = article.get('industry_impact') or {}
-                        st.markdown(literal_text(impact.get('impact_th') or article['context']))
-                        if impact:
-                            st.markdown(literal_text(impact['counterpoint_th']))
-                        st.caption('คำอธิบายผลกระทบเป็นการวิเคราะห์จากข่าวที่ระบุ ไม่ใช่ผลประกอบการที่เกิดขึ้นแล้ว')
-                    for reason in e.get('reasons', [])[:4]:
-                        st.caption('รอ: ' + LABELS.get(reason, reason))
+            for index, e in enumerate(ordered[:5], 1):
+                with st.expander(f"{index}) {e['ticker']} · บริษัท ข่าวไทย และแผนวันนี้"):
                     c = plans.get(e['ticker'])
-                    if c and now < instant(c['expires_at']):
-                        st.write(f"เข้า ${c['entry']:.2f} ไม่เกิน ${c['max_entry']:.2f} · หยุด ${c['stop']:.2f} · เป้า ${c['target1']:.2f} / ${c['target2']:.2f}")
-                        st.caption(f"ต้นทุนเผื่อ {c['cost_pct']:.2f}% · R:R สุทธิประมาณ {c['net_rr']:.2f}:1 · {c['entry_rule']}")
+                    current = c if c and instant(c.get('expires_at')) and now < instant(c['expires_at']) else None
+                    for heading, body in report_sections(e, plan=current):
+                        st.markdown('**' + heading + '**')
+                        st.markdown(literal_text(body))
+                    for article in e['news']:
+                        st.link_button(article['publisher'] + ' · ' + thai_time(article['published_at']), _safe_url(article['url']))
+                        st.caption(literal_text('ต้นฉบับ: ' + article['title']))
                     st.button('ดูกราฟ ' + e['ticker'], key='event_select_' + e['ticker'],
                               on_click=queue_selection, args=({'ticker': e['ticker']},))
         else:
             st.info('รอบนี้ยังไม่มีข่าวเหตุการณ์ที่ผ่านการคัด หรือข้อมูลยังไม่พอ')
-        st.caption('RVOL เปรียบเทียบวอลุ่มกับเวลาเดียวกันในอดีต · ตรวจข่าวสูงสุด 10 หุ้น แบ่งฝั่งขึ้น/ลง และกราฟสูงสุด 6 หุ้นต่อรอบ')
+        with st.expander('RVOL, VWAP และ SMA คืออะไร'):
+            for line in GLOSSARY.split('\n'):
+                st.write(line)

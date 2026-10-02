@@ -217,6 +217,10 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
             prepared.append((row, None, articles, audit))
             continue
         prepared.append((row, frame, articles, audit))
+    # Translate before the final fresh-price read; translation cannot create a signal.
+    if prepared:
+        from thai_news_translation import enrich_prepared
+        enrich_prepared(prepared)
     # Re-read prices AFTER news/charts; a timestamp at job start is not live
     # execution evidence after a slow scan. Recompute bar age at this clock.
     if prepared:

@@ -42,7 +42,8 @@ jobs:
           from short_term_engine import validate_pool, MODEL
           data, _ = _fetch_ranking(os.environ['GITHUB_REPOSITORY'])
           try:
-              if (data or {}).get('short_term_pool', {}).get('model') != MODEL:
+              if ((data or {}).get('short_term_pool', {}).get('model') != MODEL
+                      or (data or {}).get('short_term_pool', {}).get('context_version') != 1):
                   raise ValueError('Rebuild the expanded event universe')
               validate_pool((data or {}).get('short_term_pool'), datetime.now(timezone.utc))
           except (ValueError, TypeError, KeyError):
@@ -51,6 +52,21 @@ jobs:
               Path('work').mkdir(exist_ok=True)
               Path('work/short-term-input.json').write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
           PY
+      - name: Restore pinned Thai translation model
+        uses: actions/cache@v4
+        with:
+          path: work/thai-model
+          key: thai-qwen3-4b-bc640142-llama-b11349-v1
+      - name: Restore exact-source Thai translations
+        uses: actions/cache@v4
+        with:
+          path: work/thai-translations.json
+          key: thai-finance-v1-${{ github.run_id }}
+          restore-keys: thai-finance-v1-
+      - name: Prepare offline Thai translator before live prices
+        timeout-minutes: 3
+        continue-on-error: true
+        run: python prepare_thai_translation.py
       - name: Inspect live news, volume and conditional plans without sending LINE
         run: python short_term_service.py --input work/short-term-input.json --output work/short-term-review
       - name: Publish the reviewed market event board without sending LINE
