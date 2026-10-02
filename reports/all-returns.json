@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-10-02T19:01:37.859444+00:00",
-  "run_id": "37049293360",
-  "source_sha": "9445b012a4869f296e2d4b97269747165589e134",
+  "recorded_at": "2026-10-02T20:06:43.597357+00:00",
+  "run_id": "37058152531",
+  "source_sha": "afce2de1d7c8fe87f0f7b4b66c7a5ed27e9e69f8",
   "catalog_members": 9876,
   "priced_members": 9876,
   "periods_checked": 79008,
@@ -12,7 +12,7 @@
   "unpriced_tickers": [],
   "error_count": 0,
   "result": "passed",
-  "audited_at": "2026-10-02T19:01:37.393193+00:00",
+  "audited_at": "2026-10-02T20:06:43.100011+00:00",
   "generation": "generations/20261002T184714Z-1bb19bd2",
   "published_at": "2026-10-02T18:51:54.863124+00:00",
   "quality_counts": {
