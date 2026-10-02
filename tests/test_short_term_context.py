@@ -91,6 +91,8 @@ class TranslationTests(unittest.TestCase):
         self.assertFalse(valid_translation('may not ease supply shortage', 'อาจบรรเทาภาวะอุปทานขาดแคลน'))
         self.assertFalse(valid_translation('supply shortage', 'ความเสียหายของแหล่งจ่ายไฟ'))
         self.assertFalse(valid_translation('devices in Europe, the Middle East and Africa', 'อุปกรณ์ในอยุธยาและแอฟริกา'))
+        self.assertTrue(valid_translation('Toshiba plans to double capacity', 'Toshiba วางแผนเพิ่มกำลังผลิตเป็น 2 เท่า'))
+        self.assertFalse(valid_translation('Toshiba plans to double capacity', 'Toshiba วางแผนเพิ่มกำลังผลิตเป็น 3 เท่า'))
 
     def test_partial_model_output_never_invents_an_unfinished_translation(self):
         self.assertEqual(decode_translations('</think> ["ข่าวแรก", "ข่าวยังไม่จบ'), ['ข่าวแรก'])

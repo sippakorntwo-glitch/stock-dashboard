@@ -13,6 +13,8 @@ import subprocess
 
 VERSION = 'thai-finance-v1'
 REVIEWED = {
+    'STX, WDC Stocks Sink On Toshiba’s Reported Plan To Double AI Hard-Disk Capacity: Analysts Call The Drop Overdone':
+        'หุ้น STX และ WDC ร่วง หลังมีรายงานว่า Toshiba วางแผนเพิ่มกำลังผลิตฮาร์ดดิสก์สำหรับ AI เป็นสองเท่า ขณะที่นักวิเคราะห์มองว่าราคาหุ้นปรับลงมากเกินไป',
     'Seagate, Western Digital Shares Sink on Toshiba Production Report':
         'หุ้น Seagate และ Western Digital ร่วง หลังมีรายงานเกี่ยวกับการผลิตของ Toshiba',
     'Western Digital Corporation engages in the development, manufacture, and sale of data storage devices and solutions based on hard disk drive (HDD) technology in the United States, Asia, Europe, the Middle East, and Africa.':
@@ -44,8 +46,20 @@ def valid_translation(source, translated, names=()):
         return False
     def numbers(text):
         return sorted(Decimal(n.replace(',', '')) for n in re.findall(r'\d[\d,]*(?:\.\d+)?', text))
-    if numbers(source) != numbers(translated):
-        return False
+    remaining = numbers(translated)
+    for value in numbers(source):
+        if value not in remaining:
+            return False
+        remaining.remove(value)
+    # "double" -> "2 เท่า" and "second quarter" -> "ไตรมาส 2" are
+    # faithful translations, not invented numerical facts.
+    words = {'one': 1, 'first': 1, 'two': 2, 'second': 2, 'double': 2,
+             'three': 3, 'third': 3, 'triple': 3, 'four': 4, 'fourth': 4}
+    allowed = [Decimal(words[w]) for w in re.findall(r'\b(?:' + '|'.join(words) + r')\b', source.lower())]
+    for value in remaining:
+        if value not in allowed:
+            return False
+        allowed.remove(value)
     for name in (*names, 'Toshiba', 'Seagate', 'Western Digital', 'Corteva', 'FDA', 'HDD'):
         if name.casefold() in source.casefold() and name.casefold() not in translated.casefold():
             # Brand identity is more useful than a possibly incorrect phonetic spelling.
