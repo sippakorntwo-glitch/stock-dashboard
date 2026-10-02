@@ -55,8 +55,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: work/thai-translations.json
-          key: thai-finance-v1-${{ github.run_id }}
-          restore-keys: thai-finance-v1-
+          key: thai-finance-v2-${{ github.run_id }}
+          restore-keys: thai-finance-v2-
       - name: Prepare offline Thai translator before live prices
         timeout-minutes: 3
         continue-on-error: true
@@ -66,9 +66,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-          # The requested format sample is sent once per durable presentation
-          # version. Scheduled scans stay in monitor mode and share quota limits.
-          ALERT_MODE: ${{ inputs.mode || (github.event_name == 'push' && 'format-update') || 'monitor' }}
+          # Format edits apply to future reports; ordinary pushes keep monitoring.
+          ALERT_MODE: ${{ inputs.mode || 'monitor' }}
         run: python line_alerts.py --mode "$ALERT_MODE"
       - name: Preserve the report that was prepared
         if: always()

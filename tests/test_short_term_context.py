@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pandas as pd
 from short_term_context import daily_context, company_context, company_view, trend_view, pack_context, unpack_context
 from short_term_report import report_rows, format_report, render_report
-from thai_news_translation import valid_translation, decode_translations, enrich_prepared, REVIEWED
+from thai_news_translation import valid_translation, decode_translations, enrich_prepared, REVIEWED, protect_names, restore_names
 from test_short_term_events import wdc_report
 
 
@@ -63,11 +63,26 @@ class ContextTests(unittest.TestCase):
         self.assertEqual([r['ticker'] for r in report_rows(report)], ['T0', 'T1', 'T2', 'T3', 'T4'])
         for i in range(5):
             self.assertIn(f'{i+1}) T{i} — Company {i}', text)
-        self.assertEqual(text.count('RVOL ='), 1)
-        self.assertIn('SMA 20/50/200 วัน: $90.00 / $85.00 / —', text)
+        self.assertNotIn('RVOL =', text)
+        self.assertNotIn('อ่านตัวเลขง่าย', text)
+        self.assertNotIn('ที่มาข่าว', text)
+        self.assertIn('SMA20 $90.00 · SMA50 $85.00 · SMA200 —', text)
+        self.assertLess(text.index('SMA20 $90.00'), text.index('บริษัท'))
+        self.assertIn(event['news'][0]['url'], text)
 
 
 class TranslationTests(unittest.TestCase):
+    def test_company_names_are_protected_and_untranslated_headlines_do_not_leak(self):
+        from short_term_report import thai_headline
+        source = 'Acme reports higher revenue in Europe'
+        masked, mappings = protect_names([source], ['Acme'])
+        self.assertNotIn('Acme', masked[0])
+        self.assertEqual(restore_names(masked[0], mappings[0]), source)
+        self.assertEqual(restore_names('บริษัทอื่น', mappings[0]), '')
+        shown = thai_headline({'title': source})
+        self.assertIn('รอตรวจคำแปล', shown)
+        self.assertNotIn(source, shown)
+
     def test_time_sensitive_bars_are_requested_after_translation(self):
         from test_short_term_engine import NOW, pool, raw_quote, news, bars
         from short_term_service import scan
@@ -90,6 +105,7 @@ class TranslationTests(unittest.TestCase):
         self.assertTrue(valid_translation('Senior notes 2.300% due 2030', 'หุ้นกู้ไม่ด้อยสิทธิ 2.3% ครบกำหนด 2030'))
         self.assertFalse(valid_translation('may not ease supply shortage', 'อาจบรรเทาภาวะอุปทานขาดแคลน'))
         self.assertFalse(valid_translation('supply shortage', 'ความเสียหายของแหล่งจ่ายไฟ'))
+        self.assertFalse(valid_translation('lower profit margins', 'กำไรลดลง'))
         self.assertFalse(valid_translation('devices in Europe, the Middle East and Africa', 'อุปกรณ์ในอยุธยาและแอฟริกา'))
         self.assertTrue(valid_translation('Toshiba plans to double capacity', 'Toshiba วางแผนเพิ่มกำลังผลิตเป็น 2 เท่า'))
         self.assertFalse(valid_translation('Toshiba plans to double capacity', 'Toshiba วางแผนเพิ่มกำลังผลิตเป็น 3 เท่า'))

@@ -100,7 +100,7 @@ The same ordered list supplies LINE text, PNG and the first five dashboard
 expanders. Each stock has company/industry, dated revenue growth and net margin
 when the statements support them, up to two translated headlines with original
 source links, business implications, price trend, and a conditional plan or
-reasons to wait. RVOL/VWAP/SMA definitions appear once.
+reasons to wait. Each stock shows its current USD price next to explicitly labeled SMA20/50/200 prices. Definitions are omitted from the compact reports.
 
 Daily SMA20/50/200 use completed sessions only; fewer than the required bars
 leave a value missing. Extreme differences between the latest daily price and
@@ -129,3 +129,12 @@ Runtime: https://github.com/ggml-org/llama.cpp
 The requested format-update sample has a durable, recipient-scoped version key.
 It shares the same monthly quota and two-extra-round daily cap; reruns cannot
 send the sample again. Scheduled invocations remain in monitor mode.
+
+
+The compact revision removes the glossary from LINE, the PNG footer and the
+event panel. News sources are links only, without publisher/date captions or
+repeated English headlines. English headlines go through the Thai translator;
+proper names are protected with reversible placeholders. If validation fails,
+show a short Thai pending label with the source link, never fabricated news.
+The most recent reviewed headlines also resolve at render time, so a repaired
+translation can appear immediately without changing its original market time.

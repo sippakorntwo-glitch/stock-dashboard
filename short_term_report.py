@@ -64,10 +64,22 @@ def report_rows(report):
     return report['cards'] + visible_events(report)
 
 
+def thai_headline(article):
+    from thai_news_translation import REVIEWED, valid_translation
+    source = article.get('title', '')
+    translated = REVIEWED.get(source) or article.get('title_th')
+    if valid_translation(source, translated):
+        return translated
+    # Do not pass an untranslated English headline off as the requested Thai
+    # report, or manufacture a translation after a failed check.
+    return 'รอตรวจคำแปลข่าวใหม่ — เปิดต้นฉบับจากลิงก์'
+
+
 def report_sections(row, *, plan=None):
     from short_term_context import company_view, trend_view, sma_line, rvol_line, price_text
     company, trend = company_view(row), trend_view(row)
-    sections = [('บริษัท', company['business'])]
+    prices = f"ปัจจุบัน {price_text(row['price'])} ({row['change_pct']:+.2f}%)\n" + sma_line(row)
+    sections = [('ราคาเทียบ SMA', prices), ('บริษัท', company['business'])]
     if company['profile'] and company['profile'] != company['business']:
         sections.append(('หมวดอุตสาหกรรม', company['profile']))
     if company['financials']:
@@ -77,9 +89,8 @@ def report_sections(row, *, plan=None):
         sections.append(('งบสำคัญ', evidence))
     headlines = []
     for article in row['news'][:2]:
-        translated = article.get('title_th')
-        headlines.append('• ' + (translated or 'ต้นฉบับ (ยังไม่มีคำแปล): ' + article['title']))
-    sections.append(('ข่าวสำคัญ · แปลพาดหัว' if all(n.get('title_th') for n in row['news'][:2]) else 'ข่าวสำคัญ', '\n'.join(headlines)))
+        headlines.append('• ' + thai_headline(article))
+    sections.append(('ข่าวสำคัญ', '\n'.join(headlines)))
     outlook = company['outlook']
     if company['counterpoint']:
         outlook += '\nอีกมุม: ' + company['counterpoint']
@@ -89,7 +100,7 @@ def report_sections(row, *, plan=None):
     market = rvol_line(row) + ' · VWAP ' + price_text(row.get('vwap'))
     if volume is not None:
         market += f' · ซื้อขาย ${volume/1e6:,.1f} ล้าน'
-    sections.append(('ตัวเลขที่ใช้ตัดสินใจ', market + '\n' + sma_line(row)))
+    sections.append(('การซื้อขาย', market))
     if plan:
         action = (f"รอเข้า ${plan['entry']:.2f}–{plan['max_entry']:.2f} | ตัดขาดทุน ${plan['stop']:.2f}\n"
                   f"เป้า 1 ${plan['target1']:.2f} | เป้า 2 ${plan['target2']:.2f}\n"
@@ -118,14 +129,11 @@ def format_report(report):
     for index, row in enumerate(rows, 1):
         state = 'แผนมีเงื่อนไข' if row['ticker'] in plans else 'รอฟื้นตัว' if row.get('status') == 'recovery_watch' else 'ข่าวกระทบราคา / รอติดตาม'
         text.append(f"{'─' * 20}\n{index}) {row['ticker']} — {row['name']}\n"
-                    f"${row['price']:.2f} ({row['change_pct']:+.2f}%) · ราคา ณ {thai_time(row['quote_time'])} ไทย\n"
+                    f"ราคา ณ {thai_time(row['quote_time'])} ไทย\n"
                     f"สถานะ: {state}")
         for heading, body in report_sections(row, plan=plans.get(row['ticker'])):
             text.append(heading + '\n' + body)
-        sources = [f"{n['publisher']} · {thai_time(n['published_at'])} ไทย\n{n['url']}" for n in row['news'][:2]]
-        text.append('ที่มาข่าว\n' + '\n'.join(sources))
-    from short_term_context import GLOSSARY
-    text.append('อ่านตัวเลขง่าย ๆ\n' + GLOSSARY)
+        text.append('\n'.join(n['url'] for n in row['news'][:2]))
     return '\n\n'.join(t for t in text if t)
 
 
@@ -137,7 +145,7 @@ def render_report(report, output):
     rows = report_rows(report)
     plans = {c['ticker']: c for c in report['cards']}
     card_height = 635
-    canvas = Image.new('RGB', (1600, 440 + max(1, len(rows)) * card_height), BG)
+    canvas = Image.new('RGB', (1600, 245 + max(1, len(rows)) * card_height), BG)
     draw = ImageDraw.Draw(canvas)
     font = ThaiText(draw)
     draw.rectangle((0, 0, 1600, 190), fill=NAVY)
@@ -154,10 +162,10 @@ def render_report(report, output):
         state = 'แผนมีเงื่อนไข' if plan else 'รอฟื้นตัว' if row.get('status') == 'recovery_watch' else 'รอติดตาม'
         font.line((75, y + 132), f"${row['price']:.2f} ({row['change_pct']:+.2f}%) · {state}", 32, INK, True)
         industry = INDUSTRY_LABELS.get(row.get('industry'), row.get('industry', ''))
-        font.paragraph((75, y + 181), rvol_line(row) + ' · VWAP ' + price_text(row.get('vwap'))
+        font.paragraph((75, y + 181), sma_line(row), 1420, size=28, lines=1, color=INK, bold=True)
+        font.paragraph((75, y + 224), rvol_line(row) + ' · VWAP ' + price_text(row.get('vwap'))
                        + ' · ' + industry, 1420, size=27, lines=1, color=TEAL, bold=True)
-        font.paragraph((75, y + 224), sma_line(row), 1420, size=25, lines=1, color=MUTED)
-        headline = row['news'][0].get('title_th') or row['news'][0]['title']
+        headline = thai_headline(row['news'][0])
         font.paragraph((75, y + 274), 'ข่าว: ' + headline, 1420, size=28, lines=2, leading=37)
         direction = (company['financials'] + ' · ' if company['financials'] else '') + trend['intraday']
         font.paragraph((75, y + 364), 'ภาพรวม: ' + direction, 1420, size=26, lines=2, leading=36)
@@ -176,9 +184,6 @@ def render_report(report, output):
         for i, (key, value) in enumerate(sorted(report['excluded'].items(), key=lambda x: -x[1])[:4]):
             font.paragraph((80, y + 150 + i * 70), LABELS.get(key, key), 1420, size=28, lines=1)
         y += card_height
-    font.paragraph((60, y + 5), 'RVOL: วอลุ่มเทียบเวลาเดียวกัน · 2× = ซื้อขาย 2 เท่าของปกติ', 1470, size=27, lines=1, bold=True)
-    font.paragraph((60, y + 55), 'VWAP: ราคาเฉลี่ยถ่วงน้ำหนักวอลุ่ม · SMA: ราคาปิดเฉลี่ยตามจำนวนวัน', 1470, size=27, lines=1)
-    font.paragraph((60, y + 113), 'อ่านข่าวทั้งสองมุม งบบริษัท และเงื่อนไขเข้า–ออกในข้อความประกอบ', 1470, size=25, lines=1, color=MUTED)
     original, preview = output / 'briefing.png', output / 'briefing-preview.png'
     canvas.save(original, optimize=True)
     small = canvas.copy(); small.thumbnail((800, 2400)); small.save(preview, optimize=True)

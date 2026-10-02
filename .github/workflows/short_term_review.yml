@@ -61,8 +61,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: work/thai-translations.json
-          key: thai-finance-v1-${{ github.run_id }}
-          restore-keys: thai-finance-v1-
+          key: thai-finance-v2-${{ github.run_id }}
+          restore-keys: thai-finance-v2-
       - name: Prepare offline Thai translator before live prices
         timeout-minutes: 3
         continue-on-error: true

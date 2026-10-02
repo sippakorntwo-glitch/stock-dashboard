@@ -84,7 +84,7 @@ def render_event_board():
     import dashboard_runtime as a
     import pandas as pd
     from short_term_report import LABELS, thai_time, report_sections, report_rows
-    from short_term_context import GLOSSARY, daily_values
+    from short_term_context import daily_values
     from market_pulse import _safe_url
     from market_pulse_ui import literal_text
     from ranking_board import queue_selection
@@ -142,12 +142,9 @@ def render_event_board():
                         st.markdown('**' + heading + '**')
                         st.markdown(literal_text(body).replace('$', r'\$').replace('\n', '  \n'))
                     for article in e['news']:
-                        st.link_button(article['publisher'] + ' · ' + thai_time(article['published_at']), _safe_url(article['url']))
-                        st.caption(literal_text('ต้นฉบับ: ' + article['title']))
+                        url = _safe_url(article['url'])
+                        st.markdown('<' + url + '>')
                     st.button('ดูกราฟ ' + e['ticker'], key='event_select_' + e['ticker'],
                               on_click=queue_selection, args=({'ticker': e['ticker']},))
         else:
             st.info('รอบนี้ยังไม่มีข่าวเหตุการณ์ที่ผ่านการคัด หรือข้อมูลยังไม่พอ')
-        with st.expander('RVOL, VWAP และ SMA คืออะไร'):
-            for line in GLOSSARY.split('\n'):
-                st.write(line)

@@ -99,11 +99,8 @@ def daily_values(row):
 def sma_line(row):
     daily = daily_values(row)
     if daily.get('scale_review'):
-        return 'SMA: รอตรวจฐานราคาที่เปลี่ยนมาก ก่อนเทียบค่าเฉลี่ยย้อนหลัง'
-    if not daily:
-        return 'SMA รายวัน: รอข้อมูลรอบใหม่'
-    return ('SMA 20/50/200 วัน: ' + ' / '.join(price_text(daily.get('sma' + str(n))) for n in (20, 50, 200))
-            + ' · ถึง ' + daily['asof'])
+        return 'SMA20 — · SMA50 — · SMA200 — (รอตรวจฐานราคา)'
+    return ' · '.join('SMA' + str(n) + ' ' + price_text(daily.get('sma' + str(n))) for n in (20, 50, 200))
 
 
 def trend_view(row):
