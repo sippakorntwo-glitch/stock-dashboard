@@ -11,7 +11,7 @@ from catalog_extension import install as install_catalog
 install_catalog(core)
 from analytics import extended_snapshot, METRIC_VERSION
 from data_sync import ObjectStore, SnapshotReader, config_from
-APP_VERSION = '2026-10-03.43'
+APP_VERSION = '2026-10-03.44'
 DEFAULT_REPO = 'sippakorntwo-glitch/stock-dashboard'
 BaseCache = core.DashboardCache
 base_snapshot = core.scan_snapshot_row

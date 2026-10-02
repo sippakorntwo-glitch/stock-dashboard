@@ -140,7 +140,7 @@ def render_event_board():
                     current = c if c and instant(c.get('expires_at')) and now < instant(c['expires_at']) else None
                     for heading, body in report_sections(e, plan=current):
                         st.markdown('**' + heading + '**')
-                        st.markdown(literal_text(body))
+                        st.markdown(literal_text(body).replace('$', r'\$').replace('\n', '  \n'))
                     for article in e['news']:
                         st.link_button(article['publisher'] + ' · ' + thai_time(article['published_at']), _safe_url(article['url']))
                         st.caption(literal_text('ต้นฉบับ: ' + article['title']))
