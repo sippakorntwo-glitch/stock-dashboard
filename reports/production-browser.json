@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-10-02T16:51:34.125439+00:00",
-  "run_id": "37034553273",
+  "recorded_at": "2026-10-02T17:16:36.118353+00:00",
+  "run_id": "37035774433",
   "source_sha": "16a991caa922d93583158bc8154c2b0824c22d4a",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-24.39",
@@ -430,9 +430,9 @@
     "source_quotes": [
       {
         "kind": "regular",
-        "state": "stale",
+        "state": "recent",
         "session": "regular",
-        "quote_time": "2026-10-02T16:33:18+00:00"
+        "quote_time": "2026-10-02T17:05:54+00:00"
       }
     ],
     "news_checked_at": null,
@@ -463,17 +463,17 @@
         "period": "1 วัน",
         "interval": "5m",
         "bars": 1639,
-        "visible_bars": 39,
+        "visible_bars": 40,
         "first": 1790947800,
-        "last": 1790959200
+        "last": 1790959500
       },
       {
         "period": "3 วัน",
         "interval": "5m",
         "bars": 1639,
-        "visible_bars": 195,
+        "visible_bars": 200,
         "first": 1790775000,
-        "last": 1790959200
+        "last": 1790960700
       },
       {
         "period": "5 ปี",
@@ -496,7 +496,7 @@
       {
         "period": "1 วัน",
         "bars": 1639,
-        "mixed_bars": 1565,
+        "mixed_bars": 1566,
         "flat_bars": 0,
         "missing_volume": 0
       },
@@ -528,38 +528,39 @@
         "period": "1 วัน",
         "interval": "5m",
         "trend": "mixed",
-        "bar_time": 1790959200,
-        "return_percent": -0.1310509601177623,
+        "bar_time": 1790959500,
+        "return_percent": -0.21539303923633346,
         "levels": {
           "support": 767.14501953125,
-          "resistance": 771.1199951171875,
+          "resistance": 770.0399780273438,
           "bars": 20,
           "state": "inside",
-          "support_distance_pct": -0.3306503789946236,
-          "resistance_distance_pct": 0.1857881317472554,
-          "start_time": 1790953200,
-          "end_time": 1790958900,
-          "latest_time": 1790959200,
-          "close": 769.6900024414062,
+          "support_distance_pct": -0.24640572014923423,
+          "resistance_distance_pct": 0.13003225171273058,
+          "start_time": 1790953500,
+          "end_time": 1790959200,
+          "latest_time": 1790959500,
+          "close": 769.0399780273438,
           "basis": "prior-selected-window-high-low-max20-min5",
           "reason": ""
         },
-        "volume_ratio": 0.0,
+        "volume_ratio": 0.3903260016411144,
         "metrics": {
-          "ema20": 769.4092427351856,
-          "ema50": 768.5441314120994,
-          "sma200": 765.9891494750976,
-          "rsi": 53.72664749428735,
-          "macd": 0.08426980877948154,
-          "signal": 0.09677491163053946,
-          "hist": -0.012505102851057923
+          "ema20": 769.3163437140624,
+          "ema50": 768.5383328844407,
+          "sma200": 766.0084494018555,
+          "rsi": 48.059227551185835,
+          "macd": 0.006830380315363982,
+          "signal": 0.07023465654271913,
+          "hist": -0.06340427622735514
         },
-        "atr_pct": 0.09770493510478039,
+        "atr_pct": 0.10391331196790837,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
           "แท่งล่าสุดอาจยังไม่ปิดหรือยืนยันเวลาไม่ได้: การอ่านแนวโน้มและการทะลุกรอบยังเป็นเพียงชั่วคราว",
-          "EMA/RSI/MACD/ATR นับแท่ง 5 นาที ไม่ใช่จำนวนวัน; Volume เทียบ 20 แท่งก่อนหน้าและไม่ได้ปรับฤดูกาลระหว่างวัน"
+          "EMA/RSI/MACD/ATR นับแท่ง 5 นาที ไม่ใช่จำนวนวัน; Volume เทียบ 20 แท่งก่อนหน้าและไม่ได้ปรับฤดูกาลระหว่างวัน",
+          "แท่ง 5 นาทีล่าสุดเก่ากว่า 15 นาที อาจเป็นช่วงปิดตลาดหรือข้อมูลล่าช้า ไม่ใช่ภาพราคาขณะนี้"
         ],
         "chart_reference_lines": {
           "actual_price_lines": [
@@ -571,7 +572,7 @@
             },
             {
               "key": "resistance",
-              "price": 771.1199951171875,
+              "price": 770.0399780273438,
               "visible": true,
               "axisLabelVisible": true
             }
@@ -584,34 +585,34 @@
         "ticker": "SPY",
         "period": "3 วัน",
         "interval": "5m",
-        "trend": "mixed",
-        "bar_time": 1790959200,
-        "return_percent": 0.2843196785803359,
+        "trend": "uptrend",
+        "bar_time": 1790960700,
+        "return_percent": 0.3567031048852032,
         "levels": {
           "support": 767.14501953125,
-          "resistance": 771.1199951171875,
+          "resistance": 770.0499877929688,
           "bars": 20,
           "state": "inside",
-          "support_distance_pct": -0.23083850314157273,
-          "resistance_distance_pct": 0.28611718461324376,
-          "start_time": 1790953200,
-          "end_time": 1790958900,
-          "latest_time": 1790959200,
-          "close": 768.9199829101562,
+          "support_distance_pct": -0.30279815830440704,
+          "resistance_distance_pct": 0.07472786318922786,
+          "start_time": 1790954700,
+          "end_time": 1790960400,
+          "latest_time": 1790960700,
+          "close": 769.4749755859375,
           "basis": "prior-selected-window-high-low-max20-min5",
           "reason": ""
         },
-        "volume_ratio": 0.4198821540421379,
+        "volume_ratio": 0.42671899043892625,
         "metrics": {
-          "ema20": 769.3359075417331,
-          "ema50": 768.5139345677367,
-          "sma200": 765.9852993774414,
-          "rsi": 47.11204526449929,
-          "macd": 0.022843749306503014,
-          "signal": 0.08448969973594375,
-          "hist": -0.06164595042944074
+          "ema20": 769.3787556281229,
+          "ema50": 768.6806686899284,
+          "sma200": 766.1124496459961,
+          "rsi": 51.60417458163852,
+          "macd": 0.06005050073520124,
+          "signal": 0.05425602770990475,
+          "hist": 0.0057944730252964885
         },
-        "atr_pct": 0.10722189025654638,
+        "atr_pct": 0.09887228324643865,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
@@ -628,7 +629,7 @@
             },
             {
               "key": "resistance",
-              "price": 771.1199951171875,
+              "price": 770.0499877929688,
               "visible": true,
               "axisLabelVisible": true
             }
@@ -771,13 +772,13 @@
         {
           "ticker": "SPY",
           "period": "7 วัน",
-          "percent": 0.5518465588807198,
-          "display": "+0.55%",
+          "percent": 0.6244230812975982,
+          "display": "+0.62%",
           "first": 1790256600,
-          "last": 1790959200,
+          "last": 1790960700,
           "start_price": 764.7000122070312,
-          "end_price": 768.9199829101562,
-          "bars": 507
+          "end_price": 769.4749755859375,
+          "bars": 512
         },
         {
           "ticker": "SPY",
@@ -815,19 +816,19 @@
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-10-02T16:43:53.994788+00:00",
-        "quotes_checked_at": "2026-10-02T16:43:36.201150+00:00",
+        "rendered_at": "2026-10-02T17:08:37.892853+00:00",
+        "quotes_checked_at": "2026-10-02T17:08:30.202594+00:00",
         "observations": [
           {
             "ticker": "WTS",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T16:40:35+00:00",
+            "assessment": "watch",
+            "quote_observed_at": "2026-10-02T17:08:23+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "UFPT",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T16:25:25+00:00",
+            "quote_observed_at": "2026-10-02T16:55:45+00:00",
             "news_checked_at": null
           },
           {
@@ -839,43 +840,43 @@
           {
             "ticker": "RISR",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T16:27:50+00:00",
+            "quote_observed_at": "2026-10-02T17:04:10+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "JQUA",
             "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:43:28+00:00",
+            "quote_observed_at": "2026-10-02T17:07:58+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "QLTY",
             "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:43:17+00:00",
+            "quote_observed_at": "2026-10-02T17:06:46+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "RSPT",
             "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:43:28+00:00",
+            "quote_observed_at": "2026-10-02T17:08:27+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "IVES",
-            "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:42:33+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T17:06:09+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "BOCT",
-            "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:42:02+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T17:02:25+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "TOPT",
-            "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:42:45+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T17:04:53+00:00",
             "news_checked_at": null
           }
         ]
@@ -892,19 +893,19 @@
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-10-02T16:44:33.514504+00:00",
-        "quotes_checked_at": "2026-10-02T16:44:18.675021+00:00",
+        "rendered_at": "2026-10-02T17:09:21.463058+00:00",
+        "quotes_checked_at": "2026-10-02T17:09:06.715100+00:00",
         "observations": [
           {
             "ticker": "WTS",
             "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:44:08+00:00",
+            "quote_observed_at": "2026-10-02T17:08:23+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "UFPT",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T16:25:25+00:00",
+            "quote_observed_at": "2026-10-02T16:55:45+00:00",
             "news_checked_at": null
           },
           {
@@ -916,43 +917,43 @@
           {
             "ticker": "RISR",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T16:27:50+00:00",
+            "quote_observed_at": "2026-10-02T17:04:10+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "JQUA",
             "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:44:02+00:00",
+            "quote_observed_at": "2026-10-02T17:07:58+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "QLTY",
-            "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:43:17+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T17:06:46+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "RSPT",
             "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:44:16+00:00",
+            "quote_observed_at": "2026-10-02T17:09:02+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "IVES",
-            "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:42:33+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T17:06:09+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "BOCT",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T16:42:02+00:00",
+            "quote_observed_at": "2026-10-02T17:02:25+00:00",
             "news_checked_at": null
           },
           {
             "ticker": "TOPT",
-            "assessment": "watch",
-            "quote_observed_at": "2026-10-02T16:42:45+00:00",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T17:04:53+00:00",
             "news_checked_at": null
           }
         ]
@@ -1082,7 +1083,7 @@
       "intraday": {
         "ticker": "SPY",
         "interval": "5m",
-        "time": "1790952600",
+        "time": "1790953200",
         "timezone": "America/New_York"
       }
     },
@@ -1291,7 +1292,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-10-02T16:45:38.319064+00:00",
+      "verified_at": "2026-10-02T17:10:30.221434+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -1355,7 +1356,7 @@
         "session": "regular",
         "state": "scheduled",
         "effective_seconds": 30.0,
-        "next_due": 1790959710.7194614,
+        "next_due": 1790961200.1089272,
         "second_observation": true
       },
       "quote_controls": {
@@ -1368,7 +1369,7 @@
           "state": "updating",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1790959215.587606",
+          "nextDue": "1790959741.1844976",
           "busy": "true",
           "session": "regular"
         },
@@ -1376,7 +1377,7 @@
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "60",
-          "nextDue": "1790959740.7194614",
+          "nextDue": "1790961230.1089272",
           "busy": "false",
           "session": "regular"
         },
@@ -1384,7 +1385,7 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "30",
-          "nextDue": "1790959741.1844976",
+          "nextDue": "1790961230.7244086",
           "busy": "false",
           "session": "regular"
         },
@@ -1396,9 +1397,9 @@
         "generation_after": "generations/20261002T124155Z-01712d07"
       },
       "minute_price": {
-        "price": 56.0968017578125,
-        "bar_time": "2026-10-02T16:48:00+00:00",
-        "fetched_at": "2026-10-02T16:48:31.183969+00:00",
+        "price": 56.10499954223633,
+        "bar_time": "2026-10-02T17:13:00+00:00",
+        "fetched_at": "2026-10-02T17:13:20.724078+00:00",
         "state": "recent"
       },
       "theme": {
@@ -1433,10 +1434,10 @@
           {
             "tab": "ความเสี่ยง / แนวโน้ม",
             "box": {
-              "left": 213.390625,
-              "right": 341.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "left": 131.390625,
+              "right": 259.390625,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1444,10 +1445,10 @@
           {
             "tab": "บริษัท / กองทุน",
             "box": {
-              "left": 151.390625,
-              "right": 239.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "left": 253.390625,
+              "right": 341.390625,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1457,8 +1458,8 @@
             "box": {
               "left": 193.390625,
               "right": 341.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 402.296875,
+              "bottom": 442.296875,
               "width": 390,
               "height": 844
             }
@@ -1467,8 +1468,8 @@
         "numeric_input_box": {
           "left": 49.390625,
           "right": 276.609375,
-          "top": 711.5,
-          "bottom": 747.09375,
+          "top": 572.5,
+          "bottom": 608.09375,
           "width": 390,
           "height": 844
         },
