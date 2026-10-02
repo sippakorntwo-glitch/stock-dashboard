@@ -1,15 +1,15 @@
 {
-  "recorded_at": "2026-10-02T08:36:00.410323+00:00",
-  "run_id": "36984789224",
+  "recorded_at": "2026-10-02T10:33:35.783328+00:00",
+  "run_id": "36995996505",
   "source_sha": "5567cdf7ba48ec296b25f4295bfe9d36b0674f5d",
-  "started_at": "2026-10-02T08:35:07.795413+00:00",
+  "started_at": "2026-10-02T10:32:43.565189+00:00",
   "source_generation": "generations/20261002T074035Z-f371ffdc",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-02T08:36:00.376230+00:00",
+  "finished_at": "2026-10-02T10:33:35.751084+00:00",
   "result": "audit_completed",
   "data_complete": false,
   "generation": "generations/20261002T074035Z-f371ffdc",
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 306019,
-    "report_sha256": "f98dc29c0fa13160909a88902c0ca2473c882c621b76ba38913ea5074fd26bd2",
+    "report_sha256": "a952ff0d49fc3367fcbd7f985b3d1d4dda9fda2c9bd785933e16f43edaf2d843",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36984789224",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/36995996505",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
