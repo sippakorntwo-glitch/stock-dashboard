@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-10-02T16:55:40.394740+00:00",
-  "run_id": "37035774433",
-  "source_sha": "16a991caa922d93583158bc8154c2b0824c22d4a",
+  "recorded_at": "2026-10-02T17:58:58.401114+00:00",
+  "run_id": "37044065388",
+  "source_sha": "ee508d470163f65ef3107a69eafc2a9d1de72f8a",
   "catalog_members": 9876,
   "priced_members": 9876,
   "periods_checked": 79008,
@@ -12,9 +12,9 @@
   "unpriced_tickers": [],
   "error_count": 0,
   "result": "passed",
-  "audited_at": "2026-10-02T16:55:39.940869+00:00",
-  "generation": "generations/20261002T124155Z-01712d07",
-  "published_at": "2026-10-02T12:46:40.125724+00:00",
+  "audited_at": "2026-10-02T17:58:57.947387+00:00",
+  "generation": "generations/20261002T173047Z-678648de",
+  "published_at": "2026-10-02T17:35:24.945745+00:00",
   "quality_counts": {
     "universe": 9876,
     "prices": 9876,
