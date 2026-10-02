@@ -17,7 +17,7 @@ def row():
 
 
 def raw_quote(ticker='AAA', **changes):
-    value = dict(symbol=ticker, quoteType='EQUITY' if ticker != 'SPY' else 'ETF', currency='USD',
+    value = dict(symbol=ticker, quoteType='EQUITY' if ticker != 'SPY' else 'ETF', currency='USD', exchange='NMS',
                  marketState='REGULAR', regularMarketPrice=104.05 if ticker == 'AAA' else 100.3,
                  regularMarketTime=NOW.timestamp() - 10, regularMarketPreviousClose=100.,
                  regularMarketVolume=630_000, bid=104.03, ask=104.06, exchangeDataDelayedBy=0)
@@ -167,6 +167,32 @@ class IntradayTests(unittest.TestCase):
                       news_fetcher=lambda *args: news(), chart_fetcher=lambda _: bars())
         self.assertEqual(result['actual_count'], 0)
         self.assertEqual(result['excluded']['final_quote_not_fresh'], 1)
+
+    def test_intraday_history_failure_is_data_unavailable_not_no_setup(self):
+        result = scan({'short_term_pool': pool()}, clock=lambda: NOW,
+                      quote_fetcher=lambda tickers: [raw_quote(t) for t in tickers],
+                      news_fetcher=lambda *args: news(), chart_fetcher=lambda _: pd.DataFrame())
+        self.assertEqual(result['status'], 'data_unavailable')
+        self.assertEqual(result['audit'][0]['reasons'], ['missing_intraday_bars'])
+
+    def test_pool_uses_completed_session_baseline_and_excludes_low_share_volume(self):
+        days = e.calendar('2026-10-02').index
+        days = days[days.date <= NOW.date()][-22:]
+        frame = pd.DataFrame({'Open': 100., 'High': 106., 'Low': 96., 'Close': 100.,
+                              'Volume': 2_000_000.}, index=days)
+        frame.loc[frame.index[-1], 'Volume'] = 1e12
+        class Cache:
+            def quotes(self):
+                return {t: {'Asset_Type': 'Common Stock' if t != 'ETF' else 'ETF',
+                            'Close': 100., 'Dollar_Volume_20D': 200_000_000.} for t in ('AAA', 'THIN', 'ETF')}
+            def classifications(self): return {}
+            def get(self, *args, **kwargs): return {'currency': 'USD'}, {}
+            def history(self, ticker):
+                return (frame.assign(Volume=43.) if ticker == 'THIN' else frame), {}
+        result = e.build_pool(Cache(), ('AAA', 'THIN', 'ETF'), NOW)
+        self.assertEqual([r['ticker'] for r in result['items']], ['AAA'])
+        self.assertEqual(result['items'][0]['average_shares_20d'], 2_000_000.)
+        self.assertEqual(result['items'][0]['baseline_day'], '2026-10-01')
 
 
 if __name__ == '__main__':

@@ -45,7 +45,7 @@ def fresh_catalysts(row, fetched, now):
                        r'earnings (?:beat|miss)|guidance|raises? .{0,30}(?:outlook|forecast)|'
                        r'cuts? .{0,30}(?:outlook|forecast)|wins? .{0,45}contract|'
                        r'(?:signs?|awarded) .{0,40}(?:deal|contract)|'
-                       r'(?:acquires?|acquisition|merger)|FDA .{0,40}(?:approv|reject)|'
+                       r'(?:acquires?|acquisition|merger)|FDA .{0,40}(?:approv\w*|reject\w*)|'
                        r'approv\w* .{0,30}(?:drug|treatment)|recall|lawsuit|'
                        r'files? .{0,20}bankruptcy|deliveries|production results)\b', re.I)
     for raw in fetched['items'][:20]:
@@ -84,7 +84,7 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
     report = {'schema': 1, 'model': MODEL, 'generated_at': now.isoformat(),
               'session': context['session'], 'trading_date': context['trading_date'],
               'next_trading_day': context['next_day'], 'cards': [], 'actual_count': 0,
-              'counts': {}, 'excluded': {}, 'diagnostics': [], 'cost_pct': COST_RATE * 100,
+              'counts': {}, 'excluded': {}, 'diagnostics': [], 'audit': [], 'cost_pct': COST_RATE * 100,
               'status': 'no_setup', 'source': 'Yahoo Finance: timestamped quotes, 5-minute bars and linked news',
               'performance': 'ยังไม่มีสถิติผลลัพธ์ล่วงหน้าของเกณฑ์รุ่นนี้'}
     if context['session'] == 'closed':
@@ -139,21 +139,28 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
             break
         counts['news_checked'] += 1
         fetched = {}
+        audit = {'ticker': row['ticker'], 'stage': 'news', 'reasons': []}
+        report['audit'].append(audit)
         try:
             fetched = news_fetcher(row['ticker'], clock())
             articles, why = fresh_catalysts(row, fetched, clock())
         except Exception as exc:
             articles, why = [], 'news_feed_unavailable'
             if _blocked_news_access(exc):
+                audit['reasons'] = ['provider_access_or_rate_blocked']
                 diagnostics.append('provider_access_or_rate_blocked')
                 break
+        audit['news_source'] = fetched.get('source') if isinstance(fetched, dict) else None
+        audit['news_errors'] = [fetched[k] for k in ('primary_error', 'fallback_error') if fetched.get(k)] if isinstance(fetched, dict) else []
         if why:
+            audit['reasons'] = [why]
             rejected[why] += 1
             if isinstance(fetched, dict) and fetched.get('fallback_error') == 'not_attempted_access_or_rate_blocked':
                 diagnostics.append('provider_access_or_rate_blocked')
                 break
             continue
         counts['news_passed'] += 1
+        audit['stage'] = 'intraday'
         counts['charts_checked'] += 1
         try:
             frame = chart_fetcher(row['ticker'])
@@ -164,30 +171,36 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
                 diagnostics.append('provider_access_or_rate_blocked')
                 break
         if why:
+            audit['reasons'] = [why]
             rejected[why] += 1
             continue
-        prepared.append((row, frame, articles))
+        prepared.append((row, frame, articles, audit))
     # Re-read prices AFTER news/charts; a timestamp at job start is not live
     # execution evidence after a slow scan. Recompute bar age at this clock.
     if prepared:
         try:
-            refreshed = unpack_quotes(quote_fetcher([r['ticker'] for r, _, _ in prepared] + ['SPY']))
+            refreshed = unpack_quotes(quote_fetcher([r['ticker'] for r, _, _, _ in prepared] + ['SPY']))
         except Exception:
             refreshed = {}
             diagnostics.append('final_quote_refresh_failed')
         now = clock()
         benchmark = quote_observation(refreshed.get('SPY'), 'SPY', now, context['session'])
-        for row, frame, news in prepared:
+        for row, frame, news, audit in prepared:
             quote = quote_observation(refreshed.get(row['ticker']), row['ticker'], now, context['session'])
             metrics, why = intraday_metrics(frame, now, context['session'])
             if quote is None or why:
+                audit['reasons'] = [why or 'final_quote_not_fresh']
                 rejected[why or 'final_quote_not_fresh'] += 1
                 continue
             counts['technical_checked'] += 1
+            audit.update(stage='plan', rvol=metrics['rvol'], session_dollars=metrics['session_dollars'],
+                         quote_time=quote['quote_time'], bar_end=metrics['bar_end'])
             plan, why = make_plan(row, quote, metrics, news, benchmark, now, context['session'])
             if plan:
+                audit['stage'] = 'conditional_plan'
                 report['cards'].append(plan)
             else:
+                audit['reasons'] = why
                 rejected.update(why)
     if len(candidates) > counts['news_checked']:
         diagnostics.append('not_all_momentum_candidates_deep_scanned')
@@ -197,7 +210,10 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
                   counts=dict(counts), excluded=dict(rejected), diagnostics=list(dict.fromkeys(diagnostics)))
     report['status'] = 'conditional_plans' if report['cards'] else 'data_unavailable' if (
         not counts['fresh_quotes'] or 'provider_access_or_rate_blocked' in diagnostics or
-        (counts['news_checked'] and rejected['news_feed_unavailable'] == counts['news_checked'])) else 'no_setup'
+        (counts['news_checked'] and rejected['news_feed_unavailable'] == counts['news_checked']) or
+        (counts['charts_checked'] and not counts['technical_checked'] and any(rejected[k] for k in (
+            'intraday_feed_unavailable', 'missing_intraday_bars', 'invalid_intraday_bars',
+            'stale_intraday_bars', 'insufficient_same_time_volume_history', 'final_quote_not_fresh', 'recent_bar_gap')))) else 'no_setup'
     return report
 
 

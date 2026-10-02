@@ -24,14 +24,29 @@ jobs:
           sudo apt-get install -y -qq fonts-noto-core
       - name: Verify full regression suite
         run: python -m pytest -q
-      - name: Build independent liquid-stock universe from verified checkpoint
+      - name: Use a verified current universe or rebuild it from the checkpoint
         env:
           DASHBOARD_DATA_REPO: ${{ github.repository }}
           DASHBOARD_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DASHBOARD_DATA_VISIBILITY: public
           DASHBOARD_DATA_BRANCH: dashboard-data
           PYTHONUNBUFFERED: '1'
-        run: python ranking_job.py --no-quote-refresh --output work/short-term-input.json
+        run: |
+          python - <<'PY'
+          from datetime import datetime, timezone
+          import json, os, subprocess, sys
+          from pathlib import Path
+          from ranking_board import _fetch_ranking
+          from short_term_engine import validate_pool
+          data, _ = _fetch_ranking(os.environ['GITHUB_REPOSITORY'])
+          try:
+              validate_pool((data or {}).get('short_term_pool'), datetime.now(timezone.utc))
+          except (ValueError, TypeError, KeyError):
+              subprocess.run([sys.executable, 'ranking_job.py', '--no-quote-refresh', '--output', 'work/short-term-input.json'], check=True)
+          else:
+              Path('work').mkdir(exist_ok=True)
+              Path('work/short-term-input.json').write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
+          PY
       - name: Inspect live news, volume and conditional plans without sending LINE
         run: python short_term_service.py --input work/short-term-input.json --output work/short-term-review
       - name: Preserve coverage, rejections and exact report

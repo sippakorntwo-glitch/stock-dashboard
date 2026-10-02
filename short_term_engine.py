@@ -145,7 +145,9 @@ def validate_pool(pool, now):
                 or row.get('baseline_day') != previous
                 or (number(row.get('average_shares_20d')) or 0) < MIN_SHARES
                 or (number(row.get('average_dollars_20d')) or 0) < MIN_DOLLARS
-                or (number(row.get('adr_20d')) or 0) <= 0):
+                or (number(row.get('adr_20d')) or 0) <= 0
+                or (number(row.get('previous_close')) or 0) <= 0
+                or (number(row.get('previous_high')) or 0) <= 0):
             raise ValueError('Invalid short-term stock identity or baseline')
         seen.add(ticker)
     return pool['items']
@@ -157,6 +159,8 @@ def quote_observation(raw, ticker, now, session):
     if raw.get('marketState') != ('PRE' if session == 'pre' else 'REGULAR'):
         return None
     if raw.get('quoteType') not in ('EQUITY', 'ETF'):
+        return None
+    if raw.get('exchange') not in ('NMS', 'NYQ', 'NGM', 'NCM', 'ASE', 'PCX', 'BTS'):
         return None
     delay = number(raw.get('exchangeDataDelayedBy'))
     if delay is not None and delay > 0:
@@ -209,7 +213,7 @@ def intraday_metrics(frame, now, session):
         return None, 'wait_for_six_closed_bars'
     if session == 'regular':
         expected = (current.index[-1].hour * 60 + current.index[-1].minute - 570) // 5 + 1
-        if len(current) < expected * .9:
+        if len(current) < expected:
             return None, 'recent_bar_gap'
     latest_end = current.index[-1].to_pydatetime() + timedelta(minutes=5)
     if not 0 <= (now - latest_end).total_seconds() <= 360:
@@ -227,7 +231,7 @@ def intraday_metrics(frame, now, session):
             continue
         observed_end = group.index[-1].hour * 60 + group.index[-1].minute
         # Avoid dividing by a partial/missing historical session.
-        if observed_end < minute_end - 5 or (session == 'regular' and len(group) < len(current) * .9):
+        if observed_end < minute_end - 5 or (session == 'regular' and len(group) < len(current)):
             continue
         value = float(group.Volume.sum())
         if value > 0:
@@ -276,7 +280,8 @@ def make_plan(row, quote, metrics, news, benchmark, now, session):
         reasons.append('premarket_volume_too_low')
     if quote['price'] <= metrics['vwap'] or metrics['last_closed'] <= metrics['vwap'] or metrics['ema9'] <= metrics['ema20']:
         reasons.append('price_trend_not_confirmed')
-    if benchmark is None or benchmark['change_pct'] < -.75 or quote['change_pct'] - benchmark['change_pct'] < .75:
+    if (benchmark is None or benchmark['change_pct'] < -.75 or quote['change_pct'] - benchmark['change_pct'] < .75
+            or abs((instant(quote['quote_time']) - instant(benchmark['quote_time'])).total_seconds()) > 120):
         reasons.append('market_or_relative_strength')
     context = session_context(now)
     if context['session'] != session or context.get('close', now) - now < timedelta(minutes=45):
