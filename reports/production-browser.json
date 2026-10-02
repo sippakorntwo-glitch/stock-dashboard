@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-10-01T03:39:08.668719+00:00",
-  "run_id": "36810307592",
+  "recorded_at": "2026-10-02T03:36:15.469163+00:00",
+  "run_id": "36959921482",
   "source_sha": "5567cdf7ba48ec296b25f4295bfe9d36b0674f5d",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-09-24.39",
@@ -17,22 +17,22 @@
     {
       "ticker": "MSFT",
       "via": "cell",
-      "bars": 1518
+      "bars": 1519
     },
     {
       "ticker": "AAPL",
       "via": "row",
-      "bars": 1518
+      "bars": 1519
     },
     {
       "ticker": "SPY",
       "via": "manual",
-      "bars": 1513
+      "bars": 1514
     }
   ],
   "volume_split": {
-    "bars": 1518,
-    "mixed_bars": 1508,
+    "bars": 1519,
+    "mixed_bars": 1509,
     "flat_bars": 0,
     "missing_volume": 0,
     "rendered_stacks": [
@@ -226,34 +226,34 @@
     "ticker": "AAPL",
     "period": "1 ปี",
     "interval": "1d",
-    "trend": "mixed",
-    "bar_time": "2026-09-29",
-    "return_percent": 29.944111090163595,
+    "trend": "uptrend",
+    "bar_time": "2026-09-30",
+    "return_percent": 31.26895823990545,
     "levels": {
       "support": 309.8999938964844,
       "resistance": 345.3399963378906,
       "bars": 20,
       "state": "inside",
-      "support_distance_pct": -5.91985439020013,
-      "resistance_distance_pct": 4.839102227310743,
-      "start_time": "2026-08-31",
-      "end_time": "2026-09-28",
-      "latest_time": "2026-09-29",
-      "close": 329.3999938964844,
+      "support_distance_pct": -6.9425247372278065,
+      "resistance_distance_pct": 3.699479830237151,
+      "start_time": "2026-09-01",
+      "end_time": "2026-09-29",
+      "latest_time": "2026-09-30",
+      "close": 333.0199890136719,
       "basis": "prior-selected-window-high-low-max20-min5",
       "reason": ""
     },
-    "volume_ratio": 0.9019643741535399,
+    "volume_ratio": 1.175808738659809,
     "metrics": {
-      "ema20": 330.94711562476397,
-      "ema50": 322.34932445498373,
-      "sma200": 287.95464958190917,
-      "rsi": 50.898701788852684,
-      "macd": 5.204299170814352,
-      "signal": 5.494234333593166,
-      "hist": -0.28993516277881426
+      "ema20": 331.1445321379933,
+      "ema50": 322.7677818886578,
+      "sma200": 288.2333731842041,
+      "rsi": 54.38994585398365,
+      "macd": 4.734817019021818,
+      "signal": 5.342350870678897,
+      "hist": -0.6075338516570783
     },
-    "atr_pct": 2.135353820362485,
+    "atr_pct": 2.1779071410248805,
     "below_chart": true,
     "source_values_checked": true,
     "warnings": [],
@@ -424,7 +424,7 @@
   "stock_brief": {
     "ticker": "AAPL",
     "chart_period": "1 ปี",
-    "state": "ready",
+    "state": "partial",
     "quote_refresh_seconds": 60,
     "news_refresh_seconds": 300,
     "source_quotes": [
@@ -432,34 +432,34 @@
         "kind": "regular",
         "state": "stale",
         "session": "regular",
-        "quote_time": "2026-09-30T20:00:01+00:00"
+        "quote_time": "2026-10-01T20:00:01+00:00"
       },
       {
         "kind": "extended",
         "state": "stale",
         "session": "post",
-        "quote_time": "2026-09-30T23:59:59+00:00"
+        "quote_time": "2026-10-01T23:59:57+00:00"
       }
     ],
-    "news_checked_at": "2026-10-01T03:26:42.246614+00:00",
+    "news_checked_at": "2026-10-01T15:06:36.874385+00:00",
     "source_links": [
+      "https://www.investors.com/market-trend/stock-market-today/dow-jones-sp500-nasdaq-treasury-yields-micron-stock-mu-earnings/?src=A00220&yptr=yahoo",
+      "https://www.barrons.com/articles/apple-stock-ai-agents-siri-iphone-a9ae2667?siteid=yhoof2&yptr=yahoo",
+      "https://247wallst.com/investing/2026/10/01/5-stocks-under-10-to-buy-now-for-immediate-monthly-cash-flow/",
+      "https://247wallst.com/investing/2026/10/01/how-long-would-it-take-1000-invested-in-apple-to-become-10000/",
+      "https://finance.yahoo.com/markets/stocks/articles/jim-cramer-says-buy-apple-071654391.html",
       "https://www.investors.com/news/technology/apple-stock-aapl-iphone-duo-2026-sales-forecast/?src=A00220&yptr=yahoo",
       "https://finance.yahoo.com/markets/stocks/articles/us-stock-futures-slip-ahead-113432814.html",
       "https://www.trefis.com/articles/617167/what-is-the-case-for-waiting-on-qualcomm-stock/2026-09-30",
       "https://finance.yahoo.com/markets/stocks/articles/apple-ceo-makes-surprising-move-180443018.html",
-      "https://finance.yahoo.com/markets/stocks/articles/apple-alphabet-nvidia-lead-powerful-175803008.html",
-      "https://finance.yahoo.com/markets/stocks/articles/why-apple-stock-climbing-today-175413500.html",
-      "https://www.trefis.com/articles/617147/how-much-upside-is-left-in-microsoft-stock/2026-09-30",
-      "https://247wallst.com/investing/2026/09/30/cramer-says-buy-apple-before-new-phone-comes-out-because-apples-duo-model-is-kind-of-astounding/",
-      "https://finance.yahoo.com/video/apples-ceo-john-ternus-plans-135700100.html",
-      "https://finance.yahoo.com/video/openai-releasing-newer-models-faster-133003219.html"
+      "https://finance.yahoo.com/markets/stocks/articles/apple-alphabet-nvidia-lead-powerful-175803008.html"
     ],
     "source_link_count": 10,
     "quote_and_news_clocks_preserved": true,
     "same_selected_chart": true
   },
-  "chart_bars": 1518,
-  "chart_last_bar": "2026-09-29",
+  "chart_bars": 1519,
+  "chart_last_bar": "2026-09-30",
   "deployed_version": "2026-09-24.39",
   "research_improvements": {
     "modes_preserve_ticker": true,
@@ -489,16 +489,16 @@
         "interval": "5m",
         "bars": 1638,
         "visible_bars": 234,
-        "first": 1790602200,
-        "last": 1790798100
+        "first": 1790688600,
+        "last": 1790884500
       },
       {
         "period": "5 ปี",
         "interval": "1d",
-        "bars": 1513,
+        "bars": 1514,
         "visible_bars": 1255,
-        "first": "2021-09-29",
-        "last": "2026-09-29"
+        "first": "2021-09-30",
+        "last": "2026-09-30"
       },
       {
         "period": "10 ปี",
@@ -520,14 +520,14 @@
       {
         "period": "3 วัน",
         "bars": 1638,
-        "mixed_bars": 1562,
+        "mixed_bars": 1564,
         "flat_bars": 0,
         "missing_volume": 0
       },
       {
         "period": "5 ปี",
-        "bars": 1513,
-        "mixed_bars": 1493,
+        "bars": 1514,
+        "mixed_bars": 1494,
         "flat_bars": 0,
         "missing_volume": 0
       },
@@ -601,34 +601,34 @@
         "ticker": "SPY",
         "period": "3 วัน",
         "interval": "5m",
-        "trend": "downtrend",
-        "bar_time": 1790798100,
-        "return_percent": -0.6942205288372527,
+        "trend": "mixed",
+        "bar_time": 1790884500,
+        "return_percent": -0.17834034073818117,
         "levels": {
-          "support": 763.780029296875,
-          "resistance": 767.3800048828125,
+          "support": 763.010009765625,
+          "resistance": 765.6500244140625,
           "bars": 20,
-          "state": "breakdown",
-          "support_distance_pct": 0.17575505629003896,
-          "resistance_distance_pct": 0.6479201544498991,
-          "start_time": 1790792100,
-          "end_time": 1790797800,
-          "latest_time": 1790798100,
-          "close": 762.4400024414062,
+          "state": "inside",
+          "support_distance_pct": -0.13219676707485473,
+          "resistance_distance_pct": 0.2133458340283445,
+          "start_time": 1790878500,
+          "end_time": 1790884200,
+          "latest_time": 1790884500,
+          "close": 764.02001953125,
           "basis": "prior-selected-window-high-low-max20-min5",
           "reason": ""
         },
-        "volume_ratio": 19.882653395508566,
+        "volume_ratio": 8.119895673970202,
         "metrics": {
-          "ema20": 765.8517250814165,
-          "ema50": 766.6007963509267,
-          "sma200": 765.9890338134766,
-          "rsi": 14.887540653334852,
-          "macd": -0.8038845451387715,
-          "signal": -0.4693732567752614,
-          "hist": -0.3345112883635101
+          "ema20": 764.299493638281,
+          "ema50": 763.6996009478644,
+          "sma200": 764.7120544433594,
+          "rsi": 48.78388674444961,
+          "macd": 0.3105750025056295,
+          "signal": 0.4237935746950318,
+          "hist": -0.11321857218940229
         },
-        "atr_pct": 0.08571531112241988,
+        "atr_pct": 0.08901885132448681,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [
@@ -639,13 +639,13 @@
           "actual_price_lines": [
             {
               "key": "support",
-              "price": 763.780029296875,
+              "price": 763.010009765625,
               "visible": true,
               "axisLabelVisible": true
             },
             {
               "key": "resistance",
-              "price": 767.3800048828125,
+              "price": 765.6500244140625,
               "visible": true,
               "axisLabelVisible": true
             }
@@ -659,33 +659,33 @@
         "period": "5 ปี",
         "interval": "1d",
         "trend": "mixed",
-        "bar_time": "2026-09-29",
-        "return_percent": 88.06810654433865,
+        "bar_time": "2026-09-30",
+        "return_percent": 90.00404340601682,
         "levels": {
           "support": 747.7432005092232,
           "resistance": 775.1400146484375,
           "bars": 20,
           "state": "inside",
-          "support_distance_pct": -2.153469174945477,
-          "resistance_distance_pct": 1.431562714820056,
-          "start_time": "2026-08-31",
-          "end_time": "2026-09-28",
-          "latest_time": "2026-09-29",
-          "close": 764.2000122070312,
+          "support_distance_pct": -1.9520349682382032,
+          "resistance_distance_pct": 1.6403773370479158,
+          "start_time": "2026-09-01",
+          "end_time": "2026-09-29",
+          "latest_time": "2026-09-30",
+          "close": 762.6300048828125,
           "basis": "prior-selected-window-high-low-max20-min5",
           "reason": ""
         },
-        "volume_ratio": 0.8362328677164134,
+        "volume_ratio": 1.4080478534544838,
         "metrics": {
-          "ema20": 764.8071608827179,
-          "ema50": 759.6240963089858,
-          "sma200": 715.7068646240234,
-          "rsi": 50.24497398341304,
-          "macd": 1.619511598588815,
-          "signal": 1.4586339567350748,
-          "hist": 0.16087764185374032
+          "ema20": 764.5998126922508,
+          "ema50": 759.7419750765869,
+          "sma200": 716.1109439086914,
+          "rsi": 48.78861743726683,
+          "macd": 1.2547882158697803,
+          "signal": 1.4178648085620158,
+          "hist": -0.1630765926922355
         },
-        "atr_pct": 0.8538549192723927,
+        "atr_pct": 0.8622141428288133,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [],
@@ -788,12 +788,12 @@
         {
           "ticker": "SPY",
           "period": "7 วัน",
-          "percent": -1.5952485217210821,
-          "display": "-1.60%",
-          "first": 1790083800,
-          "last": 1790798100,
-          "start_price": 774.7999877929688,
-          "end_price": 762.4400024414062,
+          "percent": -1.091331806921103,
+          "display": "-1.09%",
+          "first": 1790170200,
+          "last": 1790884500,
+          "start_price": 772.4500122070312,
+          "end_price": 764.02001953125,
           "bars": 546
         },
         {
@@ -810,12 +810,12 @@
         {
           "ticker": "SPY",
           "period": "1 ปี",
-          "percent": 16.38812746847087,
-          "display": "+16.39%",
-          "first": "2025-09-29",
-          "last": "2026-09-29",
-          "start_price": 656.59619140625,
-          "end_price": 764.2000122070312,
+          "percent": 15.713135389757271,
+          "display": "+15.71%",
+          "first": "2025-09-30",
+          "last": "2026-09-30",
+          "start_price": 659.0695190429688,
+          "end_price": 762.6300048828125,
           "bars": 252
         }
       ]
@@ -828,155 +828,155 @@
       "watch_rows": 10,
       "refresh_schedule": "7,37 * * * *",
       "pulse_before": {
-        "provider_state": "refreshing",
+        "provider_state": "partial",
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-10-01T03:30:40.961881+00:00",
-        "quotes_checked_at": "2026-10-01T03:30:08.636797+00:00",
+        "rendered_at": "2026-10-02T03:28:15.059607+00:00",
+        "quotes_checked_at": "2026-10-02T03:27:53.055716+00:00",
         "observations": [
           {
-            "ticker": "BUFP",
+            "ticker": "UFPT",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T19:59:52+00:00",
-            "news_checked_at": "2026-10-01T03:26:33.300979+00:00"
-          },
-          {
-            "ticker": "PBFR",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T19:59:50+00:00",
-            "news_checked_at": "2026-10-01T03:27:10.585058+00:00"
-          },
-          {
-            "ticker": "HEZU",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:00+00:00",
-            "news_checked_at": "2026-10-01T03:27:50.389721+00:00"
-          },
-          {
-            "ticker": "ALLE",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:03+00:00",
-            "news_checked_at": "2026-10-01T03:28:31.749892+00:00"
+            "quote_observed_at": "2026-10-01T20:00:01+00:00",
+            "news_checked_at": "2026-10-01T15:21:53.809675+00:00"
           },
           {
             "ticker": "DRH",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:01+00:00",
-            "news_checked_at": "2026-10-01T03:29:06.850173+00:00"
+            "quote_observed_at": "2026-10-01T20:00:01+00:00",
+            "news_checked_at": "2026-10-01T15:20:53.945008+00:00"
           },
           {
-            "ticker": "HBR",
+            "ticker": "BUFP",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:00+00:00",
-            "news_checked_at": "2026-10-01T03:29:38.442725+00:00"
+            "quote_observed_at": "2026-10-01T19:57:40+00:00",
+            "news_checked_at": "2026-10-01T15:23:53.959421+00:00"
           },
           {
-            "ticker": "MCS",
+            "ticker": "QCJA",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:02+00:00",
-            "news_checked_at": "2026-10-01T03:30:08.872016+00:00"
-          },
-          {
-            "ticker": "UFPT",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:01+00:00",
-            "news_checked_at": null
-          },
-          {
-            "ticker": "WTS",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:03+00:00",
-            "news_checked_at": null
+            "quote_observed_at": "2026-10-01T19:51:29+00:00",
+            "news_checked_at": "2026-10-01T15:24:53.885137+00:00"
           },
           {
             "ticker": "IEX",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:03:01+00:00",
-            "news_checked_at": null
+            "quote_observed_at": "2026-10-01T20:02:35+00:00",
+            "news_checked_at": "2026-10-01T15:22:53.779480+00:00"
+          },
+          {
+            "ticker": "NBOS",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:00:00+00:00",
+            "news_checked_at": "2026-10-01T15:25:53.792889+00:00"
+          },
+          {
+            "ticker": "EMR",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:04:36+00:00",
+            "news_checked_at": "2026-10-01T15:26:53.783976+00:00"
+          },
+          {
+            "ticker": "IBB",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:00:01+00:00",
+            "news_checked_at": "2026-10-01T15:17:54.043444+00:00"
+          },
+          {
+            "ticker": "QDVO",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:00:00+00:00",
+            "news_checked_at": "2026-10-01T15:18:54.139615+00:00"
+          },
+          {
+            "ticker": "TOPT",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:00:00+00:00",
+            "news_checked_at": "2026-10-01T15:19:53.776426+00:00"
           }
         ]
       },
       "pulse_detail": {
-        "ticker": "BUFP",
+        "ticker": "UFPT",
         "criteria_explained": 3,
         "news_detail_opened": true,
         "news_links": 0,
         "provider_success_required": false
       },
       "pulse_after": {
-        "provider_state": "refreshing",
+        "provider_state": "partial",
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-10-01T03:31:13.988087+00:00",
-        "quotes_checked_at": "2026-10-01T03:30:41.098713+00:00",
+        "rendered_at": "2026-10-02T03:29:07.173156+00:00",
+        "quotes_checked_at": "2026-10-02T03:28:43.968555+00:00",
         "observations": [
           {
-            "ticker": "BUFP",
+            "ticker": "UFPT",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T19:59:52+00:00",
-            "news_checked_at": "2026-10-01T03:26:33.300979+00:00"
-          },
-          {
-            "ticker": "PBFR",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T19:59:50+00:00",
-            "news_checked_at": "2026-10-01T03:27:10.585058+00:00"
-          },
-          {
-            "ticker": "HEZU",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:00+00:00",
-            "news_checked_at": "2026-10-01T03:27:50.389721+00:00"
-          },
-          {
-            "ticker": "ALLE",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:03+00:00",
-            "news_checked_at": "2026-10-01T03:28:31.749892+00:00"
+            "quote_observed_at": "2026-10-01T20:00:01+00:00",
+            "news_checked_at": "2026-10-01T15:21:53.809675+00:00"
           },
           {
             "ticker": "DRH",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:01+00:00",
-            "news_checked_at": "2026-10-01T03:29:06.850173+00:00"
+            "quote_observed_at": "2026-10-01T20:00:01+00:00",
+            "news_checked_at": "2026-10-01T15:20:53.945008+00:00"
           },
           {
-            "ticker": "HBR",
+            "ticker": "BUFP",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:00+00:00",
-            "news_checked_at": "2026-10-01T03:29:38.442725+00:00"
+            "quote_observed_at": "2026-10-01T19:57:40+00:00",
+            "news_checked_at": "2026-10-01T15:23:53.959421+00:00"
           },
           {
-            "ticker": "MCS",
+            "ticker": "QCJA",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:02+00:00",
-            "news_checked_at": "2026-10-01T03:30:08.872016+00:00"
-          },
-          {
-            "ticker": "UFPT",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:01+00:00",
-            "news_checked_at": "2026-10-01T03:30:41.372077+00:00"
-          },
-          {
-            "ticker": "WTS",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:00:03+00:00",
-            "news_checked_at": null
+            "quote_observed_at": "2026-10-01T19:51:29+00:00",
+            "news_checked_at": "2026-10-01T15:24:53.885137+00:00"
           },
           {
             "ticker": "IEX",
             "assessment": "unknown",
-            "quote_observed_at": "2026-09-30T20:03:01+00:00",
-            "news_checked_at": null
+            "quote_observed_at": "2026-10-01T20:02:35+00:00",
+            "news_checked_at": "2026-10-01T15:22:53.779480+00:00"
+          },
+          {
+            "ticker": "NBOS",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:00:00+00:00",
+            "news_checked_at": "2026-10-01T15:25:53.792889+00:00"
+          },
+          {
+            "ticker": "EMR",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:04:36+00:00",
+            "news_checked_at": "2026-10-01T15:26:53.783976+00:00"
+          },
+          {
+            "ticker": "IBB",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:00:01+00:00",
+            "news_checked_at": "2026-10-01T15:17:54.043444+00:00"
+          },
+          {
+            "ticker": "QDVO",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:00:00+00:00",
+            "news_checked_at": "2026-10-01T15:18:54.139615+00:00"
+          },
+          {
+            "ticker": "TOPT",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-01T20:00:00+00:00",
+            "news_checked_at": "2026-10-01T15:19:53.776426+00:00"
           }
         ]
       },
-      "first_rank": "01 · BUFP · 90/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
-      "clicked": "BUFP",
-      "chart_bars": 575,
+      "first_rank": "01 · UFPT · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
+      "clicked": "UFPT",
+      "chart_bars": 1519,
       "filter_independent": true,
       "completed_search_before_selection": true,
       "single_click": true,
@@ -1051,7 +1051,7 @@
         "canvas_index": 1,
         "canvas": {
           "x": 398,
-          "y": 575.90625,
+          "y": 409.90625,
           "width": 868,
           "height": 180
         },
@@ -1064,7 +1064,7 @@
           },
           {
             "x": 397,
-            "y": 153.734375,
+            "y": -12.265625,
             "width": 946,
             "height": 900
           },
@@ -1077,17 +1077,17 @@
         ],
         "visible": {
           "left": 414,
-          "top": 591.90625,
+          "top": 425.90625,
           "right": 1250,
-          "bottom": 739.90625
+          "bottom": 573.90625
         },
         "start": {
           "x": 706.5999999999999,
-          "y": 665.90625
+          "y": 499.90625
         },
         "end": {
           "x": 957.4,
-          "y": 665.90625
+          "y": 499.90625
         },
         "canvas_hits": [
           true,
@@ -1099,7 +1099,7 @@
       "intraday": {
         "ticker": "SPY",
         "interval": "5m",
-        "time": "1790784600",
+        "time": "1790871000",
         "timezone": "America/New_York"
       }
     },
@@ -1107,16 +1107,16 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20261001T023419Z-2e134ced",
+      "source_generation": "generations/20261001T230133Z-fd47e8a7",
       "counts": {
         "universe": 9876,
         "prices": 9876,
         "histories": 9876,
         "info": 9876,
-        "industry": 9526,
+        "industry": 9533,
         "dividends_checked": 9876,
-        "dividends_with_payments": 6091,
-        "dividends_no_payments": 3785,
+        "dividends_with_payments": 6097,
+        "dividends_no_payments": 3779,
         "financial_statements": 4160,
         "unattempted_info": 0,
         "unattempted_dividends": 0
@@ -1132,7 +1132,7 @@
           "ticker": "AEON",
           "industry_state": "available",
           "dividend_state": "no_payments",
-          "history_bars": 938,
+          "history_bars": 939,
           "company_analysis": {
             "ticker": "AEON",
             "groups": 9,
@@ -1177,14 +1177,14 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20261001T023419Z-2e134ced"
+            "source_generation": "generations/20261001T230133Z-fd47e8a7"
           }
         },
         {
           "ticker": "AESP",
           "industry_state": "available",
           "dividend_state": "no_payments",
-          "history_bars": 63,
+          "history_bars": 64,
           "company_analysis": {
             "ticker": "AESP",
             "groups": 9,
@@ -1218,14 +1218,14 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20261001T023419Z-2e134ced"
+            "source_generation": "generations/20261001T230133Z-fd47e8a7"
           }
         },
         {
           "ticker": "SPY",
           "industry_state": "available",
           "dividend_state": "available",
-          "history_bars": 1513,
+          "history_bars": 1514,
           "company_analysis": {
             "ticker": "SPY",
             "fund_specific_table": true
@@ -1245,57 +1245,57 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20261001T023419Z-2e134ced",
+      "source_generation": "generations/20261001T230133Z-fd47e8a7",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
-          "price_asof": "2026-09-29",
+          "price_asof": "2026-09-30",
           "returns": {
-            "1 Day (%)": -2.6595745160542417,
-            "3 Days (%)": -1.9409440553182833,
-            "7 Days (%)": -2.0022047685610445,
-            "1 Month (%)": 3.0340886202943285,
-            "6 Months (%)": 32.63176158283041,
-            "1 Year (%)": 29.944111090163595,
-            "3 Years (%)": 94.99749112182307,
-            "5 Years (%)": 136.44724713164385
+            "1 Day (%)": 1.098966358306952,
+            "3 Days (%)": -2.3602246276948624,
+            "7 Days (%)": -1.7582222489504362,
+            "1 Month (%)": 4.166398591819531,
+            "6 Months (%)": 35.26914097753298,
+            "1 Year (%)": 31.26895823990545,
+            "3 Years (%)": 97.1404479487945,
+            "5 Years (%)": 141.29255287451468
           }
         },
         {
           "ticker": "MSFT",
-          "price_asof": "2026-09-29",
+          "price_asof": "2026-09-30",
           "returns": {
-            "1 Day (%)": -0.051060399238389564,
-            "3 Days (%)": 2.215170594569682,
-            "7 Days (%)": 3.0742421145669274,
-            "1 Month (%)": -0.8899261155290494,
-            "6 Months (%)": 43.23584365637176,
-            "1 Year (%)": -0.28224542634455174,
-            "3 Years (%)": 64.9661661907216,
-            "5 Years (%)": 86.73145956217714
+            "1 Day (%)": 0.774134121568193,
+            "3 Days (%)": -0.6335041951989862,
+            "7 Days (%)": 2.2507604298561024,
+            "1 Month (%)": -0.12268121567790002,
+            "6 Months (%)": 43.46404377935944,
+            "1 Year (%)": -0.16025012706666342,
+            "3 Years (%)": 66.24322557224689,
+            "5 Years (%)": 89.56538726511734
           }
         },
         {
           "ticker": "SPY",
-          "price_asof": "2026-09-29",
+          "price_asof": "2026-09-30",
           "returns": {
-            "1 Day (%)": -0.18416336927525867,
-            "3 Days (%)": -0.3884330270861658,
-            "7 Days (%)": 0.3295316674211124,
-            "1 Month (%)": -0.422735930335183,
-            "6 Months (%)": 21.129692176358738,
-            "1 Year (%)": 16.38812746847087,
-            "3 Years (%)": 85.36730273550562,
-            "5 Years (%)": 88.06810654433865
+            "1 Day (%)": -0.20544455628631608,
+            "3 Days (%)": -1.1304817500643716,
+            "7 Days (%)": -1.4052999505090535,
+            "1 Month (%)": -0.6273119986651587,
+            "6 Months (%)": 21.286355048452688,
+            "1 Year (%)": 15.713135389757271,
+            "3 Years (%)": 84.98647570290072,
+            "5 Years (%)": 90.00404340601682
           }
         },
         {
           "ticker": "AAC",
-          "price_asof": "2026-09-29",
+          "price_asof": "2026-09-30",
           "returns": {
-            "1 Day (%)": 0.4965262388296088,
+            "1 Day (%)": 0.0,
             "3 Days (%)": 0.4965262388296088,
-            "7 Days (%)": 0.4965262388296088,
+            "7 Days (%)": 0.39682502138671527,
             "1 Month (%)": 0.5964161375717758,
             "6 Months (%)": null,
             "1 Year (%)": null,
@@ -1308,7 +1308,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-10-01T03:32:59.357862+00:00",
+      "verified_at": "2026-10-02T03:30:37.343953+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -1320,7 +1320,7 @@
           "บริษัท / กองทุน",
           "หมวดหมู่ / คุณภาพข้อมูล"
         ],
-        "rows": 1194,
+        "rows": 1198,
         "minimum_price": 5,
         "maximum_rsi": 70,
         "minimum_roe": 10,
@@ -1357,22 +1357,22 @@
       },
       "category_filter": {
         "category": "Derivative Income",
-        "rows": 255,
+        "rows": 258,
         "QQQI": true
       },
       "combined_numeric_filter": {
-        "rows": 135,
+        "rows": 134,
         "minimum_1m": 0
       },
       "invalid_bounds_handled": true,
       "annualized_csv_verified": true,
       "empty_results_handled": true,
-      "QQQI_chart_bars": 669,
+      "QQQI_chart_bars": 670,
       "auto_refresh_verified": {
         "session": "closed",
         "state": "scheduled",
         "effective_seconds": 1800.0,
-        "next_due": 1790827541.3448439,
+        "next_due": 1790913782.4064126,
         "second_observation": false,
         "reason": "provider session or request budget requires a conservative wait"
       },
@@ -1383,18 +1383,18 @@
           30
         ],
         "initial": {
-          "state": "scheduled",
+          "state": "updating",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
           "nextDue": "1790827541.3448439",
-          "busy": "false",
-          "session": "closed"
+          "busy": "true",
+          "session": "unknown"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "1800",
-          "nextDue": "1790827541.3448439",
+          "nextDue": "1790913782.4064126",
           "busy": "false",
           "session": "closed"
         },
@@ -1402,7 +1402,7 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1790827541.3448439",
+          "nextDue": "1790913782.4064126",
           "busy": "false",
           "session": "closed"
         },
@@ -1410,13 +1410,13 @@
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20261001T023419Z-2e134ced",
-        "generation_after": "generations/20261001T023419Z-2e134ced"
+        "generation_before": "generations/20261001T230133Z-fd47e8a7",
+        "generation_after": "generations/20261001T230133Z-fd47e8a7"
       },
       "minute_price": {
-        "price": 55.73,
-        "bar_time": "2026-09-30T23:51:00+00:00",
-        "fetched_at": "2026-10-01T03:35:41.344182+00:00",
+        "price": 55.74,
+        "bar_time": "2026-10-01T23:59:00+00:00",
+        "fetched_at": "2026-10-02T03:33:02.405724+00:00",
         "state": "stale"
       },
       "theme": {
@@ -1431,8 +1431,8 @@
             "box": {
               "left": 48.390625,
               "right": 119.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 535.296875,
+              "bottom": 575.296875,
               "width": 390,
               "height": 844
             }
@@ -1442,8 +1442,8 @@
             "box": {
               "left": 135.390625,
               "right": 215.390625,
-              "top": 541.296875,
-              "bottom": 581.296875,
+              "top": 535.296875,
+              "bottom": 575.296875,
               "width": 390,
               "height": 844
             }
