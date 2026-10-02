@@ -11,3 +11,6 @@ requests==2.34.2
 # Explicitly preserve the date/time packages already resolved by passing CI.
 python-dateutil==2.9.0.post0
 tzdata==2026.3
+# Exchange sessions for the independent short-term screening universe.
+pandas-market-calendars==5.4.0
+exchange-calendars==4.11.1

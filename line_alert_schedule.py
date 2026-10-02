@@ -157,7 +157,7 @@ def schedule_summary(quota, now):
 
 def deliver_scheduled(payload, store, client, recipient, now, message_builder, clock):
     from line_alerts import AlertError, fresh, opaque_key, stamp, validate_messages
-    from stock_alert_briefing import select_rows
+    from short_term_engine import MODEL
     import uuid
     state = store.read()
     scope = opaque_key(recipient, 'recipient-scope-v1')
@@ -197,17 +197,15 @@ def deliver_scheduled(payload, store, client, recipient, now, message_builder, c
         return {'status': 'scheduled_round_already_processed', 'messages': 0}
     if not fresh(payload.get('computed_at'), now, 35 * 60):
         return {'status': 'ranking_not_current', 'messages': 0}
-    rows = select_rows(payload, limit=5)
-    if len(rows) != 5:
-        raise AlertError('A scheduled report requires five validated stocks')
     if message_builder is None:
         raise AlertError('Scheduled delivery requires a report builder')
     client.verify()
     payload['report_session'] = slot['session']
     payload['schedule_slot'] = slot
     bundle = message_builder(payload, [], now, 'scheduled')
-    if not isinstance(bundle, dict) or bundle.get('stocks') != 5:
-        raise AlertError('Scheduled report must contain five stocks')
+    if (not isinstance(bundle, dict) or bundle.get('model') != MODEL
+            or type(bundle.get('stocks')) is not int or not 0 <= bundle['stocks'] <= 5):
+        raise AlertError('Scheduled report requires zero to five short-term plans')
     validate_messages(bundle.get('messages'))
     sent_at = clock()
     if current_slot(sent_at) != slot or not fresh(payload['computed_at'], sent_at, 35 * 60):
@@ -216,6 +214,17 @@ def deliver_scheduled(payload, store, client, recipient, now, message_builder, c
                  stamp(bundle.get('expires_at')) or sent_at + timedelta(minutes=2))
     if sent_at >= expiry:
         raise AlertError('Scheduled report prices expired before delivery; nothing sent')
+    keys = [key]
+    if not bundle['stocks']:
+        # Monthly quota is a ceiling, never an incentive to manufacture picks.
+        # One empty/data-failure summary per session; keep scanning later slots.
+        empty_key = opaque_key(recipient, 'short-term-empty-v1:' + slot['trading_date'] + ':' + slot['session'])
+        if empty_key in bucket['seen']:
+            bucket['seen'][key] = sent_at.isoformat()
+            store.write(state)
+            return {'status': 'no_setup_summary_already_sent', 'messages': 0, 'stocks': 0,
+                    'quota_remaining': remaining}
+        keys.append(empty_key)
     # Check again after report preparation; the API can also include other OA use.
     quota = client.quota_snapshot()
     remaining = quota_remaining(bucket, quota, sent_at)
@@ -223,14 +232,15 @@ def deliver_scheduled(payload, store, client, recipient, now, message_builder, c
         store.write(state)
         return {'status': 'quota_exhausted', 'messages': 0}
     bucket['quota_ledger']['conservative_used'] += 1
-    pending = {'keys': [key], 'retry_key': str(uuid.uuid4()), 'text': '',
+    pending = {'keys': keys, 'retry_key': str(uuid.uuid4()), 'text': '',
                'created_at': sent_at.isoformat(), 'expires_at': expiry.isoformat(),
                'test': False, 'scheduled_slot': slot, 'messages': bundle['messages']}
     bucket['pending'] = pending
     store.write(state)
     client.push(pending)
-    bucket['seen'][key] = sent_at.isoformat()
+    for delivered_key in keys:
+        bucket['seen'][delivered_key] = sent_at.isoformat()
     bucket['pending'] = None
     store.write(state)
-    return {'status': 'accepted_by_line', 'messages': 1, 'stocks': 5,
+    return {'status': 'accepted_by_line', 'messages': 1, 'stocks': bundle['stocks'],
             'session': slot['session'], 'slot': slot['start'], 'quota_remaining': remaining - 1}

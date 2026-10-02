@@ -51,6 +51,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_line_alert*.py'
           python -m unittest discover -s tests -p 'test_stock_alert*.py'
+          python -m unittest discover -s tests -p 'test_short_term*.py'
       - name: Deliver the due pre-market or regular report within monthly quota
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

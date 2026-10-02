@@ -33,7 +33,8 @@ class ScheduledClient(Client):
 
 
 def bundle(payload, tickers, now, mode):
-    return {'stocks': 5, 'messages': [{'type': 'text', 'text': 'test scheduled report'}],
+    from short_term_engine import MODEL
+    return {'model': MODEL, 'stocks': 5, 'messages': [{'type': 'text', 'text': 'test scheduled report'}],
             'expires_at': (now + timedelta(minutes=2)).isoformat()}
 
 
@@ -117,6 +118,36 @@ class ScheduledDeliveryTests(unittest.TestCase):
         next_round = REGULAR + timedelta(minutes=30)
         self.assertEqual(self.send(store, client, next_round)['messages'], 1)
         self.assertEqual(len(client.sent), 2)
+
+    def test_short_term_reports_allow_one_plan_and_do_not_pad_from_daily_board(self):
+        store = Store(); client = ScheduledClient(store)
+        def one(*args):
+            return dict(bundle(*args), stocks=1)
+        payload = five_board(REGULAR); payload['items'] = []
+        result = self.send(store, client, payload=payload, builder=one)
+        self.assertEqual(result['stocks'], 1)
+
+    def test_empty_summary_only_once_per_session_but_later_plan_still_sends(self):
+        store = Store(); client = ScheduledClient(store)
+        def empty(*args):
+            return dict(bundle(*args), stocks=0)
+        first = self.send(store, client, builder=empty)
+        self.assertEqual(first['messages'], 1)
+        self.assertEqual(first['stocks'], 0)
+        next_round = REGULAR + timedelta(minutes=30)
+        second = self.send(store, client, next_round, builder=empty)
+        self.assertEqual(second['status'], 'no_setup_summary_already_sent')
+        self.assertEqual(len(client.sent), 1)
+        later = REGULAR + timedelta(minutes=90)
+        self.assertEqual(self.send(store, client, later)['messages'], 1)
+
+    def test_wrong_model_cannot_sneak_daily_watch_picks_into_scheduled_report(self):
+        store = Store(); client = ScheduledClient(store)
+        def legacy(*args):
+            return dict(bundle(*args), model='existing-100-point-pullback-v1')
+        with self.assertRaises(alerts.AlertError):
+            self.send(store, client, builder=legacy)
+        self.assertFalse(client.sent)
 
     def test_uncertain_response_retries_same_body_and_quota_charge_once(self):
         store = Store(); client = ScheduledClient(store); client.fail = True

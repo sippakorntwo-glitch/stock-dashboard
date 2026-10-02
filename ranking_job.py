@@ -94,6 +94,8 @@ def main():
         counts['watch_only']=len(candidates)-counts['entry_confirmed']
         payload=make_payload(candidates,counts,excluded,manifest,now=now,refresh_report=report)
         payload['entry_policy']=POLICY
+        from short_term_engine import build_pool
+        payload['short_term_pool']=build_pool(cache,universe,now.to_pydatetime())
         output=Path(args.output);output.parent.mkdir(parents=True,exist_ok=True)
         output.write_text(json.dumps(payload,ensure_ascii=False,allow_nan=False),encoding='utf-8')
         if args.publish:publish(config,payload)

@@ -100,6 +100,9 @@ def text_chunks(text, limit=4400):
 
 
 def build_message_bundle(payload, preferred_tickers, now, mode, store):
+    if mode == 'scheduled':
+        from short_term_report import build_bundle
+        return build_bundle(payload, now, store)
     from line_alerts import AlertError
     from stock_alert_briefing import build_briefing, format_briefing_text, select_rows
     from stock_alert_image import render_briefing
