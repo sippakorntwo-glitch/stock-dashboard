@@ -57,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-          ALERT_MODE: ${{ inputs.mode || 'schedule-check' }}
+          ALERT_MODE: ${{ inputs.mode || 'scheduled' }}
         run: python line_alerts.py --mode "$ALERT_MODE"
       - name: Preserve the report that was prepared
         if: always()
