@@ -92,3 +92,40 @@ pre-market/regular session; previously delivered event-only summaries are
 deduplicated. Full reports and rejection counts are auditable. A new model has
 no measured forward profitability; assess actual filled setups and net costs,
 not subsequent highs or unfilled targets, when evaluating it.
+
+
+## Numbered Thai decision reports (2026-10-03)
+
+The same ordered list supplies LINE text, PNG and the first five dashboard
+expanders. Each stock has company/industry, dated revenue growth and net margin
+when the statements support them, up to two translated headlines with original
+source links, business implications, price trend, and a conditional plan or
+reasons to wait. RVOL/VWAP/SMA definitions appear once.
+
+Daily SMA20/50/200 use completed sessions only; fewer than the required bars
+leave a value missing. Extreme differences between the latest daily price and
+SMA20 suspend the displayed averages pending a price-basis review (for example
+an incompletely restated corporate action). This is separate from intraday
+VWAP, which approximates session VWAP from 5-minute typical prices and volume.
+Company statements keep their actual fiscal periods and source; undated profile
+ratios cannot support growth claims. Business directions are conditional
+mechanisms, not invented management forecasts.
+
+Company evidence and daily averages travel as bounded gzip/base64 data inside
+the 1000-stock pool so the ranking remains below the provider's 1 MB limit.
+The scanner validates ticker identity and expands this before selecting stocks.
+
+Thai translation runs offline before the final quote refresh. Public original
+headlines and opening company descriptions are the only model inputs. The CPU
+model is official Qwen3-4B Q4_K_M (Apache-2.0), pinned at bc640142c66e1fdd12af0bd68f40445458f3869b;
+the official llama.cpp runtime is b11349 (MIT). Downloads are SHA-256 checked.
+Exact-source translations are cached, reviewed finance translations have
+priority, and automatic results are checked for numbers, negation and selected
+financial terms. The model has no tools or credentials and cannot change a
+trade signal. Missing/failed translations retain the visibly labeled original.
+Source: https://huggingface.co/Qwen/Qwen3-4B-GGUF
+Runtime: https://github.com/ggml-org/llama.cpp
+
+The requested format-update sample has a durable, recipient-scoped version key.
+It shares the same monthly quota and two-extra-round daily cap; reruns cannot
+send the sample again. Scheduled invocations remain in monitor mode.

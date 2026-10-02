@@ -84,7 +84,7 @@ def render_event_board():
     import dashboard_runtime as a
     import pandas as pd
     from short_term_report import LABELS, thai_time, report_sections, report_rows
-    from short_term_context import GLOSSARY
+    from short_term_context import GLOSSARY, daily_values
     from market_pulse import _safe_url
     from market_pulse_ui import literal_text
     from ranking_board import queue_selection
@@ -119,9 +119,9 @@ def render_event_board():
             status = 'แผนมีเงื่อนไข' if current else 'รอฟื้นตัว' if e['status'] == 'recovery_watch' else 'ข่าว/รอติดตาม'
             rows.append({'ลำดับ': index, 'หุ้น': e['ticker'], 'สถานะ': status, 'หมวด': e['industry'],
                          'ราคา USD': e['price'], 'เปลี่ยนแปลง %': e['change_pct'], 'RVOL': e.get('rvol'),
-                         'VWAP': e.get('vwap'), 'SMA20': (e.get('daily_context') or {}).get('sma20'),
-                         'SMA50': (e.get('daily_context') or {}).get('sma50'),
-                         'SMA200': (e.get('daily_context') or {}).get('sma200'),
+                         'VWAP': e.get('vwap'), 'SMA20': daily_values(e).get('sma20'),
+                         'SMA50': daily_values(e).get('sma50'),
+                         'SMA200': daily_values(e).get('sma200'),
                          'ราคา ณ (ไทย)': thai_time(e['quote_time']),
                          'ข่าว': _safe_url(e['news'][0]['url'])})
         if rows:

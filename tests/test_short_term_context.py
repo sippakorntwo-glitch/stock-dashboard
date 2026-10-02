@@ -7,13 +7,24 @@ import unittest
 from unittest.mock import patch
 
 import pandas as pd
-from short_term_context import daily_context, company_context, company_view, trend_view
+from short_term_context import daily_context, company_context, company_view, trend_view, pack_context, unpack_context
 from short_term_report import report_rows, format_report, render_report
 from thai_news_translation import valid_translation, decode_translations, enrich_prepared, REVIEWED
 from test_short_term_events import wdc_report
 
 
 class ContextTests(unittest.TestCase):
+    def test_context_compression_retains_evidence_and_rejects_foreign_symbols(self):
+        rows = [{'ticker': 'AAA', 'company': {'business_en': 'Acme makes devices.'},
+                 'daily_context': {'sma20': 5.1, 'sma50': None}}]
+        original = deepcopy(rows)
+        blob = pack_context(rows)
+        pool = {'items': rows, 'context_version': 2, 'context_blob': blob}
+        self.assertNotIn('company', rows[0])
+        self.assertEqual(unpack_context(pool), original)
+        pool['items'][0]['ticker'] = 'BBB'
+        with self.assertRaises(ValueError): unpack_context(pool)
+
     def test_sma_uses_exact_completed_windows_and_does_not_invent_200_days(self):
         frame = pd.DataFrame({'Close': range(1, 211)}, index=pd.date_range('2025-01-01', periods=210))
         value = daily_context(frame)
@@ -38,6 +49,8 @@ class ContextTests(unittest.TestCase):
         row = {'price': 400, 'daily_context': {'sma20': 100, 'sma50': 90},
                'reasons': ['daily_price_scale_mismatch']}
         self.assertIn('ไม่สอดคล้อง', trend_view(row)['daily'])
+        self.assertIn('ไม่สอดคล้อง', trend_view({'price': 12, 'previous_close': 12.57,
+                      'daily_context': {'sma20': 78, 'sma50': 80}})['daily'])
 
     def test_numbering_is_shared_across_plan_event_text_and_image(self):
         report = wdc_report()

@@ -4,7 +4,47 @@ import re
 
 from short_term_engine import number, instant
 
-CONTEXT_VERSION = 1
+CONTEXT_VERSION = 2
+
+
+def pack_context(rows):
+    """Keep public ranking below GitHub's 1 MB Contents limit, without data loss."""
+    import base64
+    import gzip
+    import json
+    data = {r['ticker']: {key: r.pop(key) for key in ('company', 'daily_context') if key in r}
+            for r in rows}
+    raw = json.dumps(data, ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode()
+    return base64.b64encode(gzip.compress(raw, mtime=0)).decode()
+
+
+def unpack_context(pool):
+    import base64
+    from copy import deepcopy
+    import json
+    import zlib
+    rows = deepcopy(pool['items'])
+    if not pool.get('context_blob'):
+        return rows
+    if pool.get('context_version') != CONTEXT_VERSION:
+        raise ValueError('Unsupported company context version')
+    try:
+        compressed = base64.b64decode(pool['context_blob'], validate=True)
+        decoder = zlib.decompressobj(31)
+        raw = decoder.decompress(compressed, 4_000_001)
+        if len(raw) > 4_000_000 or not decoder.eof or decoder.unused_data:
+            raise ValueError('Company context size or envelope is invalid')
+        data = json.loads(raw)
+        if not isinstance(data, dict) or set(data) != {r['ticker'] for r in rows}:
+            raise ValueError('Company context symbols differ from the universe')
+        for row in rows:
+            details = data[row['ticker']]
+            if not isinstance(details, dict) or set(details) - {'company', 'daily_context'}:
+                raise ValueError('Invalid company context fields')
+            row.update(details)
+    except (ValueError, TypeError, zlib.error) as exc:
+        raise ValueError('Cannot decode company context') from exc
+    return rows
 
 
 def daily_context(frame):
@@ -45,8 +85,21 @@ def price_text(value):
     return '—' if n is None else f'${n:,.2f}'
 
 
+def daily_values(row):
+    daily = dict(row.get('daily_context') or {})
+    close, average = number(row.get('previous_close')), number(daily.get('sma20'))
+    # Corporate actions can appear in recent prices before the historic series
+    # is restated. An extreme discontinuity needs review, not a bearish signal.
+    if ('daily_price_scale_mismatch' in row.get('reasons', [])
+            or close and average and not .55 <= close / average <= 1.8):
+        daily.update(scale_review=True, sma20=None, sma50=None, sma200=None)
+    return daily
+
+
 def sma_line(row):
-    daily = row.get('daily_context') or {}
+    daily = daily_values(row)
+    if daily.get('scale_review'):
+        return 'SMA: รอตรวจฐานราคาที่เปลี่ยนมาก ก่อนเทียบค่าเฉลี่ยย้อนหลัง'
     if not daily:
         return 'SMA รายวัน: รอข้อมูลรอบใหม่'
     return ('SMA 20/50/200 วัน: ' + ' / '.join(price_text(daily.get('sma' + str(n))) for n in (20, 50, 200))
@@ -54,7 +107,7 @@ def sma_line(row):
 
 
 def trend_view(row):
-    daily = row.get('daily_context') or {}
+    daily = daily_values(row)
     price, vwap = number(row.get('price')), number(row.get('vwap'))
     short = ('วันนี้ยังอ่อนตัว' if row.get('change_pct', 0) <= -3 else
              'วันนี้มีแรงส่งบวก' if row.get('change_pct', 0) >= 1 else 'วันนี้ทิศทางยังไม่ชัด')
@@ -62,7 +115,7 @@ def trend_view(row):
         short += ' แต่กลับมายืนเหนือ VWAP' if row.get('change_pct', 0) < 0 and price > vwap else (
             ' และราคาเหนือ VWAP' if price > vwap else ' และราคายังต่ำกว่า VWAP')
     s20, s50, s200 = [number(daily.get('sma' + str(n))) for n in (20, 50, 200)]
-    comparable = 'daily_price_scale_mismatch' not in row.get('reasons', [])
+    comparable = not daily.get('scale_review')
     if price and s20 and s50 and comparable:
         if price > s20 > s50:
             middle = 'โครงสร้างรายวันยังเอนขึ้น: ราคา > SMA20 > SMA50'
@@ -97,6 +150,8 @@ def company_view(row):
         outlook += '; ยังไม่มีการเติบโตของรายได้ที่ยืนยันงวดได้พอให้สรุปการขยายธุรกิจ'
     else:
         outlook = 'ยังไม่มีงบที่ยืนยันงวดได้พอประเมินการเติบโต; ใช้ข่าวและแนวโน้มราคาเป็นเงื่อนไขติดตามก่อน'
+    if margin is not None and abs(margin) > .5:
+        outlook += '; อัตรากำไรสูงหรือต่ำผิดปกติ ต้องตรวจรายการพิเศษก่อนใช้คาดการณ์'
     impacts = [n.get('industry_impact') for n in row.get('news', []) if n.get('industry_impact')]
     if impacts:
         outlook += ' · ' + impacts[0]['impact_th']

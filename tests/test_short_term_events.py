@@ -110,6 +110,17 @@ class UrgentDeliveryTests(unittest.TestCase):
         self.assertEqual(bucket['event_budget']['used'], 1)
         self.assertEqual(bucket['quota_ledger']['conservative_used'], 1)
 
+    def test_requested_new_format_can_show_seen_news_once_within_existing_budget(self):
+        self.send()
+        result = deliver_urgent(self.report, {}, self.store, self.client, RECIPIENT, NOW,
+                                self.builder, lambda: NOW, presentation='format-unit-test')
+        self.assertEqual(result['messages'], 1)
+        again = deliver_urgent(self.report, {}, self.store, self.client, RECIPIENT, NOW,
+                               self.builder, lambda: NOW, presentation='format-unit-test')
+        self.assertEqual(again['status'], 'presentation_already_sent')
+        bucket = next(iter(self.store.value['recipients'].values()))
+        self.assertEqual(bucket['quota_ledger']['conservative_used'], 2)
+
     def test_two_additional_pushes_daily_and_overall_quota_are_hard_limits(self):
         self.send()
         report = deepcopy(self.report); report['events'][0]['event_id'] = 'other-story'

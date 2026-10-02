@@ -143,9 +143,12 @@ def build_pool(cache, universe, now):
                      'previous_high': float(frame.High.iloc[-1]),
                      'daily_context': daily_context(completed),
                      'company': company_context(ticker, info, info_meta or {}, bundle, now)})
+    from short_term_context import pack_context, CONTEXT_VERSION
+    context_blob = pack_context(rows)
     return {'model': MODEL, 'computed_at': instant(now).isoformat(), 'scope': 'most-liquid-common-stocks',
             'universe_checked': len(universe), 'eligible_before_cap': len(eligible),
-            'limit': MAX_POOL, 'minimum_entry_price': MIN_ENTRY_PRICE, 'context_version': 1,
+            'limit': MAX_POOL, 'minimum_entry_price': MIN_ENTRY_PRICE, 'context_version': CONTEXT_VERSION,
+            'context_blob': context_blob,
             'excluded': dict(rejected), 'items': rows}
 
 
@@ -169,7 +172,8 @@ def validate_pool(pool, now):
                 or (number(row.get('previous_high')) or 0) <= 0):
             raise ValueError('Invalid short-term stock identity or baseline')
         seen.add(ticker)
-    return pool['items']
+    from short_term_context import unpack_context
+    return unpack_context(pool)
 
 
 def quote_observation(raw, ticker, now, session):

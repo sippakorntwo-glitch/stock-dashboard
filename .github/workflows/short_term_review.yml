@@ -43,7 +43,7 @@ jobs:
           data, _ = _fetch_ranking(os.environ['GITHUB_REPOSITORY'])
           try:
               if ((data or {}).get('short_term_pool', {}).get('model') != MODEL
-                      or (data or {}).get('short_term_pool', {}).get('context_version') != 1):
+                      or (data or {}).get('short_term_pool', {}).get('context_version') != 2):
                   raise ValueError('Rebuild the expanded event universe')
               validate_pool((data or {}).get('short_term_pool'), datetime.now(timezone.utc))
           except (ValueError, TypeError, KeyError):

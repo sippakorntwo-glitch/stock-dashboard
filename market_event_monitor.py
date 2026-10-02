@@ -36,7 +36,7 @@ def report_notice_key(recipient, value):
     return opaque_key(recipient, 'market-notice-v2:' + value)
 
 
-def deliver_urgent(report, payload, store, client, recipient, now, builder, clock):
+def deliver_urgent(report, payload, store, client, recipient, now, builder, clock, *, presentation=None):
     from line_alerts import AlertError, opaque_key, validate_messages, stamp
     from line_alert_schedule import quota_remaining, period_bounds
     from short_term_report import notice_ids
@@ -49,19 +49,22 @@ def deliver_urgent(report, payload, store, client, recipient, now, builder, cloc
     bucket = state['recipients'].setdefault(opaque_key(recipient, 'recipient-scope-v1'), {'seen': {}, 'pending': None})
     if bucket.get('pending'):
         return {'status': 'pending_delivery_waits_for_retry', 'messages': 0}
+    update_key = report_notice_key(recipient, 'presentation:' + presentation) if presentation else None
+    if update_key and (update_key in bucket['seen'] or update_key in bucket.get('presentation_versions', [])):
+        return {'status': 'presentation_already_sent', 'messages': 0}
     report = deepcopy(report)
     # Only genuine new events/plan transitions, not another push for the same
     # negative headline every ten minutes. A changed price alone isn't a story.
     selected = []
     for event in report.get('events', []):
-        if event.get('urgent'):
+        if event.get('urgent') or presentation:
             label = report['trading_date'] + ':' + event['event_id'] + ':event'
-            if report_notice_key(recipient, label) not in bucket['seen']:
+            if presentation or report_notice_key(recipient, label) not in bucket['seen']:
                 selected.append(event)
     plans = []
     for card in report['cards']:
         one = dict(report, cards=[card], events=[])
-        if all(report_notice_key(recipient, key) not in bucket['seen'] for key in notice_ids(one)):
+        if presentation or all(report_notice_key(recipient, key) not in bucket['seen'] for key in notice_ids(one)):
             plans.append(card)
     report['cards'], report['events'] = plans[:5], selected[:5]
     report['actual_count'] = len(report['cards'])
@@ -96,6 +99,9 @@ def deliver_urgent(report, payload, store, client, recipient, now, builder, cloc
         store.write(state)
         return {'status': 'quota_exhausted', 'messages': 0}
     keys = [report_notice_key(recipient, key) for key in notices]
+    if update_key:
+        keys.append(update_key)
+        bucket.setdefault('presentation_versions', []).append(update_key)
     pending = {'keys': keys, 'retry_key': str(uuid.uuid4()), 'text': '', 'test': False,
                'created_at': sent_at.isoformat(), 'expires_at': expiry.isoformat(),
                'messages': bundle['messages'], 'market_event': True}
@@ -113,7 +119,7 @@ def deliver_urgent(report, payload, store, client, recipient, now, builder, cloc
             'event_alert': True, 'quota_remaining': remaining - 1}
 
 
-def monitor(payload, store, client, recipient, now, *, clock, scanner=None, builder=None):
+def monitor(payload, store, client, recipient, now, *, clock, scanner=None, builder=None, presentation=None):
     from short_term_service import scan
     from short_term_report import build_bundle
     from line_alert_schedule import deliver_scheduled
@@ -123,6 +129,9 @@ def monitor(payload, store, client, recipient, now, *, clock, scanner=None, buil
     report = (scanner or scan)(payload, clock=clock)
     publish_board(store, report)
     builder = builder or (lambda p, at, value: build_bundle(p, at, store, report=value))
+    if presentation:
+        return {**deliver_urgent(report, payload, store, client, recipient, clock(), builder, clock,
+                                 presentation=presentation), 'board_status': report['status']}
     result = deliver_scheduled(payload, store, client, recipient, clock(),
                                lambda p, tickers, at, mode: builder(p, at, report), clock)
     if result.get('messages') or result.get('status') == 'expired_pending':
