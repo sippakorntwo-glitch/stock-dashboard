@@ -1,6 +1,6 @@
 """Monthly LINE allocation across actual NYSE sessions, including pre-market.
 
-Reuse the existing half-hour ranking completion event. A delayed event can send
+The event monitor checks these half-hour slots. A delayed run can send
 only its current slot, never a backlog. One push to the configured owner is one
 quota unit, including its image and all text objects.
 """
