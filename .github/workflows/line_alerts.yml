@@ -12,7 +12,7 @@ on:
       mode:
         description: 'monitor = event board plus quota-limited notices; schedule-check = plan without delivery'
         type: choice
-        options: [monitor, scheduled, schedule-check, scan, test, dry-run, preview]
+        options: [monitor, format-update, scheduled, schedule-check, scan, test, dry-run, preview]
         default: monitor
 permissions:
   contents: read
@@ -25,7 +25,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     permissions:
       contents: write
     steps:
@@ -46,12 +46,29 @@ jobs:
           python -m unittest discover -s tests -p 'test_line_alert*.py'
           python -m unittest discover -s tests -p 'test_stock_alert*.py'
           python -m unittest discover -s tests -p 'test_short_term*.py'
+      - name: Restore pinned Thai translation model
+        uses: actions/cache@v4
+        with:
+          path: work/thai-model
+          key: thai-qwen3-4b-bc640142-llama-b11349-v1
+      - name: Restore exact-source Thai translations
+        uses: actions/cache@v4
+        with:
+          path: work/thai-translations.json
+          key: thai-finance-v1-${{ github.run_id }}
+          restore-keys: thai-finance-v1-
+      - name: Prepare offline Thai translator before live prices
+        timeout-minutes: 3
+        continue-on-error: true
+        run: python prepare_thai_translation.py
       - name: Refresh events and deliver new notices or due reports within monthly quota
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-          ALERT_MODE: ${{ inputs.mode || 'monitor' }}
+          # The requested format sample is sent once per durable presentation
+          # version. Scheduled scans stay in monitor mode and share quota limits.
+          ALERT_MODE: ${{ inputs.mode || (github.event_name == 'push' && 'format-update') || 'monitor' }}
         run: python line_alerts.py --mode "$ALERT_MODE"
       - name: Preserve the report that was prepared
         if: always()

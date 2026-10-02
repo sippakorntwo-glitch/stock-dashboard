@@ -133,6 +133,7 @@ def render_report(report, output):
     from PIL import Image, ImageDraw
     from stock_alert_image import ThaiText, NAVY, INK, MUTED, TEAL, BG
     from short_term_context import company_view, trend_view, sma_line, rvol_line, price_text
+    from company_analysis_th import INDUSTRY_LABELS
     rows = report_rows(report)
     plans = {c['ticker']: c for c in report['cards']}
     card_height = 635
@@ -152,7 +153,9 @@ def render_report(report, output):
         font.paragraph((75, y + 84), company['business'], 1430, size=25, lines=1, color=MUTED)
         state = 'แผนมีเงื่อนไข' if plan else 'รอฟื้นตัว' if row.get('status') == 'recovery_watch' else 'รอติดตาม'
         font.line((75, y + 132), f"${row['price']:.2f} ({row['change_pct']:+.2f}%) · {state}", 32, INK, True)
-        font.line((75, y + 181), rvol_line(row) + ' · VWAP ' + price_text(row.get('vwap')), 28, TEAL, True)
+        industry = INDUSTRY_LABELS.get(row.get('industry'), row.get('industry', ''))
+        font.paragraph((75, y + 181), rvol_line(row) + ' · VWAP ' + price_text(row.get('vwap'))
+                       + ' · ' + industry, 1420, size=27, lines=1, color=TEAL, bold=True)
         font.paragraph((75, y + 224), sma_line(row), 1420, size=25, lines=1, color=MUTED)
         headline = row['news'][0].get('title_th') or row['news'][0]['title']
         font.paragraph((75, y + 274), 'ข่าว: ' + headline, 1420, size=28, lines=2, leading=37)

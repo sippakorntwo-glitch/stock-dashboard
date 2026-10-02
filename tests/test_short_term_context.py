@@ -68,17 +68,35 @@ class ContextTests(unittest.TestCase):
 
 
 class TranslationTests(unittest.TestCase):
+    def test_time_sensitive_bars_are_requested_after_translation(self):
+        from test_short_term_engine import NOW, pool, raw_quote, news, bars
+        from short_term_service import scan
+        events = []
+        def quotes(tickers):
+            events.append('quotes')
+            return [raw_quote(t) for t in tickers]
+        def chart(ticker):
+            events.append('chart')
+            return bars()
+        with patch('thai_news_translation.enrich_prepared', side_effect=lambda _: events.append('translation')):
+            report = scan({'short_term_pool': pool()}, clock=lambda: NOW, quote_fetcher=quotes,
+                          news_fetcher=lambda *a: news(), chart_fetcher=chart)
+        self.assertLess(events.index('translation'), events.index('chart'))
+        self.assertEqual(events[-1], 'quotes')
+        self.assertEqual(report['counts']['charts_checked'], 1)
+
     def test_missing_bond_coupon_negation_or_false_financial_noun_rejected(self):
         self.assertFalse(valid_translation('Senior notes 2.300% due 2030', 'หุ้นกู้ไม่ด้อยสิทธิครบกำหนด 2030'))
         self.assertTrue(valid_translation('Senior notes 2.300% due 2030', 'หุ้นกู้ไม่ด้อยสิทธิ 2.3% ครบกำหนด 2030'))
         self.assertFalse(valid_translation('may not ease supply shortage', 'อาจบรรเทาภาวะอุปทานขาดแคลน'))
         self.assertFalse(valid_translation('supply shortage', 'ความเสียหายของแหล่งจ่ายไฟ'))
+        self.assertFalse(valid_translation('devices in Europe, the Middle East and Africa', 'อุปกรณ์ในอยุธยาและแอฟริกา'))
 
     def test_partial_model_output_never_invents_an_unfinished_translation(self):
         self.assertEqual(decode_translations('</think> ["ข่าวแรก", "ข่าวยังไม่จบ'), ['ข่าวแรก'])
 
     def test_reviewed_translation_cache_and_unknown_fallback(self):
-        title = next(iter(REVIEWED))
+        title = 'Analysts say Toshiba HDD expansion may not ease global supply shortage'
         articles = [{'title': title}, {'title': 'Acme reports revenue growth of 12%'}]
         row = {'company': {'business_en': 'Acme makes storage devices.'}}
         with tempfile.TemporaryDirectory() as folder, patch.dict('os.environ', {'THAI_TRANSLATION_CACHE': folder + '/cache.json'}):

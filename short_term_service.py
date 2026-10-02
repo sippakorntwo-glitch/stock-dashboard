@@ -198,9 +198,17 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
         counts['news_passed'] += 1
         audit['headlines'] = [{'title': a['title'], 'url': a['url'], 'published_at': a['published_at']} for a in articles]
         audit['stage'] = 'intraday'
-        if counts['charts_checked'] >= MAX_CHARTS:
+        prepared.append((row, None, articles, audit))
+    # Translate before obtaining time-sensitive bars and final quotes. Keep the
+    # original provider-work budget, excluding bounded offline CPU translation.
+    if prepared:
+        from thai_news_translation import enrich_prepared
+        translation_start = monotonic()
+        enrich_prepared(prepared)
+        deadline += monotonic() - translation_start
+    for index, (row, _, articles, audit) in enumerate(prepared):
+        if counts['charts_checked'] >= MAX_CHARTS or monotonic() >= deadline:
             audit['reasons'] = ['intraday_scan_limit']
-            prepared.append((row, None, articles, audit))
             continue
         counts['charts_checked'] += 1
         try:
@@ -214,13 +222,8 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
         if why:
             audit['reasons'] = [why]
             rejected[why] += 1
-            prepared.append((row, None, articles, audit))
             continue
-        prepared.append((row, frame, articles, audit))
-    # Translate before the final fresh-price read; translation cannot create a signal.
-    if prepared:
-        from thai_news_translation import enrich_prepared
-        enrich_prepared(prepared)
+        prepared[index] = (row, frame, articles, audit)
     # Re-read prices AFTER news/charts; a timestamp at job start is not live
     # execution evidence after a slow scan. Recompute bar age at this clock.
     if prepared:

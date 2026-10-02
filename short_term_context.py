@@ -137,7 +137,9 @@ def company_view(row):
     lines = []
     for item in stats:
         suffix = ' เทียบปีก่อน' if item['key'] == 'revenueGrowthFY' else ''
-        label = 'รายได้ทั้งปี' if item['key'] == 'revenueGrowthFY' else 'อัตรากำไรสุทธิ'
+        label = 'รายได้ทั้งปี' if item['key'] == 'revenueGrowthFY' else (
+            'อัตรากำไรสุทธิ 4 ไตรมาส' if str(item.get('basis', '')).startswith('TTM') else
+            'อัตรากำไรสุทธิทั้งปี' if str(item.get('basis', '')).startswith('FY') else 'อัตรากำไรสุทธิ')
         lines.append(f"{label} {item['value']*100:+.1f}%{suffix} (งวด {item['end']})")
     growth = next((v['value'] for v in stats if v['key'] == 'revenueGrowthFY'), None)
     margin = next((v['value'] for v in stats if v['key'] == 'profitMargins'), None)
