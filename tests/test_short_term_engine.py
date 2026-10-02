@@ -168,11 +168,14 @@ class IntradayTests(unittest.TestCase):
         self.assertEqual(result['actual_count'], 0)
         self.assertEqual(result['excluded']['final_quote_not_fresh'], 1)
 
-    def test_intraday_history_failure_is_data_unavailable_not_no_setup(self):
+    def test_verified_news_can_be_watched_without_promoting_missing_charts_to_a_plan(self):
         result = scan({'short_term_pool': pool()}, clock=lambda: NOW,
                       quote_fetcher=lambda tickers: [raw_quote(t) for t in tickers],
                       news_fetcher=lambda *args: news(), chart_fetcher=lambda _: pd.DataFrame())
-        self.assertEqual(result['status'], 'data_unavailable')
+        self.assertEqual(result['status'], 'events_watch')
+        self.assertEqual(result['actual_count'], 0)
+        self.assertFalse(result['events'][0]['metrics_available'])
+        self.assertFalse(result['events'][0]['urgent'])
         self.assertEqual(result['audit'][0]['reasons'], ['missing_intraday_bars'])
 
     def test_pool_uses_completed_session_baseline_and_excludes_low_share_volume(self):

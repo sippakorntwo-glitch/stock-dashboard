@@ -10,6 +10,8 @@ jobs:
   review:
     runs-on: ubuntu-latest
     timeout-minutes: 18
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,18 +39,34 @@ jobs:
           import json, os, subprocess, sys
           from pathlib import Path
           from ranking_board import _fetch_ranking
-          from short_term_engine import validate_pool
+          from short_term_engine import validate_pool, MODEL
           data, _ = _fetch_ranking(os.environ['GITHUB_REPOSITORY'])
           try:
+              if (data or {}).get('short_term_pool', {}).get('model') != MODEL:
+                  raise ValueError('Rebuild the expanded event universe')
               validate_pool((data or {}).get('short_term_pool'), datetime.now(timezone.utc))
           except (ValueError, TypeError, KeyError):
-              subprocess.run([sys.executable, 'ranking_job.py', '--no-quote-refresh', '--output', 'work/short-term-input.json'], check=True)
+              subprocess.run([sys.executable, 'ranking_job.py', '--no-quote-refresh', '--publish', '--output', 'work/short-term-input.json'], check=True)
           else:
               Path('work').mkdir(exist_ok=True)
               Path('work/short-term-input.json').write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
           PY
       - name: Inspect live news, volume and conditional plans without sending LINE
         run: python short_term_service.py --input work/short-term-input.json --output work/short-term-review
+      - name: Publish the reviewed market event board without sending LINE
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from line_alerts import GitHubState, JsonHTTP
+          from market_event_monitor import publish_board
+          store = GitHubState(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN'], JsonHTTP())
+          report = json.loads(Path('work/short-term-review/briefing.json').read_text())
+          publish_board(store, report)
+          print('EVENT_BOARD_REVIEW:', json.dumps({'events': [(e['ticker'], round(e['change_pct'], 2), e['status']) for e in report['events']], 'plans': len(report['cards']), 'universe': report['counts'].get('universe', 0)}))
+          PY
       - name: Preserve coverage, rejections and exact report
         if: always()
         uses: actions/upload-artifact@v4

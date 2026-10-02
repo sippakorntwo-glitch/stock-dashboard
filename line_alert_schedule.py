@@ -215,7 +215,15 @@ def deliver_scheduled(payload, store, client, recipient, now, message_builder, c
     if sent_at >= expiry:
         raise AlertError('Scheduled report prices expired before delivery; nothing sent')
     keys = [key]
-    if not bundle['stocks']:
+    from market_event_monitor import report_notice_key
+    notice_keys = [report_notice_key(recipient, value) for value in bundle.get('notice_ids', [])]
+    if not bundle['stocks'] and bundle.get('events', 0) and notice_keys and all(k in bucket['seen'] for k in notice_keys):
+        bucket['seen'][key] = sent_at.isoformat()
+        store.write(state)
+        return {'status': 'event_summary_already_sent', 'messages': 0, 'stocks': 0,
+                'quota_remaining': remaining}
+    keys.extend(notice_keys)
+    if not bundle['stocks'] and not bundle.get('events', 0):
         # Monthly quota is a ceiling, never an incentive to manufacture picks.
         # One empty/data-failure summary per session; keep scanning later slots.
         empty_key = opaque_key(recipient, 'short-term-empty-v1:' + slot['trading_date'] + ':' + slot['session'])

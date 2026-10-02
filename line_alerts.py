@@ -367,7 +367,7 @@ def deliver(payload, store, client, recipient, now, mode='scan', message_builder
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mode', choices=('scan', 'test', 'dry-run', 'preview', 'scheduled', 'schedule-check'), default='scheduled')
+    parser.add_argument('--mode', choices=('scan', 'test', 'dry-run', 'preview', 'scheduled', 'schedule-check', 'monitor'), default='scheduled')
     args = parser.parse_args()
     repo = os.environ.get('GITHUB_REPOSITORY', '')
     if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('GITHUB_REF') != 'refs/heads/main':
@@ -386,7 +386,11 @@ def main():
         except (ValueError, KeyError, TypeError):
             raise AlertError('Cannot read published ranking') from None
     now = datetime.now(UTC)
-    if args.mode == 'schedule-check':
+    if args.mode == 'monitor':
+        from market_event_monitor import monitor
+        report = monitor(payload, store, LineClient(token, recipient, http), recipient, now,
+                         clock=lambda: datetime.now(UTC))
+    elif args.mode == 'schedule-check':
         from line_alert_schedule import schedule_summary
         report = schedule_summary(LineClient(token, recipient, http).quota_snapshot(), now)
     elif args.mode == 'dry-run':

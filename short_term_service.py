@@ -11,8 +11,8 @@ import time
 from short_term_engine import (MODEL, COST_RATE, instant, number, validate_pool,
                                quote_observation, intraday_metrics, make_plan, session_context)
 
-MAX_NEWS = 16
-MAX_CHARTS = 8
+MAX_NEWS = 10
+MAX_CHARTS = 6
 DEADLINE_SECONDS = 150
 
 
@@ -34,31 +34,30 @@ def fresh_catalysts(row, fetched, now):
     """Attributed event headlines, never an invented article summary/sentiment."""
     from market_pulse import normalize_news
     from stock_alert_briefing import _company_relevance, _topic_guide
+    from market_event_news import industry_impact, material_event
     if not isinstance(fetched, dict) or not isinstance(fetched.get('items'), list):
         return [], 'news_feed_unavailable'
     items, seen = [], set()
-    excluded = re.compile(r'\b(?:will (?:report|release|announce)|to (?:report|release|announce)|'
-                          r'schedules?|conference call|earnings (?:date|preview)|'
-                          r'should you|is .+ a buy|worth buying|price target|valuation|'
-                          r'52.week|all.time high|retire\w*|succession|appoint\w*)\b', re.I)
-    event = re.compile(r'\b(?:reports? .{0,55}(?:results|earnings)|results|'
-                       r'earnings (?:beat|miss)|guidance|raises? .{0,30}(?:outlook|forecast)|'
-                       r'cuts? .{0,30}(?:outlook|forecast)|wins? .{0,45}contract|'
-                       r'(?:signs?|awarded) .{0,40}(?:deal|contract)|'
-                       r'(?:acquires?|acquisition|merger)|FDA .{0,40}(?:approv\w*|reject\w*)|'
-                       r'approv\w* .{0,30}(?:drug|treatment)|recall|lawsuit|'
-                       r'files? .{0,20}bankruptcy|deliveries|production results)\b', re.I)
     for raw in fetched['items'][:20]:
-        normalized = normalize_news([raw], row['ticker'], now)
+        content = raw.get('content', raw) if isinstance(raw, dict) else {}
+        impact = industry_impact(content.get('title', ''), row['ticker']) if isinstance(content, dict) else None
+        competitor = bool(impact and impact['impact_type'] == 'competitor_supply')
+        # This explicit industry mapping is our inference, not a provider ticker
+        # association. Still validate URL, publisher and publication time.
+        normalized = normalize_news([raw], row['ticker'], now, allow_unlinked=competitor)
         for article in normalized['items']:
             at = instant(article.get('published_at'))
             title = article.get('title', '')
+            impact = industry_impact(title, row['ticker'])
+            relation = _company_relevance(article, raw, row)
+            if impact and impact['impact_type'] == 'competitor_supply':
+                relation = relation or impact['relationship']
             if (at is None or not 0 <= (now - at).total_seconds() <= 36 * 3600
-                    or not _company_relevance(article, raw, row) or excluded.search(title)
-                    or not event.search(title) or article['url'] in seen):
+                    or not relation or not material_event(title) or article['url'] in seen):
                 continue
             topic, context = _topic_guide(title)
             items.append({**article, 'topic': topic, 'context': context,
+                          'company_relevance': relation, 'industry_impact': impact,
                           'evidence_type': 'provider_headline', 'direction': 'unassessed'})
             seen.add(article['url'])
     items.sort(key=lambda x: x['published_at'], reverse=True)
@@ -77,13 +76,47 @@ def fetch_chart(ticker):
     return frame
 
 
+def movement_priority(candidates, limit=MAX_NEWS):
+    """Reserve coverage for BOTH losers and gainers, then fill unused slots."""
+    sides = [sorted([c for c in candidates if c[2]['change_pct'] < 0], key=lambda x: (-x[0], x[1]['ticker'])),
+             sorted([c for c in candidates if c[2]['change_pct'] >= 0], key=lambda x: (-x[0], x[1]['ticker']))]
+    output = []
+    for index in range(limit):
+        for side in sides:
+            if index < len(side) and len(output) < limit:
+                output.append(side[index])
+    return output
+
+
+def event_card(row, quote, articles, metrics, reasons):
+    from market_event_news import story_id
+    # One ticker/story/day event key. Delivery uses HMAC-scoped deduplication.
+    story = story_id(row['ticker'], articles[0])
+    falling = quote['change_pct'] <= -3 or (quote.get('gap_pct') or 0) <= -3
+    if quote['price'] < 1:
+        state, action = 'below_entry_price', 'ราคาไม่ถึง $1: แสดงข่าวและการเคลื่อนไหว ยังไม่สร้างแผนซื้อ'
+    elif falling:
+        state, action = 'recovery_watch', 'รอหยุดทำจุดต่ำใหม่ ยืนเหนือ VWAP 2 แท่ง และยกจุดต่ำขึ้น ก่อนพิจารณาแผนฟื้นตัว'
+    else:
+        state, action = 'event_watch', 'ติดตามจุดเบรกและวอลุ่ม; เข้าเมื่อมีแผนผ่านเกณฑ์และราคาอยู่ใต้เพดานซื้อ'
+    return {**row, **quote, 'news': articles[:2], 'status': state, 'event_id': story,
+            'action': action, 'reasons': reasons, 'metrics_available': metrics is not None,
+            'rvol': metrics['rvol'] if metrics else None,
+            'session_dollars': metrics['session_dollars'] if metrics else None,
+            'session_volume': metrics['session_volume'] if metrics else None,
+            'vwap': metrics['vwap'] if metrics else None,
+            'bar_end': metrics['bar_end'] if metrics else None,
+            'urgent': bool(metrics and abs(quote['change_pct']) >= 7 and metrics['rvol'] >= 2
+                           and metrics['session_dollars'] >= 5_000_000)}
+
+
 def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fetcher=None, monotonic=time.monotonic):
     clock = clock or (lambda: datetime.now(timezone.utc))
     now = clock()
     context = session_context(now)
     report = {'schema': 1, 'model': MODEL, 'generated_at': now.isoformat(),
               'session': context['session'], 'trading_date': context['trading_date'],
-              'next_trading_day': context['next_day'], 'cards': [], 'actual_count': 0,
+              'next_trading_day': context['next_day'], 'cards': [], 'events': [], 'actual_count': 0,
               'counts': {}, 'excluded': {}, 'diagnostics': [], 'audit': [], 'cost_pct': COST_RATE * 100,
               'status': 'no_setup', 'source': 'Yahoo Finance: timestamped quotes, 5-minute bars and linked news',
               'performance': 'ยังไม่มีสถิติผลลัพธ์ล่วงหน้าของเกณฑ์รุ่นนี้'}
@@ -104,14 +137,14 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
     chart_fetcher = chart_fetcher or fetch_chart
     deadline = monotonic() + DEADLINE_SECONDS
     counts = Counter(universe=len(rows), fresh_quotes=0, news_checked=0, charts_checked=0,
-                     news_passed=0, technical_checked=0)
+                     news_passed=0, technical_checked=0, catalog=payload.get('counts', {}).get('total', 0))
     rejected = Counter()
     diagnostics = []
     raw_quotes = {}
     symbols = [row['ticker'] for row in rows] + ['SPY']
     try:
-        for index in range(0, len(symbols), 50):
-            raw_quotes.update(unpack_quotes(quote_fetcher(symbols[index:index + 50])))
+        for index in range(0, len(symbols), 100):
+            raw_quotes.update(unpack_quotes(quote_fetcher(symbols[index:index + 100])))
     except Exception:
         report.update(status='data_unavailable', diagnostics=['quote_feed_unavailable'])
         return report
@@ -124,17 +157,20 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
             rejected['missing_stale_or_delayed_quote'] += 1
             continue
         counts['fresh_quotes'] += 1
-        if q['quote_type'] != 'EQUITY' or q['price'] < 10 or q['change_pct'] < .75:
-            rejected['no_long_momentum'] += 1
+        if q['quote_type'] != 'EQUITY':
+            rejected['not_eligible_common_stock'] += 1
             continue
         # Prescreen only: final RVOL uses 5-minute bars at the same clock time.
         activity = ((q['day_volume'] or 0) / row['average_shares_20d']) if context['session'] == 'regular' else 1
-        candidates.append((q['change_pct'] * activity, row, q))
-    candidates.sort(key=lambda x: (-x[0], x[1]['ticker']))
+        movement = max(abs(q['change_pct']), abs(q.get('gap_pct') or 0), abs(q.get('from_open_pct') or 0))
+        if movement < .75 and activity < 1.5:
+            rejected['no_material_movement'] += 1
+            continue
+        candidates.append((max(movement, 1.) * max(activity, .05), row, q))
     counts['momentum_candidates'] = len(candidates)
     prepared = []
-    for _, row, q in candidates[:MAX_NEWS]:
-        if monotonic() >= deadline or counts['charts_checked'] >= MAX_CHARTS:
+    for _, row, q in movement_priority(candidates):
+        if monotonic() >= deadline:
             diagnostics.append('bounded_scan_limit_reached')
             break
         counts['news_checked'] += 1
@@ -160,7 +196,12 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
                 break
             continue
         counts['news_passed'] += 1
+        audit['headlines'] = [{'title': a['title'], 'url': a['url'], 'published_at': a['published_at']} for a in articles]
         audit['stage'] = 'intraday'
+        if counts['charts_checked'] >= MAX_CHARTS:
+            audit['reasons'] = ['intraday_scan_limit']
+            prepared.append((row, None, articles, audit))
+            continue
         counts['charts_checked'] += 1
         try:
             frame = chart_fetcher(row['ticker'])
@@ -173,6 +214,7 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
         if why:
             audit['reasons'] = [why]
             rejected[why] += 1
+            prepared.append((row, None, articles, audit))
             continue
         prepared.append((row, frame, articles, audit))
     # Re-read prices AFTER news/charts; a timestamp at job start is not live
@@ -188,9 +230,12 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
         for row, frame, news, audit in prepared:
             quote = quote_observation(refreshed.get(row['ticker']), row['ticker'], now, context['session'])
             metrics, why = intraday_metrics(frame, now, context['session'])
-            if quote is None or why:
+            if quote is None:
                 audit['reasons'] = [why or 'final_quote_not_fresh']
                 rejected[why or 'final_quote_not_fresh'] += 1
+                continue
+            if why:
+                report['events'].append(event_card(row, quote, news, None, audit['reasons'] or [why]))
                 continue
             counts['technical_checked'] += 1
             audit.update(stage='plan', rvol=metrics['rvol'], session_dollars=metrics['session_dollars'],
@@ -202,13 +247,19 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
             else:
                 audit['reasons'] = why
                 rejected.update(why)
+            event = event_card(row, quote, news, metrics, why)
+            if plan:
+                event.update(status='conditional_plan', action=plan['entry_rule'])
+            report['events'].append(event)
     if len(candidates) > counts['news_checked']:
         diagnostics.append('not_all_momentum_candidates_deep_scanned')
     report['cards'].sort(key=lambda x: (-x['rvol'], -x['net_upside_pct'], x['ticker']))
     report['cards'] = report['cards'][:5]
+    report['events'].sort(key=lambda e: (-int(e['urgent']), -abs(e['change_pct']), e['ticker']))
+    report['events'] = report['events'][:10]
     report.update(generated_at=clock().isoformat(), actual_count=len(report['cards']),
                   counts=dict(counts), excluded=dict(rejected), diagnostics=list(dict.fromkeys(diagnostics)))
-    report['status'] = 'conditional_plans' if report['cards'] else 'data_unavailable' if (
+    report['status'] = 'conditional_plans' if report['cards'] else 'events_watch' if report['events'] else 'data_unavailable' if (
         not counts['fresh_quotes'] or 'provider_access_or_rate_blocked' in diagnostics or
         (counts['news_checked'] and rejected['news_feed_unavailable'] == counts['news_checked']) or
         (counts['charts_checked'] and not counts['technical_checked'] and any(rejected[k] for k in (

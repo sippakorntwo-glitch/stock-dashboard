@@ -15,17 +15,30 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-MODEL = 'news-volume-intraday-v1'
+MODEL = 'news-events-intraday-v2'
+LEGACY_POOL_MODEL = 'news-volume-intraday-v1'
 UTC = timezone.utc
 NY = ZoneInfo('America/New_York')
-MIN_DOLLARS = 50_000_000
-MIN_SHARES = 1_000_000
-MAX_POOL = 200
+MIN_DOLLARS = 5_000_000
+MIN_SHARES = 250_000
+MAX_POOL = 1000
+MIN_ENTRY_PRICE = 1.0
 MAX_QUOTE_AGE = 180
 MAX_SPREAD = .002  # 0.20%; execution must be checked in the broker.
 # Paid Dime stock commissions (0.15% each way) + spread budget + slippage
 # + rounded regulatory-fee allowance. Do not assume a monthly free trade.
 COST_RATE = .003 + MAX_SPREAD + .001 + .0001
+
+
+def trade_cost_rate(price):
+    """Paid Dime commissions: $0.01/share per side below $6.67, 0.15% above."""
+    price = number(price)
+    if not price or price <= 0:
+        raise ValueError('Positive entry price required for costs')
+    commission = .02 / price if price < 6.67 else .003
+    # CAT both ways and TAF per share matter for low-price shares too.
+    regulatory = .0000206 + .000201 / price
+    return commission + MAX_SPREAD + .001 + max(.0001, regulatory)
 
 
 def number(value):
@@ -88,7 +101,7 @@ def build_pool(cache, universe, now):
         if row.get('Asset_Type') != 'Common Stock':
             rejected['not_common_stock'] += 1
             continue
-        if (number(row.get('Close')) or 0) < 10 or (number(row.get('Dollar_Volume_20D')) or 0) < MIN_DOLLARS:
+        if (number(row.get('Close')) or 0) <= 0 or (number(row.get('Dollar_Volume_20D')) or 0) < MIN_DOLLARS:
             rejected['daily_liquidity_or_price'] += 1
             continue
         info, _ = cache.get('info:' + ticker, request_remote=False)
@@ -127,11 +140,11 @@ def build_pool(cache, universe, now):
                      'previous_high': float(frame.High.iloc[-1])})
     return {'model': MODEL, 'computed_at': instant(now).isoformat(), 'scope': 'most-liquid-common-stocks',
             'universe_checked': len(universe), 'eligible_before_cap': len(eligible),
-            'limit': MAX_POOL, 'excluded': dict(rejected), 'items': rows}
+            'limit': MAX_POOL, 'minimum_entry_price': MIN_ENTRY_PRICE, 'excluded': dict(rejected), 'items': rows}
 
 
 def validate_pool(pool, now):
-    if not isinstance(pool, dict) or pool.get('model') != MODEL or not isinstance(pool.get('items'), list):
+    if not isinstance(pool, dict) or pool.get('model') not in (MODEL, LEGACY_POOL_MODEL) or not isinstance(pool.get('items'), list):
         raise ValueError('Missing independent short-term stock universe')
     at = instant(pool.get('computed_at'))
     if at is None or not 0 <= (now - at).total_seconds() <= 35 * 60 or len(pool['items']) > MAX_POOL:
@@ -180,7 +193,10 @@ def quote_observation(raw, ticker, now, session):
     spread = (ask - bid) / ((ask + bid) / 2) if bid and ask and 0 < bid <= ask else None
     # Yahoo commonly supplies no independent time for the bid/ask fields.
     # A recent last trade cannot authenticate an old displayed order book.
+    opening = number(raw.get('regularMarketOpen')) if session == 'regular' else None
     return {'price': price, 'quote_time': at.isoformat(), 'change_pct': (price / previous - 1) * 100,
+            'gap_pct': (opening / previous - 1) * 100 if opening and opening > 0 else None,
+            'from_open_pct': (price / opening - 1) * 100 if opening and opening > 0 else None,
             'quote_previous_close': previous,
             'day_volume': number(raw.get('regularMarketVolume')), 'quote_type': raw['quoteType'],
             'spread_observation': spread, 'spread_verified': False,
@@ -259,6 +275,9 @@ def intraday_metrics(frame, now, session):
             'ema20': float(current.Close.ewm(span=20, adjust=False).mean().iloc[-1]),
             'trigger': float(current.High.iloc[-7:-1].max()),
             'swing_low': float(current.Low.tail(3).min()),
+            'return_30m': (float(current.Close.iloc[-1] / current.Close.iloc[-7]) - 1) * 100 if len(current) >= 7 else None,
+            'two_closes_above_vwap': bool((current.Close.tail(2) > vwap).all()),
+            'higher_lows': bool(current.Low.iloc[-3] < current.Low.iloc[-2] < current.Low.iloc[-1]),
             'session_low': float(current.Low.min()), 'session_high': float(current.High.max())}, ''
 
 
@@ -267,20 +286,28 @@ def make_plan(row, quote, metrics, news, benchmark, now, session):
     reasons = []
     if not news:
         reasons.append('no_fresh_company_catalyst')
-    if (quote['quote_type'] != 'EQUITY' or quote['price'] < 10):
+    if (quote['quote_type'] != 'EQUITY' or quote['price'] < MIN_ENTRY_PRICE):
         reasons.append('not_eligible_common_stock')
     if abs(quote['quote_previous_close'] / row['previous_close'] - 1) > .02:
         reasons.append('daily_price_scale_mismatch')
-    minimum_rvol = 2.0 if session == 'pre' else 1.5
+    recovery = quote['change_pct'] <= -3 or (quote.get('gap_pct') or 0) <= -3
+    low_price = quote['price'] < 5
+    minimum_rvol = max(2.0 if session == 'pre' else 1.5, 2.0 if low_price or recovery else 0)
     if metrics['rvol'] < minimum_rvol:
         reasons.append('same_time_rvol_too_low')
-    if metrics['session_dollars'] < (5_000_000 if session == 'pre' else 10_000_000):
+    required_dollars = (10_000_000 if session == 'pre' else 20_000_000) if low_price else (5_000_000 if session == 'pre' else 10_000_000)
+    if metrics['session_dollars'] < required_dollars:
         reasons.append('session_liquidity_too_low')
+    if low_price and metrics['session_volume'] < 1_000_000:
+        reasons.append('low_price_volume_too_low')
     if session == 'pre' and metrics['session_volume'] < 200_000:
         reasons.append('premarket_volume_too_low')
     if quote['price'] <= metrics['vwap'] or metrics['last_closed'] <= metrics['vwap'] or metrics['ema9'] <= metrics['ema20']:
         reasons.append('price_trend_not_confirmed')
-    if (benchmark is None or benchmark['change_pct'] < -.75 or quote['change_pct'] - benchmark['change_pct'] < .75
+    if recovery and (not metrics.get('two_closes_above_vwap') or not metrics.get('higher_lows')
+                     or (number(metrics.get('return_30m')) or 0) < 1):
+        reasons.append('recovery_not_confirmed')
+    if (benchmark is None or benchmark['change_pct'] < -.75 or (not recovery and quote['change_pct'] - benchmark['change_pct'] < .75)
             or abs((instant(quote['quote_time']) - instant(benchmark['quote_time'])).total_seconds()) > 120):
         reasons.append('market_or_relative_strength')
     context = session_context(now)
@@ -296,7 +323,8 @@ def make_plan(row, quote, metrics, news, benchmark, now, session):
     if quote['price'] > maximum_entry or quote['price'] < entry - .7 * atr:
         reasons.append('outside_entry_zone_or_chasing')
     # Consistent worst entry, paid round trip and spread/slippage allowance.
-    costs = maximum_entry * COST_RATE
+    cost_rate = trade_cost_rate(maximum_entry)
+    costs = maximum_entry * cost_rate
     net_risk = risk + costs
     target1 = math.ceil((maximum_entry + net_risk + costs) * 100) / 100
     target2 = math.ceil((maximum_entry + 2 * net_risk + costs) * 100) / 100
@@ -312,9 +340,9 @@ def make_plan(row, quote, metrics, news, benchmark, now, session):
     expires = min(instant(quote['quote_time']) + timedelta(seconds=MAX_QUOTE_AGE),
                   now + timedelta(minutes=3), context['open'] if session == 'pre' else context['close'] - timedelta(minutes=10))
     return {**row, **quote, **metrics, 'news': news[:2], 'status': 'conditional_plan',
-            'horizon': 'intraday', 'session': session, 'entry': entry, 'max_entry': maximum_entry,
+            'horizon': 'intraday', 'setup': 'recovery' if recovery else 'momentum', 'session': session, 'entry': entry, 'max_entry': maximum_entry,
             'stop': stop, 'target1': target1, 'target2': target2, 'range_ceiling': round(ceiling, 2),
-            'cost_pct': COST_RATE * 100, 'net_rr': (target2 - maximum_entry - costs) / net_risk,
+            'cost_pct': cost_rate * 100, 'net_rr': (target2 - maximum_entry - costs) / net_risk,
             'net_upside_pct': (target2 - maximum_entry - costs) / maximum_entry * 100,
             'next_trading_day': context['next_day'], 'expires_at': expires.isoformat(),
             'valid_until': min(now + timedelta(minutes=15), context['open'] if session == 'pre' else

@@ -147,12 +147,13 @@ def normalize_quotes(raw, symbols, fetched_at):
     return result
 
 
-def normalize_news(raw, ticker, fetched_at):
+def normalize_news(raw, ticker, fetched_at, *, allow_unlinked=False):
     """Validate feed metadata without treating provider association as sentiment."""
     fetched = _stamp(fetched_at)
     result = {'ticker':ticker, 'items':[],
               'checked_at':fetched.isoformat() if fetched is not None else None,
-              'source':SOURCE, 'state':'unavailable', 'association':'provider-linked'}
+              'source':SOURCE, 'state':'unavailable',
+              'association':'unverified' if allow_unlinked else 'provider-linked'}
     if fetched is None or not isinstance(raw, list):
         return result
     if not raw:
@@ -176,7 +177,7 @@ def normalize_news(raw, ticker, fetched_at):
         # Legacy feeds sometimes list explicit associations. Respect them when
         # present; modern get_news responses may expose no relatedTicker field.
         related = content.get('relatedTickers', item.get('relatedTickers'))
-        if isinstance(related, list) and ticker not in related:
+        if not allow_unlinked and isinstance(related, list) and ticker not in related:
             continue
         if url in seen:
             continue

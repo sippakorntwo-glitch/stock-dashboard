@@ -150,6 +150,8 @@ def main():
             # The board has its own timed fragment and timestamped publication;
             # do not retain a page's temporary read transaction in that callback.
             render_board(base_cache)
+        from market_event_ui import render_event_board
+        render_event_board()
         with st.container(key='research_overview'):
             if work is not None:
                 overview(frame, selectable=True, prepared=work)

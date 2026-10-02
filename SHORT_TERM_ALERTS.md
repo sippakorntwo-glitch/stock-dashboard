@@ -1,74 +1,94 @@
-# Short-term LINE reports
+# Market events and short-term LINE reports
 
-The scheduled LINE report uses `news-volume-intraday-v1`. The dashboard's
-100-point daily pullback board remains daily research and does not select these
-short-term plans. Legacy manual `scan`/`preview` commands retain their old model;
-the automatic workflow uses only the scheduled short-term report.
+The automatic event monitor uses `news-events-intraday-v2`. The daily 100-point
+pullback ranking is independent. The complete dashboard catalog includes stocks
+and funds; the event pool uses verified USD common stocks only. Legacy manual
+`scan`/`preview` commands retain their previous daily-research model.
 
-## Selection
+## Discovery and evidence
 
-1. From the verified full stock catalog, retain at most 200 of the most liquid
-   USD common stocks: price at least $10, average completed 20-session turnover
-   at least $50 million and one million shares. No ETF padding. The baseline
-   must end on the actual previous NYSE trading session.
-2. Read fresh quotes, reject stale/future/delayed observations, and prioritize
-   positive active movers. Inspect news for at most 16 and charts for at most 8
-   each round, within a 150-second provider-work budget. This is bounded
-   coverage, not a live scan of every listed stock.
-3. Require a company-specific event headline published within 36 hours. Exclude
-   earnings-call schedules, generic valuation/purchase opinions and price-only
-   stories. A headline is labelled as such; it is not a reviewed article,
-   verified positive sentiment, or proof that the event occurred that day.
-4. Use closed 5-minute bars. Session VWAP resets at the start of pre-market or
-   regular trading. Cumulative relative volume compares the same clock interval
-   in at least 10 prior sessions. Require 1.5x regular / 2x pre-market, $10m / $5m
-   session turnover, and 200,000 shares pre-market. No regular-volume substitute
-   for missing pre-market observations. Traded volume is not net buying.
-5. Require positive price/VWAP/EMA alignment and strength relative to SPY. Form
-   a conditional break of recent resistance, a maximum limit price and swing/
-   volatility stop. Reject chasing, unsuitable stops, or an estimated net 2R
-   target outside the average daily range budget/known previous-day resistance.
-6. Refresh quotes after scanning. Quotes must be <=3 minutes old; last completed
-   bar <=6 minutes old. Plans expire after 15 minutes, at the opening for a
-   pre-market plan, or before the close. Close the planned trade the same day;
-   next-session candidates are rescanned instead of carrying today's levels.
+- Select up to 1,000 common stocks from the verified catalog, ranked by average
+  completed 20-session dollar turnover. Require $5m average dollar turnover and
+  250,000 average daily shares. The baseline must end on the previous NYSE
+  trading session. There is no $10 filter or price floor for watching events.
+- Read quotes in batches of 100 and reject stale, future or declared-delayed
+  observations. Prioritize absolute day/gap/from-open movement and volume;
+  reserve news checks for both negative and positive movers. Inspect news for
+  at most 10 stocks and 5-minute charts for at most 6 within 150 seconds. This
+  is bounded coverage, not continuous monitoring of every listed stock.
+- Require a relevant event headline published within 36 hours with publisher,
+  URL and source time. Include results, contracts, guidance, regulation, supply,
+  production capacity and other defined material events. Exclude generic stock
+  opinions, retirement articles and call schedules. An unreadable feed means
+  missing evidence, not no news and not a positive/negative interpretation.
+- An explicit Toshiba + HDD + capacity/production expansion relationship can
+  link competitor news to WDC/STX even without provider ticker association.
+  Mark that relationship and pricing/supply explanation as an inference. Do not
+  claim future capacity is already operating or that a headline proves the
+  entire cause of a price move. Other news still needs company relevance.
+- Verified news and a fresh sharp decline appear as `recovery_watch` even if
+  technical data are missing. No invented entry/stop/target is attached. Prices
+  below $1 are visible as news watches but cannot generate a purchase plan.
 
-## Execution and costs
+## Conditional plans
 
-All cards say **conditional plan**. The free source does not timestamp bid/ask
-separately, so it cannot authenticate an executable spread. The user checks the
-current Dime book (spread <=0.20%), the trigger close, limit price, order support
-and availability of the ticker. Nothing submits or manages an order.
+Use closed 5-minute bars, session VWAP and time-matched cumulative RVOL against
+at least 10 prior sessions. Regular/pre-market minimum RVOL is 1.5x/2x, session
+dollar turnover $10m/$5m; pre-market also needs 200,000 shares. Below $5 require
+RVOL 2x, one million session shares and $20m regular/$10m pre-market turnover.
+Regular-session volume is never substituted for missing pre-market volume.
 
-The gross target is derived from a net 2R requirement, not an analyst price
-target or a predicted price. 0.61% round-trip cost allowance includes normal paid
-Dime commissions, a 0.20% spread budget, 0.10% slippage allowance and minor fees.
-It is a modelling allowance in USD before taxes/FX, not the user's actual bill.
-Net R:R assumes all shares exit at target 2. Splitting exits at target 1 changes
-the realised ratio. Stops are planning levels; a gap can trade through them.
+Require price above VWAP with EMA alignment, valid market context, and a
+conditional break of recent resistance. A day or opening gap below -3% needs
+two closes above VWAP, three rising lows and at least +1% in the last 30 minutes
+before a recovery plan can qualify. A large fall alone is not an entry condition.
+Reject chasing, unsuitable stops and net 2R targets beyond the available daily
+range budget or known previous-day resistance.
 
-Fee source checked 2026-10-02: https://dime.co.th/th/invest/stock-us
-Time-matched-volume reference:
-https://www.fidelity.com/bin-public/060_www_fidelity_com/documents/RTA-Methodology.pdf
-Data API: https://ranaroussi.github.io/yfinance/reference/yfinance.price_history.html
+After screening, refresh prices. Quotes must be at most 3 minutes old and the
+last closed bar at most 6 minutes old. Delivery expires with the quote. Plans
+have a maximum 15-minute validity and end before opening/closing boundaries.
+Rescan next-session opportunities rather than carrying today's levels forward.
 
-## Delivery, evidence and evaluation
+## Costs and execution
 
-Send zero to five candidates, never manufacture five. An empty/data-failure
-summary is sent at most once per pre-market/regular session. Continue checking
-later planned slots for qualified plans. LINE's monthly allowance remains a
-hard ceiling, not a requirement to spend quota on weak ideas. Existing durable
-reservation, retry UUID, quota ledger, calendar/DST and expiry checks remain.
+Dime's normal paid commission is $0.01/share per side below $6.67 and 0.15% per
+side from $6.67. The model adds a 0.20% spread allowance, 0.10% slippage and minor
+fees. It does not assume the user's first monthly transaction is free. Estimated
+round-trip costs are about 0.61% at $10, 0.71% at $5 and above 1.3% at $2; exact
+model output depends on the maximum entry price. Targets must clear these costs.
 
-Each prepared report is preserved as an immutable commit on `line-alert-media`
-and as a short-lived workflow artifact. This is an audit trail, not actual
-trades or realised P&L. This strategy version starts without forward performance
-evidence. Before changing size or claiming an edge, review at least 30–50
-independent filled paper/actual setups with their original publication times,
-trigger/limit validity, missed fills, adverse gaps, costs, wins/losses, average
-net gain/loss and expectancy. Never count an unfilled target hit as a win or use
-later news to justify an earlier signal. An ambiguous bar that touches both
-stop and target cannot establish which happened first.
+Source checked 2026-10-02: https://dime.co.th/th/invest/stock-us
+RVOL method: https://www.fidelity.com/bin-public/060_www_fidelity_com/documents/RTA-Methodology.pdf
+Bars API: https://ranaroussi.github.io/yfinance/reference/yfinance.price_history.html
 
-The numeric thresholds are initial engineering choices. They have not been
-optimised or validated as profitable by a historical or forward study.
+These are conditional long plans in USD before personal tax/FX, not executable
+broker quotes or submitted orders. The free source lacks separately timed bid/
+ask observations. Check the current Dime spread (<=0.20%), limit price, supported
+order types and ticker availability before acting. A stop is a planning level;
+gaps can pass it. The stated net R:R assumes the whole position exits at target
+2; partial exits at target 1 reduce the combined result.
+
+## Dashboard and LINE
+
+The workflow is scheduled every 10 minutes during the possible US pre-market/
+regular window; the exchange calendar filters holidays and DST. GitHub may start
+runs late. Publish `line-alert-media/event-board.json`; the dashboard checks this
+file every 30 seconds and shows source timestamps and a warning after 15 minutes.
+Dashboard refresh does not mean prices stream every 30 seconds.
+
+Existing quota-planned summaries continue before and during market hours. A
+new event with absolute day move >=7%, RVOL >=2 and session turnover >=$5m, or a
+new qualified plan, may use an extra alert. Extra alerts are capped at two per
+trading day and 20% of the monthly allowance (60 when the allowance is 300),
+sharing the same overall monthly quota ledger. Never send repeatedly merely
+because the same story's price changed. Distinguish an event notice from its
+later plan transition. Reserve a durable body, quota charge and retry UUID
+before pushing; an uncertain retry uses exactly the same request.
+
+Each LINE round has up to five combined plan/event cards, explanations and a
+one-page PNG. No padding to five. Empty summaries are limited to once per
+pre-market/regular session; previously delivered event-only summaries are
+deduplicated. Full reports and rejection counts are auditable. A new model has
+no measured forward profitability; assess actual filled setups and net costs,
+not subsequent highs or unfilled targets, when evaluating it.
