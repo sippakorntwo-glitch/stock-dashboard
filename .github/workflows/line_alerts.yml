@@ -1,23 +1,19 @@
 name: LINE stock alerts
 on:
   schedule:
-    # Independent wake-up shortly after the :07/:37 ranking refresh. The
-    # completion event is a second wake-up; durable slot keys allow one push.
-    - cron: '16,46 10-21 * * 1-5'
+    # Ten-minute event scans; exchange-calendar/session checks skip closed times.
+    # LINE messages still obey planned rounds, event deduplication and quota.
+    - cron: '6,16,26,36,46,56 10-21 * * 1-5'
   push:
     branches: [main]
     paths: ['.github/workflows/line_alerts.yml']
-  workflow_run:
-    workflows: ['Refresh Top 10 board (30 minutes)']
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
     inputs:
       mode:
-        description: 'scheduled = due quota-planned round; schedule-check = quota and plan without delivery'
+        description: 'monitor = event board plus quota-limited notices; schedule-check = plan without delivery'
         type: choice
-        options: [scheduled, schedule-check, scan, test, dry-run, preview]
-        default: scheduled
+        options: [monitor, scheduled, schedule-check, scan, test, dry-run, preview]
+        default: monitor
 permissions:
   contents: read
 concurrency:
@@ -27,9 +23,7 @@ jobs:
   notify:
     if: >-
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_repository.full_name == github.repository))
+      (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 8
     permissions:
@@ -52,12 +46,12 @@ jobs:
           python -m unittest discover -s tests -p 'test_line_alert*.py'
           python -m unittest discover -s tests -p 'test_stock_alert*.py'
           python -m unittest discover -s tests -p 'test_short_term*.py'
-      - name: Deliver the due pre-market or regular report within monthly quota
+      - name: Refresh events and deliver new notices or due reports within monthly quota
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-          ALERT_MODE: ${{ inputs.mode || 'scheduled' }}
+          ALERT_MODE: ${{ inputs.mode || 'monitor' }}
         run: python line_alerts.py --mode "$ALERT_MODE"
       - name: Preserve the report that was prepared
         if: always()

@@ -16,9 +16,13 @@ def industry_impact(title, ticker):
     if (ticker in ('WDC', 'STX') and re.search(r'\bToshiba\b', title, re.I)
             and re.search(r'\bHDD\b|hard[ -]?(?:disk|drive)', title, re.I)
             and re.search(r'doubl\w*|expan\w*|boost\w*|ramp\w*|increas\w*|supply|capacity|production', title, re.I)):
+        counterpoint = 'เป็นแผนกำลังผลิตในอนาคต ต้องติดตามการลงทุน ซัพพลายเออร์ และวันที่ผลิตได้จริง'
+        if re.search(r'(?:may|might|will|does) not (?:ease|end|solve|fix).{0,35}shortage|unlikely to .{0,35}shortage', title, re.I):
+            counterpoint = ('พาดหัวนี้ระบุว่าการขยายกำลังผลิตอาจยังไม่แก้ภาวะขาดแคลน จึงมีมุมหักล้างความกังวลเรื่องอุปทานล้น; '
+                            'ต้องตรวจรายละเอียดและเวลาที่เพิ่มผลผลิตได้จริง')
         return {'relationship': 'คู่แข่งในอุตสาหกรรม HDD', 'impact_type': 'competitor_supply',
                 'impact_th': 'แผนเพิ่มกำลังผลิตของ Toshiba อาจเพิ่มการแข่งขันด้านราคาและส่วนแบ่งตลาดของผู้ผลิต HDD',
-                'counterpoint_th': 'เป็นแผนกำลังผลิตในอนาคต ต้องติดตามการลงทุน ซัพพลายเออร์ และวันที่ผลิตได้จริง',
+                'counterpoint_th': counterpoint,
                 'interpretation': 'กลไกผลกระทบที่อนุมานจากข่าว ไม่ใช่ผลประกอบการที่เกิดขึ้นแล้ว'}
     if re.search(r'\b(?:capacity|production|supply)\b', title, re.I) and re.search(r'expan\w*|doubl\w*|boost\w*|ramp\w*|cut\w*', title, re.I):
         return {'relationship': 'กำลังผลิต/อุปทานในข่าว', 'impact_type': 'supply_change',

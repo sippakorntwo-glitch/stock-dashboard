@@ -80,6 +80,12 @@ class EventDiscoveryTests(unittest.TestCase):
         self.assertEqual(story_id('WDC', first), story_id('WDC', second))
         self.assertNotEqual(story_id('STX', first), story_id('WDC', first))
 
+    def test_supply_shortage_counterpoint_is_not_lost_in_generic_competition_explanation(self):
+        from market_event_news import industry_impact
+        impact = industry_impact('Analysts say Toshiba HDD expansion may not ease global supply shortage', 'WDC')
+        self.assertIn('อาจยังไม่แก้ภาวะขาดแคลน', impact['counterpoint_th'])
+        self.assertIn('อาจเพิ่มการแข่งขัน', impact['impact_th'])
+
 
 class UrgentDeliveryTests(unittest.TestCase):
     def setUp(self):
