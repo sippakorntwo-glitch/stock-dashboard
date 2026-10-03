@@ -21,7 +21,8 @@ UTC = timezone.utc
 NY = ZoneInfo('America/New_York')
 MIN_DOLLARS = 5_000_000
 MIN_SHARES = 250_000
-MAX_POOL = 1000
+MAX_POOL = 5000
+POOL_VERSION = 3
 MIN_ENTRY_PRICE = 1.0
 MAX_QUOTE_AGE = 180
 MAX_SPREAD = .002  # 0.20%; execution must be checked in the broker.
@@ -96,8 +97,10 @@ def build_pool(cache, universe, now):
     context = session_context(now)
     quotes, classifications = cache.quotes(), cache.classifications()
     eligible, rejected = [], Counter()
+    asset_counts = Counter()
     for ticker in universe:
         row = quotes.get(ticker, {})
+        asset_counts[str(row.get('Asset_Type') or 'Unknown')] += 1
         if row.get('Asset_Type') != 'Common Stock':
             rejected['not_common_stock'] += 1
             continue
@@ -112,9 +115,8 @@ def build_pool(cache, universe, now):
         eligible.append((ticker, row, info, info_meta))
     eligible.sort(key=lambda x: -(number(x[1].get('Dollar_Volume_20D')) or 0))
     rows = []
+    eligible_after_validation = 0
     for ticker, row, info, info_meta in eligible:
-        if len(rows) >= MAX_POOL:
-            break
         frame, _ = cache.history(ticker)
         if frame is None or frame.empty:
             rejected['missing_daily_history'] += 1
@@ -131,6 +133,9 @@ def build_pool(cache, universe, now):
         if not shares or shares < MIN_SHARES or not dollars or dollars < MIN_DOLLARS or not adr or adr <= 0:
             rejected['completed_daily_liquidity'] += 1
             continue
+        eligible_after_validation += 1
+        if len(rows) >= MAX_POOL:
+            continue
         from short_term_context import daily_context, company_context
         bundle, _ = cache.get('financials:' + ticker, request_remote=False)
         rows.append({'ticker': ticker, 'name': str(info.get('shortName') or row.get('Security_Name') or ticker),
@@ -143,24 +148,35 @@ def build_pool(cache, universe, now):
                      'previous_high': float(frame.High.iloc[-1]),
                      'daily_context': daily_context(completed),
                      'company': company_context(ticker, info, info_meta or {}, bundle, now)})
-    from short_term_context import pack_context, CONTEXT_VERSION
-    context_blob = pack_context(rows)
-    return {'model': MODEL, 'computed_at': instant(now).isoformat(), 'scope': 'most-liquid-common-stocks',
+    from short_term_context import pack_pool_rows, CONTEXT_VERSION
+    storage = pack_pool_rows(rows)
+    common = asset_counts['Common Stock']
+    funds = sum(n for kind, n in asset_counts.items() if kind in ('ETF', 'ETP', 'ETN', 'Mutual Fund'))
+    return {'model': MODEL, 'computed_at': instant(now).isoformat(), 'scope': 'all-eligible-liquid-common-stocks',
+            'pool_version': POOL_VERSION, 'count': len(rows),
+            'baseline_day': context['previous_day'],
+            'catalog_common_stocks': common, 'catalog_funds': funds,
+            'catalog_other': len(universe) - common - funds,
             'universe_checked': len(universe), 'eligible_before_cap': len(eligible),
+            'eligible_after_validation': eligible_after_validation,
+            'excluded_by_cap': max(0, eligible_after_validation - len(rows)),
             'limit': MAX_POOL, 'minimum_entry_price': MIN_ENTRY_PRICE, 'context_version': CONTEXT_VERSION,
-            'context_blob': context_blob,
-            'excluded': dict(rejected), 'items': rows}
+            'excluded': dict(rejected), **storage}
 
 
 def validate_pool(pool, now):
     if not isinstance(pool, dict) or pool.get('model') not in (MODEL, LEGACY_POOL_MODEL) or not isinstance(pool.get('items'), list):
         raise ValueError('Missing independent short-term stock universe')
     at = instant(pool.get('computed_at'))
-    if at is None or not 0 <= (now - at).total_seconds() <= 35 * 60 or len(pool['items']) > MAX_POOL:
+    if at is None or not 0 <= (now - at).total_seconds() <= 35 * 60:
         raise ValueError('Short-term universe is stale or oversized')
+    from short_term_context import unpack_pool_rows
+    rows = unpack_pool_rows(pool)
+    if len(rows) > MAX_POOL or (pool.get('pool_version') == POOL_VERSION and pool.get('count') != len(rows)):
+        raise ValueError('Short-term universe count is invalid')
     seen = set()
     previous = session_context(now)['previous_day']
-    for row in pool['items']:
+    for row in rows:
         ticker = row.get('ticker') if isinstance(row, dict) else None
         if (not isinstance(ticker, str) or not re.fullmatch(r'[A-Z0-9][A-Z0-9.\-]{0,14}', ticker)
                 or ticker in seen or row.get('asset_type') != 'Common Stock' or row.get('currency') != 'USD'
@@ -172,8 +188,7 @@ def validate_pool(pool, now):
                 or (number(row.get('previous_high')) or 0) <= 0):
             raise ValueError('Invalid short-term stock identity or baseline')
         seen.add(ticker)
-    from short_term_context import unpack_context
-    return unpack_context(pool)
+    return rows
 
 
 def quote_observation(raw, ticker, now, session):

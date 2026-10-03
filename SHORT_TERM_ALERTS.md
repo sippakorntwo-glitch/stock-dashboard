@@ -7,15 +7,22 @@ and funds; the event pool uses verified USD common stocks only. Legacy manual
 
 ## Discovery and evidence
 
-- Select up to 1,000 common stocks from the verified catalog, ranked by average
-  completed 20-session dollar turnover. Require $5m average dollar turnover and
-  250,000 average daily shares. The baseline must end on the previous NYSE
-  trading session. There is no $10 filter or price floor for watching events.
+- Include all validated eligible USD common stocks from the catalog, subject to
+  a technical maximum of 5,000, ranked by average completed 20-session dollar
+  turnover. The previous version retained only 1,000. Require $5m average dollar
+  turnover and 250,000 average daily shares. The baseline must end on the
+  previous NYSE trading session. There is no $10 filter or price floor for
+  watching events. Funds and other security types remain in the dashboard's
+  searchable catalog but are not silently treated as common-stock scan coverage.
 - Read quotes in batches of 100 and reject stale, future or declared-delayed
   observations. Prioritize absolute day/gap/from-open movement and volume;
-  reserve news checks for both negative and positive movers. Inspect news for
-  at most 10 stocks and 5-minute charts for at most 6 within 150 seconds. This
-  is bounded coverage, not continuous monitoring of every listed stock.
+  reserve news checks for both negative and positive movers. Rotate quote order
+  between 10-minute slots, so a provider time limit does not repeatedly exclude
+  the same suffix. Inspect news for at most 20 stocks (12 strongest plus 8
+  rotating candidates), and 5-minute charts for at most 10 (six priority plus
+  four rotating places among the remaining news candidates) within a 240-second
+  provider-work budget. This is bounded coverage, not continuous monitoring or
+  full news/chart analysis of every listed stock.
 - Require a relevant event headline published within 36 hours with publisher,
   URL and source time. Include results, contracts, guidance, regulation, supply,
   production capacity and other defined material events. Exclude generic stock
@@ -77,6 +84,29 @@ runs late. Publish `line-alert-media/event-board.json`; the dashboard checks thi
 file every 30 seconds and shows source timestamps and a warning after 15 minutes.
 Dashboard refresh does not mean prices stream every 30 seconds.
 
+The coverage panel separates the last observed scan from the latest published
+pool. For example, 999/1,000 means 999 usable quotes out of that report's
+1,000-stock pool, not 999 out of the complete catalog. Quote observations can
+be missing, stale, delayed or otherwise invalid; the difference is not a count
+of failed HTTP requests. New reports separately record quote attempts, usable
+quotes, unattempted symbols, news checks, passing news and chart checks.
+
+The latest configured pool is read through the dashboard's existing asynchronous
+ranking cache. A newer pool can be displayed while the last market report still
+uses the old 1,000-stock pool. Its count never replaces the historical report's
+denominator or pretends a closed-market scan occurred. Metadata distinguishes
+catalog security types, preliminary candidates, validated eligible candidates
+and exclusions caused by the technical cap. Preliminary candidates have not
+passed full validation and are not advertised as eligible scan coverage.
+If cached daily history has not reached the required `baseline_day`, the panel
+shows the affected count and that US-market reference date. An empty prepared
+pool while history awaits refresh is not presented as an empty market or a new
+live scan; the last report retains its original denominator and visible events.
+
+The dashboard shows up to 20 news-qualified choices, with numbered details and
+chart controls for each. LINE still selects up to five; the first five dashboard
+positions follow the same ordering. Missing qualifying events are not padded.
+
 Existing quota-planned summaries continue before and during market hours. A
 new event with absolute day move >=7%, RVOL >=2 and session turnover >=$5m, or a
 new qualified plan, may use an extra alert. Extra alerts are capped at two per
@@ -97,7 +127,8 @@ not subsequent highs or unfilled targets, when evaluating it.
 ## Numbered Thai decision reports (2026-10-03)
 
 The same ordered list supplies LINE text, PNG and the first five dashboard
-expanders. Each stock has company/industry, dated revenue growth and net margin
+positions; additional event rows extend the dashboard to at most 20, each with
+its own details. Each stock has company/industry, dated revenue growth and net margin
 when the statements support them, up to two translated headlines with original
 source links, business implications, price trend, and a conditional plan or
 reasons to wait. Each stock shows its current USD price next to explicitly labeled SMA20/50/200 prices. Definitions are omitted from the compact reports.
@@ -111,9 +142,13 @@ Company statements keep their actual fiscal periods and source; undated profile
 ratios cannot support growth claims. Business directions are conditional
 mechanisms, not invented management forecasts.
 
-Company evidence and daily averages travel as bounded gzip/base64 data inside
-the 1000-stock pool so the ranking remains below the provider's 1 MB limit.
-The scanner validates ticker identity and expands this before selecting stocks.
+The complete pool travels as bounded gzip/base64 data in pool version 3 so the
+ranking remains below the provider's 1 MB limit. Its authoritative `count` is
+available without decompression; an empty outer `items` array does not mean the
+pool is empty. Company evidence and daily averages retain their validated ticker
+association. The scanner checks encoding, decompression bounds, counts and
+symbol identity before selecting stocks. Version 2 context-only compressed
+pools remain readable during the transition.
 
 Thai translation runs offline before the final quote refresh. Public original
 headlines and opening company descriptions are the only model inputs. The CPU
@@ -122,7 +157,8 @@ the official llama.cpp runtime is b11349 (MIT). Downloads are SHA-256 checked.
 Exact-source translations are cached, reviewed finance translations have
 priority, and automatic results are checked for numbers, negation and selected
 financial terms. The model has no tools or credentials and cannot change a
-trade signal. Missing/failed translations retain the visibly labeled original.
+trade signal. Missing/failed translations display a short Thai pending label
+and the original source link, rather than an untranslated English headline.
 Source: https://huggingface.co/Qwen/Qwen3-4B-GGUF
 Runtime: https://github.com/ggml-org/llama.cpp
 

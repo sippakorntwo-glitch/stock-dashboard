@@ -71,7 +71,7 @@ class EventDiscoveryTests(unittest.TestCase):
         values = [(10000 + i, dict(row(), ticker='UP' + str(i)), {'change_pct': 20}) for i in range(20)]
         values += [(1, dict(row(), ticker='WDC'), {'change_pct': -12})]
         chosen = movement_priority(values)
-        self.assertEqual(len(chosen), 10)
+        self.assertEqual(len(chosen), 20)
         self.assertIn('WDC', [v[1]['ticker'] for v in chosen])
 
     def test_same_competitor_event_across_publishers_has_one_notice(self):

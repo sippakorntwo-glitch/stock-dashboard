@@ -5,6 +5,51 @@ import re
 from short_term_engine import number, instant
 
 CONTEXT_VERSION = 2
+MAX_POOL_DECODE_BYTES = 10_000_000
+MAX_POOL_ENCODE_BYTES = 850_000
+
+
+def pack_pool_rows(rows):
+    """Compress the entire expanded universe, retaining the small-pool format."""
+    import base64
+    from copy import deepcopy
+    import gzip
+    import json
+    if len(rows) <= 1000:
+        items = deepcopy(rows)
+        return {'items': items, 'context_blob': pack_context(items)}
+    raw = json.dumps(rows, ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode()
+    if len(raw) > MAX_POOL_DECODE_BYTES:
+        raise ValueError('Expanded stock universe exceeds decoded size budget')
+    blob = base64.b64encode(gzip.compress(raw, mtime=0)).decode()
+    if len(blob) > MAX_POOL_ENCODE_BYTES:
+        raise ValueError('Expanded stock universe exceeds publication budget')
+    return {'items': [], 'items_encoding': 'gzip-json-v1', 'items_blob': blob}
+
+
+def unpack_pool_rows(pool):
+    """Bound decompression before parsing and validate identities in the caller."""
+    import base64
+    import json
+    import zlib
+    if 'items_blob' not in pool and 'items_encoding' not in pool:
+        return unpack_context(pool)
+    from short_term_engine import POOL_VERSION
+    blob = pool.get('items_blob')
+    if (pool.get('pool_version') != POOL_VERSION or pool.get('items_encoding') != 'gzip-json-v1'
+            or pool.get('items') != [] or not isinstance(blob, str) or len(blob) > MAX_POOL_ENCODE_BYTES):
+        raise ValueError('Invalid expanded stock universe encoding')
+    try:
+        decoder = zlib.decompressobj(31)
+        raw = decoder.decompress(base64.b64decode(blob, validate=True), MAX_POOL_DECODE_BYTES + 1)
+        if len(raw) > MAX_POOL_DECODE_BYTES or not decoder.eof or decoder.unused_data:
+            raise ValueError('Invalid expanded stock universe size or envelope')
+        rows = json.loads(raw)
+        if not isinstance(rows, list):
+            raise ValueError('Expanded stock universe must be a list')
+        return rows
+    except (ValueError, TypeError, zlib.error) as exc:
+        raise ValueError('Cannot decode expanded stock universe') from exc
 
 
 def pack_context(rows):

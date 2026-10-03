@@ -68,6 +68,8 @@ def main():
     parser.add_argument('--output',default='work/top10.json')
     parser.add_argument('--publish',action='store_true')
     parser.add_argument('--no-quote-refresh',action='store_true')
+    parser.add_argument('--verify-pool-storage',action='store_true',
+                        help='Check expanded serialization against the available prior baseline; never publish audit data')
     args=parser.parse_args()
     config=config_from() or dict(backend='github',DASHBOARD_DATA_REPO=a.DEFAULT_REPO,
                                 DASHBOARD_DATA_VISIBILITY='public',DASHBOARD_DATA_BRANCH='dashboard-data')
@@ -96,10 +98,32 @@ def main():
         payload['entry_policy']=POLICY
         from short_term_engine import build_pool
         payload['short_term_pool']=build_pool(cache,universe,now.to_pydatetime())
+        if args.verify_pool_storage:
+            from short_term_engine import session_context, NY, validate_pool
+            audit_pool=payload['short_term_pool']
+            audit_clock=now
+            audit_mode='current-valid-universe'
+            if not audit_pool['count'] and audit_pool['excluded'].get('daily_baseline_not_previous_session'):
+                # Storage/schema QA only, not a price scan or historical return
+                # test. Current checkpoint metadata is not point-in-time data.
+                previous=session_context(now.to_pydatetime())['previous_day']
+                audit_clock=pd.Timestamp(previous).tz_localize(NY)+pd.Timedelta(hours=12)
+                audit_pool=build_pool(cache,universe,audit_clock.to_pydatetime())
+                audit_mode='storage-only-prior-baseline-NOT-live-or-backtest'
+            restored=validate_pool(audit_pool,audit_clock.to_pydatetime())
+            audit_bytes=len(json.dumps({**payload,'short_term_pool':audit_pool},ensure_ascii=False,separators=(',',':')).encode())
+            if audit_bytes>1_000_000:raise ValueError('Expanded pool fails actual-checkpoint publication size check')
+            print('POOL_STORAGE_AUDIT:',json.dumps({'mode':audit_mode,'stocks':len(restored),
+                'baseline_day':audit_pool['baseline_day'],'publication_bytes':audit_bytes,
+                'published_as_live':False},ensure_ascii=False),flush=True)
         output=Path(args.output);output.parent.mkdir(parents=True,exist_ok=True)
         output.write_text(json.dumps(payload,ensure_ascii=False,allow_nan=False),encoding='utf-8')
         if args.publish:publish(config,payload)
         concise={k:payload[k] for k in ('computed_at','next_scheduled_at','source_generation','counts','excluded','quote_refresh','entry_policy')}
+        concise['short_term_pool']={k:payload['short_term_pool'].get(k) for k in (
+            'pool_version','scope','count','limit','catalog_common_stocks','catalog_funds','catalog_other',
+            'eligible_before_cap','eligible_after_validation','excluded_by_cap','excluded')}
+        concise['publication_bytes']=len(json.dumps(payload,ensure_ascii=False,separators=(',',':')).encode())
         concise['top10']=[{k:r[k] for k in ('ticker','score','coverage','qualified','ready_at_calculation','price_asof','quote_time','rr')} for r in payload['items']]
         print('TOP10_RANKING_REPORT:',json.dumps(concise,ensure_ascii=False),flush=True)
         if os.environ.get('GITHUB_STEP_SUMMARY'):

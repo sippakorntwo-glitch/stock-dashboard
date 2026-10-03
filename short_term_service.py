@@ -11,9 +11,11 @@ import time
 from short_term_engine import (MODEL, COST_RATE, instant, number, validate_pool,
                                quote_observation, intraday_metrics, make_plan, session_context)
 
-MAX_NEWS = 10
-MAX_CHARTS = 6
-DEADLINE_SECONDS = 150
+MAX_NEWS = 20
+MAX_CHARTS = 10
+DEADLINE_SECONDS = 240
+QUOTE_SCAN_SECONDS = 120
+FINAL_REFRESH_RESERVE = 15
 
 
 def unpack_quotes(raw):
@@ -88,6 +90,28 @@ def movement_priority(candidates, limit=MAX_NEWS):
     return output
 
 
+def news_priority(candidates, slot, limit=MAX_NEWS):
+    """Keep the strongest movers and rotate the remainder for broader discovery."""
+    ordered = movement_priority(candidates, limit=len(candidates))
+    fixed = min(12, limit)
+    first, rest = ordered[:fixed], ordered[fixed:]
+    if not rest or len(first) >= limit:
+        return first
+    remaining = limit - len(first)
+    offset = (slot * remaining) % len(rest)
+    return first + (rest[offset:] + rest[:offset])[:remaining]
+
+
+def chart_order(size, slot):
+    """Six priority charts plus four rotating places across the remaining news."""
+    first = list(range(min(6, size)))
+    rest = list(range(len(first), size))
+    if not rest:
+        return first
+    offset = (slot * max(1, MAX_CHARTS - len(first))) % len(rest)
+    return first + rest[offset:] + rest[:offset]
+
+
 def event_card(row, quote, articles, metrics, reasons):
     from market_event_news import story_id
     # One ticker/story/day event key. Delivery uses HMAC-scoped deduplication.
@@ -136,18 +160,41 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
     news_fetcher = news_fetcher or fetch_alert_news
     chart_fetcher = chart_fetcher or fetch_chart
     deadline = monotonic() + DEADLINE_SECONDS
-    counts = Counter(universe=len(rows), fresh_quotes=0, news_checked=0, charts_checked=0,
-                     news_passed=0, technical_checked=0, catalog=payload.get('counts', {}).get('total', 0))
+    pool = payload['short_term_pool']
+    counts = Counter(universe=len(rows), fresh_quotes=0, quote_attempted=0, quote_failed_batches=0,
+                     quote_unattempted=0, news_checked=0, charts_checked=0, news_passed=0,
+                     technical_checked=0, momentum_candidates=0,
+                     news_limit=MAX_NEWS, chart_limit=MAX_CHARTS,
+                     catalog=payload.get('counts', {}).get('total', 0))
+    for key in ('catalog_common_stocks', 'catalog_funds', 'catalog_other'):
+        if key in pool:
+            counts[key] = pool[key]
+    report['pool_computed_at'] = pool.get('computed_at')
     rejected = Counter()
     diagnostics = []
     raw_quotes = {}
-    symbols = [row['ticker'] for row in rows] + ['SPY']
-    try:
-        for index in range(0, len(symbols), 100):
-            raw_quotes.update(unpack_quotes(quote_fetcher(symbols[index:index + 100])))
-    except Exception:
-        report.update(status='data_unavailable', diagnostics=['quote_feed_unavailable'])
-        return report
+    symbols = [row['ticker'] for row in rows]
+    slot = int(now.timestamp() // 600)
+    # If a provider deadline interrupts a round, its tail must not stay unseen
+    # indefinitely. This changes read order, never the liquidity/entry criteria.
+    offset = (slot * 100) % len(symbols) if symbols else 0
+    symbols = symbols[offset:] + symbols[:offset] + ['SPY']
+    quote_deadline = min(deadline - FINAL_REFRESH_RESERVE, monotonic() + QUOTE_SCAN_SECONDS)
+    for index in range(0, len(symbols), 100):
+        if monotonic() >= quote_deadline:
+            diagnostics.append('quote_scan_limit_reached')
+            break
+        batch = symbols[index:index + 100]
+        counts['quote_attempted'] += sum(t != 'SPY' for t in batch)
+        try:
+            raw_quotes.update(unpack_quotes(quote_fetcher(batch)))
+        except Exception as exc:
+            counts['quote_failed_batches'] += 1
+            diagnostics.append('quote_batch_unavailable')
+            if _blocked_news_access(exc):
+                diagnostics.append('provider_access_or_rate_blocked')
+                break
+    counts['quote_unattempted'] = len(rows) - counts['quote_attempted']
     now = clock()
     benchmark = quote_observation(raw_quotes.get('SPY'), 'SPY', now, context['session'])
     candidates = []
@@ -169,8 +216,10 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
         candidates.append((max(movement, 1.) * max(activity, .05), row, q))
     counts['momentum_candidates'] = len(candidates)
     prepared = []
-    for _, row, q in movement_priority(candidates):
-        if monotonic() >= deadline:
+    for _, row, q in news_priority(candidates, slot):
+        if 'provider_access_or_rate_blocked' in diagnostics:
+            break
+        if monotonic() >= deadline - FINAL_REFRESH_RESERVE:
             diagnostics.append('bounded_scan_limit_reached')
             break
         counts['news_checked'] += 1
@@ -191,7 +240,9 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
         if why:
             audit['reasons'] = [why]
             rejected[why] += 1
-            if isinstance(fetched, dict) and fetched.get('fallback_error') == 'not_attempted_access_or_rate_blocked':
+            if isinstance(fetched, dict) and fetched.get('fallback_error') in {
+                    'not_attempted_access_or_rate_blocked', 'access_or_rate_blocked',
+                    'HTTP_401', 'HTTP_403', 'HTTP_407', 'HTTP_429'}:
                 diagnostics.append('provider_access_or_rate_blocked')
                 break
             continue
@@ -201,13 +252,16 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
         prepared.append((row, None, articles, audit))
     # Translate before obtaining time-sensitive bars and final quotes. Keep the
     # original provider-work budget, excluding bounded offline CPU translation.
-    if prepared:
+    if prepared and 'provider_access_or_rate_blocked' not in diagnostics:
         from thai_news_translation import enrich_prepared
         translation_start = monotonic()
         enrich_prepared(prepared)
         deadline += monotonic() - translation_start
-    for index, (row, _, articles, audit) in enumerate(prepared):
-        if counts['charts_checked'] >= MAX_CHARTS or monotonic() >= deadline:
+    for index in chart_order(len(prepared), slot):
+        row, _, articles, audit = prepared[index]
+        if 'provider_access_or_rate_blocked' in diagnostics:
+            break
+        if counts['charts_checked'] >= MAX_CHARTS or monotonic() >= deadline - FINAL_REFRESH_RESERVE:
             audit['reasons'] = ['intraday_scan_limit']
             continue
         counts['charts_checked'] += 1
@@ -226,7 +280,7 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
         prepared[index] = (row, frame, articles, audit)
     # Re-read prices AFTER news/charts; a timestamp at job start is not live
     # execution evidence after a slow scan. Recompute bar age at this clock.
-    if prepared:
+    if prepared and 'provider_access_or_rate_blocked' not in diagnostics:
         try:
             refreshed = unpack_quotes(quote_fetcher([r['ticker'] for r, _, _, _ in prepared] + ['SPY']))
         except Exception:
@@ -263,7 +317,7 @@ def scan(payload, *, clock=None, quote_fetcher=None, news_fetcher=None, chart_fe
     report['cards'].sort(key=lambda x: (-x['rvol'], -x['net_upside_pct'], x['ticker']))
     report['cards'] = report['cards'][:5]
     report['events'].sort(key=lambda e: (-int(e['urgent']), -abs(e['change_pct']), e['ticker']))
-    report['events'] = report['events'][:10]
+    report['events'] = report['events'][:MAX_NEWS]
     report.update(generated_at=clock().isoformat(), actual_count=len(report['cards']),
                   counts=dict(counts), excluded=dict(rejected), diagnostics=list(dict.fromkeys(diagnostics)))
     report['status'] = 'conditional_plans' if report['cards'] else 'events_watch' if report['events'] else 'data_unavailable' if (
