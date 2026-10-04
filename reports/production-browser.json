@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-10-03T06:18:09.970667+00:00",
-  "run_id": "37101458680",
+  "recorded_at": "2026-10-04T05:33:12.946955+00:00",
+  "run_id": "37179380542",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-10-03.46",
@@ -523,7 +523,7 @@
       {
         "period": "10 ปี",
         "bars": 2765,
-        "mixed_bars": 2710,
+        "mixed_bars": 2709,
         "flat_bars": 0,
         "missing_volume": 0
       }
@@ -703,7 +703,7 @@
         "interval": "1d",
         "trend": "uptrend",
         "bar_time": "2026-10-02",
-        "return_percent": 317.65803235117136,
+        "return_percent": 317.65806693508534,
         "levels": {
           "support": 747.7432005092232,
           "resistance": 775.1400146484375,
@@ -720,20 +720,18 @@
         },
         "volume_ratio": 1.0086973417854699,
         "metrics": {
-          "ema20": 765.0272848665537,
-          "ema50": 760.2901894665061,
-          "sma200": 717.0393566894531,
-          "rsi": 55.391302485473034,
-          "macd": 1.3517385175276786,
-          "signal": 1.3478972663865183,
-          "hist": 0.0038412511411602956
+          "ema20": 765.0272848663083,
+          "ema50": 760.290189418877,
+          "sma200": 717.0393569946289,
+          "rsi": 55.39130245116635,
+          "macd": 1.3517385205107075,
+          "signal": 1.3478972707833632,
+          "hist": 0.0038412497273443424
         },
-        "atr_pct": 0.876159162454702,
+        "atr_pct": 0.8761591636234118,
         "below_chart": true,
         "source_values_checked": true,
-        "warnings": [
-          "แท่งล่าสุดอาจยังไม่ปิดหรือยืนยันเวลาไม่ได้: การอ่านแนวโน้มและการทะลุกรอบยังเป็นเพียงชั่วคราว"
-        ],
+        "warnings": [],
         "chart_reference_lines": {
           "actual_price_lines": [
             {
@@ -788,11 +786,11 @@
         {
           "ticker": "SPY",
           "period": "10 ปี",
-          "percent": 317.65803235117136,
+          "percent": 317.65806693508534,
           "display": "+317.66%",
           "first": "2016-10-03",
           "last": "2026-10-02",
-          "start_price": 184.27516174316406,
+          "start_price": 184.275146484375,
           "end_price": 769.6400146484375,
           "bars": 2514
         },
@@ -821,8 +819,8 @@
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-10-03T06:06:43.001561+00:00",
-        "quotes_checked_at": "2026-10-03T06:06:34.536302+00:00",
+        "rendered_at": "2026-10-04T05:23:14.508514+00:00",
+        "quotes_checked_at": "2026-10-04T05:22:58.422569+00:00",
         "observations": [
           {
             "ticker": "WTS",
@@ -831,57 +829,57 @@
             "news_checked_at": null
           },
           {
-            "ticker": "UFPT",
+            "ticker": "PBFR",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T20:00:00+00:00",
+            "quote_observed_at": "2026-10-02T19:59:50+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "QCJA",
+            "ticker": "ESTC",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T19:36:44+00:00",
+            "quote_observed_at": "2026-10-02T20:00:03+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "JAKK",
+            "ticker": "SMAX",
             "assessment": "unknown",
             "quote_observed_at": "2026-10-02T20:00:01+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "RISR",
+            "ticker": "BJ",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T20:03:39+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "TOPW",
             "assessment": "unknown",
             "quote_observed_at": "2026-10-02T20:00:00+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "JQUA",
+            "ticker": "GQI",
             "assessment": "unknown",
             "quote_observed_at": "2026-10-02T20:00:00+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "QLTY",
+            "ticker": "DBJP",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T19:59:59+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "IDNA",
             "assessment": "unknown",
             "quote_observed_at": "2026-10-02T20:00:00+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "RSPT",
+            "ticker": "NVDA",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T20:00:00+00:00",
-            "news_checked_at": null
-          },
-          {
-            "ticker": "IVES",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T20:00:00+00:00",
-            "news_checked_at": null
-          },
-          {
-            "ticker": "BOCT",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T19:59:12+00:00",
+            "quote_observed_at": "2026-10-02T20:00:01+00:00",
             "news_checked_at": null
           }
         ]
@@ -894,12 +892,12 @@
         "provider_success_required": false
       },
       "pulse_after": {
-        "provider_state": "partial",
+        "provider_state": "refreshing",
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-10-03T06:08:04.345868+00:00",
-        "quotes_checked_at": "2026-10-03T06:07:34.872653+00:00",
+        "rendered_at": "2026-10-04T05:24:08.517296+00:00",
+        "quotes_checked_at": "2026-10-04T05:23:33.918941+00:00",
         "observations": [
           {
             "ticker": "WTS",
@@ -908,64 +906,64 @@
             "news_checked_at": null
           },
           {
-            "ticker": "UFPT",
+            "ticker": "PBFR",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T20:00:00+00:00",
+            "quote_observed_at": "2026-10-02T19:59:50+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "QCJA",
+            "ticker": "ESTC",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T19:36:44+00:00",
+            "quote_observed_at": "2026-10-02T20:00:03+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "JAKK",
+            "ticker": "SMAX",
             "assessment": "unknown",
             "quote_observed_at": "2026-10-02T20:00:01+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "RISR",
+            "ticker": "BJ",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T20:03:39+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "TOPW",
             "assessment": "unknown",
             "quote_observed_at": "2026-10-02T20:00:00+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "JQUA",
+            "ticker": "GQI",
             "assessment": "unknown",
             "quote_observed_at": "2026-10-02T20:00:00+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "QLTY",
+            "ticker": "DBJP",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-02T19:59:59+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "IDNA",
             "assessment": "unknown",
             "quote_observed_at": "2026-10-02T20:00:00+00:00",
             "news_checked_at": null
           },
           {
-            "ticker": "RSPT",
+            "ticker": "NVDA",
             "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T20:00:00+00:00",
-            "news_checked_at": null
-          },
-          {
-            "ticker": "IVES",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T20:00:00+00:00",
-            "news_checked_at": null
-          },
-          {
-            "ticker": "BOCT",
-            "assessment": "unknown",
-            "quote_observed_at": "2026-10-02T19:59:12+00:00",
+            "quote_observed_at": "2026-10-02T20:00:01+00:00",
             "news_checked_at": null
           }
         ]
       },
       "first_rank": "01 · WTS · 95/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
       "clicked": "WTS",
-      "chart_bars": 1520,
+      "chart_bars": 1521,
       "filter_independent": true,
       "completed_search_before_selection": true,
       "single_click": true,
@@ -1096,7 +1094,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20261003T053859Z-6c1621c3",
+      "source_generation": "generations/20261004T030905Z-ec04d08e",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -1104,8 +1102,8 @@
         "info": 9876,
         "industry": 9542,
         "dividends_checked": 9876,
-        "dividends_with_payments": 6097,
-        "dividends_no_payments": 3779,
+        "dividends_with_payments": 6103,
+        "dividends_no_payments": 3773,
         "financial_statements": 4160,
         "unattempted_info": 0,
         "unattempted_dividends": 0
@@ -1121,7 +1119,7 @@
           "ticker": "AEON",
           "industry_state": "available",
           "dividend_state": "no_payments",
-          "history_bars": 940,
+          "history_bars": 941,
           "company_analysis": {
             "ticker": "AEON",
             "groups": 9,
@@ -1166,14 +1164,14 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20261003T053859Z-6c1621c3"
+            "source_generation": "generations/20261004T030905Z-ec04d08e"
           }
         },
         {
           "ticker": "AESP",
           "industry_state": "available",
           "dividend_state": "no_payments",
-          "history_bars": 65,
+          "history_bars": 66,
           "company_analysis": {
             "ticker": "AESP",
             "groups": 9,
@@ -1207,7 +1205,7 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20261003T053859Z-6c1621c3"
+            "source_generation": "generations/20261004T030905Z-ec04d08e"
           }
         },
         {
@@ -1234,7 +1232,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20261003T053859Z-6c1621c3",
+      "source_generation": "generations/20261004T030905Z-ec04d08e",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -1280,12 +1278,12 @@
         },
         {
           "ticker": "AAC",
-          "price_asof": "2026-10-01",
+          "price_asof": "2026-10-02",
           "returns": {
             "1 Day (%)": 0.0,
-            "3 Days (%)": 0.4965262388296088,
-            "7 Days (%)": 0.29732143228458074,
-            "1 Month (%)": 0.5964161375717758,
+            "3 Days (%)": 0.0,
+            "7 Days (%)": 0.39682502138671527,
+            "1 Month (%)": 0.4965262388296088,
             "6 Months (%)": null,
             "1 Year (%)": null,
             "3 Years (%)": null,
@@ -1297,7 +1295,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-10-03T06:10:24.551950+00:00",
+      "verified_at": "2026-10-04T05:26:24.751612+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -1309,7 +1307,7 @@
           "บริษัท / กองทุน",
           "หมวดหมู่ / คุณภาพข้อมูล"
         ],
-        "rows": 1190,
+        "rows": 1181,
         "minimum_price": 5,
         "maximum_rsi": 70,
         "minimum_roe": 10,
@@ -1350,7 +1348,7 @@
         "QQQI": true
       },
       "combined_numeric_filter": {
-        "rows": 169,
+        "rows": 175,
         "minimum_1m": 0
       },
       "invalid_bounds_handled": true,
@@ -1358,10 +1356,10 @@
       "empty_results_handled": true,
       "QQQI_chart_bars": 672,
       "auto_refresh_verified": {
-        "session": "closed",
+        "session": "unknown",
         "state": "scheduled",
         "effective_seconds": 1800.0,
-        "next_due": 1791009847.4373183,
+        "next_due": 1791093574.6191492,
         "second_observation": false,
         "reason": "provider session or request budget requires a conservative wait"
       },
@@ -1375,37 +1373,37 @@
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1791009847.4373183",
+          "nextDue": "1791093574.6191492",
           "busy": "false",
-          "session": "closed"
+          "session": "unknown"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
           "effectiveSeconds": "1800",
-          "nextDue": "1791009847.4373183",
+          "nextDue": "1791093574.6191492",
           "busy": "false",
-          "session": "closed"
+          "session": "unknown"
         },
         "resumed": {
           "state": "scheduled",
           "requestedSeconds": "30",
           "effectiveSeconds": "1800",
-          "nextDue": "1791009847.4373183",
+          "nextDue": "1791093574.6191492",
           "busy": "false",
-          "session": "closed"
+          "session": "unknown"
         },
         "pause_resume": true,
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20261003T053859Z-6c1621c3",
-        "generation_after": "generations/20261003T053859Z-6c1621c3"
+        "generation_before": "generations/20261004T030905Z-ec04d08e",
+        "generation_after": "generations/20261004T030905Z-ec04d08e"
       },
       "minute_price": {
         "price": 56.13,
         "bar_time": "2026-10-02T23:59:00+00:00",
-        "fetched_at": "2026-10-03T06:14:07.436512+00:00",
+        "fetched_at": "2026-10-04T05:29:34.616375+00:00",
         "state": "stale"
       },
       "theme": {
