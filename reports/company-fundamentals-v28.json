@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-10-05T11:08:38.331339+00:00",
-  "run_id": "37299327296",
+  "recorded_at": "2026-10-05T17:11:05.382572+00:00",
+  "run_id": "37344211737",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-05T10:53:06.039051+00:00",
-  "source_generation": "generations/20261005T074349Z-ab5f7fd5",
+  "started_at": "2026-10-05T16:53:39.284862+00:00",
+  "source_generation": "generations/20261005T110437Z-163491f7",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-05T11:08:38.310738+00:00",
+  "finished_at": "2026-10-05T17:11:05.346588+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261005T110437Z-163491f7",
+  "generation": "generations/20261005T170617Z-d83fbeae",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -30,14 +30,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305705,
-    "report_sha256": "ae63a45980be93d88f63548490df062084c333571b2308b3bd897fd5a77f5c63",
+    "report_sha256": "77af0015fc4798f515136e4e7d14899482a14e685d09f7e1c72f05cf353ecd9d",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37299327296",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37344211737",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -3973,7 +3973,7 @@
     }
   },
   "collection": {
-    "due_before": 1372,
+    "due_before": 1361,
     "attempted": 400,
     "updated": 1,
     "not_reported": 0,
@@ -3986,7 +3986,7 @@
       "selection": "prefix"
     },
     "symbols_updated": [
-      "FLS"
+      "GLW"
     ],
     "symbols_updated_summary": {
       "total": 1,
@@ -3995,7 +3995,7 @@
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 917,
-    "remaining_due": 972
+    "retained_fields": 753,
+    "remaining_due": 961
   }
 }
