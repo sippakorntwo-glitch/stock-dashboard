@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-10-05T04:40:33.666095+00:00",
-  "run_id": "37264433915",
+  "recorded_at": "2026-10-05T06:52:46.858475+00:00",
+  "run_id": "37274037237",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-05T04:39:51.574201+00:00",
-  "source_generation": "generations/20261005T003845Z-c81eeadf",
+  "started_at": "2026-10-05T06:46:15.523883+00:00",
+  "source_generation": "generations/20261005T052337Z-79833a3f",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-05T04:40:33.640081+00:00",
+  "finished_at": "2026-10-05T06:52:46.823903+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261005T003845Z-c81eeadf",
+  "generation": "generations/20261005T064806Z-bebcc977",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -25,20 +25,19 @@
     "return_2y": 6975,
     "return_3y": 6204
   },
-  "snapshot_unchanged": true,
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305822,
-    "report_sha256": "92c0e7ef877a63577a15bbbe038b1c852b1e9e67aa1f1047ed8cae87524b9cb1",
+    "report_bytes": 306077,
+    "report_sha256": "1ad5939ca236d814ec89f895274699f9e870b4d64e9b1f887d5d175e29366d91",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37264433915",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37274037237",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -3982,10 +3981,15 @@
     "conflicting_cells": 0,
     "failed": 0,
     "revised_cells": 0,
-    "errors": [],
+    "errors": [
+      {
+        "source": "SEC ticker index",
+        "error": "HTTPError"
+      }
+    ],
     "errors_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 1,
+      "included": 1,
       "omitted": 0,
       "selection": "prefix"
     },
@@ -3997,7 +4001,20 @@
       "selection": "prefix"
     },
     "only_missing": true,
-    "cooldown_until": "2026-10-05T06:26:31.843348+00:00",
-    "provider_requests": 0
+    "cooldown_until": "2026-10-06T06:46:37.299831+00:00",
+    "provider_requests": 1,
+    "http_evidence": [
+      {
+        "url": "https://www.sec.gov/files/company_tickers.json",
+        "received_at": "2026-10-05T06:46:37.298370+00:00",
+        "http_status": 403
+      }
+    ],
+    "http_evidence_summary": {
+      "total": 1,
+      "included": 1,
+      "omitted": 0,
+      "selection": "prefix"
+    }
   }
 }
