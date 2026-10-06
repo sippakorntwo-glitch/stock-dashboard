@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-10-05T23:07:13.870552+00:00",
-  "run_id": "37384833330",
+  "recorded_at": "2026-10-06T05:08:52.701252+00:00",
+  "run_id": "37415666624",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-05T22:49:39.548386+00:00",
-  "source_generation": "generations/20261005T170617Z-d83fbeae",
+  "started_at": "2026-10-06T04:51:52.854026+00:00",
+  "source_generation": "generations/20261006T004040Z-84722873",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-05T23:07:13.836381+00:00",
+  "finished_at": "2026-10-06T05:08:52.667347+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261005T230242Z-18150f9c",
+  "generation": "generations/20261006T050420Z-5e2dda66",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -30,14 +30,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305688,
-    "report_sha256": "46de6f864dc03e3bc4aa01a9dd1a8bd1bcbd780969c3f8ddd55979abccf23bf1",
+    "report_sha256": "1051280626e0b54876507311487de54f1ef14d2dd34e28b41dd67658073719ce",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37384833330",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37415666624",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -68,9 +68,9 @@
         "not_applicable": 5676
       },
       "trailingPE": {
-        "available": 2274,
+        "available": 2275,
         "not_meaningful": 1756,
-        "not_reported": 170,
+        "not_reported": 169,
         "not_applicable": 5676
       },
       "forwardPE": {
@@ -2034,9 +2034,9 @@
         "not_applicable": 5676
       },
       "trailingPE": {
-        "available": 2274,
+        "available": 2275,
         "not_meaningful": 1756,
-        "not_reported": 170,
+        "not_reported": 169,
         "not_applicable": 5676
       },
       "forwardPE": {
@@ -3993,7 +3993,7 @@
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 548,
+    "retained_fields": 651,
     "remaining_due": 960
   }
 }
