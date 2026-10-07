@@ -1,22 +1,22 @@
 {
-  "recorded_at": "2026-10-07T08:37:58.138872+00:00",
-  "run_id": "37594891378",
+  "recorded_at": "2026-10-07T17:27:54.757214+00:00",
+  "run_id": "37659097493",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-07T08:37:06.116356+00:00",
-  "source_generation": "generations/20261007T074826Z-f1b0b78f",
+  "started_at": "2026-10-07T17:27:20.940206+00:00",
+  "source_generation": "generations/20261007T123730Z-f8764fc8",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-07T08:37:58.105772+00:00",
+  "finished_at": "2026-10-07T17:27:54.737221+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261007T074826Z-f1b0b78f",
+  "generation": "generations/20261007T123730Z-f8764fc8",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9871,
+    "checked_today": 9874,
     "industry": 9609,
     "info": 9876,
     "financial_statements": 4160,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 317801,
-    "report_sha256": "e986e2ed24b43b19851b36e5105bd3138ebeff73b55ef93357c7809bdfe1f144",
+    "report_sha256": "8ee71d3971ab5dea224fc0d857cc07df60fb73b6e9b991db2a7118a749e60c8d",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37594891378",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37659097493",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -348,8 +348,8 @@
       },
       "payoutRatio": {
         "available": 2048,
-        "not_meaningful": 1397,
-        "not_reported": 755,
+        "not_meaningful": 1393,
+        "not_reported": 759,
         "not_applicable": 5676
       },
       "dividendsPaid": {
@@ -2325,8 +2325,8 @@
       },
       "payoutRatio": {
         "available": 2048,
-        "not_meaningful": 1397,
-        "not_reported": 755,
+        "not_meaningful": 1393,
+        "not_reported": 759,
         "not_applicable": 5676
       },
       "dividendsPaid": {
