@@ -1,22 +1,22 @@
 {
-  "recorded_at": "2026-10-09T02:50:21.895540+00:00",
-  "run_id": "37875045001",
+  "recorded_at": "2026-10-09T11:47:44.504059+00:00",
+  "run_id": "37924034518",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-09T02:32:58.359058+00:00",
-  "source_generation": "generations/20261008T232005Z-6b1ae265",
+  "started_at": "2026-10-09T11:30:12.312291+00:00",
+  "source_generation": "generations/20261009T060543Z-d6280568",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-09T02:50:21.860831+00:00",
+  "finished_at": "2026-10-09T11:47:44.474526+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261009T024551Z-e8269860",
+  "generation": "generations/20261009T114307Z-ad4696ad",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9874,
+    "checked_today": 0,
     "industry": 9804,
     "info": 9876,
     "financial_statements": 4160,
@@ -29,15 +29,15 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305692,
-    "report_sha256": "b18fdf8a167568e8a31332396d227a1a81fbd37a4f05731cda94179cc2dd0fae",
+    "report_bytes": 305801,
+    "report_sha256": "273120806c5523d16a018e8381f36ac3b82e7683d4a0f7556dfdfe09a61ab313",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37875045001",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37924034518",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -2010,8 +2010,8 @@
     "counts": {
       "securities": 9876,
       "companies": 4200,
-      "statements_available": 4150,
-      "companies_rechecked_revision": 4151,
+      "statements_available": 4151,
+      "companies_rechecked_revision": 4152,
       "companies_with_statement_gaps": 4058,
       "companies_without_financial_currency": 40,
       "companies_checked_with_sec": 0,
@@ -2185,10 +2185,10 @@
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
-        "available": 3788,
+        "available": 3789,
         "not_meaningful": 325,
         "pending": 40,
-        "not_reported": 47,
+        "not_reported": 46,
         "not_applicable": 5676
       },
       "currentRatio": {
@@ -2203,8 +2203,8 @@
         "not_applicable": 5676
       },
       "cashRatio": {
-        "available": 3617,
-        "not_reported": 541,
+        "available": 3618,
+        "not_reported": 540,
         "pending": 40,
         "not_meaningful": 2,
         "not_applicable": 5676
@@ -2217,21 +2217,21 @@
         "not_applicable": 5676
       },
       "totalAssets": {
+        "available": 4115,
+        "pending": 40,
+        "not_reported": 45,
+        "not_applicable": 5676
+      },
+      "totalLiabilities": {
         "available": 4114,
         "pending": 40,
         "not_reported": 46,
         "not_applicable": 5676
       },
-      "totalLiabilities": {
-        "available": 4113,
-        "pending": 40,
-        "not_reported": 47,
-        "not_applicable": 5676
-      },
       "stockholdersEquity": {
-        "available": 4115,
+        "available": 4116,
         "pending": 40,
-        "not_reported": 45,
+        "not_reported": 44,
         "not_applicable": 5676
       },
       "cash": {
@@ -2252,20 +2252,20 @@
         "not_applicable": 5676
       },
       "currentAssets": {
-        "available": 3636,
-        "not_reported": 524,
+        "available": 3637,
+        "not_reported": 523,
         "pending": 40,
         "not_applicable": 5676
       },
       "currentLiabilities": {
-        "available": 3631,
-        "not_reported": 529,
+        "available": 3632,
+        "not_reported": 528,
         "pending": 40,
         "not_applicable": 5676
       },
       "workingCapital": {
-        "available": 3630,
-        "not_reported": 530,
+        "available": 3631,
+        "not_reported": 529,
         "pending": 40,
         "not_applicable": 5676
       },
@@ -2366,7 +2366,6 @@
       "ETX",
       "BPAC",
       "DPU",
-      "ARTC",
       "BREZ",
       "FACT",
       "BMEZ",
@@ -2399,8 +2398,8 @@
       "ROC"
     ],
     "recheck_pending_symbols_summary": {
-      "total": 49,
-      "included": 49,
+      "total": 48,
+      "included": 48,
       "omitted": 0,
       "selection": "prefix"
     },
@@ -3973,27 +3972,35 @@
     }
   },
   "collection": {
-    "due_before": 1773,
+    "due_before": 2160,
     "attempted": 400,
-    "updated": 0,
-    "not_reported": 0,
-    "failed": 0,
-    "errors": [],
+    "updated": 1,
+    "not_reported": 9,
+    "failed": 1,
+    "errors": [
+      {
+        "ticker": "HELP",
+        "error": "ValueError",
+        "rate_limited": false
+      }
+    ],
     "errors_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 1,
+      "included": 1,
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [],
+    "symbols_updated": [
+      "ARTC"
+    ],
     "symbols_updated_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 1,
+      "included": 1,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 638,
-    "remaining_due": 1373
+    "retained_fields": 445,
+    "remaining_due": 1760
   }
 }
