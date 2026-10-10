@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-10-09T21:32:11.045624+00:00",
-  "run_id": "37992115114",
+  "recorded_at": "2026-10-10T02:11:47.725763+00:00",
+  "run_id": "38014931901",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-09T21:14:14.188342+00:00",
-  "source_generation": "generations/20261009T170338Z-ff9bfabf",
+  "started_at": "2026-10-10T01:54:35.817362+00:00",
+  "source_generation": "generations/20261009T223619Z-6b2a84f7",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-09T21:32:11.012075+00:00",
+  "finished_at": "2026-10-10T02:11:47.699491+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261009T212741Z-50fa59fb",
+  "generation": "generations/20261010T020721Z-7968b39b",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -30,14 +30,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305746,
-    "report_sha256": "000a6d17fc4b65e41a421f1d8a1d1943d8c155528b1dcce1237221ef49a37a9a",
+    "report_sha256": "37ab4372689ad0155c2840d8fe7a9cebb585d0df7d6c340dc3eebd2011f7813d",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/37992115114",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/38014931901",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -3978,7 +3978,7 @@
     "due_before": 1762,
     "attempted": 400,
     "updated": 0,
-    "not_reported": 0,
+    "not_reported": 1,
     "failed": 0,
     "errors": [],
     "errors_summary": {
@@ -3995,7 +3995,7 @@
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 742,
+    "retained_fields": 660,
     "remaining_due": 1362
   }
 }
