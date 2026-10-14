@@ -1,22 +1,22 @@
 {
-  "recorded_at": "2026-10-14T01:41:03.339056+00:00",
-  "run_id": "38495330662",
+  "recorded_at": "2026-10-14T09:58:47.342870+00:00",
+  "run_id": "38544249996",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-14T01:23:51.553679+00:00",
-  "source_generation": "generations/20261014T011826Z-5b3ca2ca",
+  "started_at": "2026-10-14T09:42:43.490789+00:00",
+  "source_generation": "generations/20261014T045028Z-29d25934",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-14T01:41:03.319835+00:00",
+  "finished_at": "2026-10-14T09:58:47.309503+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261014T013705Z-84905832",
+  "generation": "generations/20261014T095408Z-017aa90e",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9872,
+    "checked_today": 0,
     "industry": 9804,
     "info": 9876,
     "financial_statements": 4160,
@@ -29,15 +29,15 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305764,
-    "report_sha256": "f24b8a11ba77c2ea728f316fd4f47153735be4be3bf1b6675220c0a624684d38",
+    "report_bytes": 305743,
+    "report_sha256": "8d8a4cd070f77dbc61250ae1bb9ad3a0b2a21a4b60f798efa5505c048f9b3a6c",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/38495330662",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/38544249996",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -219,8 +219,8 @@
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
-        "available": 3789,
-        "not_meaningful": 325,
+        "available": 3788,
+        "not_meaningful": 326,
         "pending": 40,
         "not_reported": 46,
         "not_applicable": 5676
@@ -3975,9 +3975,9 @@
     }
   },
   "collection": {
-    "due_before": 2168,
-    "attempted": 378,
-    "updated": 1,
+    "due_before": 2190,
+    "attempted": 400,
+    "updated": 0,
     "not_reported": 0,
     "failed": 0,
     "errors": [],
@@ -3987,17 +3987,15 @@
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [
-      "XRPN"
-    ],
+    "symbols_updated": [],
     "symbols_updated_summary": {
-      "total": 1,
-      "included": 1,
+      "total": 0,
+      "included": 0,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 711,
+    "retained_fields": 515,
     "remaining_due": 1790
   }
 }
