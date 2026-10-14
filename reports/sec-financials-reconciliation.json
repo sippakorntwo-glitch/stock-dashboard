@@ -1,22 +1,22 @@
 {
-  "recorded_at": "2026-10-14T01:23:02.683474+00:00",
-  "run_id": "38494747627",
+  "recorded_at": "2026-10-14T07:44:17.931921+00:00",
+  "run_id": "38530097270",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-14T01:16:36.320653+00:00",
-  "source_generation": "generations/20261013T214510Z-f6660d1c",
+  "started_at": "2026-10-14T07:43:24.960594+00:00",
+  "source_generation": "generations/20261014T045028Z-29d25934",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-14T01:23:02.648589+00:00",
+  "finished_at": "2026-10-14T07:44:17.899995+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261014T011826Z-5b3ca2ca",
+  "generation": "generations/20261014T045028Z-29d25934",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9872,
+    "checked_today": 0,
     "industry": 9804,
     "info": 9876,
     "financial_statements": 4160,
@@ -25,19 +25,20 @@
     "return_2y": 6992,
     "return_3y": 6211
   },
+  "snapshot_unchanged": true,
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 306134,
-    "report_sha256": "e5dbc281c6a5bf5e43e6cad3f8719ead131cffeef7b665ebd975677b574e535b",
+    "report_bytes": 305876,
+    "report_sha256": "b82f130ccd30589b2177916402cbaf08b5857e7fe1afb7b69e869c366c5e22b6",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/38494747627",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/38530097270",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -219,8 +220,8 @@
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
-        "available": 3789,
-        "not_meaningful": 325,
+        "available": 3788,
+        "not_meaningful": 326,
         "pending": 40,
         "not_reported": 46,
         "not_applicable": 5676
@@ -2186,8 +2187,8 @@
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
-        "available": 3789,
-        "not_meaningful": 325,
+        "available": 3788,
+        "not_meaningful": 326,
         "pending": 40,
         "not_reported": 46,
         "not_applicable": 5676
@@ -3983,15 +3984,10 @@
     "conflicting_cells": 0,
     "failed": 0,
     "revised_cells": 0,
-    "errors": [
-      {
-        "source": "SEC ticker index",
-        "error": "HTTPError"
-      }
-    ],
+    "errors": [],
     "errors_summary": {
-      "total": 1,
-      "included": 1,
+      "total": 0,
+      "included": 0,
       "omitted": 0,
       "selection": "prefix"
     },
@@ -4004,19 +4000,6 @@
     },
     "only_missing": true,
     "cooldown_until": "2026-10-15T01:16:58.107769+00:00",
-    "provider_requests": 1,
-    "http_evidence": [
-      {
-        "url": "https://www.sec.gov/files/company_tickers.json",
-        "received_at": "2026-10-14T01:16:58.106796+00:00",
-        "http_status": 403
-      }
-    ],
-    "http_evidence_summary": {
-      "total": 1,
-      "included": 1,
-      "omitted": 0,
-      "selection": "prefix"
-    }
+    "provider_requests": 0
   }
 }
