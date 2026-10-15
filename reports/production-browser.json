@@ -1,10 +1,1610 @@
 {
-  "recorded_at": "2026-10-14T08:45:13.033387+00:00",
-  "run_id": "38536291708",
+  "recorded_at": "2026-10-15T08:25:43.788751+00:00",
+  "run_id": "38703905929",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "result": "failure",
-  "error": "Traceback (most recent call last):\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/verify_workspace.py\", line 48, in main\n    production_smoke.run()\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/production_smoke.py\", line 381, in run\n    report['enhancements']=verify_enhancements(page,app)\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/enhanced_smoke.py\", line 64, in verify_enhancements\n    report['advanced_screener_and_ui']=verify_screener(page,app)\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/screener_smoke.py\", line 236, in verify_screener\n    choose(app,'Return Periods to Filter','1 Month (%)',multi=True)\n  File \"/home/runner/work/stock-dashboard/stock-dashboard/screener_smoke.py\", line 101, in choose\n    expect(tag).to_be_visible(timeout=15000)\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/playwright/sync_api/_generated.py\", line 20424, in to_be_visible\n    self._sync(self._impl_obj.to_be_visible(visible=visible, timeout=timeout))\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/playwright/_impl/_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 763, in to_be_visible\n    await self._expect_impl(\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 83, in _expect_impl\n    raise AssertionError(\nAssertionError: Locator expected to be visible\nActual value: <element(s) not found> \nCall log:\n  - Expect \"to_be_visible\" with timeout 15000ms\n  - waiting for locator(\".st-key-overview_controls [data-testid=\\\"stMultiSelect\\\"]\").filter(has=get_by_text(\"ช่วงผลตอบแทนที่ต้องการกรอง\", exact=True)).first.locator(\"[data-tag]\").filter(has_text=re.compile(r\"^1\\ Month\\ \\(%\\)$\"))\n\n",
-  "diagnostic": "Waiting for single-page hosting release 2026-10-03.46\nVERIFIED_INITIAL_SINGLE_PAGE: AAPL; all research sections\nVERIFIED_STOCK_SELECTION: MSFT\nVERIFIED_STOCK_SELECTION: AAPL\nBROWSER_FRAME: {\"url\": \"https://my-stock-terminal.streamlit.app/\", \"payload_count\": 0, \"canvas_count\": 0, \"text\": \"\", \"inputs\": [], \"receipts\": []}\nBROWSER_FRAME: {\"url\": \"https://qjmnz4vd2y07.statuspage.io/embed/frame\", \"payload_count\": 0, \"canvas_count\": 0, \"text\": \"Status embed installed correctly\\n\\nThis will be shown if an incident or maintenance is posted on your status page.\\nView latest updates\", \"inputs\": [], \"receipts\": []}\nBROWSER_FRAME: {\"url\": \"https://my-stock-terminal.streamlit.app/~/+/\", \"payload_count\": 0, \"canvas_count\": 34, \"text\": \"keyboard_arrow_right\\n\\nอัปโหลด Watchlist / CSV\\n\\nStock Research\\n\\nหน้าเดียว · คลิกหุ้นในตาราง แล้วดูกราฟและรายละเอียดด้านล่าง\\n\\nTicker สำหรับวิเคราะห์\\n\\nเพิ่ม / ลบรายการโปรด\\n\\nบันทึกชุดวิเคราะห์เพื่อเก็บรายการโปรดไว้ใช้ครั้งหน้า หรือดาวน์โหลด CSV\\n\\nตรวจชุดข้อมูลใหม่\\n\\nkeyboard_arrow_down\\n\\nชุดวิเคราะห์และบันทึกส่วนตัว\\n\\nบันทึกในเบราว์เซอร์นี้ ผู้ใช้โปรไฟล์เบราว์เซอร์เดียวกันเข้าถึงได้ · ส่งออก JSON เพื่อย้ายเครื่องหรือสำรองข้อมูล\\n\\nส่งออกชุดวิเคราะห์ JSON\\n\\nนำเข้าชุดวิเคราะห์ JSON\\n\\nupload\\n\\nUpload\\n\\n5MB per file • JSON\\n\\nเปิดชุดวิเคราะห์จากไฟล์\\n\\nFork\\nStock Research Workspace\\nสรุปหุ้นที่เลือก\\nกราฟและราคา\\nพื้นฐานและปันผล\\nความเสี่ยง\\nเปรียบเทียบ\\n\\nข้อมูลเป็นรอบ ไม่ใช่ราคาสตรีมสด · รุ่นโปรแกรม 2026-10-03.46\\n\\nรายการทั้งหมด\\n\\n9,876\\n\\nมีราคา\\n\\n9,876\\n\\nราคาภายใน 4 วัน\\n\\n9,824\\n\\nมีราคาแต่ไม่ระบุวัน\\n\\n0\\n\\nSnapshot เผยแพร่ 14/10/2026 11:55:00 น. (ไทย)\\n\\nทะเบียน 4,200 หุ้น + 5,676 ETF / ETP · รายชื่อกองทุน ณ 12/09/2026 02:41:18 น. (ไทย) · ธง ETF ของ Nasdaq อาจรวม ETN ควรตรวจชื่อผลิตภัณฑ์ · จำนวนรายชื่อไม่ใช่ความครบของข้อมูล\\n\\nเริ่มจากชุดตัวกรอง\\n\\nใช้ชุดตัวกรอง\\n\\nล้างตัวกรองทั้งหมด\\n\\nเลือกเกณฑ์ที่ต้องการ แล้วปรับค่าต่ำสุดหรือสูงสุดได้ทุกช่อง · เป็นเงื่อนไขคัดกรองที่แก้ไขได้ ไม่ใช่คำแนะนำซื้อ\\n\\nประเภทสินทรัพย์\\n\\nแนวโน้ม\\n\\nอุตสาหกรรม / หมวด ETF\\n\\nDerivative Income\\n\\nค้นหาสัญลักษณ์ / ชื่อบริษัท\\n\\nรูปแบบผลตอบแทน\\n\\nkeyboard_arrow_down\\n\\nตัวกรองขั้นสูง\\n\\nต้องผ่านทุกเกณฑ์ที่เลือก (AND) · ภายในช่องเลือกหลายรายการ ผ่านรายการใดรายการหนึ่งได้ (OR) · ไม่เลือก / เว้นช่วงว่าง = ไม่จำกัด\\n\\nผลตอบแทน\\n\\nราคา / ปันผล\\n\\nความเสี่ยง / แนวโน้ม\\n\\nบริษัท / กองทุน\\n\\nหมวดหมู่ / คุณภาพข้อมูล\\n\\nช่วงผลตอบแทนที่ต้องการกรอง\\n\\nต้องมีข้อมูลผลตอบแทนครบช่วงที่เลือก\\n\\n1 / 3 / 7 Days นับการเปลี่ยนแปลงระหว่างวันซื้อขาย ส่วน Month / Year ใช้วันซื้อขายก่อนหรือเท่ากับวันเริ่มช่วง ไม่ใช้จำนวนแท่งมาทดแทนประวัติหลายปี\\n\\nรวมรายการที่ไม่ได้รายงานค่าตัวเลขที่กำลังกรอง\\n\\nตัวกรองที่ใช้จริง\\nประเภท: ETF · อุตสาหกรรม / หมวด ETF: Derivative Income\\nkeyboard_arrow_right\\n\\nปรับเงื่อนไขทีละรายการ (2)\\n\\nเรียงตาม\\n\\nมากไปน้อย\\n\\nผ่านตัวกรอง 272 / 9,876 รายการ\\n\\nTop 10 · จังหวะเข้าซื้อ\\n\\nผ่านโมเดล ณ เวลาตรวจ ไม่ใช่การรับประกันกำไร\\n\\nจัดอันดับ 14/10/2026 12:29:07 น. (ไทย)\\n\\nตรวจ 9,876/9,876 รายชื่อ · คำนวณโมเดลได้ 4,976\\n\\nผ่านเงื่อนไขซื้อขณะตรวจสอบสถานะ: 0 ตัว · ไม่เติมให้ครบ 10\\n\\nอัปเดตการประเมินทุก 30 วินาที\\n\\nตลาดทุก 30 วินาที · ข่าวหมุนตรวจประมาณ 5 นาทีต่อหุ้น\\n\\nข้อมูลล่าสุดยังมาไม่ครบ — ดูเวลาแต่ละหุ้นประกอบ\\n\\nยังตรวจข้อมูลจากผู้ให้ข้อมูลไม่ได้ เก็บข้อมูลและเวลาเดิมไว้\\n\\nตรวจได้อีกครั้ง: 14/10/2026 15:45:25 น. (ไทย)\\n\\nตลาดอ้างอิง: SPY +0.18% · ก่อนเปิด · อายุราคาไม่เกิน 3 นาที · ต้นทางระบุหน่วง 0.00 นาที | QQQ +0.05% · ก่อนเปิด · อายุราคาไม่เกิน 3 นาที · ต้นทางระบุหน่วง 15.00 นาที\\n\\nตรวจชุดราคาสำเร็จ: 14/10/2026 15:44:55 น. (ไทย)\\n\\nอันดับเกิน 35 นาที — ไม่มีรายชื่อที่ยืนยันสถานะซื้อ\\n\\nยังไม่มีหุ้นผ่านเงื่อนไขซื้อครบ ณ เวลานี้ รวมกรณีตลาดปิด ราคาเก่า หรือข้อมูลไม่ครบ\\n\\nkeyboard_arrow_down\\n\\nเฝ้าดู / รอยืนยัน — ยังไม่ใช่จุดซื้อ\\n\\n01 · SNTH · 90/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\nยังไม่มีราคาล่าสุดที่ตรวจสอบได้ของ SNTH\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · SNTH\\n\\n02 · SJM · 85/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\n124.22 USD · +2.38% · ก่อนเปิดตลาด\\n\\nราคาต้นทาง: 14/10/2026 15:44:34 น. (ไทย) · ต้นทางระบุหน่วง 20.00 นาที\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · SJM\\n\\n03 · GOOG · 85/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\n352.00 USD · +0.71% · ก่อนเปิดตลาด\\n\\nราคาต้นทาง: 14/10/2026 15:44:10 น. (ไทย) · ต้นทางระบุหน่วง 15.00 นาที\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · GOOG\\n\\n04 · AMZN · 85/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\n259.60 USD · +0.39% · ก่อนเปิดตลาด\\n\\nราคาต้นทาง: 14/10/2026 15:44:38 น. (ไทย) · ต้นทางระบุหน่วง 15.00 นาที\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · AMZN\\n\\n05 · GOOGL · 85/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\n356.14 USD · +0.67% · ก่อนเปิดตลาด\\n\\nราคาต้นทาง: 14/10/2026 15:37:53 น. (ไทย) · ต้นทางระบุหน่วง 15.00 นาที\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · GOOGL\\n\\n06 · SFLO · 85/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\nยังไม่มีราคาล่าสุดที่ตรวจสอบได้ของ SFLO\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · SFLO\\n\\n07 · MCS · 80/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\nยังไม่มีราคาล่าสุดที่ตรวจสอบได้ของ MCS\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · MCS\\n\\n08 · WTMF · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\nยังไม่มีราคาล่าสุดที่ตรวจสอบได้ของ WTMF\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · WTMF\\n\\n09 · BCHP · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\nยังไม่มีราคาล่าสุดที่ตรวจสอบได้ของ BCHP\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · BCHP\\n\\n10 · TNGY · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ\\n\\nยังประเมินแรงส่งไม่ได้ — ข้อมูลไม่ครบหรือไม่สด\\n\\n11.68 USD · +0.00% · ก่อนเปิดตลาด\\n\\nราคาต้นทาง: 14/10/2026 15:09:59 น. (ไทย) · ต้นทางระบุหน่วง 20.00 นาที\\n\\nkeyboard_arrow_right\\n\\nแรงส่งและข่าว · TNGY\\n\\nอันดับทั้งตลาดทุก 30 นาที · ตลาดและแรงส่งกลุ่มนี้ทุก 30 วินาที\\n\\nkeyboard_arrow_right\\n\\nวิธีอ่านแรงส่งและรอบอัปเดต\\n\\nkeyboard_arrow_right\\n\\nเหตุผล เงื่อนไข และอายุข้อมูล\\n\\nหุ้นเคลื่อนไหวแรงและข่าวกระทบราคา\\n\\nรอบ 14/10 00:34 ไทย · ราคาผ่านเกณฑ์ 0/0 หุ้น · ฐานทั้งหมด 0 รายการ\\n\\nชุดเตรียมสแกนล่าสุด 1,994 หุ้น · จัดชุด 14/10 12:29 ไทย · ยังไม่ใช่ผลอ่านราคาของรอบข้างต้น\\n\\nรอข้อมูลราคาย้อนหลังให้ถึงวันอ้างอิงตลาดสหรัฐฯ 2026-10-13 167 หุ้น · ยังไม่นับรวมในชุดที่ผ่านตรวจ\\n\\nนอกเวลาตลาดจะแสดงผลรอบเดิม; ชุดหุ้นใหม่ใช้เมื่อถึงรอบสแกนและข้อมูลผ่านการตรวจ\\n\\nkeyboard_arrow_right\\n\\nสแกนครอบคลุมแค่ไหน\\n\\nตรวจตามตารางทุก 10 นาที; เวลาเริ่มอาจล่าช้า · ข่าวสำคัญและแผนซื้อแสดงคนละสถานะ · ราคามีเวลาต้นทางกำกับ\\n\\nรายงานเกิน 15 นาที ใช้ดูเหตุการณ์ย้อนหลัง; รอราคาและแผนรอบใหม่\\n\\nรอบนี้ยังไม่มีข่าวเหตุการณ์ที่ผ่านการคัด หรือข้อมูลยังไม่พอ\\n\\nหน้าตาราง — หน้าละ 500 ตัว\\n\\nมุมมองตารางผลลัพธ์\\n\\nkeyboard_arrow_right\\n\\nปรับคอลัมน์และลำดับ\\n\\nแสดงหลักฐานของตัวกรองอัตโนมัติ: อุตสาหกรรม / หมวด ETF, Asset Type\\n\\nแสดง 272 ตัวในหน้านี้ · หน้า 1 / 1\\n\\nคลิกชื่อหุ้นหรือช่องใดก็ได้ในแถว เพื่อแสดงกราฟและข้อมูลทั้งหมดด้านล่าง\\n\\nผ่านตัวกรอง 272 ตัว · ช่อง — คือไม่มีข้อมูล ไม่ใช่ศูนย์ · PASS เป็นสถานะแนวโน้ม ไม่ใช่คำสั่งซื้อ\\n\\nหุ้นที่เลือก: SPY\\n\\n↓ ไปยังกราฟและรายละเอียดด้านล่าง\\n\\nAdjusted-close returns, not live quotes or revenue growth. 1 / 3 / 7 Days count completed trading-session changes, not calendar days. Month / Year baselines use the last trading close on or before the calendar start date. Cumulative return = (end adjusted close / start adjusted close - 1) × 100. Adjusted prices reflect provider dividend/split adjustments; they are not official fund NAV returns. Fund websites may show month-end, annualized or price-only results instead. See Price As Of and Return Calculation Details before comparing. Investor fees, taxes and currency conversion are excluded. — means unavailable, not zero.\\n\\nดาวน์โหลดผลกรองครบทุกแถว\\n\\nวิเคราะห์หุ้นที่เลือก\\nSPY · State Street SPDR S&P 500 ETF T\\nSPY\\nราคารายวัน 2026-10-12\\nสรุป\\nกราฟ\\nพื้นฐาน\\nความเสี่ยง\\nเปรียบเทียบ\\n\\nวันที่ราคา Watchlist: 2026-10-12 | ประวัติดึงสำเร็จ 13/10/2026 21:07:23 น. (ไทย) | quote ณ 02/10/2026 03:00:00 น. (ไทย)\\n\\nราคาล่าสุดจากแท่ง 1 นาที\\n\\nอัปเดตราคาอัตโนมัติ\\n\\nรอบขอราคา\\n\\n30 วินาที\\n\\n60 วินาที\\n\\n120 วินาที\\n\\nเปิดการอัปเดตราคาอัตโนมัติ · ตรวจได้อีกครั้ง 14/10/2026 15:45:14 น. (ไทย)\\nSPY USD\\n779.4292+0.17%\\nอายุแท่งไม่เกิน 3 นาที · อายุแท่ง 0.8 นาที\\n\\nเวลาข้อมูลราคา 1 นาที: 14/10/2026 15:44:22 น. (ไทย) · รับข้อมูล: 14/10/2026 15:44:44 น. (ไทย)\\n\\nYahoo Finance · รวม pre/post-market เมื่อมีข้อมูล · % เทียบ previous close ที่ผู้ให้ข้อมูลรายงาน\\n\\nอยู่ในช่วงก่อนเปิดตลาดที่แหล่งข้อมูลระบุ · รอบตรวจจริงอาจช้าลงเมื่อแหล่งข้อมูลจำกัดคำขอ\\n\\nเวลาแท่งบอกอายุราคา แม้เพิ่งตรวจซ้ำก็ไม่ได้ทำให้ราคาใหม่ขึ้น · ราคานี้อาจล่าช้าและไม่ใช่ราคาทุกธุรกรรมแบบเรียลไทม์\\n\\nอัปเดตเฉพาะการ์ดราคา ไม่เปลี่ยนหุ้นที่เลือก ตัวกรอง กราฟ หรือผลคำนวณจากแท่งรายวันที่ปิดแล้ว\\n\\nมุมมองการวิเคราะห์\\n\\nภาพรวม\\n\\nลงทุนระยะยาว\\n\\nจังหวะซื้อขาย\\n\\nสรุปเพื่อเริ่มวิเคราะห์\\n\\nอ่านกลยุทธ์กองทุน ค่าธรรมเนียม ความกระจุกตัว และการถือครองซ้ำ ก่อนเทียบผลตอบแทนกับดัชนีที่เหมาะสม\\n\\n↓ วิเคราะห์ ETF และการถือครอง · ↓ เปรียบเทียบผลตอบแทน\\n\\nkeyboard_arrow_right\\n\\nสิ่งที่เปลี่ยนและเอกสารที่ควรติดตาม\\n\\nkeyboard_arrow_right\\n\\nบันทึกเหตุผลการลงทุนและเงื่อนไขติดตาม\\n\\nกราฟและแผนซื้อ\\nkeyboard_arrow_down\\n\\nเปิดกราฟและแผนซื้อขาย\\n\\nkeyboard_arrow_right\\n\\nReturn Calculation Details — SPY\\n\\nช่วงเวลาแสดงกราฟ\\n\\n1 วัน\\n\\n3 วัน\\n\\n5 วัน\\n\\n7 วัน\\n\\n1 เดือน\\n\\n3 เดือน\\n\\n6 เดือน\\n\\n1 ปี\\n\\n2 ปี\\n\\n3 ปี\\n\\n5 ปี\\n\\n10 ปี\\n\\nผลตอบแทนสะสม = (Close ล่าสุด / Close แรกในช่วงที่เลือก − 1) × 100; ใช้ราคาปรับแล้ว ไม่บวกปันผลซ้ำ ไม่ใช่ CAGR หรือผลตอบแทนสุทธิหลังค่าธรรมเนียม/ภาษี และไม่เปลี่ยนตามการลากหรือซูมกราฟ\\n\\nช่วงข้อมูลที่แสดงจริง: 2025-10-13 ถึง 2026-10-13 · ดึงสำเร็จ 13/10/2026 21:07:23 น. (ไทย)\\n\\nสรุปแนวโน้มและวิเคราะห์กราฟ · SPY\\n\\nช่วงที่เลือก 1 ปี · แท่ง 1 วัน · อ้างอิงแท่ง 2026-10-13 · ข้อมูล 252 แท่งในช่วงนี้\\n\\nขาขึ้นตาม EMA\\n\\nราคาปิดอยู่เหนือ EMA20 และ EMA50 โดย EMA20 > EMA50 และทั้งสองเส้นสูงกว่าค่าเมื่อ 5 แท่งก่อน สะท้อนแนวโน้มล่าสุดที่เอนขึ้น\\n\\nช่วง 1 ปี: ผลตอบแทนสะสม +18.49% จาก Close 655.96 → 777.23 · 2025-10-13 ถึง 2026-10-13\\n\\nผลตอบแทนทั้งช่วงอาจเป็นบวกแม้แนวโน้มล่าสุดเริ่มอ่อนตัว และกลับกัน จึงแยกสองมิตินี้ออกจากกัน\\n\\nแนวโน้มและเส้นค่าเฉลี่ย\\n\\nClose 777.23 · EMA20 771.10 · EMA50 764.38 · SMA200 720.60. ราคายืนเหนือ SMA200 เป็นโครงสร้างที่ดีกว่าการอยู่ใต้เส้นนี้. ราคาห่างจาก EMA20 +0.79%\\n\\nโมเมนตัม · RSI / MACD\\n\\nRSI14 58.82: อยู่ระหว่าง 50–70: โมเมนตัมเอนบวก แต่ยังต้องดูแนวโน้มและราคา. MACD 3.9327 / Signal 3.0463: MACD อยู่เหนือ Signal · Histogram 0.8864 ลดลงจากแท่งก่อน.\\n\\nแนวรับ–แนวต้านอ้างอิง\\n\\nแนวรับอ้างอิง 747.74 (-3.79%) · แนวต้านอ้างอิง 781.62 (+0.56%) · ระยะจาก Close ล่าสุด. ใช้ Low ต่ำสุด / High สูงสุดของ 20 แท่งก่อนหน้าภายในช่วงที่เลือก (ไม่รวมแท่งล่าสุด); ราคายังอยู่ในกรอบเดิม. เส้นประสีเขียวคือแนวรับ สีส้มคือแนวต้าน เปิด/ซ่อนได้ด้วยปุ่มแนวรับ / แนวต้านบนกราฟ; เปอร์เซ็นต์ = (ระดับ / Close ล่าสุด − 1) × 100\\n\\nVolume และความผันผวน\\n\\nVolume ล่าสุด 3,951,085 เทียบค่าเฉลี่ย 20 แท่งก่อนหน้า 43,531,960 = 0.09x; ต่ำกว่าค่าเฉลี่ย ปริมาณซื้อขายไม่บอกทิศทางด้วยตัวมันเอง. ATR14 = 5.95 หรือ 0.77% ของราคา เป็นขนาดความผันผวนต่อแท่ง ไม่ใช่เป้าราคาหรือโอกาสขาดทุน\\n\\nเงื่อนไขที่ควรติดตามจากกราฟ\\n\\nด้านบวก: ติดตามการปิดแท่งเหนือกรอบอ้างอิง 781.62 และดู Volume/โมเมนตัมประกอบ; ด้านลบ: การปิดแท่งต่ำกว่า 747.74 เป็นเหตุให้ทบทวนความแข็งแรงของกรอบเดิม ระดับเหล่านี้เป็น High/Low ย้อนหลังสำหรับเฝ้าดู ไม่ใช่แนวรับ/แนวต้านหรือราคาเป้าหมายที่รับประกัน\\n\\nแท่งล่าสุดอาจยังไม่ปิดหรือยืนยันเวลาไม่ได้: การอ่านแนวโน้มและการทะลุกรอบยังเป็นเพียงชั่วคราว\\n\\nสรุปตามกติกาจากข้อมูลชุดเดียวกับกราฟ ไม่ใช่การวิเคราะห์ข่าว/งบหรือคำสั่งซื้อขาย และไม่เปลี่ยนคะแนนหรือบอร์ด Top 10 · ใช้ตัวชี้วัดทุกตัวข้างต้นแม้ซ่อนเส้นบนกราฟ · การชี้เมาส์ ลาก หรือซูมไม่เปลี่ยนข้อสรุปนี้\\n\\nหลักการอ่านและขอบเขต\\nราคาและข่าวประกอบการวิเคราะห์ · SPY\\n\\nตรวจราคาประมาณทุก 1 นาที · ข่าวประมาณทุก 5 นาที · ใช้เวลาที่ต้นทางรายงานของแต่ละรายการ\\n\\nยังตรวจข้อมูลจากต้นทางไม่ได้ เก็บข้อมูลและเวลาเดิมไว้\\n\\nตลาดปกติ\\n\\nยังไม่มีราคาช่วงนี้ที่ตรวจสอบได้\\n\\nก่อนเปิด / หลังปิดตลาด\\n\\nยังไม่มีราคาช่วงนี้ที่ตรวจสอบได้\\n\\nราคา quote เป็นราคาต้นทาง ส่วนเส้นแนวรับ–แนวต้านใช้ชุดราคาบนกราฟซึ่งอาจปรับสิทธิ์ย้อนหลัง ฐานราคาและเวลาจึงอาจต่างกัน\\n\\nอ่านข่าวคู่กับกราฟ\\n\\nกราฟ รายวัน ช่วง 1 ปี: แนวโน้มตาม EMA เอนขึ้น · RSI14 58.82 · ติดตามการปิดแท่งเทียบกรอบ 747.74–781.62 ที่แสดงเป็นเส้นบนกราฟ · แท่งล่าสุดยังไม่ยืนยันปิด\\n\\nใช้ EMA20/EMA50, SMA200 และ RSI ของกราฟด้านบน โดยนับตามขนาดแท่งที่เลือก\\n\\nหลักทรัพย์นี้เป็นกองทุน: พิจารณาการถือครอง นโยบายกระจายเงิน และค่าใช้จ่ายกองทุนประกอบข่าว\\n\\nข่าวและประเด็นที่ควรตรวจ\\n\\nจากรายการที่ต้นทางส่งมา: ภายใน 24 ชั่วโมง 0 รายการ · เก่ากว่า 24 ชั่วโมงถึง 7 วัน 0 รายการ\\n\\nยังไม่มีข่าวในช่วง 7 วันที่ตรวจวันเผยแพร่และแหล่งที่มาได้สำหรับหุ้นนี้\\n\\nkeyboard_arrow_right\\n\\nแหล่งข้อมูลและวิธีอ่านบทวิเคราะห์\\n\\nReward/Risk ขั้นต่ำ\\n\\nเกณฑ์เข้าซื้อ — Trading Verdict (เต็ม 100)\\n\\nคะแนนที่ได้\\n\\n85 / 100\\n\\nความครบของข้อมูล\\n\\n100 / 100\\n\\nคะแนนต่ำสุด–สูงสุดที่เป็นไปได้\\n\\n85–85\\n\\nช่วงคะแนน\\tความหมาย\\n80–100\\tผ่านระดับคะแนนสำหรับพิจารณาเข้า ต้องผ่านเงื่อนไขราคา/ความเสี่ยงด้วย\\n60–79\\tเฝ้าดู / รอจังหวะ ยังไม่ผ่านเกณฑ์เข้า\\n40–59\\tยังไม่ควรเข้าตามโมเดลนี้\\n0–39\\tงดเข้าตามโมเดลนี้\\nⓘ อ่านคำอธิบายแต่ละแถว (สำหรับมือถือหรือแป้น\", \"inputs\": [{\"label\": \"file upload\", \"value\": \"\"}, {\"label\": \"Ticker สำหรับวิเคราะห์\", \"value\": \"SPY\"}, {\"label\": \"file upload\", \"value\": \"\"}, {\"label\": \"เริ่มจากชุดตัวกรอง\", \"value\": \"กำหนดเอง\"}, {\"label\": \"ประเภทสินทรัพย์\", \"value\": \"ETF\"}, {\"label\": \"แนวโน้ม\", \"value\": \"ทั้งหมด\"}, {\"label\": \"อุตสาหกรรม / หมวด ETF\", \"value\": \"\"}, {\"label\": \"ค้นหาสัญลักษณ์ / ชื่อบริษัท\", \"value\": \"\"}, {\"label\": \"รูปแบบผลตอบแทน\", \"value\": \"Cumulative (Adjusted Close)\"}, {\"label\": \"ช่วงผลตอบแทนที่ต้องการกรอง\", \"value\": \"\"}, {\"label\": \"ต้องมีข้อมูลผลตอบแทนครบช่วงที่เลือก\", \"value\": \"\"}, {\"label\": \"เลือกเกณฑ์ราคาและสภาพคล่อง\", \"value\": \"\"}, {\"label\": \"เลือกเกณฑ์ความเสี่ยง\", \"value\": \"\"}, {\"label\": \"ราคาอยู่เหนือ SMA200\", \"value\": \"on\"}, {\"label\": \"ราคา > EMA20 > EMA50\", \"value\": \"on\"}, {\"label\": \"เลือกเกณฑ์พื้นฐานบริษัท\", \"value\": \"\"}, {\"label\": \"เลือกเกณฑ์ข้อมูลกองทุน\", \"value\": \"\"}, {\"label\": \"กลุ่มธุรกิจ\", \"value\": \"\"}, {\"label\": \"บริษัทจัดการ / ผู้ออกกองทุน\", \"value\": \"\"}, {\"label\": \"สกุลเงินราคา / มูลค่าตลาด\", \"value\": \"\"}, {\"label\": \"ประเทศ\", \"value\": \"\"}, {\"label\": \"ตลาดหลักทรัพย์\", \"value\": \"\"}, {\"label\": \"สกุลเงินในงบการเงิน\", \"value\": \"\"}, {\"label\": \"จำกัดอายุข้อมูลราคา\", \"value\": \"on\"}, {\"label\": \"จำกัดอายุข้อมูลพื้นฐาน\", \"value\": \"on\"}, {\"label\": \"เฉพาะรายการโปรดในเซสชันนี้\", \"value\": \"on\"}, {\"label\": \"รวมรายการที่ไม่ได้รายงานค่าตัวเลขที่กำลังกรอง\", \"value\": \"on\"}, {\"label\": \"เรียงตาม\", \"value\": \"สัญลักษณ์\"}, {\"label\": \"มากไปน้อย\", \"value\": \"on\"}, {\"label\": \"อัปเดตการประเมินทุก 30 วินาที\", \"value\": \"on\"}, {\"label\": \"หน้าตาราง — หน้าละ 500 ตัว\", \"value\": \"1\"}, {\"label\": \"มุมมองตารางผลลัพธ์\", \"value\": \"ผลตอบแทนภาพรวม\"}, {\"label\": \"คอลัมน์ตามลำดับที่เลือก\", \"value\": \"\"}, {\"label\": \"อัปเดตราคาอัตโนมัติ\", \"value\": \"on\"}, {\"label\": null, \"value\": \"0\"}, {\"label\": null, \"value\": \"1\"}, {\"label\": null, \"value\": \"2\"}, {\"label\": null, \"value\": \"0\"}, {\"label\": null, \"value\": \"1\"}, {\"label\": null, \"value\": \"2\"}, {\"label\": \"ตัวแปรที่ติดตาม\", \"value\": \"ราคาจากชุดรายวัน\"}, {\"label\": \"เงื่อนไข\", \"value\": \"ไม่เกิน (≤)\"}, {\"label\": \"ค่าที่ต้องการติดตาม\", \"value\": \"0.00\"}, {\"label\": null, \"value\": \"2026-10-12\"}, {\"label\": null, \"value\": \"0\"}, {\"label\": null, \"value\": \"1\"}, {\"label\": null, \"value\": \"2\"}, {\"label\": null, \"value\": \"3\"}, {\"label\": null, \"value\": \"4\"}, {\"label\": null, \"value\": \"5\"}, {\"label\": null, \"value\": \"6\"}, {\"label\": null, \"value\": \"7\"}, {\"label\": null, \"value\": \"8\"}, {\"label\": null, \"value\": \"9\"}, {\"label\": null, \"value\": \"10\"}, {\"label\": null, \"value\": \"11\"}, {\"label\": \"Reward/Risk ขั้นต่ำ\", \"value\": \"2.00\"}, {\"label\": \"เงินลงทุน (USD)\", \"value\": \"10000.00\"}, {\"label\": \"ความเสี่ยงต่อไม้ (% ของพอร์ต)\", \"value\": \"1\"}, {\"label\": \"ราคาเข้าซื้อ\", \"value\": \"763.9900\"}, {\"label\": \"Stop Loss\", \"value\": \"765.5178\"}, {\"label\": \"เลือก ETF เพื่อเทียบรายการถือครอง (สูงสุด 3 กองทุน)\", \"value\": \"\"}, {\"label\": \"ตัวเปรียบเทียบผลตอบแทนราคา\", \"value\": \"QQQ\"}, {\"label\": \"กองทุนของไฟล์ที่จะนำเข้า\", \"value\": \"SPY\"}, {\"label\": \"file upload\", \"value\": \"\"}, {\"label\": \"ลิงก์ HTTPS ของไฟล์หรือหน้าข้อมูลต้นทาง\", \"value\": \"\"}, {\"label\": null, \"value\": \"\"}, {\"label\": \"ไฟล์นี้มีรายการครบพอร์ต (ผลรวมน้ำหนัก 99.5–100%)\", \"value\": \"on\"}, {\"label\": null, \"value\": \"0\"}, {\"label\": null, \"value\": \"1\"}, {\"label\": null, \"value\": \"2\"}, {\"label\": null, \"value\": \"3\"}, {\"label\": null, \"value\": \"4\"}, {\"label\": \"เลือก 2–6 ตัว\", \"value\": \"\"}, {\"label\": \"ช่วงเปรียบเทียบ\", \"value\": \"1 ปี\"}, {\"label\": null, \"value\": \"0\"}, {\"label\": null, \"value\": \"1\"}, {\"label\": null, \"value\": \"2\"}, {\"label\": null, \"value\": \"3\"}], \"receipts\": [{\"controls\": \"{\\\"Asset Type\\\": \\\"ETF\\\", \\\"Trend Status\\\": \\\"All\\\", \\\"Return Display\\\": \\\"Cumulative (Adjusted Close)\\\", \\\"Search Ticker / Company\\\": \\\"\\\", \\\"Reset Version\\\": 3, \\\"Return Periods to Filter\\\": [], \\\"Include Missing Values\\\": false, \\\"Require Available Return Periods\\\": [], \\\"Price Above SMA200\\\": false, \\\"Price > EMA20 > EMA50\\\": false, \\\"Session Favourites Only\\\": false, \\\"Company Filters Active\\\": false, \\\"Fund Filters Active\\\": false, \\\"Industry / ETF Category\\\": [\\\"Derivative Income\\\"], \\\"Sector\\\": [], \\\"Country\\\": [], \\\"Fund Family / Issuer\\\": [], \\\"Exchange\\\": [], \\\"Currency\\\": [], \\\"Financial Statement Currency\\\": [], \\\"Sort By\\\": \\\"Ticker\\\", \\\"Descending\\\": false}\", \"count\": \"272\"}, {\"version\": \"2026-10-03.46\", \"ticker\": \"SPY\", \"search\": \"\", \"renderSeconds\": \"3.445\", \"generation\": \"generations/20261014T045028Z-29d25934\"}]}\nBROWSER_FRAME: {\"url\": \"https://my-stock-terminal.streamlit.app/~/+/component/research_workspace_ui.private_research_workspace/index.html\", \"payload_count\": 0, \"canvas_count\": 0, \"text\": \"ชื่อชุดวิเคราะห์\\nบันทึกชุดปัจจุบัน\\nชุดวิเคราะห์ในเบราว์เซอร์นี้\\nยังไม่มีชุดที่บันทึก\\nเปิดชุดที่เลือก\\nลบชุดที่เลือก\\n\\nบันทึกข้อความและเงื่อนไขติดตามล่าสุดแล้ว · ตั้งชื่อชุดเพื่อเก็บตัวกรองด้วย\", \"inputs\": [{\"label\": null, \"value\": \"CI research verification\"}], \"receipts\": []}\nBROWSER_FRAME: {\"url\": \"about://srcdoc\", \"payload_count\": 1, \"canvas_count\": 19, \"text\": \"SPY\\n1 ปี · แท่ง 1 วัน · UTC\\n777.23\\n-0.87 (-0.11%) จากแท่งก่อน\\nผลตอบแทนสะสม · 1 ปี\\n+18.49%\\nClose 655.96 → 777.23\\n2025-10-13 → 2026-10-13\\nClose แรก → ล่าสุดในช่วงที่เลือก · ราคาปรับแล้ว · ไม่ใช่ CAGR\\nYahoo Finance · ราคาปรับแล้ว\\nEMA 20\\nEMA 50\\nSMA 200\\nVolume\\nแยกซื้อ/ขาย (ประมาณ)\\nRSI\\nMACD\\nข้อมูลตามเมาส์\\nแนวรับ / แนวต้าน\\nLog\\nคืนมุมมอง\\n2026-10-13\\nO777.34\\nH778.75\\nL777.17\\nC777.23\\nVol3.95M\\nEMA 20 771.10 · EMA 50 764.38 · SMA 200 720.60 · RSI 14 58.82 · MACD 3.9327 · Signal 3.0463 · MACD Histogram 0.8864\\nซื้อประมาณ 150.03K · ขายประมาณ 3.8M · รวม 3.95M\\nแท่งล่าสุด: 2026-10-13 · ข้อมูลตามแหล่งราคา ไม่ใช่ราคาสตรีมสด\\nแนวรับอ้างอิง 747.74 (-3.79%) · แนวต้านอ้างอิง 781.62 (+0.56%) · ระยะจาก Close ล่าสุด\\n■ ซื้อประมาณ + ■ ขายประมาณ = Volume รวม · ■ แยกไม่ได้ · เป็นค่าประมาณจากราคา ไม่ใช่ข้อมูลผู้เริ่มซื้อขายจริง\\n\\t\\n\\t\\n\\n\\n\\n\\t\\n\\t\\n\\n\\n\\n\\t\\n\\t\\n\\n\\n\\n\\t\\n\\t\\n\\n\\t\\n\\t\\nVolume · ซื้อ/ขายประมาณ\\nRSI 14\\nMACD 12,26,9\\nชี้เพื่ออ่าน · คลิก/แตะเพื่อตรึง · Escape เลิกตรึง · ลากเลื่อน / ล้อเมาส์ซูม\\nTradingView Lightweight Charts™\", \"inputs\": [], \"receipts\": []}\n",
+  "url": "https://my-stock-terminal.streamlit.app/",
+  "expected_version": "2026-10-03.46",
+  "layout": "single-page",
+  "views": [
+    "ภาพรวมและค้นหา",
+    "กราฟและแผนซื้อ",
+    "พื้นฐานและปันผล",
+    "ความเสี่ยง",
+    "เปรียบเทียบหลายตัว"
+  ],
+  "chart": true,
+  "selections": [
+    {
+      "ticker": "MSFT",
+      "via": "cell",
+      "bars": 1506
+    },
+    {
+      "ticker": "AAPL",
+      "via": "row",
+      "bars": 1507
+    },
+    {
+      "ticker": "SPY",
+      "via": "manual",
+      "bars": 1506
+    }
+  ],
+  "volume_split": {
+    "bars": 1507,
+    "mixed_bars": 1497,
+    "flat_bars": 0,
+    "missing_volume": 0,
+    "rendered_stacks": [
+      {
+        "time": "2026-06-26",
+        "pixels": {
+          "green": 31,
+          "red": 7,
+          "redAboveGreen": true
+        },
+        "estimated_buy_fraction": 0.8151610228309546
+      }
+    ],
+    "mobile_layout": {
+      "width": 327,
+      "scroll": 327,
+      "chartHeight": 350,
+      "content": [
+        {
+          "id": "volume-note",
+          "left": 1,
+          "right": 326,
+          "width": 325,
+          "scroll": 325
+        },
+        {
+          "id": "volume-split-readout",
+          "left": 1,
+          "right": 326,
+          "width": 325,
+          "scroll": 325
+        }
+      ]
+    },
+    "hover_values": true,
+    "pin_values": true,
+    "approximation_visible": true,
+    "toggle_preserves_zoom_and_indicators": true,
+    "volume_visibility": true
+  },
+  "risk_explanations": {
+    "metrics": 4,
+    "native_tooltips_read": [
+      "ผลตอบแทนสะสม",
+      "CAGR",
+      "Volatility ต่อปี",
+      "Maximum drawdown"
+    ],
+    "charts": 2,
+    "explanation_below_charts": true,
+    "observed_window_and_distribution_explained": true
+  },
+  "company_analysis": [
+    {
+      "ticker": "AAPL",
+      "groups": 9,
+      "metrics": 54,
+      "metric_only_help": true,
+      "thai_labels_and_explanations": true,
+      "bilingual_metric_labels": true,
+      "annual_statements": [
+        {
+          "statement": "income",
+          "periods": [
+            "2025-09-30",
+            "2024-09-30",
+            "2023-09-30",
+            "2022-09-30"
+          ],
+          "rows": 10
+        },
+        {
+          "statement": "balance",
+          "periods": [
+            "2025-09-30",
+            "2024-09-30",
+            "2023-09-30",
+            "2022-09-30"
+          ],
+          "rows": 9
+        },
+        {
+          "statement": "cashflow",
+          "periods": [
+            "2025-09-30",
+            "2024-09-30",
+            "2023-09-30",
+            "2022-09-30"
+          ],
+          "rows": 6
+        }
+      ],
+      "consolidated_fundamentals": {
+        "technical_rows": 9,
+        "duplicate_fundamentals": 0,
+        "canonical_metrics": 54
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "groups": 9,
+      "metrics": 54,
+      "metric_only_help": true,
+      "thai_labels_and_explanations": true,
+      "bilingual_metric_labels": true,
+      "annual_statements": [
+        {
+          "statement": "income",
+          "periods": [
+            "2026-06-30",
+            "2025-06-30",
+            "2024-06-30",
+            "2023-06-30"
+          ],
+          "rows": 10
+        },
+        {
+          "statement": "balance",
+          "periods": [
+            "2026-06-30",
+            "2025-06-30",
+            "2024-06-30",
+            "2023-06-30"
+          ],
+          "rows": 9
+        },
+        {
+          "statement": "cashflow",
+          "periods": [
+            "2026-06-30",
+            "2025-06-30",
+            "2024-06-30",
+            "2023-06-30"
+          ],
+          "rows": 6
+        }
+      ],
+      "consolidated_fundamentals": {
+        "technical_rows": 9,
+        "duplicate_fundamentals": 0,
+        "canonical_metrics": 54
+      }
+    },
+    {
+      "ticker": "AAPL",
+      "groups": 9,
+      "metrics": 54,
+      "metric_only_help": true,
+      "thai_labels_and_explanations": true,
+      "bilingual_metric_labels": true,
+      "annual_statements": [
+        {
+          "statement": "income",
+          "periods": [
+            "2025-09-30",
+            "2024-09-30",
+            "2023-09-30",
+            "2022-09-30"
+          ],
+          "rows": 10
+        },
+        {
+          "statement": "balance",
+          "periods": [
+            "2025-09-30",
+            "2024-09-30",
+            "2023-09-30",
+            "2022-09-30"
+          ],
+          "rows": 9
+        },
+        {
+          "statement": "cashflow",
+          "periods": [
+            "2025-09-30",
+            "2024-09-30",
+            "2023-09-30",
+            "2022-09-30"
+          ],
+          "rows": 6
+        }
+      ],
+      "consolidated_fundamentals": {
+        "technical_rows": 9,
+        "duplicate_fundamentals": 0,
+        "canonical_metrics": 54
+      }
+    }
+  ],
+  "chart_commentary": {
+    "ticker": "AAPL",
+    "period": "1 ปี",
+    "interval": "1d",
+    "trend": "uptrend",
+    "bar_time": "2026-10-14",
+    "return_percent": 39.262186216879826,
+    "levels": {
+      "support": 325.80999755859375,
+      "resistance": 348.1499938964844,
+      "bars": 20,
+      "state": "inside",
+      "support_distance_pct": -5.227180547010146,
+      "resistance_distance_pct": 1.2711603736996313,
+      "start_time": "2026-09-16",
+      "end_time": "2026-10-13",
+      "latest_time": "2026-10-14",
+      "close": 343.7799987792969,
+      "basis": "prior-selected-window-high-low-max20-min5",
+      "reason": ""
+    },
+    "volume_ratio": 0.5863012707758913,
+    "metrics": {
+      "ema20": 335.57433255535966,
+      "ema50": 327.61924722108256,
+      "sma200": 291.44569732666014,
+      "rsi": 62.806620653028396,
+      "macd": 4.063548991984078,
+      "signal": 3.8742613074590717,
+      "hist": 0.18928768452500622
+    },
+    "atr_pct": 1.9418876624676202,
+    "below_chart": true,
+    "source_values_checked": true,
+    "warnings": [
+      "แท่งล่าสุดอาจยังไม่ปิดหรือยืนยันเวลาไม่ได้: การอ่านแนวโน้มและการทะลุกรอบยังเป็นเพียงชั่วคราว"
+    ],
+    "chart_reference_lines": {
+      "actual_price_lines": [
+        {
+          "key": "support",
+          "price": 325.80999755859375,
+          "visible": true,
+          "axisLabelVisible": true
+        },
+        {
+          "key": "resistance",
+          "price": 348.1499938964844,
+          "visible": true,
+          "axisLabelVisible": true
+        }
+      ],
+      "toggle_preserves_range_and_snapshot": true,
+      "shares_commentary_calculation": true,
+      "screenshot": "work/v39-support-resistance.png"
+    },
+    "screenshot": "work/v26-chart-commentary.png",
+    "mobile_dimensions": {
+      "width": 325,
+      "scroll": 325
+    },
+    "mobile_chart_layout": {
+      "width": 325,
+      "scrollWidth": 325,
+      "height": 886,
+      "scrollHeight": 1206,
+      "wrapHeight": 350,
+      "chartHeight": 350,
+      "overflowY": "auto",
+      "canvases": [
+        {
+          "left": 0,
+          "right": -77,
+          "top": 0,
+          "bottom": -204
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 0,
+          "bottom": -204
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 0,
+          "bottom": -204
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 0,
+          "bottom": -204
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 147,
+          "bottom": -160
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 147,
+          "bottom": -160
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 147,
+          "bottom": -160
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 147,
+          "bottom": -160
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 191,
+          "bottom": -95
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 191,
+          "bottom": -95
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 191,
+          "bottom": -95
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 191,
+          "bottom": -95
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 256,
+          "bottom": -30
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 256,
+          "bottom": -30
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 256,
+          "bottom": -30
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 256,
+          "bottom": -30
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 320,
+          "bottom": 0
+        },
+        {
+          "left": 0,
+          "right": -77,
+          "top": 320,
+          "bottom": 0
+        },
+        {
+          "left": 248,
+          "right": -1,
+          "top": 320,
+          "bottom": 0
+        }
+      ],
+      "reachable_controls": [
+        "ema20",
+        "ema50",
+        "sma200",
+        "volume",
+        "volumeSplit",
+        "rsi",
+        "macd",
+        "inspect-toggle",
+        "levels-toggle",
+        "log",
+        "reset"
+      ],
+      "screenshot": "work/v39-chart-mobile.png"
+    }
+  },
+  "stock_brief": {
+    "ticker": "AAPL",
+    "chart_period": "1 ปี",
+    "state": "partial",
+    "quote_refresh_seconds": 60,
+    "news_refresh_seconds": 300,
+    "source_quotes": [
+      {
+        "kind": "regular",
+        "state": "stale",
+        "session": "regular",
+        "quote_time": "2026-10-14T20:00:01+00:00"
+      },
+      {
+        "kind": "extended",
+        "state": "stale",
+        "session": "pre",
+        "quote_time": "2026-10-15T08:13:31+00:00"
+      }
+    ],
+    "news_checked_at": null,
+    "source_links": [],
+    "source_link_count": 0,
+    "quote_and_news_clocks_preserved": true,
+    "same_selected_chart": true
+  },
+  "chart_bars": 1507,
+  "chart_last_bar": "2026-10-14",
+  "deployed_version": "2026-10-03.46",
+  "research_improvements": {
+    "modes_preserve_ticker": true,
+    "financial_periods": [
+      "รายปี (FY)",
+      "รายไตรมาส (Q)",
+      "ย้อนหลัง 12 เดือน (TTM)"
+    ],
+    "valuation_editable": true,
+    "peers_visible": true,
+    "private_workspace_restores_filters": true
+  },
+  "enhancements": {
+    "page_size": 500,
+    "tooltips": true,
+    "ranges": [
+      {
+        "period": "1 วัน",
+        "interval": "5m",
+        "bars": 1716,
+        "visible_bars": 78,
+        "first": 1791984600,
+        "last": 1792007700
+      },
+      {
+        "period": "3 วัน",
+        "interval": "5m",
+        "bars": 1716,
+        "visible_bars": 234,
+        "first": 1791811800,
+        "last": 1792007700
+      },
+      {
+        "period": "5 ปี",
+        "interval": "1d",
+        "bars": 1506,
+        "visible_bars": 1255,
+        "first": "2021-10-13",
+        "last": "2026-10-13"
+      },
+      {
+        "period": "10 ปี",
+        "interval": "1d",
+        "bars": 2764,
+        "visible_bars": 2512,
+        "first": "2016-10-14",
+        "last": "2026-10-14"
+      }
+    ],
+    "volume_split_ranges": [
+      {
+        "period": "1 วัน",
+        "bars": 1716,
+        "mixed_bars": 1631,
+        "flat_bars": 0,
+        "missing_volume": 0
+      },
+      {
+        "period": "3 วัน",
+        "bars": 1716,
+        "mixed_bars": 1631,
+        "flat_bars": 0,
+        "missing_volume": 0
+      },
+      {
+        "period": "5 ปี",
+        "bars": 1506,
+        "mixed_bars": 1486,
+        "flat_bars": 0,
+        "missing_volume": 0
+      },
+      {
+        "period": "10 ปี",
+        "bars": 2764,
+        "mixed_bars": 2710,
+        "flat_bars": 0,
+        "missing_volume": 0
+      }
+    ],
+    "chart_commentary": [
+      {
+        "ticker": "SPY",
+        "period": "1 วัน",
+        "interval": "5m",
+        "trend": "mixed",
+        "bar_time": 1792007700,
+        "return_percent": -0.704455329332887,
+        "levels": {
+          "support": 767.0700073242188,
+          "resistance": 769.5900268554688,
+          "bars": 20,
+          "state": "breakout",
+          "support_distance_pct": -0.33003444285919503,
+          "resistance_distance_pct": -0.0025933260318411477,
+          "start_time": 1792001700,
+          "end_time": 1792007400,
+          "latest_time": 1792007700,
+          "close": 769.6099853515625,
+          "basis": "prior-selected-window-high-low-max20-min5",
+          "reason": ""
+        },
+        "volume_ratio": 12.71928541929714,
+        "metrics": {
+          "ema20": 768.6640161640723,
+          "ema50": 769.3711333965073,
+          "sma200": 774.7030004882813,
+          "rsi": 59.88511211903745,
+          "macd": 0.12602652063230835,
+          "signal": -0.09130440879936484,
+          "hist": 0.2173309294316732
+        },
+        "atr_pct": 0.0881097728423628,
+        "below_chart": true,
+        "source_values_checked": true,
+        "warnings": [
+          "EMA/RSI/MACD/ATR นับแท่ง 5 นาที ไม่ใช่จำนวนวัน; Volume เทียบ 20 แท่งก่อนหน้าและไม่ได้ปรับฤดูกาลระหว่างวัน",
+          "แท่ง 5 นาทีล่าสุดเก่ากว่า 15 นาที อาจเป็นช่วงปิดตลาดหรือข้อมูลล่าช้า ไม่ใช่ภาพราคาขณะนี้"
+        ],
+        "chart_reference_lines": {
+          "actual_price_lines": [
+            {
+              "key": "support",
+              "price": 767.0700073242188,
+              "visible": true,
+              "axisLabelVisible": true
+            },
+            {
+              "key": "resistance",
+              "price": 769.5900268554688,
+              "visible": true,
+              "axisLabelVisible": true
+            }
+          ],
+          "toggle_preserves_range_and_snapshot": true,
+          "shares_commentary_calculation": true
+        }
+      },
+      {
+        "ticker": "SPY",
+        "period": "3 วัน",
+        "interval": "5m",
+        "trend": "mixed",
+        "bar_time": 1792007700,
+        "return_percent": -1.1901730013784029,
+        "levels": {
+          "support": 767.0700073242188,
+          "resistance": 769.5900268554688,
+          "bars": 20,
+          "state": "breakout",
+          "support_distance_pct": -0.33003444285919503,
+          "resistance_distance_pct": -0.0025933260318411477,
+          "start_time": 1792001700,
+          "end_time": 1792007400,
+          "latest_time": 1792007700,
+          "close": 769.6099853515625,
+          "basis": "prior-selected-window-high-low-max20-min5",
+          "reason": ""
+        },
+        "volume_ratio": 12.71928541929714,
+        "metrics": {
+          "ema20": 768.6640161640723,
+          "ema50": 769.3711333965073,
+          "sma200": 774.7030004882813,
+          "rsi": 59.88511211903745,
+          "macd": 0.12602652063230835,
+          "signal": -0.09130440879936484,
+          "hist": 0.2173309294316732
+        },
+        "atr_pct": 0.0881097728423628,
+        "below_chart": true,
+        "source_values_checked": true,
+        "warnings": [
+          "EMA/RSI/MACD/ATR นับแท่ง 5 นาที ไม่ใช่จำนวนวัน; Volume เทียบ 20 แท่งก่อนหน้าและไม่ได้ปรับฤดูกาลระหว่างวัน",
+          "แท่ง 5 นาทีล่าสุดเก่ากว่า 15 นาที อาจเป็นช่วงปิดตลาดหรือข้อมูลล่าช้า ไม่ใช่ภาพราคาขณะนี้"
+        ],
+        "chart_reference_lines": {
+          "actual_price_lines": [
+            {
+              "key": "support",
+              "price": 767.0700073242188,
+              "visible": true,
+              "axisLabelVisible": true
+            },
+            {
+              "key": "resistance",
+              "price": 769.5900268554688,
+              "visible": true,
+              "axisLabelVisible": true
+            }
+          ],
+          "toggle_preserves_range_and_snapshot": true,
+          "shares_commentary_calculation": true
+        }
+      },
+      {
+        "ticker": "SPY",
+        "period": "5 ปี",
+        "interval": "1d",
+        "trend": "uptrend",
+        "bar_time": "2026-10-13",
+        "return_percent": 91.14554096141578,
+        "levels": {
+          "support": 747.7432005092232,
+          "resistance": 781.6199951171875,
+          "bars": 20,
+          "state": "inside",
+          "support_distance_pct": -3.890285327501075,
+          "resistance_distance_pct": 0.46400243007798103,
+          "start_time": "2026-09-15",
+          "end_time": "2026-10-12",
+          "latest_time": "2026-10-13",
+          "close": 778.010009765625,
+          "basis": "prior-selected-window-high-low-max20-min5",
+          "reason": ""
+        },
+        "volume_ratio": 0.5923218734452387,
+        "metrics": {
+          "ema20": 771.1761788551873,
+          "ema50": 764.4100949837618,
+          "sma200": 720.6000909423828,
+          "rsi": 59.799032628391274,
+          "macd": 3.9949210167319507,
+          "signal": 3.0587826210089797,
+          "hist": 0.936138395722971
+        },
+        "atr_pct": 0.7765603851272568,
+        "below_chart": true,
+        "source_values_checked": true,
+        "warnings": [],
+        "chart_reference_lines": {
+          "actual_price_lines": [
+            {
+              "key": "support",
+              "price": 747.7432005092232,
+              "visible": true,
+              "axisLabelVisible": true
+            },
+            {
+              "key": "resistance",
+              "price": 781.6199951171875,
+              "visible": true,
+              "axisLabelVisible": true
+            }
+          ],
+          "toggle_preserves_range_and_snapshot": true,
+          "shares_commentary_calculation": true
+        }
+      },
+      {
+        "ticker": "SPY",
+        "period": "10 ปี",
+        "interval": "1d",
+        "trend": "mixed",
+        "bar_time": "2026-10-14",
+        "return_percent": 322.849081962367,
+        "levels": {
+          "support": 747.7432005092232,
+          "resistance": 781.6199951171875,
+          "bars": 20,
+          "state": "inside",
+          "support_distance_pct": -2.840017641642145,
+          "resistance_distance_pct": 1.5618528992414005,
+          "start_time": "2026-09-16",
+          "end_time": "2026-10-13",
+          "latest_time": "2026-10-14",
+          "close": 769.5999755859375,
+          "basis": "prior-selected-window-high-low-max20-min5",
+          "reason": ""
+        },
+        "volume_ratio": 1.3024071769618095,
+        "metrics": {
+          "ema20": 771.0260642580074,
+          "ema50": 764.613619684365,
+          "sma200": 721.0232916259765,
+          "rsi": 50.09174857667585,
+          "macd": 3.3700103840681095,
+          "signal": 3.121028175605213,
+          "hist": 0.24898220846289654
+        },
+        "atr_pct": 0.8338498531524031,
+        "below_chart": true,
+        "source_values_checked": true,
+        "warnings": [],
+        "chart_reference_lines": {
+          "actual_price_lines": [
+            {
+              "key": "support",
+              "price": 747.7432005092232,
+              "visible": true,
+              "axisLabelVisible": true
+            },
+            {
+              "key": "resistance",
+              "price": 781.6199951171875,
+              "visible": true,
+              "axisLabelVisible": true
+            }
+          ],
+          "toggle_preserves_range_and_snapshot": true,
+          "shares_commentary_calculation": true
+        }
+      }
+    ],
+    "growth_and_plain_cells": {
+      "plain_value_cells": [
+        {
+          "valid": 0,
+          "forbidden": 0
+        },
+        {
+          "valid": 8,
+          "forbidden": 0
+        },
+        {
+          "valid": 13,
+          "forbidden": 0
+        },
+        {
+          "valid": 6,
+          "forbidden": 0
+        }
+      ],
+      "period_returns": [
+        {
+          "ticker": "SPY",
+          "period": "7 วัน",
+          "percent": -1.0936629079096427,
+          "display": "-1.09%",
+          "first": 1791293400,
+          "last": 1792007700,
+          "start_price": 778.1199951171875,
+          "end_price": 769.6099853515625,
+          "bars": 546
+        },
+        {
+          "ticker": "SPY",
+          "period": "10 ปี",
+          "percent": 322.849081962367,
+          "display": "+322.85%",
+          "first": "2016-10-14",
+          "last": "2026-10-14",
+          "start_price": 182.0034637451172,
+          "end_price": 769.5999755859375,
+          "bars": 2512
+        },
+        {
+          "ticker": "SPY",
+          "period": "1 ปี",
+          "percent": 18.605774214132698,
+          "display": "+18.61%",
+          "first": "2025-10-13",
+          "last": "2026-10-13",
+          "start_price": 655.9630126953125,
+          "end_price": 778.010009765625,
+          "bars": 252
+        }
+      ]
+    },
+    "top10": {
+      "title": "Top 10 · จังหวะเข้าซื้อ",
+      "catalog_scanned": 9876,
+      "rows": 10,
+      "entry_rows": 0,
+      "watch_rows": 10,
+      "refresh_schedule": "7,37 * * * *",
+      "pulse_before": {
+        "provider_state": "partial",
+        "refresh_seconds": 30,
+        "news_seconds": 300,
+        "scope": "published-top10",
+        "rendered_at": "2026-10-15T08:17:29.709996+00:00",
+        "quotes_checked_at": "2026-10-15T08:17:16.735709+00:00",
+        "observations": [
+          {
+            "ticker": "SFLO",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "VAC",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "AIOO",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "SJM",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "GOOG",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-15T08:17:07+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "GOOGL",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-15T08:17:02+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "AMZN",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-15T08:16:36+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "VTEX",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "GDRX",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-15T08:07:33+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "DIVB",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          }
+        ]
+      },
+      "pulse_detail": {
+        "ticker": "SFLO",
+        "criteria_explained": 3,
+        "news_detail_opened": true,
+        "news_links": 0,
+        "provider_success_required": false
+      },
+      "pulse_after": {
+        "provider_state": "partial",
+        "refresh_seconds": 30,
+        "news_seconds": 300,
+        "scope": "published-top10",
+        "rendered_at": "2026-10-15T08:17:58.784595+00:00",
+        "quotes_checked_at": "2026-10-15T08:17:50.777692+00:00",
+        "observations": [
+          {
+            "ticker": "SFLO",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "VAC",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "AIOO",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "SJM",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "GOOG",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-15T08:17:07+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "GOOGL",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-15T08:17:37+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "AMZN",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-15T08:16:36+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "VTEX",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          },
+          {
+            "ticker": "GDRX",
+            "assessment": "unknown",
+            "quote_observed_at": "2026-10-15T08:07:33+00:00",
+            "news_checked_at": null
+          },
+          {
+            "ticker": "DIVB",
+            "assessment": "unknown",
+            "quote_observed_at": null,
+            "news_checked_at": null
+          }
+        ]
+      },
+      "first_rank": "01 · SFLO · 100/100 · เฝ้าดู ไม่ใช่จุดซื้อ",
+      "clicked": "SFLO",
+      "chart_bars": 704,
+      "filter_independent": true,
+      "completed_search_before_selection": true,
+      "single_click": true,
+      "cleared_search_before_return": true
+    },
+    "chart_inspector": {
+      "ticker": "ORCL",
+      "daily_values_checked": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "ema20",
+        "ema50",
+        "sma200",
+        "volume",
+        "buy_volume_est",
+        "sell_volume_est",
+        "unclassified_volume",
+        "rsi",
+        "macd",
+        "signal",
+        "hist"
+      ],
+      "panes": [
+        {
+          "series": "ema20",
+          "pane": 0,
+          "highlight": "ema20"
+        },
+        {
+          "series": "ema50",
+          "pane": 0,
+          "highlight": "ema50"
+        },
+        {
+          "series": "sma200",
+          "pane": 0,
+          "highlight": "sma200"
+        },
+        {
+          "series": "volume",
+          "pane": 1,
+          "highlight": "volume"
+        },
+        {
+          "series": "rsi",
+          "pane": 2,
+          "highlight": "rsi"
+        },
+        {
+          "series": "macd",
+          "pane": 3,
+          "highlight": "macd"
+        },
+        {
+          "series": "signal",
+          "pane": 3,
+          "highlight": "signal"
+        },
+        {
+          "series": "hist",
+          "pane": 3,
+          "highlight": "hist"
+        }
+      ],
+      "pin_and_escape": true,
+      "keyboard": true,
+      "optional_toggle": true,
+      "pan_reset": true,
+      "pan_geometry": {
+        "canvas_index": 1,
+        "canvas": {
+          "x": 398,
+          "y": 576.453125,
+          "width": 868,
+          "height": 180
+        },
+        "clips": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 1000
+          },
+          {
+            "x": 397,
+            "y": 154.28125,
+            "width": 946,
+            "height": 900
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 1000
+          }
+        ],
+        "visible": {
+          "left": 414,
+          "top": 592.453125,
+          "right": 1250,
+          "bottom": 740.453125
+        },
+        "start": {
+          "x": 706.5999999999999,
+          "y": 666.453125
+        },
+        "end": {
+          "x": 957.4,
+          "y": 666.453125
+        },
+        "canvas_hits": [
+          true,
+          true
+        ]
+      },
+      "edge_bounds": true,
+      "latest_price_and_period_return_unchanged": true,
+      "intraday": {
+        "ticker": "SPY",
+        "interval": "5m",
+        "time": "1791994200",
+        "timezone": "America/New_York"
+      }
+    },
+    "data_quality": {
+      "backend_field_report": true,
+      "backend_symbol_report": true,
+      "source_verified": true,
+      "source_generation": "generations/20261015T045034Z-6e4431f8",
+      "counts": {
+        "universe": 9876,
+        "prices": 9876,
+        "histories": 9876,
+        "info": 9876,
+        "industry": 9804,
+        "dividends_checked": 9876,
+        "dividends_with_payments": 6112,
+        "dividends_no_payments": 3764,
+        "financial_statements": 4161,
+        "unattempted_info": 0,
+        "unattempted_dividends": 0
+      },
+      "public_diagnostics_removed": {
+        "industry_dropdown_top_level": true,
+        "source_columns_removed": true,
+        "diagnostics_ui_removed": true,
+        "headers_checked": 16
+      },
+      "examples": [
+        {
+          "ticker": "AEON",
+          "industry_state": "available",
+          "dividend_state": "no_payments",
+          "history_bars": 948,
+          "company_analysis": {
+            "ticker": "AEON",
+            "groups": 9,
+            "metrics": 54,
+            "metric_only_help": true,
+            "thai_labels_and_explanations": true,
+            "bilingual_metric_labels": true,
+            "annual_statements": [
+              {
+                "statement": "income",
+                "periods": [
+                  "2025-12-31",
+                  "2024-12-31",
+                  "2023-12-31",
+                  "2022-12-31"
+                ],
+                "rows": 10
+              },
+              {
+                "statement": "balance",
+                "periods": [
+                  "2025-12-31",
+                  "2024-12-31",
+                  "2023-12-31",
+                  "2022-12-31"
+                ],
+                "rows": 9
+              },
+              {
+                "statement": "cashflow",
+                "periods": [
+                  "2025-12-31",
+                  "2024-12-31",
+                  "2022-12-31",
+                  "2021-12-31"
+                ],
+                "rows": 6
+              }
+            ],
+            "consolidated_fundamentals": {
+              "technical_rows": 9,
+              "duplicate_fundamentals": 0,
+              "canonical_metrics": 54
+            },
+            "source_generation": "generations/20261015T045034Z-6e4431f8"
+          }
+        },
+        {
+          "ticker": "AESP",
+          "industry_state": "available",
+          "dividend_state": "no_payments",
+          "history_bars": 73,
+          "company_analysis": {
+            "ticker": "AESP",
+            "groups": 9,
+            "metrics": 54,
+            "metric_only_help": true,
+            "thai_labels_and_explanations": true,
+            "bilingual_metric_labels": true,
+            "annual_statements": [
+              {
+                "statement": "income",
+                "state": "not_available_in_source",
+                "periods": [],
+                "rows": 0
+              },
+              {
+                "statement": "balance",
+                "periods": [
+                  "2025-12-31"
+                ],
+                "rows": 9
+              },
+              {
+                "statement": "cashflow",
+                "state": "not_available_in_source",
+                "periods": [],
+                "rows": 0
+              }
+            ],
+            "consolidated_fundamentals": {
+              "technical_rows": 9,
+              "duplicate_fundamentals": 0,
+              "canonical_metrics": 54
+            },
+            "source_generation": "generations/20261015T045034Z-6e4431f8"
+          }
+        },
+        {
+          "ticker": "SPY",
+          "industry_state": "available",
+          "dividend_state": "available",
+          "history_bars": 1506,
+          "company_analysis": {
+            "ticker": "SPY",
+            "fund_specific_table": true
+          }
+        }
+      ]
+    },
+    "english_return_table": {
+      "headers": [
+        "1 Day (%)",
+        "3 Days (%)",
+        "7 Days (%)",
+        "1 Month (%)",
+        "6 Months (%)",
+        "1 Year (%)",
+        "3 Years (%)",
+        "5 Years (%)"
+      ],
+      "all_filtered_rows": 9876,
+      "source_generation": "generations/20261015T045034Z-6e4431f8",
+      "independent_daily_price_checks": [
+        {
+          "ticker": "AAPL",
+          "price_asof": "2026-10-13",
+          "returns": {
+            "1 Day (%)": 0.08798069973745548,
+            "3 Days (%)": 0.24968437589170112,
+            "7 Days (%)": 2.2715653800855495,
+            "1 Month (%)": 2.708640652956973,
+            "6 Months (%)": 31.89775682398055,
+            "1 Year (%)": 38.30680287585528,
+            "3 Years (%)": 93.39427798435946,
+            "5 Years (%)": 148.30552939758005
+          }
+        },
+        {
+          "ticker": "MSFT",
+          "price_asof": "2026-10-13",
+          "returns": {
+            "1 Day (%)": 0.4250185141281504,
+            "3 Days (%)": 3.98768248590764,
+            "7 Days (%)": 5.008401724122469,
+            "1 Month (%)": 9.648327755202256,
+            "6 Months (%)": 41.96017745570244,
+            "1 Year (%)": 6.589109239206814,
+            "3 Years (%)": 69.70632459650868,
+            "5 Years (%)": 91.10213203752511
+          }
+        },
+        {
+          "ticker": "SPY",
+          "price_asof": "2026-10-13",
+          "returns": {
+            "1 Day (%)": -0.011562244330465266,
+            "3 Days (%)": 0.5271816738536605,
+            "7 Days (%)": 1.0875207834679435,
+            "1 Month (%)": 2.0479126393020852,
+            "6 Months (%)": 13.970453856995867,
+            "1 Year (%)": 18.605774214132698,
+            "3 Years (%)": 86.95895837345368,
+            "5 Years (%)": 91.14554096141578
+          }
+        },
+        {
+          "ticker": "AAC",
+          "price_asof": "2026-10-13",
+          "returns": {
+            "1 Day (%)": -0.496516768379307,
+            "3 Days (%)": -0.39761391833571524,
+            "7 Days (%)": -0.9881366494688071,
+            "1 Month (%)": -0.9881366494688071,
+            "6 Months (%)": null,
+            "1 Year (%)": null,
+            "3 Years (%)": null,
+            "5 Years (%)": null
+          }
+        }
+      ],
+      "result": "passed"
+    },
+    "advanced_screener_and_ui": {
+      "target": "https://my-stock-terminal.streamlit.app/",
+      "verified_at": "2026-10-15T08:19:28.091051+00:00",
+      "catalog_rows": 9876,
+      "original_stock_rows": 4200,
+      "etf_rows": 5676,
+      "five_tab_combined_filter": {
+        "tabs": [
+          "ผลตอบแทน",
+          "ราคา / ปันผล",
+          "ความเสี่ยง / แนวโน้ม",
+          "บริษัท / กองทุน",
+          "หมวดหมู่ / คุณภาพข้อมูล"
+        ],
+        "rows": 1158,
+        "minimum_price": 5,
+        "maximum_rsi": 70,
+        "minimum_roe": 10,
+        "required_return": "1 Year (%)",
+        "currency": "USD",
+        "source_screener_schema": 2,
+        "exact_csv_membership": true,
+        "csv_values_verified": true,
+        "restored_rows": 9876,
+        "complete_reset_receipt": {
+          "Asset Type": "All",
+          "Trend Status": "All",
+          "Return Display": "Cumulative (Adjusted Close)",
+          "Search Ticker / Company": "",
+          "Reset Version": 3,
+          "Return Periods to Filter": [],
+          "Include Missing Values": false,
+          "Require Available Return Periods": [],
+          "Price Above SMA200": false,
+          "Price > EMA20 > EMA50": false,
+          "Session Favourites Only": false,
+          "Company Filters Active": false,
+          "Fund Filters Active": false,
+          "Industry / ETF Category": [],
+          "Sector": [],
+          "Country": [],
+          "Fund Family / Issuer": [],
+          "Exchange": [],
+          "Currency": [],
+          "Financial Statement Currency": [],
+          "Sort By": "Ticker",
+          "Descending": false
+        }
+      },
+      "category_filter": {
+        "category": "Derivative Income",
+        "rows": 272,
+        "QQQI": true
+      },
+      "combined_numeric_filter": {
+        "rows": 178,
+        "minimum_1m": 0
+      },
+      "invalid_bounds_handled": true,
+      "annualized_csv_verified": true,
+      "empty_results_handled": true,
+      "QQQI_chart_bars": 679,
+      "auto_refresh_verified": {
+        "session": "pre",
+        "state": "scheduled",
+        "effective_seconds": 30.0,
+        "next_due": 1792052552.9857616,
+        "second_observation": true
+      },
+      "quote_controls": {
+        "requested_seconds": [
+          30,
+          60,
+          30
+        ],
+        "initial": {
+          "state": "scheduled",
+          "requestedSeconds": "30",
+          "effectiveSeconds": "30",
+          "nextDue": "1792052552.9857616",
+          "busy": "false",
+          "session": "pre"
+        },
+        "sixty_seconds": {
+          "state": "scheduled",
+          "requestedSeconds": "60",
+          "effectiveSeconds": "60",
+          "nextDue": "1792052582.9857616",
+          "busy": "false",
+          "session": "pre"
+        },
+        "resumed": {
+          "state": "scheduled",
+          "requestedSeconds": "30",
+          "effectiveSeconds": "30",
+          "nextDue": "1792052583.5944464",
+          "busy": "false",
+          "session": "pre"
+        },
+        "pause_resume": true,
+        "interval_choices_visible_across_cadence": true,
+        "single_action_interval_changes": true,
+        "ticker_search_and_daily_chart_preserved": true,
+        "generation_before": "generations/20261015T045034Z-6e4431f8",
+        "generation_after": "generations/20261015T045034Z-6e4431f8"
+      },
+      "minute_price": {
+        "price": 54.38,
+        "bar_time": "2026-10-15T08:20:59+00:00",
+        "fetched_at": "2026-10-15T08:22:33.594101+00:00",
+        "state": "recent"
+      },
+      "theme": {
+        "background": "radial-gradient(at 12% 0%, rgb(21, 35, 64) 0px, rgba(0, 0, 0, 0) 48%), none",
+        "metric_background": "linear-gradient(130deg, rgb(23, 40, 68), rgb(17, 28, 51))"
+      },
+      "desktop_screenshot": "https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/verify/v22-results/reports/v22-desktop.png",
+      "mobile_filter_controls": {
+        "tabs": [
+          {
+            "tab": "ผลตอบแทน",
+            "box": {
+              "left": 48.390625,
+              "right": 119.390625,
+              "top": 535.296875,
+              "bottom": 575.296875,
+              "width": 390,
+              "height": 844
+            }
+          },
+          {
+            "tab": "ราคา / ปันผล",
+            "box": {
+              "left": 135.390625,
+              "right": 215.390625,
+              "top": 535.296875,
+              "bottom": 575.296875,
+              "width": 390,
+              "height": 844
+            }
+          },
+          {
+            "tab": "ความเสี่ยง / แนวโน้ม",
+            "box": {
+              "left": 213.390625,
+              "right": 341.390625,
+              "top": 541.296875,
+              "bottom": 581.296875,
+              "width": 390,
+              "height": 844
+            }
+          },
+          {
+            "tab": "บริษัท / กองทุน",
+            "box": {
+              "left": 151.390625,
+              "right": 239.390625,
+              "top": 541.296875,
+              "bottom": 581.296875,
+              "width": 390,
+              "height": 844
+            }
+          },
+          {
+            "tab": "หมวดหมู่ / คุณภาพข้อมูล",
+            "box": {
+              "left": 193.390625,
+              "right": 341.390625,
+              "top": 541.296875,
+              "bottom": 581.296875,
+              "width": 390,
+              "height": 844
+            }
+          }
+        ],
+        "numeric_input_box": {
+          "left": 49.390625,
+          "right": 276.609375,
+          "top": 711.5,
+          "bottom": 747.09375,
+          "width": 390,
+          "height": 844
+        },
+        "reset_button_box": {
+          "left": 31.390625,
+          "right": 172.390625,
+          "top": 401.953125,
+          "bottom": 441.953125,
+          "width": 390,
+          "height": 844
+        },
+        "complete_reset_receipt": {
+          "Asset Type": "All",
+          "Trend Status": "All",
+          "Return Display": "Cumulative (Adjusted Close)",
+          "Search Ticker / Company": "",
+          "Reset Version": 7,
+          "Return Periods to Filter": [],
+          "Include Missing Values": false,
+          "Require Available Return Periods": [],
+          "Price Above SMA200": false,
+          "Price > EMA20 > EMA50": false,
+          "Session Favourites Only": false,
+          "Company Filters Active": false,
+          "Fund Filters Active": false,
+          "Industry / ETF Category": [],
+          "Sector": [],
+          "Country": [],
+          "Fund Family / Issuer": [],
+          "Exchange": [],
+          "Currency": [],
+          "Financial Statement Currency": [],
+          "Sort By": "Ticker",
+          "Descending": false
+        },
+        "restored_rows": 9876
+      },
+      "mobile_dimensions": {
+        "width": 390,
+        "scroll": 390
+      },
+      "mobile_screenshot": "https://raw.githubusercontent.com/sippakorntwo-glitch/stock-dashboard/verify/v22-results/reports/v22-mobile.png",
+      "clean_presentation": {
+        "industry_dropdown_top_level": true,
+        "source_columns_removed": true,
+        "diagnostics_ui_removed": true,
+        "headers_checked": 16
+      },
+      "top_level_industry_dropdown": true,
+      "result": "passed"
+    },
+    "asset_aware_sources": {
+      "AAAU_pe_not_applicable": true,
+      "AAAU_issuer_filing_link": true,
+      "diagnostics_still_absent": true,
+      "collapsed_sidebar_manual_selection": {
+        "from": "QQQI",
+        "to": "AAAU",
+        "single_entry": true
+      },
+      "SEC_examples": [
+        {
+          "ticker": "AAPL",
+          "verified_cik": 320193,
+          "stored_fiscal_records": 9,
+          "submissions_checked_at": "2026-09-12T11:53:51.828805+00:00"
+        },
+        {
+          "ticker": "MSFT",
+          "verified_cik": 789019,
+          "stored_fiscal_records": 9,
+          "submissions_checked_at": "2026-09-12T11:53:53.927928+00:00"
+        }
+      ],
+      "result": "passed"
+    },
+    "chart_refresh_stability": {
+      "period_switches": [
+        {
+          "period": "1 วัน",
+          "summary_count": 1,
+          "values_match": true
+        },
+        {
+          "period": "3 วัน",
+          "summary_count": 1,
+          "values_match": true
+        },
+        {
+          "period": "1 วัน",
+          "summary_count": 1,
+          "values_match": true
+        },
+        {
+          "period": "3 วัน",
+          "summary_count": 1,
+          "values_match": true
+        },
+        {
+          "period": "5 ปี",
+          "summary_count": 1,
+          "values_match": true
+        },
+        {
+          "period": "1 ปี",
+          "summary_count": 1,
+          "values_match": true
+        }
+      ],
+      "reloads": [
+        {
+          "iteration": 1,
+          "ticker": "AAPL",
+          "summary_count": 1,
+          "page_ready": true
+        },
+        {
+          "iteration": 2,
+          "ticker": "AAPL",
+          "summary_count": 1,
+          "page_ready": true
+        }
+      ],
+      "timer_seconds": 65,
+      "unchanged_chart_frame_preserved": true,
+      "result": "passed"
+    }
+  },
+  "javascript_errors": [],
+  "result": "passed",
   "target": "https://my-stock-terminal.streamlit.app/",
   "tested_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee"
 }
