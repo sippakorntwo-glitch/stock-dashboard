@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-10-16T18:09:01.149289+00:00",
-  "run_id": "38944881024",
+  "recorded_at": "2026-10-16T21:18:18.538973+00:00",
+  "run_id": "38968219288",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-16T18:08:08.161219+00:00",
-  "source_generation": "generations/20261016T165705Z-f3214c8d",
+  "started_at": "2026-10-16T21:17:25.724698+00:00",
+  "source_generation": "generations/20261016T210450Z-06a71c0e",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-16T18:09:01.114618+00:00",
+  "finished_at": "2026-10-16T21:18:18.506097+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261016T165705Z-f3214c8d",
+  "generation": "generations/20261016T210450Z-06a71c0e",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305823,
-    "report_sha256": "b0983d0a72cd773cd53c5648f798fc35a0ff188ca14400e84781458e7f14117c",
+    "report_sha256": "030e9a1b106712aee7e170570407fe21cfd8e09f080a626e5e14a988701d9a85",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/38944881024",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/38968219288",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -347,9 +347,9 @@
         "not_applicable": 5676
       },
       "payoutRatio": {
-        "available": 2258,
+        "available": 2259,
         "not_meaningful": 1139,
-        "not_reported": 803,
+        "not_reported": 802,
         "not_applicable": 5676
       },
       "dividendsPaid": {
@@ -2312,9 +2312,9 @@
         "not_applicable": 5676
       },
       "payoutRatio": {
-        "available": 2258,
+        "available": 2259,
         "not_meaningful": 1139,
-        "not_reported": 803,
+        "not_reported": 802,
         "not_applicable": 5676
       },
       "dividendsPaid": {
