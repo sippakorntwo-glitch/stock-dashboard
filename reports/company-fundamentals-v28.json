@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-10-19T00:43:27.667274+00:00",
-  "run_id": "39180802362",
+  "recorded_at": "2026-10-19T10:31:07.372258+00:00",
+  "run_id": "39236038581",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-19T00:27:34.445630+00:00",
-  "source_generation": "generations/20261018T203836Z-d591b39c",
+  "started_at": "2026-10-19T10:15:11.121230+00:00",
+  "source_generation": "generations/20261019T043716Z-d61d275f",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-19T00:43:27.634123+00:00",
+  "finished_at": "2026-10-19T10:31:07.350074+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261019T003852Z-edf64f5f",
+  "generation": "generations/20261019T102703Z-3ca95443",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -29,15 +29,15 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305703,
-    "report_sha256": "0e48765ecd26217b23363f7f8e3259b39b1361586af4a3b446d4ddf4a994e5cd",
+    "report_bytes": 305686,
+    "report_sha256": "cc4657729afef8bbc470ea826890fb25bfa07d6dc9256dffd1d178c7004fc45a",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/39180802362",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/39236038581",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -219,8 +219,8 @@
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
-        "available": 3788,
-        "not_meaningful": 326,
+        "available": 3789,
+        "not_meaningful": 325,
         "pending": 39,
         "not_reported": 47,
         "not_applicable": 5676
@@ -3971,10 +3971,10 @@
     }
   },
   "collection": {
-    "due_before": 963,
+    "due_before": 1362,
     "attempted": 400,
-    "updated": 1,
-    "not_reported": 0,
+    "updated": 0,
+    "not_reported": 1,
     "failed": 0,
     "errors": [],
     "errors_summary": {
@@ -3983,17 +3983,15 @@
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [
-      "XRPN"
-    ],
+    "symbols_updated": [],
     "symbols_updated_summary": {
-      "total": 1,
-      "included": 1,
+      "total": 0,
+      "included": 0,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 752,
-    "remaining_due": 563
+    "retained_fields": 642,
+    "remaining_due": 962
   }
 }
