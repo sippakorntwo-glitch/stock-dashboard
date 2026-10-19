@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-10-18T08:10:20.713478+00:00",
-  "run_id": "39109584299",
+  "recorded_at": "2026-10-19T08:57:33.759331+00:00",
+  "run_id": "39224947448",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
   "url": "https://my-stock-terminal.streamlit.app/",
   "expected_version": "2026-10-03.46",
@@ -437,8 +437,8 @@
       {
         "kind": "extended",
         "state": "stale",
-        "session": "post",
-        "quote_time": "2026-10-16T23:59:44+00:00"
+        "session": "pre",
+        "quote_time": "2026-10-19T08:44:53+00:00"
       }
     ],
     "news_checked_at": null,
@@ -703,7 +703,7 @@
         "interval": "1d",
         "trend": "mixed",
         "bar_time": "2026-10-16",
-        "return_percent": 320.82119793205106,
+        "return_percent": 320.82126873943383,
         "levels": {
           "support": 757.969970703125,
           "resistance": 781.6199951171875,
@@ -720,15 +720,15 @@
         },
         "volume_ratio": 1.5237915747093984,
         "metrics": {
-          "ema20": 770.351311478949,
-          "ema50": 764.8305339190204,
-          "sma200": 721.8774664306641,
-          "rsi": 44.185449450566246,
-          "macd": 2.0242675240205017,
-          "signal": 2.8849842409383286,
-          "hist": -0.8607167169178269
+          "ema20": 770.3513114788656,
+          "ema50": 764.8305339133503,
+          "sma200": 721.8774685668945,
+          "rsi": 44.18544947134397,
+          "macd": 2.024267525217624,
+          "signal": 2.8849842427005132,
+          "hist": -0.8607167174828891
         },
-        "atr_pct": 0.9163184574570056,
+        "atr_pct": 0.9163184580320463,
         "below_chart": true,
         "source_values_checked": true,
         "warnings": [],
@@ -786,11 +786,11 @@
         {
           "ticker": "SPY",
           "period": "10 ปี",
-          "percent": 320.82119793205106,
+          "percent": 320.82126873943383,
           "display": "+320.82%",
           "first": "2016-10-17",
           "last": "2026-10-16",
-          "start_price": 181.37156677246094,
+          "start_price": 181.3715362548828,
           "end_price": 763.25,
           "bars": 2514
         },
@@ -819,8 +819,8 @@
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-10-18T08:03:17.783318+00:00",
-        "quotes_checked_at": null,
+        "rendered_at": "2026-10-19T08:50:04.815072+00:00",
+        "quotes_checked_at": "2026-10-19T08:49:35.166125+00:00",
         "observations": [
           {
             "ticker": "BHC",
@@ -849,7 +849,7 @@
           {
             "ticker": "DLB",
             "assessment": "unknown",
-            "quote_observed_at": null,
+            "quote_observed_at": "2026-10-19T08:07:38+00:00",
             "news_checked_at": null
           },
           {
@@ -896,8 +896,8 @@
         "refresh_seconds": 30,
         "news_seconds": 300,
         "scope": "published-top10",
-        "rendered_at": "2026-10-18T08:03:56.258826+00:00",
-        "quotes_checked_at": null,
+        "rendered_at": "2026-10-19T08:50:40.645938+00:00",
+        "quotes_checked_at": "2026-10-19T08:50:21.944262+00:00",
         "observations": [
           {
             "ticker": "BHC",
@@ -926,7 +926,7 @@
           {
             "ticker": "DLB",
             "assessment": "unknown",
-            "quote_observed_at": null,
+            "quote_observed_at": "2026-10-19T08:07:38+00:00",
             "news_checked_at": null
           },
           {
@@ -1094,7 +1094,7 @@
       "backend_field_report": true,
       "backend_symbol_report": true,
       "source_verified": true,
-      "source_generation": "generations/20261018T042747Z-54d39e52",
+      "source_generation": "generations/20261019T043716Z-d61d275f",
       "counts": {
         "universe": 9876,
         "prices": 9876,
@@ -1164,7 +1164,7 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20261018T042747Z-54d39e52"
+            "source_generation": "generations/20261019T043716Z-d61d275f"
           }
         },
         {
@@ -1205,7 +1205,7 @@
               "duplicate_fundamentals": 0,
               "canonical_metrics": 54
             },
-            "source_generation": "generations/20261018T042747Z-54d39e52"
+            "source_generation": "generations/20261019T043716Z-d61d275f"
           }
         },
         {
@@ -1232,7 +1232,7 @@
         "5 Years (%)"
       ],
       "all_filtered_rows": 9876,
-      "source_generation": "generations/20261018T042747Z-54d39e52",
+      "source_generation": "generations/20261019T043716Z-d61d275f",
       "independent_daily_price_checks": [
         {
           "ticker": "AAPL",
@@ -1295,7 +1295,7 @@
     },
     "advanced_screener_and_ui": {
       "target": "https://my-stock-terminal.streamlit.app/",
-      "verified_at": "2026-10-18T08:05:20.209003+00:00",
+      "verified_at": "2026-10-19T08:52:03.212189+00:00",
       "catalog_rows": 9876,
       "original_stock_rows": 4200,
       "etf_rows": 5676,
@@ -1356,12 +1356,11 @@
       "empty_results_handled": true,
       "QQQI_chart_bars": 682,
       "auto_refresh_verified": {
-        "session": "unknown",
+        "session": "pre",
         "state": "scheduled",
-        "effective_seconds": 1800.0,
-        "next_due": 1792312637.0601974,
-        "second_observation": false,
-        "reason": "provider session or request budget requires a conservative wait"
+        "effective_seconds": 30.0,
+        "next_due": 1792400077.2762969,
+        "second_observation": true
       },
       "quote_controls": {
         "requested_seconds": [
@@ -1372,38 +1371,38 @@
         "initial": {
           "state": "scheduled",
           "requestedSeconds": "30",
-          "effectiveSeconds": "1800",
-          "nextDue": "1792312637.0601974",
+          "effectiveSeconds": "30",
+          "nextDue": "1792400077.2762969",
           "busy": "false",
-          "session": "unknown"
+          "session": "pre"
         },
         "sixty_seconds": {
           "state": "scheduled",
           "requestedSeconds": "60",
-          "effectiveSeconds": "1800",
-          "nextDue": "1792312637.0601974",
+          "effectiveSeconds": "60",
+          "nextDue": "1792400107.2762969",
           "busy": "false",
-          "session": "unknown"
+          "session": "pre"
         },
         "resumed": {
           "state": "scheduled",
           "requestedSeconds": "30",
-          "effectiveSeconds": "1800",
-          "nextDue": "1792312637.0601974",
+          "effectiveSeconds": "30",
+          "nextDue": "1792400107.6948476",
           "busy": "false",
-          "session": "unknown"
+          "session": "pre"
         },
         "pause_resume": true,
         "interval_choices_visible_across_cadence": true,
         "single_action_interval_changes": true,
         "ticker_search_and_daily_chart_preserved": true,
-        "generation_before": "generations/20261018T042747Z-54d39e52",
-        "generation_after": "generations/20261018T042747Z-54d39e52"
+        "generation_before": "generations/20261019T043716Z-d61d275f",
+        "generation_after": "generations/20261019T043716Z-d61d275f"
       },
       "minute_price": {
-        "price": 53.566,
-        "bar_time": "2026-10-16T23:58:00+00:00",
-        "fetched_at": "2026-10-18T08:07:17.059835+00:00",
+        "price": 54.29,
+        "bar_time": "2026-10-19T08:40:57+00:00",
+        "fetched_at": "2026-10-19T08:54:37.694515+00:00",
         "state": "stale"
       },
       "theme": {
@@ -1418,8 +1417,8 @@
             "box": {
               "left": 48.390625,
               "right": 119.390625,
-              "top": 535.296875,
-              "bottom": 575.296875,
+              "top": 541.296875,
+              "bottom": 581.296875,
               "width": 390,
               "height": 844
             }
@@ -1429,8 +1428,8 @@
             "box": {
               "left": 135.390625,
               "right": 215.390625,
-              "top": 535.296875,
-              "bottom": 575.296875,
+              "top": 541.296875,
+              "bottom": 581.296875,
               "width": 390,
               "height": 844
             }
