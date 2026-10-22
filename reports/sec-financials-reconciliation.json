@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-10-22T17:17:06.895840+00:00",
-  "run_id": "39821016569",
+  "recorded_at": "2026-10-22T21:43:15.728270+00:00",
+  "run_id": "39859260918",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-22T17:16:09.429069+00:00",
-  "source_generation": "generations/20261022T170842Z-471839bb",
+  "started_at": "2026-10-22T21:42:17.154193+00:00",
+  "source_generation": "generations/20261022T213315Z-7bec8572",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-22T17:17:06.862839+00:00",
+  "finished_at": "2026-10-22T21:43:15.695416+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261022T170842Z-471839bb",
+  "generation": "generations/20261022T213315Z-7bec8572",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -31,14 +31,14 @@
   "full_artifacts": {
     "report": "company-financials-report.json",
     "report_bytes": 305823,
-    "report_sha256": "5da0db6a98bdc6a162b4d6afe6fbce699271a6289311704855b2e35788f60070",
+    "report_sha256": "6313cd1101e74cacabecccdb308c14641e13e1e66104778b2ec01bec237f69b9",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/39821016569",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/39859260918",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
