@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-10-23T15:44:35.741027+00:00",
-  "run_id": "39978222521",
+  "recorded_at": "2026-10-23T20:21:52.855355+00:00",
+  "run_id": "40016298356",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-10-23T15:26:44.981190+00:00",
-  "source_generation": "generations/20261023T124551Z-f57a7555",
+  "started_at": "2026-10-23T20:04:38.106946+00:00",
+  "source_generation": "generations/20261023T170451Z-94fba157",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-10-23T15:44:35.707701+00:00",
+  "finished_at": "2026-10-23T20:21:52.836494+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261023T154003Z-eda7cc10",
+  "generation": "generations/20261023T201750Z-79ee0cc3",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -29,15 +29,15 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 305688,
-    "report_sha256": "335af2e0fe4399b2d792b7d70e827569cd640225cd1c16f6a9394ffd7d81ed42",
+    "report_bytes": 305773,
+    "report_sha256": "1a6710236d98c8112510815199c3a1bc62bc304fd614e6da1ff28f5a990457de",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/39978222521",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/40016298356",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -2119,16 +2119,16 @@
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
-        "available": 3464,
-        "not_reported": 319,
+        "available": 3465,
+        "not_reported": 318,
         "not_meaningful": 378,
         "pending": 39,
         "not_applicable": 5676
       },
       "netIncomeGrowthFY": {
         "available": 2135,
-        "not_meaningful": 1709,
-        "not_reported": 317,
+        "not_meaningful": 1710,
+        "not_reported": 316,
         "pending": 39,
         "not_applicable": 5676
       },
@@ -2184,10 +2184,10 @@
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
-        "available": 3788,
+        "available": 3787,
         "not_meaningful": 326,
         "pending": 39,
-        "not_reported": 47,
+        "not_reported": 48,
         "not_applicable": 5676
       },
       "currentRatio": {
@@ -2216,21 +2216,21 @@
         "not_applicable": 5676
       },
       "totalAssets": {
-        "available": 4115,
-        "pending": 39,
-        "not_reported": 46,
-        "not_applicable": 5676
-      },
-      "totalLiabilities": {
         "available": 4114,
         "pending": 39,
         "not_reported": 47,
         "not_applicable": 5676
       },
-      "stockholdersEquity": {
-        "available": 4116,
+      "totalLiabilities": {
+        "available": 4113,
         "pending": 39,
-        "not_reported": 45,
+        "not_reported": 48,
+        "not_applicable": 5676
+      },
+      "stockholdersEquity": {
+        "available": 4115,
+        "pending": 39,
+        "not_reported": 46,
         "not_applicable": 5676
       },
       "cash": {
@@ -3971,9 +3971,9 @@
     }
   },
   "collection": {
-    "due_before": 969,
-    "attempted": 400,
-    "updated": 0,
+    "due_before": 961,
+    "attempted": 399,
+    "updated": 6,
     "not_reported": 0,
     "failed": 0,
     "errors": [],
@@ -3983,15 +3983,22 @@
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [],
+    "symbols_updated": [
+      "KT",
+      "KTCC",
+      "LII",
+      "LOAN",
+      "LSAK",
+      "MANU"
+    ],
     "symbols_updated_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 6,
+      "included": 6,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 774,
-    "remaining_due": 569
+    "retained_fields": 659,
+    "remaining_due": 562
   }
 }
