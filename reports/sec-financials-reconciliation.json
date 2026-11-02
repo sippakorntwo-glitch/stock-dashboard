@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-11-01T23:46:29.924313+00:00",
-  "run_id": "41363162811",
+  "recorded_at": "2026-11-02T06:18:59.949579+00:00",
+  "run_id": "41398960257",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-11-01T23:40:08.316419+00:00",
-  "source_generation": "generations/20261101T210202Z-7d749b0d",
+  "started_at": "2026-11-02T06:18:08.521700+00:00",
+  "source_generation": "generations/20261102T015853Z-f90d1ae9",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-11-01T23:46:29.892718+00:00",
+  "finished_at": "2026-11-02T06:18:59.919063+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261101T234156Z-42d749be",
+  "generation": "generations/20261102T015853Z-f90d1ae9",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -25,19 +25,20 @@
     "return_2y": 7003,
     "return_3y": 6219
   },
+  "snapshot_unchanged": true,
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 301787,
-    "report_sha256": "6d53eca63598dd84f402db3de5f919b15a56e64caf67167e791163466671fde5",
+    "report_bytes": 301532,
+    "report_sha256": "31dd009e0cef048e8c24bda6e975d9910b7aab49712701fba60bb970498f80aa",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/41363162811",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/41398960257",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -46,12 +47,12 @@
       "companies": 4200,
       "statements_available": 4152,
       "companies_rechecked_revision": 4153,
-      "companies_with_statement_gaps": 4064,
+      "companies_with_statement_gaps": 4065,
       "companies_without_financial_currency": 40,
       "companies_checked_with_sec": 0,
       "companies_with_source_disagreements": 0,
       "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3719,
+      "with_missing_applicable_metrics": 3718,
       "with_invalid_source_metrics": 136,
       "funds": 5676
     },
@@ -113,14 +114,14 @@
         "not_applicable": 5676
       },
       "operatingMargins": {
-        "available": 3728,
-        "not_meaningful": 461,
+        "available": 3729,
+        "not_meaningful": 460,
         "not_reported": 11,
         "not_applicable": 5676
       },
       "profitMargins": {
-        "available": 3725,
-        "not_meaningful": 464,
+        "available": 3726,
+        "not_meaningful": 463,
         "not_reported": 11,
         "not_applicable": 5676
       },
@@ -320,15 +321,15 @@
         "not_applicable": 5676
       },
       "fcfMargin": {
-        "available": 3145,
-        "missing_inputs": 568,
+        "available": 3141,
+        "missing_inputs": 572,
         "not_meaningful": 448,
         "pending": 39,
         "not_applicable": 5676
       },
       "cashConversion": {
-        "available": 1887,
-        "missing_inputs": 574,
+        "available": 1883,
+        "missing_inputs": 578,
         "not_meaningful": 1700,
         "pending": 39,
         "not_applicable": 5676
@@ -1999,12 +2000,12 @@
       "companies": 4200,
       "statements_available": 4152,
       "companies_rechecked_revision": 4153,
-      "companies_with_statement_gaps": 4064,
+      "companies_with_statement_gaps": 4065,
       "companies_without_financial_currency": 40,
       "companies_checked_with_sec": 0,
       "companies_with_source_disagreements": 0,
       "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3719,
+      "with_missing_applicable_metrics": 3718,
       "with_invalid_source_metrics": 136,
       "funds": 5676
     },
@@ -2066,14 +2067,14 @@
         "not_applicable": 5676
       },
       "operatingMargins": {
-        "available": 3728,
-        "not_meaningful": 461,
+        "available": 3729,
+        "not_meaningful": 460,
         "not_reported": 11,
         "not_applicable": 5676
       },
       "profitMargins": {
-        "available": 3725,
-        "not_meaningful": 464,
+        "available": 3726,
+        "not_meaningful": 463,
         "not_reported": 11,
         "not_applicable": 5676
       },
@@ -2273,15 +2274,15 @@
         "not_applicable": 5676
       },
       "fcfMargin": {
-        "available": 3145,
-        "missing_inputs": 568,
+        "available": 3141,
+        "missing_inputs": 572,
         "not_meaningful": 448,
         "pending": 39,
         "not_applicable": 5676
       },
       "cashConversion": {
-        "available": 1887,
-        "missing_inputs": 574,
+        "available": 1883,
+        "missing_inputs": 578,
         "not_meaningful": 1700,
         "pending": 39,
         "not_applicable": 5676
@@ -3955,15 +3956,10 @@
     "conflicting_cells": 0,
     "failed": 0,
     "revised_cells": 0,
-    "errors": [
-      {
-        "source": "SEC ticker index",
-        "error": "HTTPError"
-      }
-    ],
+    "errors": [],
     "errors_summary": {
-      "total": 1,
-      "included": 1,
+      "total": 0,
+      "included": 0,
       "omitted": 0,
       "selection": "prefix"
     },
@@ -3976,19 +3972,6 @@
     },
     "only_missing": true,
     "cooldown_until": "2026-11-02T23:40:29.255561+00:00",
-    "provider_requests": 1,
-    "http_evidence": [
-      {
-        "url": "https://www.sec.gov/files/company_tickers.json",
-        "received_at": "2026-11-01T23:40:29.254625+00:00",
-        "http_status": 403
-      }
-    ],
-    "http_evidence_summary": {
-      "total": 1,
-      "included": 1,
-      "omitted": 0,
-      "selection": "prefix"
-    }
+    "provider_requests": 0
   }
 }
