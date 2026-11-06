@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-11-06T15:59:15.598233+00:00",
-  "run_id": "42247879044",
+  "recorded_at": "2026-11-06T21:40:13.475882+00:00",
+  "run_id": "42297651832",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-11-06T15:58:28.334383+00:00",
+  "started_at": "2026-11-06T21:33:45.944676+00:00",
   "source_generation": "generations/20261106T153821Z-044b04fd",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-11-06T15:59:15.570962+00:00",
+  "finished_at": "2026-11-06T21:40:13.444399+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261106T153821Z-044b04fd",
+  "generation": "generations/20261106T213535Z-48efdb8b",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -25,20 +25,19 @@
     "return_2y": 7003,
     "return_3y": 6225
   },
-  "snapshot_unchanged": true,
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 299309,
-    "report_sha256": "8e3f4ec8652b95b28f0c040455f3cbebacc7dd320ad0330f2299abae28adfd8e",
+    "report_bytes": 299564,
+    "report_sha256": "d6881d96a5f155f0a24a73222a4fcc8b4a48ebb88a63c5cc6f005995cf793cac",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/42247879044",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/42297651832",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -3942,10 +3941,15 @@
     "conflicting_cells": 0,
     "failed": 0,
     "revised_cells": 0,
-    "errors": [],
+    "errors": [
+      {
+        "source": "SEC ticker index",
+        "error": "HTTPError"
+      }
+    ],
     "errors_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 1,
+      "included": 1,
       "omitted": 0,
       "selection": "prefix"
     },
@@ -3957,7 +3961,20 @@
       "selection": "prefix"
     },
     "only_missing": true,
-    "cooldown_until": "2026-11-06T18:05:23.492055+00:00",
-    "provider_requests": 0
+    "cooldown_until": "2026-11-07T21:34:08.238080+00:00",
+    "provider_requests": 1,
+    "http_evidence": [
+      {
+        "url": "https://www.sec.gov/files/company_tickers.json",
+        "received_at": "2026-11-06T21:34:08.236855+00:00",
+        "http_status": 403
+      }
+    ],
+    "http_evidence_summary": {
+      "total": 1,
+      "included": 1,
+      "omitted": 0,
+      "selection": "prefix"
+    }
   }
 }
