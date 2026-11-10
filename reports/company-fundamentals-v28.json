@@ -1,43 +1,43 @@
 {
-  "recorded_at": "2026-11-10T13:03:20.183575+00:00",
-  "run_id": "42820017791",
+  "recorded_at": "2026-11-10T22:01:52.171579+00:00",
+  "run_id": "42909732237",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-11-10T12:57:05.257763+00:00",
-  "source_generation": "generations/20261110T041159Z-8f524ef8",
+  "started_at": "2026-11-10T21:56:33.933043+00:00",
+  "source_generation": "generations/20261110T154259Z-eff2dfc4",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-11-10T13:03:20.155507+00:00",
+  "finished_at": "2026-11-10T22:01:52.151261+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261110T125847Z-a9fa4ddb",
+  "generation": "generations/20261110T215750Z-93e1305c",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 0,
+    "checked_today": 9864,
     "industry": 9809,
     "info": 9876,
     "financial_statements": 4161,
     "dividends": 9876,
-    "return_1y": 8272,
-    "return_2y": 7007,
-    "return_3y": 6230
+    "return_1y": 8263,
+    "return_2y": 7005,
+    "return_3y": 6237
   },
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 303461,
-    "report_sha256": "99f96b172f783ee08f86294cf3a64afddc5b636b44a61cbf2f56b9f47515e949",
+    "report_bytes": 303464,
+    "report_sha256": "eb087c2fc5ffcb3bb4f67cf5e97fa522ca2df0a8dc562c9fe3d8609b9c416593",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/42820017791",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/42909732237",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -3955,7 +3955,7 @@
     }
   },
   "collection": {
-    "due_before": 2719,
+    "due_before": 3119,
     "attempted": 0,
     "updated": 0,
     "not_reported": 0,
@@ -3976,6 +3976,6 @@
     },
     "only_missing": false,
     "cooldown_until": "2026-11-11T00:32:23.095171+00:00",
-    "remaining_due": 2719
+    "remaining_due": 3119
   }
 }
