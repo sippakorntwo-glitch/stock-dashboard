@@ -1,18 +1,18 @@
 {
-  "recorded_at": "2026-11-10T00:37:58.752227+00:00",
-  "run_id": "42728032990",
+  "recorded_at": "2026-11-10T13:03:20.183575+00:00",
+  "run_id": "42820017791",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-11-10T00:25:02.984694+00:00",
-  "source_generation": "generations/20261109T174320Z-e63be072",
+  "started_at": "2026-11-10T12:57:05.257763+00:00",
+  "source_generation": "generations/20261110T041159Z-8f524ef8",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-11-10T00:37:58.724837+00:00",
+  "finished_at": "2026-11-10T13:03:20.155507+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261110T003335Z-c80fb5b4",
+  "generation": "generations/20261110T125847Z-a9fa4ddb",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
@@ -29,29 +29,29 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 304516,
-    "report_sha256": "ea8968c87ec8827210ac4a2fbdc912ed1734bd9ec3ea94cd8a2bf3cc7410da2f",
+    "report_bytes": 303461,
+    "report_sha256": "99f96b172f783ee08f86294cf3a64afddc5b636b44a61cbf2f56b9f47515e949",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/42728032990",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/42820017791",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
     "counts": {
       "securities": 9876,
       "companies": 4200,
-      "statements_available": 4153,
-      "companies_rechecked_revision": 4154,
-      "companies_with_statement_gaps": 4054,
+      "statements_available": 4154,
+      "companies_rechecked_revision": 4155,
+      "companies_with_statement_gaps": 4052,
       "companies_without_financial_currency": 40,
       "companies_checked_with_sec": 0,
       "companies_with_source_disagreements": 0,
       "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3724,
+      "with_missing_applicable_metrics": 3721,
       "with_invalid_source_metrics": 128,
       "funds": 5676
     },
@@ -125,21 +125,21 @@
         "not_applicable": 5676
       },
       "returnOnEquity": {
-        "available": 3500,
-        "not_meaningful": 600,
+        "available": 3502,
+        "not_meaningful": 598,
         "not_reported": 100,
         "not_applicable": 5676
       },
       "returnOnAssets": {
-        "available": 3990,
-        "not_reported": 207,
+        "available": 3989,
+        "not_reported": 208,
         "not_meaningful": 3,
         "not_applicable": 5676
       },
       "roic": {
-        "available": 1344,
-        "missing_inputs": 1473,
-        "not_meaningful": 1344,
+        "available": 1343,
+        "missing_inputs": 1475,
+        "not_meaningful": 1343,
         "pending": 39,
         "not_applicable": 5676
       },
@@ -168,8 +168,8 @@
         "not_applicable": 5676
       },
       "epsGrowthFY": {
-        "available": 2028,
-        "not_reported": 468,
+        "available": 2030,
+        "not_reported": 466,
         "not_meaningful": 1665,
         "pending": 39,
         "not_applicable": 5676
@@ -219,15 +219,15 @@
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
-        "available": 3816,
+        "available": 3817,
         "not_meaningful": 326,
         "pending": 39,
-        "not_reported": 19,
+        "not_reported": 18,
         "not_applicable": 5676
       },
       "currentRatio": {
-        "available": 3859,
-        "not_reported": 339,
+        "available": 3860,
+        "not_reported": 338,
         "not_meaningful": 2,
         "not_applicable": 5676
       },
@@ -237,35 +237,35 @@
         "not_applicable": 5676
       },
       "cashRatio": {
-        "available": 3646,
-        "not_reported": 513,
+        "available": 3647,
+        "not_reported": 512,
         "pending": 39,
         "not_meaningful": 2,
         "not_applicable": 5676
       },
       "interestCoverage": {
-        "missing_inputs": 1618,
-        "available": 2508,
+        "missing_inputs": 1619,
+        "available": 2507,
         "not_meaningful": 35,
         "pending": 39,
         "not_applicable": 5676
       },
       "totalAssets": {
-        "available": 4142,
-        "pending": 39,
-        "not_reported": 19,
-        "not_applicable": 5676
-      },
-      "totalLiabilities": {
-        "available": 4142,
-        "pending": 39,
-        "not_reported": 19,
-        "not_applicable": 5676
-      },
-      "stockholdersEquity": {
         "available": 4143,
         "pending": 39,
         "not_reported": 18,
+        "not_applicable": 5676
+      },
+      "totalLiabilities": {
+        "available": 4143,
+        "pending": 39,
+        "not_reported": 18,
+        "not_applicable": 5676
+      },
+      "stockholdersEquity": {
+        "available": 4144,
+        "pending": 39,
+        "not_reported": 17,
         "not_applicable": 5676
       },
       "cash": {
@@ -286,20 +286,20 @@
         "not_applicable": 5676
       },
       "currentAssets": {
-        "available": 3662,
-        "not_reported": 499,
+        "available": 3663,
+        "not_reported": 498,
         "pending": 39,
         "not_applicable": 5676
       },
       "currentLiabilities": {
-        "available": 3659,
-        "not_reported": 502,
+        "available": 3660,
+        "not_reported": 501,
         "pending": 39,
         "not_applicable": 5676
       },
       "workingCapital": {
-        "available": 3658,
-        "not_reported": 503,
+        "available": 3659,
+        "not_reported": 502,
         "pending": 39,
         "not_applicable": 5676
       },
@@ -320,15 +320,15 @@
         "not_applicable": 5676
       },
       "fcfMargin": {
-        "available": 3122,
-        "missing_inputs": 590,
+        "available": 3135,
+        "missing_inputs": 577,
         "not_meaningful": 449,
         "pending": 39,
         "not_applicable": 5676
       },
       "cashConversion": {
-        "available": 1900,
-        "missing_inputs": 597,
+        "available": 1913,
+        "missing_inputs": 584,
         "not_meaningful": 1664,
         "pending": 39,
         "not_applicable": 5676
@@ -423,7 +423,6 @@
       "VRXA",
       "BIOT",
       "OSPR",
-      "MIAC",
       "RMSG",
       "SI",
       "PLCI",
@@ -431,8 +430,8 @@
       "ROC"
     ],
     "recheck_pending_symbols_summary": {
-      "total": 46,
-      "included": 46,
+      "total": 45,
+      "included": 45,
       "omitted": 0,
       "selection": "prefix"
     },
@@ -3956,90 +3955,27 @@
     }
   },
   "collection": {
-    "due_before": 2161,
-    "attempted": 242,
-    "updated": 58,
-    "not_reported": 6,
-    "failed": 2,
-    "errors": [
-      {
-        "ticker": "HELP",
-        "error": "ValueError",
-        "rate_limited": false
-      },
-      {
-        "ticker": "PLG",
-        "error": "YFRateLimitError",
-        "rate_limited": true
-      }
-    ],
+    "due_before": 2719,
+    "attempted": 0,
+    "updated": 0,
+    "not_reported": 0,
+    "failed": 0,
+    "errors": [],
     "errors_summary": {
-      "total": 2,
-      "included": 2,
+      "total": 0,
+      "included": 0,
       "omitted": 0,
       "selection": "prefix"
     },
-    "symbols_updated": [
-      "OGS",
-      "OIA",
-      "OKLO",
-      "OKUR",
-      "OM",
-      "OMDA",
-      "ONIT",
-      "ONL",
-      "ONT",
-      "OPAD",
-      "OPBK",
-      "OPEN",
-      "OPFI",
-      "OPLN",
-      "OPRT",
-      "ORA",
-      "ORIO",
-      "ORLY",
-      "OSCR",
-      "OTEX",
-      "OTF",
-      "OUST",
-      "OUT",
-      "OYSE",
-      "OZK",
-      "PACB",
-      "MIAC",
-      "PAYC",
-      "PAYO",
-      "PBA",
-      "PBFS",
-      "PBH",
-      "PBYI",
-      "PCB",
-      "PCOR",
-      "PCRX",
-      "PCT",
-      "PCTY",
-      "PCVX",
-      "PDFS",
-      "PDLB",
-      "PENN",
-      "PESI",
-      "PFGC",
-      "PFIS",
-      "PFS",
-      "PFSI",
-      "PGC",
-      "PGEN",
-      "PGNY"
-    ],
+    "symbols_updated": [],
     "symbols_updated_summary": {
-      "total": 58,
-      "included": 50,
-      "omitted": 8,
+      "total": 0,
+      "included": 0,
+      "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 3089,
     "cooldown_until": "2026-11-11T00:32:23.095171+00:00",
-    "remaining_due": 1919
+    "remaining_due": 2719
   }
 }
