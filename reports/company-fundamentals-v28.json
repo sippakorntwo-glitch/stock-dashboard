@@ -1,43 +1,43 @@
 {
-  "recorded_at": "2026-11-20T13:51:56.150915+00:00",
-  "run_id": "44745278550",
+  "recorded_at": "2026-11-20T23:05:15.691707+00:00",
+  "run_id": "44831782974",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-11-20T13:33:48.919316+00:00",
-  "source_generation": "generations/20261120T130253Z-d25a7898",
+  "started_at": "2026-11-20T22:48:15.855495+00:00",
+  "source_generation": "generations/20261120T164814Z-6d89c38e",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-11-20T13:51:56.116012+00:00",
+  "finished_at": "2026-11-20T23:05:15.664573+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261120T134659Z-fe58a814",
+  "generation": "generations/20261120T230054Z-8c87baa6",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 0,
+    "checked_today": 9849,
     "industry": 9809,
     "info": 9876,
     "financial_statements": 4162,
     "dividends": 9876,
-    "return_1y": 8266,
-    "return_2y": 6992,
+    "return_1y": 8293,
+    "return_2y": 7001,
     "return_3y": 6219
   },
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 308876,
-    "report_sha256": "f6bc135c0b887e49a72d0ff4e626e95219982b21032d09cd07e801d826d31ce1",
+    "report_bytes": 301510,
+    "report_sha256": "4493c4166971325cc7940bc72db25e468e767d37535456ed007e74f92158d7cd",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/44745278550",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/44831782974",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -46,63 +46,63 @@
       "companies": 4200,
       "statements_available": 4155,
       "companies_rechecked_revision": 4156,
-      "companies_with_statement_gaps": 4028,
+      "companies_with_statement_gaps": 4027,
       "companies_without_financial_currency": 39,
       "companies_checked_with_sec": 0,
       "companies_with_source_disagreements": 0,
       "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3682,
-      "with_invalid_source_metrics": 133,
+      "with_missing_applicable_metrics": 3678,
+      "with_invalid_source_metrics": 123,
       "funds": 5676
     },
     "field_counts": {
       "marketCap": {
-        "available": 4177,
-        "not_reported": 23,
+        "available": 4184,
+        "not_reported": 16,
         "not_applicable": 5676
       },
       "enterpriseValue": {
-        "available": 3916,
+        "available": 3917,
         "missing_inputs": 197,
-        "not_reported": 87,
+        "not_reported": 86,
         "not_applicable": 5676
       },
       "trailingPE": {
-        "available": 2281,
-        "not_meaningful": 1748,
+        "available": 2285,
+        "not_meaningful": 1744,
         "not_reported": 171,
         "not_applicable": 5676
       },
       "forwardPE": {
-        "available": 2434,
-        "not_meaningful": 888,
-        "not_reported": 878,
+        "available": 2437,
+        "not_meaningful": 889,
+        "not_reported": 874,
         "not_applicable": 5676
       },
       "priceToBook": {
-        "available": 3621,
-        "not_meaningful": 547,
+        "available": 3622,
+        "not_meaningful": 546,
         "not_reported": 32,
         "not_applicable": 5676
       },
       "priceToSales": {
-        "available": 3392,
-        "not_reported": 598,
+        "available": 3400,
+        "not_reported": 590,
         "missing_inputs": 179,
         "not_meaningful": 31,
         "not_applicable": 5676
       },
       "evRevenue": {
-        "available": 3383,
-        "not_reported": 609,
+        "available": 3385,
+        "not_reported": 607,
         "missing_inputs": 177,
         "not_meaningful": 31,
         "not_applicable": 5676
       },
       "evEbitda": {
-        "available": 2053,
-        "not_reported": 836,
-        "not_meaningful": 1136,
+        "available": 2055,
+        "not_reported": 837,
+        "not_meaningful": 1133,
         "missing_inputs": 175,
         "not_applicable": 5676
       },
@@ -113,21 +113,21 @@
         "not_applicable": 5676
       },
       "operatingMargins": {
-        "available": 3726,
-        "not_meaningful": 463,
+        "available": 3727,
+        "not_meaningful": 462,
         "not_reported": 11,
         "not_applicable": 5676
       },
       "profitMargins": {
-        "available": 3722,
-        "not_meaningful": 467,
+        "available": 3723,
+        "not_meaningful": 466,
         "not_reported": 11,
         "not_applicable": 5676
       },
       "returnOnEquity": {
-        "available": 3511,
+        "available": 3513,
         "not_meaningful": 583,
-        "not_reported": 106,
+        "not_reported": 104,
         "not_applicable": 5676
       },
       "returnOnAssets": {
@@ -137,20 +137,20 @@
         "not_applicable": 5676
       },
       "roic": {
-        "available": 1351,
+        "available": 1354,
         "missing_inputs": 1490,
-        "not_meaningful": 1321,
+        "not_meaningful": 1318,
         "pending": 38,
         "not_applicable": 5676
       },
       "revenueGrowth": {
-        "available": 3458,
-        "not_reported": 742,
+        "available": 3455,
+        "not_reported": 745,
         "not_applicable": 5676
       },
       "earningsGrowth": {
-        "available": 1926,
-        "not_reported": 2274,
+        "available": 1933,
+        "not_reported": 2267,
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
@@ -169,8 +169,8 @@
       },
       "epsGrowthFY": {
         "available": 2047,
-        "not_reported": 444,
-        "not_meaningful": 1671,
+        "not_reported": 445,
+        "not_meaningful": 1670,
         "pending": 38,
         "not_applicable": 5676
       },
@@ -180,8 +180,8 @@
         "not_applicable": 5676
       },
       "grossProfit": {
-        "available": 3059,
-        "not_reported": 1103,
+        "available": 3060,
+        "not_reported": 1102,
         "pending": 38,
         "not_applicable": 5676
       },
@@ -213,39 +213,39 @@
         "not_applicable": 5676
       },
       "debtToEquity": {
-        "available": 3518,
-        "not_meaningful": 463,
-        "not_reported": 219,
+        "available": 3524,
+        "not_meaningful": 460,
+        "not_reported": 216,
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
-        "available": 3823,
-        "not_meaningful": 324,
+        "available": 3827,
+        "not_meaningful": 320,
         "pending": 38,
         "not_reported": 15,
         "not_applicable": 5676
       },
       "currentRatio": {
-        "available": 3866,
-        "not_reported": 332,
-        "not_meaningful": 2,
+        "available": 3868,
+        "not_reported": 331,
+        "not_meaningful": 1,
         "not_applicable": 5676
       },
       "quickRatio": {
-        "available": 3802,
-        "not_reported": 398,
+        "available": 3803,
+        "not_reported": 397,
         "not_applicable": 5676
       },
       "cashRatio": {
-        "available": 3648,
-        "not_reported": 512,
+        "available": 3650,
+        "not_reported": 511,
         "pending": 38,
-        "not_meaningful": 2,
+        "not_meaningful": 1,
         "not_applicable": 5676
       },
       "interestCoverage": {
-        "missing_inputs": 1640,
-        "available": 2483,
+        "missing_inputs": 1644,
+        "available": 2479,
         "not_meaningful": 39,
         "pending": 38,
         "not_applicable": 5676
@@ -269,8 +269,8 @@
         "not_applicable": 5676
       },
       "cash": {
-        "available": 4143,
-        "not_reported": 57,
+        "available": 4145,
+        "not_reported": 55,
         "not_applicable": 5676
       },
       "totalDebt": {
@@ -280,8 +280,8 @@
         "not_applicable": 5676
       },
       "netDebt": {
-        "available": 3398,
-        "not_reported": 764,
+        "available": 3399,
+        "not_reported": 763,
         "pending": 38,
         "not_applicable": 5676
       },
@@ -320,16 +320,16 @@
         "not_applicable": 5676
       },
       "fcfMargin": {
-        "available": 3437,
-        "missing_inputs": 273,
-        "not_meaningful": 452,
+        "available": 3448,
+        "missing_inputs": 261,
+        "not_meaningful": 453,
         "pending": 38,
         "not_applicable": 5676
       },
       "cashConversion": {
-        "available": 2177,
-        "missing_inputs": 280,
-        "not_meaningful": 1705,
+        "available": 2186,
+        "missing_inputs": 268,
+        "not_meaningful": 1708,
         "pending": 38,
         "not_applicable": 5676
       },
@@ -340,15 +340,15 @@
         "not_applicable": 5676
       },
       "dividendYield": {
-        "available": 4074,
-        "invalid": 123,
+        "available": 4084,
+        "invalid": 113,
         "not_reported": 3,
         "not_applicable": 5676
       },
       "payoutRatio": {
-        "available": 2272,
-        "not_meaningful": 1133,
-        "not_reported": 795,
+        "available": 2275,
+        "not_meaningful": 1131,
+        "not_reported": 794,
         "not_applicable": 5676
       },
       "dividendsPaid": {
@@ -376,8 +376,8 @@
         "not_applicable": 5676
       },
       "forwardEps": {
-        "available": 3316,
-        "not_reported": 884,
+        "available": 3320,
+        "not_reported": 880,
         "not_applicable": 5676
       }
     },
@@ -2015,63 +2015,63 @@
       "companies": 4200,
       "statements_available": 4155,
       "companies_rechecked_revision": 4156,
-      "companies_with_statement_gaps": 4027,
+      "companies_with_statement_gaps": 4029,
       "companies_without_financial_currency": 39,
       "companies_checked_with_sec": 0,
       "companies_with_source_disagreements": 0,
       "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3682,
-      "with_invalid_source_metrics": 133,
+      "with_missing_applicable_metrics": 3681,
+      "with_invalid_source_metrics": 123,
       "funds": 5676
     },
     "field_counts": {
       "marketCap": {
-        "available": 4177,
-        "not_reported": 23,
+        "available": 4184,
+        "not_reported": 16,
         "not_applicable": 5676
       },
       "enterpriseValue": {
-        "available": 3916,
+        "available": 3917,
         "missing_inputs": 197,
-        "not_reported": 87,
+        "not_reported": 86,
         "not_applicable": 5676
       },
       "trailingPE": {
-        "available": 2281,
-        "not_meaningful": 1748,
+        "available": 2285,
+        "not_meaningful": 1744,
         "not_reported": 171,
         "not_applicable": 5676
       },
       "forwardPE": {
-        "available": 2434,
-        "not_meaningful": 888,
-        "not_reported": 878,
+        "available": 2437,
+        "not_meaningful": 889,
+        "not_reported": 874,
         "not_applicable": 5676
       },
       "priceToBook": {
-        "available": 3622,
-        "not_meaningful": 546,
+        "available": 3621,
+        "not_meaningful": 547,
         "not_reported": 32,
         "not_applicable": 5676
       },
       "priceToSales": {
-        "available": 3392,
-        "not_reported": 598,
+        "available": 3400,
+        "not_reported": 590,
         "missing_inputs": 179,
         "not_meaningful": 31,
         "not_applicable": 5676
       },
       "evRevenue": {
-        "available": 3383,
-        "not_reported": 609,
+        "available": 3385,
+        "not_reported": 607,
         "missing_inputs": 177,
         "not_meaningful": 31,
         "not_applicable": 5676
       },
       "evEbitda": {
-        "available": 2053,
-        "not_reported": 836,
-        "not_meaningful": 1136,
+        "available": 2055,
+        "not_reported": 837,
+        "not_meaningful": 1133,
         "missing_inputs": 175,
         "not_applicable": 5676
       },
@@ -2082,70 +2082,70 @@
         "not_applicable": 5676
       },
       "operatingMargins": {
-        "available": 3727,
-        "not_meaningful": 462,
+        "available": 3726,
+        "not_meaningful": 463,
         "not_reported": 11,
         "not_applicable": 5676
       },
       "profitMargins": {
-        "available": 3723,
-        "not_meaningful": 466,
+        "available": 3722,
+        "not_meaningful": 467,
         "not_reported": 11,
         "not_applicable": 5676
       },
       "returnOnEquity": {
-        "available": 3511,
-        "not_meaningful": 582,
-        "not_reported": 107,
+        "available": 3512,
+        "not_meaningful": 584,
+        "not_reported": 104,
         "not_applicable": 5676
       },
       "returnOnAssets": {
-        "available": 3984,
-        "not_reported": 214,
-        "not_meaningful": 2,
+        "available": 3986,
+        "not_reported": 211,
+        "not_meaningful": 3,
         "not_applicable": 5676
       },
       "roic": {
-        "available": 1354,
-        "missing_inputs": 1490,
+        "available": 1353,
+        "missing_inputs": 1491,
         "not_meaningful": 1318,
         "pending": 38,
         "not_applicable": 5676
       },
       "revenueGrowth": {
-        "available": 3458,
-        "not_reported": 742,
+        "available": 3455,
+        "not_reported": 745,
         "not_applicable": 5676
       },
       "earningsGrowth": {
-        "available": 1926,
-        "not_reported": 2274,
+        "available": 1933,
+        "not_reported": 2267,
         "not_applicable": 5676
       },
       "revenueGrowthFY": {
-        "available": 3454,
-        "not_reported": 328,
+        "available": 3453,
+        "not_reported": 329,
         "not_meaningful": 380,
         "pending": 38,
         "not_applicable": 5676
       },
       "netIncomeGrowthFY": {
-        "available": 2119,
+        "available": 2118,
         "not_meaningful": 1715,
-        "not_reported": 328,
+        "not_reported": 329,
         "pending": 38,
         "not_applicable": 5676
       },
       "epsGrowthFY": {
         "available": 2047,
-        "not_reported": 445,
-        "not_meaningful": 1670,
+        "not_reported": 444,
+        "not_meaningful": 1671,
         "pending": 38,
         "not_applicable": 5676
       },
       "revenue": {
-        "available": 4046,
-        "not_reported": 154,
+        "available": 4047,
+        "not_reported": 153,
         "not_applicable": 5676
       },
       "grossProfit": {
@@ -2155,20 +2155,20 @@
         "not_applicable": 5676
       },
       "operatingIncome": {
-        "available": 3565,
-        "not_reported": 597,
+        "available": 3566,
+        "not_reported": 596,
         "pending": 38,
         "not_applicable": 5676
       },
       "ebit": {
-        "available": 3642,
-        "not_reported": 520,
+        "available": 3643,
+        "not_reported": 519,
         "pending": 38,
         "not_applicable": 5676
       },
       "ebitda": {
-        "available": 3657,
-        "not_reported": 543,
+        "available": 3658,
+        "not_reported": 542,
         "not_applicable": 5676
       },
       "netIncome": {
@@ -2182,9 +2182,9 @@
         "not_applicable": 5676
       },
       "debtToEquity": {
-        "available": 3522,
-        "not_meaningful": 459,
-        "not_reported": 219,
+        "available": 3521,
+        "not_meaningful": 464,
+        "not_reported": 215,
         "not_applicable": 5676
       },
       "liabilitiesToEquity": {
@@ -2195,19 +2195,19 @@
         "not_applicable": 5676
       },
       "currentRatio": {
-        "available": 3867,
-        "not_reported": 332,
+        "available": 3868,
+        "not_reported": 331,
         "not_meaningful": 1,
         "not_applicable": 5676
       },
       "quickRatio": {
-        "available": 3802,
-        "not_reported": 398,
+        "available": 3803,
+        "not_reported": 397,
         "not_applicable": 5676
       },
       "cashRatio": {
-        "available": 3650,
-        "not_reported": 511,
+        "available": 3651,
+        "not_reported": 510,
         "pending": 38,
         "not_meaningful": 1,
         "not_applicable": 5676
@@ -2238,8 +2238,8 @@
         "not_applicable": 5676
       },
       "cash": {
-        "available": 4144,
-        "not_reported": 56,
+        "available": 4145,
+        "not_reported": 55,
         "not_applicable": 5676
       },
       "totalDebt": {
@@ -2249,8 +2249,8 @@
         "not_applicable": 5676
       },
       "netDebt": {
-        "available": 3399,
-        "not_reported": 763,
+        "available": 3397,
+        "not_reported": 765,
         "pending": 38,
         "not_applicable": 5676
       },
@@ -2284,21 +2284,21 @@
         "not_applicable": 5676
       },
       "freeCashflow": {
-        "available": 4039,
-        "not_reported": 161,
+        "available": 4040,
+        "not_reported": 160,
         "not_applicable": 5676
       },
       "fcfMargin": {
-        "available": 3448,
-        "missing_inputs": 261,
-        "not_meaningful": 453,
+        "available": 3450,
+        "missing_inputs": 258,
+        "not_meaningful": 454,
         "pending": 38,
         "not_applicable": 5676
       },
       "cashConversion": {
-        "available": 2186,
-        "missing_inputs": 268,
-        "not_meaningful": 1708,
+        "available": 2190,
+        "missing_inputs": 265,
+        "not_meaningful": 1707,
         "pending": 38,
         "not_applicable": 5676
       },
@@ -2309,15 +2309,15 @@
         "not_applicable": 5676
       },
       "dividendYield": {
-        "available": 4074,
-        "invalid": 123,
+        "available": 4084,
+        "invalid": 113,
         "not_reported": 3,
         "not_applicable": 5676
       },
       "payoutRatio": {
-        "available": 2272,
-        "not_meaningful": 1133,
-        "not_reported": 795,
+        "available": 2275,
+        "not_meaningful": 1131,
+        "not_reported": 794,
         "not_applicable": 5676
       },
       "dividendsPaid": {
@@ -2345,8 +2345,8 @@
         "not_applicable": 5676
       },
       "forwardEps": {
-        "available": 3316,
-        "not_reported": 884,
+        "available": 3320,
+        "not_reported": 880,
         "not_applicable": 5676
       }
     },
@@ -2725,98 +2725,68 @@
           }
         },
         "returnOnEquity": {
-          "value": 1.1721070142655303,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-07-31",
+          "value": 1.014850815653791,
+          "basis": "FY",
+          "end": "2026-01-31",
           "currency": "USD",
           "source": "Yahoo Finance financial statements",
           "formula": "Net income / average opening and closing stockholdersEquity",
           "state": "available",
           "reason": "",
-          "period_ends": [
-            "2026-07-31",
-            "2026-04-30",
-            "2026-01-31",
-            "2025-10-31"
-          ],
           "details_omitted": {
-            "provenance": 6
+            "provenance": 3
           }
         },
         "roic": {
-          "value": 1.268139896847262,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-07-31",
+          "value": 1.4574573202315022,
+          "basis": "FY",
+          "end": "2026-01-31",
           "currency": "USD",
           "source": "Yahoo Finance financial statements",
           "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
           "state": "available",
           "reason": "",
-          "period_ends": [
-            "2026-07-31",
-            "2026-04-30",
-            "2026-01-31",
-            "2025-10-31"
-          ],
           "details_omitted": {
-            "provenance": 18
+            "provenance": 9
           }
         },
         "grossProfit": {
-          "value": 226241000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-07-31",
+          "value": 153463000000.0,
+          "basis": "FY",
+          "end": "2026-01-31",
           "currency": "USD",
           "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
+          "formula": null,
           "state": "available",
           "reason": "",
-          "period_ends": [
-            "2026-07-31",
-            "2026-04-30",
-            "2026-01-31",
-            "2025-10-31"
-          ],
           "details_omitted": {
-            "provenance": 4
+            "provenance": 1
           }
         },
         "ebit": {
-          "value": 230207000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-07-31",
+          "value": 141709000000.0,
+          "basis": "FY",
+          "end": "2026-01-31",
           "currency": "USD",
           "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
+          "formula": null,
           "state": "available",
           "reason": "",
-          "period_ends": [
-            "2026-07-31",
-            "2026-04-30",
-            "2026-01-31",
-            "2025-10-31"
-          ],
           "details_omitted": {
-            "provenance": 4
+            "provenance": 1
           }
         },
         "netIncome": {
-          "value": 192879000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-07-31",
+          "value": 120067000000.0,
+          "basis": "FY",
+          "end": "2026-01-31",
           "currency": "USD",
           "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
+          "formula": null,
           "state": "available",
           "reason": "",
-          "period_ends": [
-            "2026-07-31",
-            "2026-04-30",
-            "2026-01-31",
-            "2025-10-31"
-          ],
           "details_omitted": {
-            "provenance": 4
+            "provenance": 1
           }
         },
         "freeCashflow": {
@@ -3971,7 +3941,7 @@
         "not_reported": 4,
         "not_applicable": 21
       },
-      "provenance_records": 335,
+      "provenance_records": 314,
       "source_disagreement_records": 0,
       "metrics_with_source_disagreements": 0,
       "selection": "Whole examples in report order that fit the sample budget",
@@ -3979,10 +3949,10 @@
     }
   },
   "collection": {
-    "due_before": 2940,
+    "due_before": 2592,
     "attempted": 400,
-    "updated": 77,
-    "not_reported": 1,
+    "updated": 63,
+    "not_reported": 0,
     "failed": 0,
     "errors": [],
     "errors_summary": {
@@ -3992,65 +3962,65 @@
       "selection": "prefix"
     },
     "symbols_updated": [
-      "AEXA",
-      "AFJK",
-      "AFYA",
-      "AGBK",
-      "AGRO",
-      "AHT",
-      "AIB",
-      "AIFA",
-      "AII",
-      "AIMD",
-      "AIRE",
-      "AIRI",
-      "AIRJ",
-      "AIRO",
-      "AIRT",
-      "AKTS",
-      "ALIS",
-      "ALLT",
-      "ALM",
-      "ALMS",
-      "ALMU",
-      "ALOV",
-      "ALOY",
-      "ALT",
-      "ALUB",
-      "ALVO",
-      "ALXO",
-      "AMAN",
-      "AMCI",
-      "AMIX",
-      "AMOD",
-      "AMPG",
-      "AMS",
-      "ANAB",
-      "ANDG",
-      "ANNA",
-      "ANVS",
-      "APAC",
-      "APAM",
-      "APMC",
-      "APUS",
-      "APWC",
-      "APXT",
-      "AQMS",
-      "ARCI",
-      "ARCL",
-      "ARL",
-      "ARMP",
-      "ARTL",
-      "ARTNA"
+      "BCSS",
+      "BDCI",
+      "BEAG",
+      "BEAT",
+      "BEBE",
+      "BFRG",
+      "BHST",
+      "BIRD",
+      "BIXI",
+      "BJDX",
+      "BKU",
+      "BLDP",
+      "BLNE",
+      "BLRK",
+      "BLSH",
+      "NVDA",
+      "ARMK",
+      "BLUW",
+      "BLX",
+      "BLZR",
+      "BMM",
+      "BNGO",
+      "BNKK",
+      "BNTC",
+      "BOC",
+      "BOF",
+      "BOLT",
+      "BOTJ",
+      "BRAG",
+      "BRAI",
+      "BRBR",
+      "BRFH",
+      "BRR",
+      "BRUN",
+      "BSBK",
+      "BSEM",
+      "XTER",
+      "BTBD",
+      "BTQ",
+      "BUDA",
+      "BVFL",
+      "BWEN",
+      "BXDC",
+      "BYFC",
+      "CADL",
+      "CAE",
+      "CAII",
+      "CAST",
+      "CBC",
+      "CBIO"
     ],
     "symbols_updated_summary": {
-      "total": 77,
+      "total": 63,
       "included": 50,
-      "omitted": 27,
+      "omitted": 13,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 7554,
-    "remaining_due": 2540
+    "retained_fields": 6946,
+    "remaining_due": 2192
   }
 }
