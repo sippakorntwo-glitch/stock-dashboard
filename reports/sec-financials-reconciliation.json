@@ -1,22 +1,22 @@
 {
-  "recorded_at": "2026-11-20T03:26:49.049333+00:00",
-  "run_id": "44667589160",
+  "recorded_at": "2026-11-20T13:07:12.883120+00:00",
+  "run_id": "44740583672",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-11-20T03:26:06.601771+00:00",
+  "started_at": "2026-11-20T13:01:38.598132+00:00",
   "source_generation": "generations/20261120T003751Z-18f9973c",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-11-20T03:26:49.025357+00:00",
+  "finished_at": "2026-11-20T13:07:12.861144+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261120T003751Z-18f9973c",
+  "generation": "generations/20261120T130253Z-d25a7898",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 4,
+    "checked_today": 0,
     "industry": 9809,
     "info": 9876,
     "financial_statements": 4162,
@@ -25,20 +25,19 @@
     "return_2y": 6992,
     "return_3y": 6219
   },
-  "snapshot_unchanged": true,
   "report_format": "financial-audit-summary-v1",
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 307940,
-    "report_sha256": "0c69708971b3680a73b59f067d3f8d66b0f91044a8c720a5db48c92491d428fd",
+    "report_bytes": 308195,
+    "report_sha256": "b8de36f2252170d1e310d77d10b042e6ac337f7f26b6a7a23fb181e0f4ad0a79",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "sec-financials-audit-1",
     "artifact_name_prefix": "sec-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/44667589160",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/44740583672",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
@@ -3988,10 +3987,15 @@
     "conflicting_cells": 0,
     "failed": 0,
     "revised_cells": 0,
-    "errors": [],
+    "errors": [
+      {
+        "source": "SEC ticker index",
+        "error": "HTTPError"
+      }
+    ],
     "errors_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 1,
+      "included": 1,
       "omitted": 0,
       "selection": "prefix"
     },
@@ -4003,7 +4007,20 @@
       "selection": "prefix"
     },
     "only_missing": true,
-    "cooldown_until": "2026-11-20T10:27:32.295084+00:00",
-    "provider_requests": 0
+    "cooldown_until": "2026-11-21T13:01:53.077694+00:00",
+    "provider_requests": 1,
+    "http_evidence": [
+      {
+        "url": "https://www.sec.gov/files/company_tickers.json",
+        "received_at": "2026-11-20T13:01:53.076567+00:00",
+        "http_status": 403
+      }
+    ],
+    "http_evidence_summary": {
+      "total": 1,
+      "included": 1,
+      "omitted": 0,
+      "selection": "prefix"
+    }
   }
 }
