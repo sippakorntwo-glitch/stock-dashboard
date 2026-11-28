@@ -1,22 +1,22 @@
 {
-  "recorded_at": "2026-11-28T00:28:42.865431+00:00",
-  "run_id": "46086693435",
+  "recorded_at": "2026-11-28T13:51:31.890835+00:00",
+  "run_id": "46150145481",
   "source_sha": "f259b94e86df4f2423be08b9bb7846675f7169ee",
-  "started_at": "2026-11-28T00:13:55.181381+00:00",
-  "source_generation": "generations/20261127T224724Z-96268bdf",
+  "started_at": "2026-11-28T13:33:29.809838+00:00",
+  "source_generation": "generations/20261128T012852Z-57224762",
   "scope": "Every catalog member; source validation, period alignment and formula audit. Not external verification of every company filing.",
   "recovery": {
     "restored": 0,
     "reason": "No compatible financial recovery artifact"
   },
-  "finished_at": "2026-11-28T00:28:42.842148+00:00",
+  "finished_at": "2026-11-28T13:51:31.857736+00:00",
   "result": "audit_completed",
   "data_complete": false,
-  "generation": "generations/20261128T002427Z-742e18f8",
+  "generation": "generations/20261128T134658Z-be98a71f",
   "coverage": {
     "universe": 9876,
     "prices": 9876,
-    "checked_today": 9837,
+    "checked_today": 0,
     "industry": 9809,
     "info": 9876,
     "financial_statements": 4162,
@@ -29,1965 +29,18 @@
   "summary_policy": "Control values and whole-catalog totals are exact. Diagnostic lists are samples with omission counts; example nested evidence is in full_artifacts.",
   "full_artifacts": {
     "report": "company-financials-report.json",
-    "report_bytes": 309749,
-    "report_sha256": "d806103b63686f487a006fe3b0de3c65d9e2ae49166b266a303ae1a747e977d8",
+    "report_bytes": 309949,
+    "report_sha256": "a6795a7c52a14808e8441855670ff19b4761f6dfc533a0448a979d720187d47a",
     "per_security": "company-financials-all-securities.csv",
     "per_metric": "company-financials-all-metrics.csv",
     "recovery": "company-financials-recovery.json.gz",
     "recovery_manifest": "company-financials-recovery.manifest.json",
     "artifact_name": "company-financials-audit-1",
     "artifact_name_prefix": "company-financials-audit-",
-    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/46086693435",
+    "run_url": "https://github.com/sippakorntwo-glitch/stock-dashboard/actions/runs/46150145481",
     "availability": "Scheduled for upload by this run; availability depends on the artifact step and retention"
   },
   "before": {
-    "counts": {
-      "securities": 9876,
-      "companies": 4200,
-      "statements_available": 4158,
-      "companies_rechecked_revision": 4159,
-      "companies_with_statement_gaps": 4028,
-      "companies_without_financial_currency": 632,
-      "companies_checked_with_sec": 0,
-      "companies_with_source_disagreements": 0,
-      "sec_filled_cells": 0,
-      "with_missing_applicable_metrics": 3752,
-      "with_invalid_source_metrics": 89,
-      "funds": 5676
-    },
-    "field_counts": {
-      "marketCap": {
-        "available": 3582,
-        "not_reported": 618,
-        "not_applicable": 5676
-      },
-      "enterpriseValue": {
-        "available": 3360,
-        "missing_inputs": 168,
-        "not_reported": 672,
-        "not_applicable": 5676
-      },
-      "trailingPE": {
-        "available": 1964,
-        "not_meaningful": 1474,
-        "not_reported": 762,
-        "not_applicable": 5676
-      },
-      "forwardPE": {
-        "available": 2057,
-        "not_meaningful": 747,
-        "not_reported": 1396,
-        "not_applicable": 5676
-      },
-      "priceToBook": {
-        "available": 3079,
-        "not_meaningful": 532,
-        "not_reported": 589,
-        "not_applicable": 5676
-      },
-      "priceToSales": {
-        "available": 2897,
-        "not_reported": 1123,
-        "missing_inputs": 151,
-        "not_meaningful": 29,
-        "not_applicable": 5676
-      },
-      "evRevenue": {
-        "available": 2885,
-        "not_reported": 1136,
-        "missing_inputs": 150,
-        "not_meaningful": 29,
-        "not_applicable": 5676
-      },
-      "evEbitda": {
-        "available": 1769,
-        "not_reported": 1313,
-        "not_meaningful": 965,
-        "missing_inputs": 153,
-        "not_applicable": 5676
-      },
-      "grossMargins": {
-        "available": 3940,
-        "not_meaningful": 70,
-        "not_reported": 190,
-        "not_applicable": 5676
-      },
-      "operatingMargins": {
-        "available": 3619,
-        "not_meaningful": 471,
-        "not_reported": 110,
-        "not_applicable": 5676
-      },
-      "profitMargins": {
-        "available": 3696,
-        "not_meaningful": 477,
-        "not_reported": 27,
-        "not_applicable": 5676
-      },
-      "returnOnEquity": {
-        "available": 3510,
-        "not_meaningful": 566,
-        "not_reported": 124,
-        "not_applicable": 5676
-      },
-      "returnOnAssets": {
-        "available": 3974,
-        "not_reported": 223,
-        "not_meaningful": 3,
-        "not_applicable": 5676
-      },
-      "roic": {
-        "available": 1349,
-        "missing_inputs": 1494,
-        "not_meaningful": 1319,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "revenueGrowth": {
-        "available": 2947,
-        "not_reported": 1253,
-        "not_applicable": 5676
-      },
-      "earningsGrowth": {
-        "available": 1662,
-        "not_reported": 2538,
-        "not_applicable": 5676
-      },
-      "revenueGrowthFY": {
-        "available": 3454,
-        "not_reported": 328,
-        "not_meaningful": 380,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "netIncomeGrowthFY": {
-        "available": 2115,
-        "not_meaningful": 1718,
-        "not_reported": 329,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "epsGrowthFY": {
-        "available": 2038,
-        "not_reported": 442,
-        "not_meaningful": 1682,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "revenue": {
-        "available": 4063,
-        "not_reported": 137,
-        "not_applicable": 5676
-      },
-      "grossProfit": {
-        "available": 3060,
-        "not_reported": 1102,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "operatingIncome": {
-        "available": 3582,
-        "not_reported": 580,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "ebit": {
-        "available": 3659,
-        "not_reported": 503,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "ebitda": {
-        "available": 3664,
-        "not_reported": 536,
-        "not_applicable": 5676
-      },
-      "netIncome": {
-        "available": 4134,
-        "not_reported": 66,
-        "not_applicable": 5676
-      },
-      "dilutedEPS": {
-        "available": 4023,
-        "not_reported": 177,
-        "not_applicable": 5676
-      },
-      "debtToEquity": {
-        "available": 3522,
-        "not_meaningful": 445,
-        "not_reported": 233,
-        "not_applicable": 5676
-      },
-      "liabilitiesToEquity": {
-        "available": 3841,
-        "not_meaningful": 308,
-        "pending": 38,
-        "not_reported": 13,
-        "not_applicable": 5676
-      },
-      "currentRatio": {
-        "available": 3842,
-        "not_reported": 357,
-        "not_meaningful": 1,
-        "not_applicable": 5676
-      },
-      "quickRatio": {
-        "available": 3741,
-        "not_reported": 459,
-        "not_applicable": 5676
-      },
-      "cashRatio": {
-        "available": 3656,
-        "not_reported": 505,
-        "pending": 38,
-        "not_meaningful": 1,
-        "not_applicable": 5676
-      },
-      "interestCoverage": {
-        "missing_inputs": 1646,
-        "available": 2479,
-        "not_meaningful": 37,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "totalAssets": {
-        "available": 4149,
-        "pending": 38,
-        "not_reported": 13,
-        "not_applicable": 5676
-      },
-      "totalLiabilities": {
-        "available": 4149,
-        "pending": 38,
-        "not_reported": 13,
-        "not_applicable": 5676
-      },
-      "stockholdersEquity": {
-        "available": 4150,
-        "pending": 38,
-        "not_reported": 12,
-        "not_applicable": 5676
-      },
-      "cash": {
-        "available": 4072,
-        "not_reported": 128,
-        "not_applicable": 5676
-      },
-      "totalDebt": {
-        "available": 4114,
-        "not_reported": 85,
-        "invalid": 1,
-        "not_applicable": 5676
-      },
-      "netDebt": {
-        "available": 3398,
-        "not_reported": 764,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "currentAssets": {
-        "available": 3670,
-        "not_reported": 492,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "currentLiabilities": {
-        "available": 3663,
-        "not_reported": 499,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "workingCapital": {
-        "available": 3663,
-        "not_reported": 499,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "operatingCashflow": {
-        "available": 4124,
-        "not_reported": 76,
-        "not_applicable": 5676
-      },
-      "capex": {
-        "available": 3687,
-        "not_reported": 475,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "freeCashflow": {
-        "available": 4058,
-        "not_reported": 142,
-        "not_applicable": 5676
-      },
-      "fcfMargin": {
-        "available": 3470,
-        "missing_inputs": 227,
-        "not_meaningful": 465,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "cashConversion": {
-        "available": 2217,
-        "missing_inputs": 233,
-        "not_meaningful": 1712,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "stockBasedCompensation": {
-        "available": 3492,
-        "not_reported": 670,
-        "pending": 38,
-        "not_applicable": 5676
-      },
-      "dividendYield": {
-        "available": 3516,
-        "invalid": 79,
-        "not_reported": 605,
-        "not_applicable": 5676
-      },
-      "payoutRatio": {
-        "available": 1955,
-        "not_meaningful": 952,
-        "not_reported": 1293,
-        "not_applicable": 5676
-      },
-      "dividendsPaid": {
-        "available": 2037,
-        "not_reported": 2121,
-        "pending": 38,
-        "invalid": 4,
-        "not_applicable": 5676
-      },
-      "buybacks": {
-        "available": 2578,
-        "not_reported": 1578,
-        "pending": 38,
-        "invalid": 6,
-        "not_applicable": 5676
-      },
-      "targetMeanPrice": {
-        "available": 2643,
-        "not_reported": 1557,
-        "not_applicable": 5676
-      },
-      "analystCount": {
-        "available": 2643,
-        "not_reported": 1557,
-        "not_applicable": 5676
-      },
-      "forwardEps": {
-        "available": 2798,
-        "not_reported": 1402,
-        "not_applicable": 5676
-      }
-    },
-    "collection_revision": 2,
-    "recheck_pending_symbols": [
-      "FISV",
-      "BBN",
-      "ECAT",
-      "AIIR",
-      "BSTZ",
-      "ATCX",
-      "DXYZ",
-      "GBAB",
-      "BCX",
-      "BIT",
-      "BTX",
-      "FSCO",
-      "BCAT",
-      "BMN",
-      "BOT",
-      "ETX",
-      "BPAC",
-      "DPU",
-      "FACT",
-      "BMEZ",
-      "BST",
-      "KBDC",
-      "WATR",
-      "XFLT",
-      "NCDL",
-      "IGI",
-      "PDCC",
-      "GGZ",
-      "IMC",
-      "NHIC",
-      "NIQ",
-      "GIXI",
-      "LION",
-      "SEV",
-      "RGT",
-      "VRXA",
-      "BIOT",
-      "OSPR",
-      "RMSG",
-      "SI",
-      "ROC"
-    ],
-    "recheck_pending_symbols_summary": {
-      "total": 41,
-      "included": 41,
-      "omitted": 0,
-      "selection": "prefix"
-    },
-    "missing_currency_symbols": [
-      "FISV",
-      "BBN",
-      "ECAT",
-      "AIIR",
-      "BSTZ",
-      "ATCX",
-      "DXYZ",
-      "GBAB",
-      "CNP",
-      "CRNC",
-      "CSHR",
-      "DOC",
-      "DRTS",
-      "ECPG",
-      "EXTR",
-      "FISI",
-      "FLWS",
-      "AFG",
-      "AGCO",
-      "ANET",
-      "APT",
-      "AVEX",
-      "BLCO",
-      "BMA",
-      "BOH",
-      "BTE",
-      "BVS",
-      "BWB",
-      "BXC",
-      "CCB",
-      "CMI",
-      "CRCL",
-      "CRS",
-      "CTGO",
-      "DDD",
-      "EPD",
-      "FLR",
-      "FRPT",
-      "FTNT",
-      "ABAT",
-      "ABX",
-      "AGPU",
-      "AIBZ",
-      "AJG",
-      "ARHS",
-      "BFH",
-      "BKD",
-      "BWIN",
-      "BXMT",
-      "CCJ"
-    ],
-    "missing_currency_symbols_summary": {
-      "total": 632,
-      "included": 50,
-      "omitted": 582,
-      "selection": "prefix"
-    },
-    "data_complete": false,
-    "examples": {
-      "AAPL": {
-        "debtToEquity": {
-          "value": 0.7146833432952995,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 1.4225673479491567,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 6
-          }
-        },
-        "roic": {
-          "value": 1.0364413459517106,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 18
-          }
-        },
-        "grossProfit": {
-          "value": 233602000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "ebit": {
-          "value": 158063000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "netIncome": {
-          "value": 132175000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": 136056000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "MSFT": {
-        "debtToEquity": {
-          "value": 0.1215704694277899,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 0.3422110522622168,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 6
-          }
-        },
-        "roic": {
-          "value": 0.33391698393606234,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 18
-          }
-        },
-        "grossProfit": {
-          "value": 234394000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "ebit": {
-          "value": 180809000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "netIncome": {
-          "value": 142631000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": 59957000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "NVDA": {
-        "debtToEquity": {
-          "value": 0.16748331761171087,
-          "basis": "Balance sheet",
-          "end": "2026-07-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 1.014850815653791,
-          "basis": "FY",
-          "end": "2026-01-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 3
-          }
-        },
-        "roic": {
-          "value": 1.4574573202315022,
-          "basis": "FY",
-          "end": "2026-01-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 9
-          }
-        },
-        "grossProfit": {
-          "value": 153463000000.0,
-          "basis": "FY",
-          "end": "2026-01-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": null,
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 1
-          }
-        },
-        "ebit": {
-          "value": 141709000000.0,
-          "basis": "FY",
-          "end": "2026-01-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": null,
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 1
-          }
-        },
-        "netIncome": {
-          "value": 120067000000.0,
-          "basis": "FY",
-          "end": "2026-01-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": null,
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 1
-          }
-        },
-        "freeCashflow": {
-          "value": 127006000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-07-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-07-31",
-            "2026-04-30",
-            "2026-01-31",
-            "2025-10-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "AMZN": {
-        "debtToEquity": {
-          "value": 0.4432016896973766,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 0.22285824958574535,
-          "basis": "FY",
-          "end": "2025-12-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 3
-          }
-        },
-        "roic": {
-          "value": null,
-          "state": "missing_inputs",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "grossProfit": {
-          "value": 360510000000.0,
-          "basis": "FY",
-          "end": "2025-12-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": null,
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 1
-          }
-        },
-        "ebit": {
-          "value": 99585000000.0,
-          "basis": "FY",
-          "end": "2025-12-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": null,
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 1
-          }
-        },
-        "netIncome": {
-          "value": 77670000000.0,
-          "basis": "FY",
-          "end": "2025-12-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": null,
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 1
-          }
-        },
-        "freeCashflow": {
-          "value": 7695000000.0,
-          "basis": "FY",
-          "end": "2025-12-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": null,
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 1
-          }
-        }
-      },
-      "GOOGL": {
-        "debtToEquity": {
-          "value": 0.20945643783696824,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 0.44286068604756035,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 6
-          }
-        },
-        "roic": {
-          "value": null,
-          "state": "missing_inputs",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "grossProfit": {
-          "value": 286698000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "ebit": {
-          "value": 290713000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "netIncome": {
-          "value": 235694000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": 19747000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "META": {
-        "debtToEquity": {
-          "value": 0.4216149141292137,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 0.32264413058578373,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 6
-          }
-        },
-        "roic": {
-          "value": 0.2996983236936152,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 18
-          }
-        },
-        "grossProfit": {
-          "value": 195783000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "ebit": {
-          "value": 81641000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "netIncome": {
-          "value": 75249000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": 28649000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "TSLA": {
-        "debtToEquity": {
-          "value": 0.18417722227822017,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 0.0380245659019609,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 6
-          }
-        },
-        "roic": {
-          "value": 0.05012956445285249,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 18
-          }
-        },
-        "grossProfit": {
-          "value": 19974000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "ebit": {
-          "value": 4562000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "netIncome": {
-          "value": 3218000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": 3296000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "BRK-B": {
-        "debtToEquity": {
-          "value": 0.17177370207311052,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 0.10574,
-          "state": "available",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": "USD",
-          "formula": null
-        },
-        "roic": {
-          "value": null,
-          "state": "missing_inputs",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "grossProfit": {
-          "value": null,
-          "state": "not_reported",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "ebit": {
-          "value": 101277000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "netIncome": {
-          "value": 77084000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": 22767000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "JPM": {
-        "debtToEquity": {
-          "value": 1.4273487517724401,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 0.18012776761582353,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 6
-          }
-        },
-        "roic": {
-          "value": null,
-          "state": "missing_inputs",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "grossProfit": {
-          "value": null,
-          "state": "not_reported",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "ebit": {
-          "value": null,
-          "state": "not_reported",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "netIncome": {
-          "value": 65979000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": -84159000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "ORCL": {
-        "debtToEquity": {
-          "value": 2.335275265081172,
-          "basis": "Balance sheet",
-          "end": "2026-08-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": 0.4161625937575611,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-08-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-08-31",
-            "2026-05-31",
-            "2026-02-28",
-            "2025-11-30"
-          ],
-          "details_omitted": {
-            "provenance": 6
-          }
-        },
-        "roic": {
-          "value": 0.14064218505960588,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-08-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-08-31",
-            "2026-05-31",
-            "2026-02-28",
-            "2025-11-30"
-          ],
-          "details_omitted": {
-            "provenance": 18
-          }
-        },
-        "grossProfit": {
-          "value": 45907000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-08-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-08-31",
-            "2026-05-31",
-            "2026-02-28",
-            "2025-11-30"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "ebit": {
-          "value": 26838000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-08-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-08-31",
-            "2026-05-31",
-            "2026-02-28",
-            "2025-11-30"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "netIncome": {
-          "value": 18920000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-08-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-08-31",
-            "2026-05-31",
-            "2026-02-28",
-            "2025-11-30"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": -28720000000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-08-31",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-08-31",
-            "2026-05-31",
-            "2026-02-28",
-            "2025-11-30"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "AARD": {
-        "debtToEquity": {
-          "value": 0.009929348863853351,
-          "basis": "Balance sheet",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Interest-bearing total debt / shareholders equity",
-          "state": "available",
-          "reason": "",
-          "details_omitted": {
-            "provenance": 2
-          }
-        },
-        "returnOnEquity": {
-          "value": -0.8085052004622633,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Net income / average opening and closing stockholdersEquity",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 6
-          }
-        },
-        "roic": {
-          "value": null,
-          "state": "missing_inputs",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "grossProfit": {
-          "value": null,
-          "state": "not_reported",
-          "basis": "Not reported",
-          "end": null,
-          "currency": "USD",
-          "source": "Financial statements",
-          "formula": null
-        },
-        "ebit": {
-          "value": -75969000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "netIncome": {
-          "value": -72759000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        },
-        "freeCashflow": {
-          "value": -66814000.0,
-          "basis": "TTM (4 reported quarters)",
-          "end": "2026-09-30",
-          "currency": "USD",
-          "source": "Yahoo Finance financial statements",
-          "formula": "Sum of 4 consecutive reported quarters",
-          "state": "available",
-          "reason": "",
-          "period_ends": [
-            "2026-09-30",
-            "2026-06-30",
-            "2026-03-31",
-            "2025-12-31"
-          ],
-          "details_omitted": {
-            "provenance": 4
-          }
-        }
-      },
-      "SPY": {
-        "debtToEquity": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": "Provider debtToEquity percentage / 100",
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "returnOnEquity": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "roic": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "grossProfit": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "ebit": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "netIncome": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "freeCashflow": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        }
-      },
-      "QQQI": {
-        "debtToEquity": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": "Provider debtToEquity percentage / 100",
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "returnOnEquity": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "roic": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "grossProfit": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "ebit": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "netIncome": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "freeCashflow": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        }
-      },
-      "AAAU": {
-        "debtToEquity": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": "Provider debtToEquity percentage / 100",
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "returnOnEquity": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "roic": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "grossProfit": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "ebit": {
-          "value": null,
-          "state": "not_applicable",
-          "basis": "Not reported",
-          "end": null,
-          "currency": null,
-          "source": "Financial statements",
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "netIncome": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        },
-        "freeCashflow": {
-          "value": null,
-          "state": "not_applicable",
-          "source": "Yahoo Finance profile",
-          "basis": "Provider period",
-          "end": null,
-          "currency": null,
-          "formula": null,
-          "reason": "Corporate financial statements do not apply to this ETF / ETP."
-        }
-      }
-    },
-    "examples_summary": {
-      "symbols_total": 14,
-      "symbols_included": 14,
-      "symbols_omitted": 0,
-      "metrics_total": 98,
-      "metrics_included": 98,
-      "metrics_omitted": 0,
-      "all_example_states": {
-        "available": 68,
-        "missing_inputs": 5,
-        "not_reported": 4,
-        "not_applicable": 21
-      },
-      "provenance_records": 314,
-      "source_disagreement_records": 0,
-      "metrics_with_source_disagreements": 0,
-      "selection": "Whole examples in report order that fit the sample budget",
-      "nested_evidence": "Full provenance and source disagreements are in the full report artifact"
-    }
-  },
-  "after": {
     "counts": {
       "securities": 9876,
       "companies": 4200,
@@ -3934,40 +1987,2000 @@
       "nested_evidence": "Full provenance and source disagreements are in the full report artifact"
     }
   },
+  "after": {
+    "counts": {
+      "securities": 9876,
+      "companies": 4200,
+      "statements_available": 4159,
+      "companies_rechecked_revision": 4159,
+      "companies_with_statement_gaps": 4028,
+      "companies_without_financial_currency": 632,
+      "companies_checked_with_sec": 0,
+      "companies_with_source_disagreements": 0,
+      "sec_filled_cells": 0,
+      "with_missing_applicable_metrics": 3751,
+      "with_invalid_source_metrics": 89,
+      "funds": 5676
+    },
+    "field_counts": {
+      "marketCap": {
+        "available": 3582,
+        "not_reported": 618,
+        "not_applicable": 5676
+      },
+      "enterpriseValue": {
+        "available": 3360,
+        "missing_inputs": 168,
+        "not_reported": 672,
+        "not_applicable": 5676
+      },
+      "trailingPE": {
+        "available": 1964,
+        "not_meaningful": 1474,
+        "not_reported": 762,
+        "not_applicable": 5676
+      },
+      "forwardPE": {
+        "available": 2057,
+        "not_meaningful": 747,
+        "not_reported": 1396,
+        "not_applicable": 5676
+      },
+      "priceToBook": {
+        "available": 3080,
+        "not_meaningful": 531,
+        "not_reported": 589,
+        "not_applicable": 5676
+      },
+      "priceToSales": {
+        "available": 2897,
+        "not_reported": 1123,
+        "missing_inputs": 151,
+        "not_meaningful": 29,
+        "not_applicable": 5676
+      },
+      "evRevenue": {
+        "available": 2885,
+        "not_reported": 1136,
+        "missing_inputs": 150,
+        "not_meaningful": 29,
+        "not_applicable": 5676
+      },
+      "evEbitda": {
+        "available": 1769,
+        "not_reported": 1313,
+        "not_meaningful": 965,
+        "missing_inputs": 153,
+        "not_applicable": 5676
+      },
+      "grossMargins": {
+        "available": 3940,
+        "not_meaningful": 70,
+        "not_reported": 190,
+        "not_applicable": 5676
+      },
+      "operatingMargins": {
+        "available": 3619,
+        "not_meaningful": 471,
+        "not_reported": 110,
+        "not_applicable": 5676
+      },
+      "profitMargins": {
+        "available": 3696,
+        "not_meaningful": 477,
+        "not_reported": 27,
+        "not_applicable": 5676
+      },
+      "returnOnEquity": {
+        "available": 3512,
+        "not_meaningful": 564,
+        "not_reported": 124,
+        "not_applicable": 5676
+      },
+      "returnOnAssets": {
+        "available": 3974,
+        "not_reported": 223,
+        "not_meaningful": 3,
+        "not_applicable": 5676
+      },
+      "roic": {
+        "available": 1349,
+        "missing_inputs": 1496,
+        "not_meaningful": 1317,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "revenueGrowth": {
+        "available": 2947,
+        "not_reported": 1253,
+        "not_applicable": 5676
+      },
+      "earningsGrowth": {
+        "available": 1662,
+        "not_reported": 2538,
+        "not_applicable": 5676
+      },
+      "revenueGrowthFY": {
+        "available": 3455,
+        "not_reported": 327,
+        "not_meaningful": 380,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "netIncomeGrowthFY": {
+        "available": 2116,
+        "not_meaningful": 1718,
+        "not_reported": 328,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "epsGrowthFY": {
+        "available": 2038,
+        "not_reported": 440,
+        "not_meaningful": 1684,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "revenue": {
+        "available": 4063,
+        "not_reported": 137,
+        "not_applicable": 5676
+      },
+      "grossProfit": {
+        "available": 3060,
+        "not_reported": 1102,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "operatingIncome": {
+        "available": 3582,
+        "not_reported": 580,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "ebit": {
+        "available": 3659,
+        "not_reported": 503,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "ebitda": {
+        "available": 3664,
+        "not_reported": 536,
+        "not_applicable": 5676
+      },
+      "netIncome": {
+        "available": 4134,
+        "not_reported": 66,
+        "not_applicable": 5676
+      },
+      "dilutedEPS": {
+        "available": 4023,
+        "not_reported": 177,
+        "not_applicable": 5676
+      },
+      "debtToEquity": {
+        "available": 3525,
+        "not_meaningful": 442,
+        "not_reported": 233,
+        "not_applicable": 5676
+      },
+      "liabilitiesToEquity": {
+        "available": 3846,
+        "not_meaningful": 304,
+        "pending": 38,
+        "not_reported": 12,
+        "not_applicable": 5676
+      },
+      "currentRatio": {
+        "available": 3843,
+        "not_reported": 356,
+        "not_meaningful": 1,
+        "not_applicable": 5676
+      },
+      "quickRatio": {
+        "available": 3741,
+        "not_reported": 459,
+        "not_applicable": 5676
+      },
+      "cashRatio": {
+        "available": 3657,
+        "not_reported": 504,
+        "pending": 38,
+        "not_meaningful": 1,
+        "not_applicable": 5676
+      },
+      "interestCoverage": {
+        "missing_inputs": 1646,
+        "available": 2479,
+        "not_meaningful": 37,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "totalAssets": {
+        "available": 4150,
+        "pending": 38,
+        "not_reported": 12,
+        "not_applicable": 5676
+      },
+      "totalLiabilities": {
+        "available": 4150,
+        "pending": 38,
+        "not_reported": 12,
+        "not_applicable": 5676
+      },
+      "stockholdersEquity": {
+        "available": 4151,
+        "pending": 38,
+        "not_reported": 11,
+        "not_applicable": 5676
+      },
+      "cash": {
+        "available": 4072,
+        "not_reported": 128,
+        "not_applicable": 5676
+      },
+      "totalDebt": {
+        "available": 4114,
+        "not_reported": 85,
+        "invalid": 1,
+        "not_applicable": 5676
+      },
+      "netDebt": {
+        "available": 3397,
+        "not_reported": 765,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "currentAssets": {
+        "available": 3671,
+        "not_reported": 491,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "currentLiabilities": {
+        "available": 3664,
+        "not_reported": 498,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "workingCapital": {
+        "available": 3664,
+        "not_reported": 498,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "operatingCashflow": {
+        "available": 4124,
+        "not_reported": 76,
+        "not_applicable": 5676
+      },
+      "capex": {
+        "available": 3687,
+        "not_reported": 475,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "freeCashflow": {
+        "available": 4058,
+        "not_reported": 142,
+        "not_applicable": 5676
+      },
+      "fcfMargin": {
+        "available": 3472,
+        "missing_inputs": 224,
+        "not_meaningful": 466,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "cashConversion": {
+        "available": 2218,
+        "missing_inputs": 230,
+        "not_meaningful": 1714,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "stockBasedCompensation": {
+        "available": 3492,
+        "not_reported": 670,
+        "pending": 38,
+        "not_applicable": 5676
+      },
+      "dividendYield": {
+        "available": 3516,
+        "invalid": 79,
+        "not_reported": 605,
+        "not_applicable": 5676
+      },
+      "payoutRatio": {
+        "available": 1955,
+        "not_meaningful": 952,
+        "not_reported": 1293,
+        "not_applicable": 5676
+      },
+      "dividendsPaid": {
+        "available": 2037,
+        "not_reported": 2121,
+        "pending": 38,
+        "invalid": 4,
+        "not_applicable": 5676
+      },
+      "buybacks": {
+        "available": 2578,
+        "not_reported": 1578,
+        "pending": 38,
+        "invalid": 6,
+        "not_applicable": 5676
+      },
+      "targetMeanPrice": {
+        "available": 2643,
+        "not_reported": 1557,
+        "not_applicable": 5676
+      },
+      "analystCount": {
+        "available": 2643,
+        "not_reported": 1557,
+        "not_applicable": 5676
+      },
+      "forwardEps": {
+        "available": 2798,
+        "not_reported": 1402,
+        "not_applicable": 5676
+      }
+    },
+    "collection_revision": 2,
+    "recheck_pending_symbols": [
+      "FISV",
+      "BBN",
+      "ECAT",
+      "AIIR",
+      "BSTZ",
+      "ATCX",
+      "DXYZ",
+      "GBAB",
+      "BCX",
+      "BIT",
+      "BTX",
+      "FSCO",
+      "BCAT",
+      "BMN",
+      "BOT",
+      "ETX",
+      "BPAC",
+      "DPU",
+      "FACT",
+      "BMEZ",
+      "BST",
+      "KBDC",
+      "WATR",
+      "XFLT",
+      "NCDL",
+      "IGI",
+      "PDCC",
+      "GGZ",
+      "IMC",
+      "NHIC",
+      "NIQ",
+      "GIXI",
+      "LION",
+      "SEV",
+      "RGT",
+      "VRXA",
+      "BIOT",
+      "OSPR",
+      "RMSG",
+      "SI",
+      "ROC"
+    ],
+    "recheck_pending_symbols_summary": {
+      "total": 41,
+      "included": 41,
+      "omitted": 0,
+      "selection": "prefix"
+    },
+    "missing_currency_symbols": [
+      "FISV",
+      "BBN",
+      "ECAT",
+      "AIIR",
+      "BSTZ",
+      "ATCX",
+      "DXYZ",
+      "GBAB",
+      "CNP",
+      "CRNC",
+      "CSHR",
+      "DOC",
+      "DRTS",
+      "ECPG",
+      "EXTR",
+      "FISI",
+      "FLWS",
+      "AFG",
+      "AGCO",
+      "ANET",
+      "APT",
+      "AVEX",
+      "BLCO",
+      "BMA",
+      "BOH",
+      "BTE",
+      "BVS",
+      "BWB",
+      "BXC",
+      "CCB",
+      "CMI",
+      "CRCL",
+      "CRS",
+      "CTGO",
+      "DDD",
+      "EPD",
+      "FLR",
+      "FRPT",
+      "FTNT",
+      "ABAT",
+      "ABX",
+      "AGPU",
+      "AIBZ",
+      "AJG",
+      "ARHS",
+      "BFH",
+      "BKD",
+      "BWIN",
+      "BXMT",
+      "CCJ"
+    ],
+    "missing_currency_symbols_summary": {
+      "total": 632,
+      "included": 50,
+      "omitted": 582,
+      "selection": "prefix"
+    },
+    "data_complete": false,
+    "examples": {
+      "AAPL": {
+        "debtToEquity": {
+          "value": 0.7146833432952995,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 1.4225673479491567,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 6
+          }
+        },
+        "roic": {
+          "value": 1.0364413459517106,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 18
+          }
+        },
+        "grossProfit": {
+          "value": 233602000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "ebit": {
+          "value": 158063000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "netIncome": {
+          "value": 132175000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": 136056000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "MSFT": {
+        "debtToEquity": {
+          "value": 0.1215704694277899,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 0.3422110522622168,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 6
+          }
+        },
+        "roic": {
+          "value": 0.33391698393606234,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 18
+          }
+        },
+        "grossProfit": {
+          "value": 234394000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "ebit": {
+          "value": 180809000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "netIncome": {
+          "value": 142631000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": 59957000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "NVDA": {
+        "debtToEquity": {
+          "value": 0.16748331761171087,
+          "basis": "Balance sheet",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 1.014850815653791,
+          "basis": "FY",
+          "end": "2026-01-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 3
+          }
+        },
+        "roic": {
+          "value": 1.4574573202315022,
+          "basis": "FY",
+          "end": "2026-01-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 9
+          }
+        },
+        "grossProfit": {
+          "value": 153463000000.0,
+          "basis": "FY",
+          "end": "2026-01-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 1
+          }
+        },
+        "ebit": {
+          "value": 141709000000.0,
+          "basis": "FY",
+          "end": "2026-01-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 1
+          }
+        },
+        "netIncome": {
+          "value": 120067000000.0,
+          "basis": "FY",
+          "end": "2026-01-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 1
+          }
+        },
+        "freeCashflow": {
+          "value": 127006000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-07-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-07-31",
+            "2026-04-30",
+            "2026-01-31",
+            "2025-10-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "AMZN": {
+        "debtToEquity": {
+          "value": 0.4432016896973766,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 0.22285824958574535,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 3
+          }
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": 360510000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 1
+          }
+        },
+        "ebit": {
+          "value": 99585000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 1
+          }
+        },
+        "netIncome": {
+          "value": 77670000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 1
+          }
+        },
+        "freeCashflow": {
+          "value": 7695000000.0,
+          "basis": "FY",
+          "end": "2025-12-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": null,
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 1
+          }
+        }
+      },
+      "GOOGL": {
+        "debtToEquity": {
+          "value": 0.20945643783696824,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 0.44286068604756035,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 6
+          }
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": 286698000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "ebit": {
+          "value": 290713000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "netIncome": {
+          "value": 235694000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": 19747000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "META": {
+        "debtToEquity": {
+          "value": 0.4216149141292137,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 0.32264413058578373,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 6
+          }
+        },
+        "roic": {
+          "value": 0.2996983236936152,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 18
+          }
+        },
+        "grossProfit": {
+          "value": 195783000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "ebit": {
+          "value": 81641000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "netIncome": {
+          "value": 75249000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": 28649000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "TSLA": {
+        "debtToEquity": {
+          "value": 0.18417722227822017,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 0.0380245659019609,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 6
+          }
+        },
+        "roic": {
+          "value": 0.05012956445285249,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 18
+          }
+        },
+        "grossProfit": {
+          "value": 19974000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "ebit": {
+          "value": 4562000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "netIncome": {
+          "value": 3218000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": 3296000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "BRK-B": {
+        "debtToEquity": {
+          "value": 0.17177370207311052,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 0.10574,
+          "state": "available",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": "USD",
+          "formula": null
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_reported",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": 101277000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "netIncome": {
+          "value": 77084000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": 22767000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "JPM": {
+        "debtToEquity": {
+          "value": 1.4273487517724401,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 0.18012776761582353,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 6
+          }
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_reported",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_reported",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "netIncome": {
+          "value": 65979000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": -84159000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "ORCL": {
+        "debtToEquity": {
+          "value": 2.335275265081172,
+          "basis": "Balance sheet",
+          "end": "2026-08-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": 0.4161625937575611,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-08-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-08-31",
+            "2026-05-31",
+            "2026-02-28",
+            "2025-11-30"
+          ],
+          "details_omitted": {
+            "provenance": 6
+          }
+        },
+        "roic": {
+          "value": 0.14064218505960588,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-08-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Operating income × (1 - tax provision / pretax income) / average (equity + debt - cash)",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-08-31",
+            "2026-05-31",
+            "2026-02-28",
+            "2025-11-30"
+          ],
+          "details_omitted": {
+            "provenance": 18
+          }
+        },
+        "grossProfit": {
+          "value": 45907000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-08-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-08-31",
+            "2026-05-31",
+            "2026-02-28",
+            "2025-11-30"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "ebit": {
+          "value": 26838000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-08-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-08-31",
+            "2026-05-31",
+            "2026-02-28",
+            "2025-11-30"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "netIncome": {
+          "value": 18920000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-08-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-08-31",
+            "2026-05-31",
+            "2026-02-28",
+            "2025-11-30"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": -28720000000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-08-31",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-08-31",
+            "2026-05-31",
+            "2026-02-28",
+            "2025-11-30"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "AARD": {
+        "debtToEquity": {
+          "value": 0.009929348863853351,
+          "basis": "Balance sheet",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Interest-bearing total debt / shareholders equity",
+          "state": "available",
+          "reason": "",
+          "details_omitted": {
+            "provenance": 2
+          }
+        },
+        "returnOnEquity": {
+          "value": -0.8085052004622633,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Net income / average opening and closing stockholdersEquity",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 6
+          }
+        },
+        "roic": {
+          "value": null,
+          "state": "missing_inputs",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_reported",
+          "basis": "Not reported",
+          "end": null,
+          "currency": "USD",
+          "source": "Financial statements",
+          "formula": null
+        },
+        "ebit": {
+          "value": -75969000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "netIncome": {
+          "value": -72759000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        },
+        "freeCashflow": {
+          "value": -66814000.0,
+          "basis": "TTM (4 reported quarters)",
+          "end": "2026-09-30",
+          "currency": "USD",
+          "source": "Yahoo Finance financial statements",
+          "formula": "Sum of 4 consecutive reported quarters",
+          "state": "available",
+          "reason": "",
+          "period_ends": [
+            "2026-09-30",
+            "2026-06-30",
+            "2026-03-31",
+            "2025-12-31"
+          ],
+          "details_omitted": {
+            "provenance": 4
+          }
+        }
+      },
+      "SPY": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      },
+      "QQQI": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      },
+      "AAAU": {
+        "debtToEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": "Provider debtToEquity percentage / 100",
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "returnOnEquity": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "roic": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "grossProfit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "ebit": {
+          "value": null,
+          "state": "not_applicable",
+          "basis": "Not reported",
+          "end": null,
+          "currency": null,
+          "source": "Financial statements",
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "netIncome": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        },
+        "freeCashflow": {
+          "value": null,
+          "state": "not_applicable",
+          "source": "Yahoo Finance profile",
+          "basis": "Provider period",
+          "end": null,
+          "currency": null,
+          "formula": null,
+          "reason": "Corporate financial statements do not apply to this ETF / ETP."
+        }
+      }
+    },
+    "examples_summary": {
+      "symbols_total": 14,
+      "symbols_included": 14,
+      "symbols_omitted": 0,
+      "metrics_total": 98,
+      "metrics_included": 98,
+      "metrics_omitted": 0,
+      "all_example_states": {
+        "available": 68,
+        "missing_inputs": 5,
+        "not_reported": 4,
+        "not_applicable": 21
+      },
+      "provenance_records": 314,
+      "source_disagreement_records": 0,
+      "metrics_with_source_disagreements": 0,
+      "selection": "Whole examples in report order that fit the sample budget",
+      "nested_evidence": "Full provenance and source disagreements are in the full report artifact"
+    }
+  },
   "collection": {
-    "due_before": 2231,
+    "due_before": 2146,
     "attempted": 400,
-    "updated": 11,
-    "not_reported": 0,
-    "failed": 0,
-    "errors": [],
+    "updated": 18,
+    "not_reported": 3,
+    "failed": 1,
+    "errors": [
+      {
+        "ticker": "HELP",
+        "error": "ValueError",
+        "rate_limited": false
+      }
+    ],
     "errors_summary": {
-      "total": 0,
-      "included": 0,
+      "total": 1,
+      "included": 1,
       "omitted": 0,
       "selection": "prefix"
     },
     "symbols_updated": [
-      "KNDI",
-      "KRNT",
-      "KT",
-      "LABT",
-      "LCFY",
-      "LSTA",
-      "MANU",
-      "MATW",
-      "MKZR",
-      "NCO",
-      "NCRA"
+      "NDRA",
+      "NEGG",
+      "NEON",
+      "NFE",
+      "NFG",
+      "NGEN",
+      "PLCI",
+      "NRIM",
+      "NSPR",
+      "OGEN",
+      "OLOX",
+      "ONCO",
+      "ONFO",
+      "OSBC",
+      "P",
+      "PAAC",
+      "PBK",
+      "PFSA"
     ],
     "symbols_updated_summary": {
-      "total": 11,
-      "included": 11,
+      "total": 18,
+      "included": 18,
       "omitted": 0,
       "selection": "prefix"
     },
     "only_missing": false,
-    "retained_fields": 7722,
-    "remaining_due": 1831
+    "retained_fields": 7493,
+    "remaining_due": 1746
   }
 }
